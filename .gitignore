@@ -1,2 +1,5 @@
 *~
+# In general, want to ignore these:
+*.stl
+*.json
 /test-output.stl
