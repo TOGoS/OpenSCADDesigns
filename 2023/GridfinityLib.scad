@@ -35,5 +35,3 @@ module tog_gridfinity_block_bottom(height=14, gridfinity_pitch=42, corner_radius
 	}
 	translate([0,0,height/2]) cube([gridfinity_pitch-corner_radius*2+overlap*2, gridfinity_pitch-corner_radius*2+overlap*2, height], center=true);
 }
-
-tog_gridfinity_block_bottom(14, 42, 4, $fn=30);
