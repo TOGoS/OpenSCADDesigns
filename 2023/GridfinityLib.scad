@@ -115,7 +115,7 @@ module tog_gridfinity_block_with_lip(
 	difference() {
 		tog_gridfinity_block_from_profile_points(tog_gridfinity_make_block_with_lip_extrudable_points(height, floor_height, corner_radius), gridfinity_pitch, corner_radius, overlap);
 		if( magnet_hole_diameter > 0 && magnet_hole_depth > 0 ) for( ym=[-1,1] ) for( xm=[-1,1] ) {
-			translate([13*xm, 13*ym, 0]) cylinder(d=magnet_hole_diameter, h=magnet_hole_depth, center=true);
+			translate([13*xm, 13*ym, 0]) cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
 		}
 	}
 }
