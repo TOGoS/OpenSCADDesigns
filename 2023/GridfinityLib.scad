@@ -62,9 +62,11 @@ function tog_gridfinity_make_block_with_lip_extrudable_points( block_height, flo
 	each (floor_height == block_height ? [] : [
 		// TODO: Really want to filter this list of down-the-inside-of-the-lip points
 		// based on being >= floor height.
+		// If floor_height is too close to block_height, I imagine this could be a mess:
 		[tog_gridfinity_block_lip_corner_profile_points[0][0] - corner_radius, max(floor_height, block_height-2)], // 2 is probably fine; really want a max. 45deg from wall thickness to innermost point in lip
 		[wall_thickness+0.25 - corner_radius, max(floor_height, block_height-4)], // difference y=-2 is probably fine; really want a max. 45deg from wall thickness to innermost point in lip
-		[wall_thickness+0.25 - corner_radius, floor_height],
+		[wall_thickness+0.25 - corner_radius, floor_height+(corner_radius-wall_thickness-0.25)],
+		[0, floor_height],
 	]),
 	[0, floor_height],,
 	//[tog_gridfinity_block_lip_corner_profile_points[0][0] - corner_radius, floor_height],
