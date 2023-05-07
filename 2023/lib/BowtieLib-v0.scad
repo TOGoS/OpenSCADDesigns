@@ -35,6 +35,16 @@ module beveled_square(size, r) {
 	]);
 }
 
+module rounded_square(size, r) {
+	hull() {
+		for( xm=[-1,1] ) for( ym=[-1,1] ) {
+			translate([xm*(size[0]/2-r), ym*(size[1]/2-r)]) circle(r=r);
+		}
+		// To ensure fullness at small $fns:
+		beveled_square(size, r);
+	}
+}
+
 function grid_cell_center_positions(area_size, cell_size) = [
 	for( y=[ -area_size[1]/2+cell_size[1]/2 : cell_size[1] : area_size[1]/2-cell_size[1]/2 ] )
 		for( x=[ -area_size[0]/2+cell_size[0]/2 : cell_size[0] : area_size[0]/2-cell_size[0]/2 ] )

@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.4
+// GridbeamPanelRouterTemplate-v2.5
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -14,8 +14,11 @@
 // v2.3:
 // - Rename, move from ProjectNotes2 to OpenSCADDesigns
 // v2.4:
-// - Replace infinitely customizable alternate holes hopefully better holelib ones
+// - Replace infinitely customizable alternate holes hopefully better holelib ones,
+//   and have 4x as many of them
 // - Recommend not using margin but doing that part in Slic1ng.
+// v2.5:
+// - Rounded instead of beveled corners
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -67,7 +70,7 @@ panel_size = [panel_size_gc[0] * grid_unit_size, panel_size_gc[1] * grid_unit_si
 translate([0,0,0]) {
 	difference() {
 		linear_extrude(thickness) difference() {
-			beveled_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
+			rounded_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
 			for( pos=bowtie_positions(panel_size, [bowtie_length, bowtie_length], bowtie_position_offset*bowtie_length ) ) {
 				translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_cutout_shape, bowtie_length, margin);
 			}
