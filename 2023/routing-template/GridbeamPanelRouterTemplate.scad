@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.3
+// GridbeamPanelRouterTemplate-v2.4
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -13,6 +13,9 @@
 // - Additional pockets with rad diagonal pattern cut out to reduce filament use
 // v2.3:
 // - Rename, move from ProjectNotes2 to OpenSCADDesigns
+// v2.4:
+// - Replace infinitely customizable alternate holes hopefully better holelib ones
+// - Recommend not using margin but doing that part in Slic1ng.
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -24,23 +27,18 @@ grid_unit_size = 38.1;
 // Outer dimensions of panel, in grid units
 panel_size_gc = [4, 4];
 
-// Distance (mm) to offset outer edges inwards for wiggle room or to account for fat extrusion
-margin    = 0.25;  // 0.01
+// Distance (mm) to offset outer edges inwards for wiggle room or to account for fat extrusion.  It may be better to leave this 0 and use your slicer's X/Y compensation parameter, instead.
+margin    = 0.00;  // 0.01
 
 // Size of holes; 12.2 printed with my regular Slic3r settings on my Kobra Max was found to fit 7/16" router bushings
-hole_diameter = 12.2;
+hole_diameter = 12;
 // How many units to skip at corners
 bowtie_position_offset = 1.0; // 0.5
 
 bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-maximal"]
 
-// Countersunk in-between holes
-// Counterbored hole surface diameter; 1/4" = 6.35
-hole2_surface_diameter = 7;
-// Counterbored hole shaft diameter; 3/16" = 4.7625
-hole2_shaft_diameter = 5;
-// Counterbored hole shaft diameter; 1/8" = 3.175
-hole2_countersink_depth = 2.54;
+// Style of in-between holes; THL-1001 is for #6 flatheads, THL-1002 is for 1/4" flatheads
+hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 
 corner_radius = 3.175;
 
@@ -52,11 +50,14 @@ pocket_interior_wall_thickness = 1.5;
 pocket_interior_wall_spacing = 5;
 pocket_interior_angle = 60;
 
-$fn = 40;
+$fn = 20;
 
 module __end_parameter_list() { }
 
+hole2_surface_diameter = 12; // Eh
+
 include <../lib/BowtieLib-v0.scad>
+include <../lib/TOGHoleLib-v1.scad>
 
 // Panel
 
@@ -80,11 +81,11 @@ translate([0,0,0]) {
 				translate( pos ) circle(d=hole_diameter, $fn=40);
 			}
 		}
-		small_hole_positions = fencepost_positions_ofe_2d(panel_size, [grid_unit_size, grid_unit_size], grid_unit_size);
-		if( hole2_surface_diameter > 0 ) translate([0,0,thickness/2]) {
+		small_hole_positions = fencepost_positions_ofe_2d(panel_size, [grid_unit_size/2, grid_unit_size/2], grid_unit_size/2);
+		if( hole2_type_name != "none" ) translate([0,0,thickness]) {
 			for( pos=small_hole_positions ) {
 				translate(pos) {
-					countersunk_hole( hole2_surface_diameter, hole2_countersink_depth, hole2_shaft_diameter, thickness*2, $fn=40 );
+					tog_holelib_hole(hole2_type_name, thickness*2);
 				}
 			}
 		}
