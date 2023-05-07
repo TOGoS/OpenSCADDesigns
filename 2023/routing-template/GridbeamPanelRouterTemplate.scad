@@ -45,6 +45,7 @@ hole2_countersink_depth = 2.54;
 corner_radius = 3.175;
 
 pocket_wall_thickness = 3.175;
+// Thickness of floor under silly pockets; set to >= thickness to disable the silly pockets
 pocket_floor_thickness = 1;
 
 pocket_interior_wall_thickness = 1.5;
@@ -103,7 +104,7 @@ translate([0,0,0]) {
 			}
 		}
 		// Additional pockets just to use less material
-		translate([0,0,thickness]) linear_extrude((thickness-pocket_floor_thickness)*2, center=true) difference() {
+		if( pocket_floor_thickness < thickness ) translate([0,0,thickness]) linear_extrude((thickness-pocket_floor_thickness)*2, center=true) difference() {
 			for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size, grid_unit_size) ) {
 				translate([0, y, 0]) {
 					beveled_square([
