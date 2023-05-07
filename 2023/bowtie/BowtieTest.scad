@@ -1,6 +1,11 @@
 panel_size = [38.1, 38.1];
+// Long length of bowtie; 3/4" = 19.05
 bowtie_length = 19.05;
 thickness = 3.175;
+
+// 1/4" = 6.35
+// 3/8" = 9.525
+// 1/2" = 12.7
 
 $fn = 40;
 
