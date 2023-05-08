@@ -1,4 +1,8 @@
-// Rex Beti Caliper Holder, v1.0
+// Rex Beti Caliper Holder, v1.1
+//
+// Versions:
+// - v1.1: Increase width of bat slot by 1/32 'cuz it was too tight
+//   in the print of v1.0, p1002a
 
 $fn = 20;
 
@@ -59,10 +63,10 @@ module ch_midblock_outline() {
 	}
 	translate([7/8*inch, -15/8*inch]) inner_corner(1/8*inch, 1, -1);
 	hull() {
-		translate([  6/8*inch, -23/8*inch]) circle(d=1/4*inch);
-		translate([  6/8*inch, -17/8*inch]) circle(d=1/4*inch);
-		translate([ 11/8*inch, -23/8*inch]) circle(d=1/4*inch);
-		translate([ 11/8*inch, -17/8*inch]) circle(d=1/4*inch);		
+		translate([  6.25/8*inch, -23/8*inch]) circle(d=1/4*inch);
+		translate([  6.25/8*inch, -17/8*inch]) circle(d=1/4*inch);
+		translate([ 11.00/8*inch, -23/8*inch]) circle(d=1/4*inch);
+		translate([ 11.00/8*inch, -17/8*inch]) circle(d=1/4*inch);		
 	}
 
 }
