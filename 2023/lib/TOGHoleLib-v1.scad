@@ -44,11 +44,11 @@ module tog_holelib_hole1002(depth, overhead_bore_height=1) {
 // THL-1001: Countersunk hole for #6 machine screws or 6x sheet metal screws
 // THL-1002: Countersunk hole for 1/4" flathead machine screws
 
-module tog_holelib_hole(type_name, depth=1000, overhead_bore_depth=1) {
+module tog_holelib_hole(type_name, depth=1000, overhead_bore_height=1) {
 	if( type_name == "THL-1001" ) {
-		tog_holelib_hole1001(depth, overhead_bore_depth);
+		tog_holelib_hole1001(depth, overhead_bore_height);
 	} else if( type_name == "THL-1002" ) {
-		tog_holelib_hole1002(depth, overhead_bore_depth);
+		tog_holelib_hole1002(depth, overhead_bore_height);
 	} else {
 		assert(false, str("Unknown hole type: '", type_name, "'"));
 	}
