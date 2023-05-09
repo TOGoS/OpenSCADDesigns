@@ -1,16 +1,23 @@
-// Rex Beti Caliper Holder, v1.1
+// Rex Beti Caliper Holder, v1.2
 //
 // Versions:
-// - v1.1: Increase width of bat slot by 1/32 'cuz it was too tight
+// v1.1:
+// - Increase width of bat slot by 1/32 'cuz it was too tight
 //   in the print of v1.0, p1002a
+// v1.2:
+// - Add tabs!
 
 $fn = 20;
 
 module __end_parameters() { }
 
-include <../lib/TOGHoleLib-v1.scad>
-
 inch = 25.4;
+
+back_panel_thickness = 3/16*inch;
+midblock_thickness   = 5/16*inch;
+tab_thickness = 3/16*inch;
+
+include <../lib/TOGHoleLib-v1.scad>
 
 module ch_panel_outline() {
 	hull() {
@@ -109,9 +116,7 @@ module caliper_model() {
 	color("#B0B0B0") translate([-2/8*inch, -15/8*inch]) cylinder(h=1/4*inch, d=3/8*inch);
 }
 
-back_panel_thickness = 3/16*inch;
-midblock_thickness   = 5/16*inch;
-epsilon = 0;
+epsilon = 0; // For overlap between layers; 0 may be just fine.
 
 small_hole_positions = [
 	[-1.25*inch, 0.25*inch],
@@ -137,5 +142,35 @@ module ch_assembly() {
 		}
 	}
 }
+
+module ch_tabs_outline() {
+	hull() for( pos=[
+		[-2/4*inch,  3/4*inch],
+		[-2/4*inch,  1/4*inch],
+		[-5/4*inch,  3/4*inch],
+		[-5/4*inch, -1/4*inch]
+	] ) {
+		translate(pos) circle(r=1/4*inch);
+	}
+	hull() for( pos=[
+		[ 5/4*inch,  2/4*inch],
+		[ 5/4*inch,  4/4*inch],
+	] ) {
+		translate(pos) circle(r=1/4*inch);
+	}
+}
+
+module ch_tabs() {
+	difference() {
+		linear_extrude(tab_thickness) ch_tabs_outline();
+		for(p=small_hole_positions) {
+			translate([p[0], p[1], tab_thickness]) tog_holelib_hole("THL-1001", overhead_bore_height=20);
+		}
+	}
+}
+
 ch_assembly();
 if( $preview ) # translate([0,0,back_panel_thickness]) caliper_model();
+if( $preview ) translate([0,0,back_panel_thickness+midblock_thickness]) # ch_tabs();
+
+translate([4.5*inch, 0, 0]) ch_tabs();
