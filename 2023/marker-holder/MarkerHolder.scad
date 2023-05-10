@@ -1,13 +1,17 @@
-// MarkerHolder-v1.0
+// MarkerHolder-v1.1
 //
 // Holder my paint sharpies, which are 7/16" wide according to my caliper
+// 
+// v1.1:
+// - Customizable marker diameter and slot width
 
 $fn = 16;
 
 width = 38.1;
 thickness = 12.7; // 19.05;
 outer_margin = 0.25;
-marker_diameter = 11.1125;
+marker_diameter = 11.5;
+slot_width = 11.25;
 slot_depth = 3.175;
 
 module __end_params() { }
@@ -26,9 +30,9 @@ module rounded_square(size, corner_radius, offset=0) {
 }
 
 module marker_slot(depth) {
-	translate([0,0,-depth]) rotate([0,90,0]) cylinder(d=7/16*inch+0.5, h=width+2, center=true);
-	translate([0,0,0]) cube([width, marker_diameter, depth*2], center=true);
-	translate([0,0,0]) rotate([45,0,0]) cube([width, marker_diameter/1.25, 6/16*inch], center=true);
+	translate([0,0,-depth]) rotate([0,90,0]) cylinder(d=marker_diameter, h=width+2, center=true);
+	translate([0,0,0]) cube([width, slot_width, depth*2], center=true);
+	translate([0,0,0]) rotate([45,0,0]) cube([width, slot_width/1.25, 6/16*inch], center=true);
 }
 
 module marker_holder_hull() {
