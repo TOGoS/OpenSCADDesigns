@@ -1,9 +1,11 @@
-// MarkerHolder-v1.1
+// MarkerHolder-v1.2
 //
 // Holder my paint sharpies, which are 7/16" wide according to my caliper
 // 
 // v1.1:
-// - Customizable marker diameter and slot width
+// - Customizable marker diameter and slot width and larger default values
+// v1.2:
+// - TOGridPile hybrid1 base
 
 $fn = 16;
 
@@ -17,17 +19,9 @@ slot_depth = 3.175;
 module __end_params() { }
 
 include <../lib/TOGHoleLib-v1.scad>;
+include <../lib/TOGridPileLib-v1.scad>;
 
 inch = 25.4;
-
-module rounded_square(size, corner_radius, offset=0) {
-	hull() for( ym=[-1,1] ) for( xm=[-1,1] ) {
-		translate([
-			xm*(size[0]/2-corner_radius),
-			ym*(size[1]/2-corner_radius),
-		]) circle(r=corner_radius+offset);
-	}	
-}
 
 module marker_slot(depth) {
 	translate([0,0,-depth]) rotate([0,90,0]) cylinder(d=marker_diameter, h=width+2, center=true);
@@ -36,8 +30,10 @@ module marker_slot(depth) {
 }
 
 module marker_holder_hull() {
-	linear_extrude(thickness) {
-		rounded_square([1.5*inch-outer_margin*2, 1.5*inch-outer_margin*2], 3/16*inch, -0.1);
+	intersection() {
+		translate([0,0,thickness])
+			togridpile_hull_of_style("hybrid1", [1.5*inch, 1.5*inch, thickness*2], offset=-outer_margin);
+		cube([1.5*inch, 1.5*inch, thickness*2], center=true);
 	}
 }
 
