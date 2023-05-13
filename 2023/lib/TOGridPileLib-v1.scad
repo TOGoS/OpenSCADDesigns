@@ -32,6 +32,12 @@ function togridpile__zip(a0, a1, func) = [
 	for( i=[0:1:len(a0)-1] ) func(a0[i], a1[i])
 ];
 
+// Figure out the scale to apply to an object of a given size such that the resulting size is for(v=vec) v+offset
+function togridpile__offset_scale(vec, offset) = [
+	for( v=vec ) (v+offset) / v
+];
+
+
 module togridpile__beveled_cube(size, corner_radius, offset=0) {
 	outer_scale = [for(d=size) (d+offset*2)/d];
 	inner_scale = [for(d=size) (d-corner_radius*2)/d]; // Purposely not taking offset into account for inner square
@@ -61,6 +67,16 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 		togridpile__beveled_cube(size, beveled_corner_radius+corner_radius_offset, offset);
 	} else if( style == "rounded" ) {
 		togridpile__rounded_cube(size, rounded_corner_radius+corner_radius_offset, offset);
+	} else if( style == "maximal" ) {
+		union() {
+			togridpile_hull_of_style("beveled", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+			togridpile_hull_of_style("rounded", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+		}
+	} else if( style == "minimal" ) {
+		intersection() {
+			togridpile_hull_of_style("rounded", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+			togridpile_hull_of_style("hybrid1", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+		}
 	} else if( style == "hybrid1" ) {
 		intersection() {
 			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);
@@ -69,18 +85,16 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 		}
 	} else if( style == "hybrid1-inner" ) {
 		union() {
-			togridpile_hull_of_style("hybrid1", size, corner_radius_offset, offset);
-			togridpile_hull_of_style("rounded", size, corner_radius_offset, offset);
+			togridpile_hull_of_style("hybrid1", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+			togridpile_hull_of_style("rounded", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 		}
-	} else if( style == "maximal" ) {
-		union() {
-			togridpile_hull_of_style("beveled", size, corner_radius_offset, offset);
-			togridpile_hull_of_style("rounded", size, corner_radius_offset, offset);
-		}
-	} else if( style == "minimal" ) {
-		intersection() {
-			togridpile_hull_of_style("rounded", size, corner_radius_offset, offset);
-			togridpile_hull_of_style("hybrid1", size, corner_radius_offset, offset);
+	} else if( style == "hybrid2" ) {
+		// In this case I'm just scaling the whole thing instead of passing offset down;
+		// I think generally, for convex shapes, scaling is what we want.
+		rescale = togridpile__offset_scale(size, offset);
+		scale(rescale) intersection() {
+			togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius);
+			//togridpile__rounded_cube(size, rounded_corner_radius+corner_radius_offset);
 		}
 	} else {
 		assert(false, str("Unrecognized style: '"+style+"'"));
