@@ -138,6 +138,8 @@ module bowtie_of_style(style_name, length, r_offset) {
 		quarter_bit_cutout_bowtie(length, r_offset);
 	} else if( style_name == "maximal" ) {
 		maximal_bowtie(length, r_offset);
+	} else if( style_name == "minimal" ) {
+		minimal_bowtie(length, r_offset);
 	} else if( style_name == "semi-maximal" ) {
 		semi_maximal_bowtie(length, r_offset);
 	} else {
