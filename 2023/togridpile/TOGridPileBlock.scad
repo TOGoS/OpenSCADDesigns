@@ -1,4 +1,4 @@
-// TOGridPileBlock-v2.1
+// TOGridPileBlock-v2.2
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -18,6 +18,8 @@
 // - Fix offset-to-scale calculation
 // - Margin is now simply negative offset, i.e. half the space between perfectly-printed blocks
 // - Organize customizable parameters into tabs
+// v2.2:
+// - Add sublip platform
 
 /* [Content] */
 
@@ -39,6 +41,9 @@ rounded_corner_radius = 4.7625;
 togridpile_style = "hybrid1"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
 togridpile_lip_style = "hybrid2"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "maximal" ]
+
+// Experimental platform under the lip
+sublip_platform_enabled = true;
 
 /* [Sizing Tweaks] */
 
@@ -78,9 +83,12 @@ module togridpile_hollow_cup_with_lip(size, lip_height, wall_thickness=2, floor_
 		// Lip
 		translate([0,0,height+size[2]/2]) togridpile_hull_of_style(togridpile_lip_style, size, corner_radius_offset=0, offset=+margin);
 		// Interior cavity
-		translate([0,0,height+floor_thickness]) togridpile_hull_of_style(cavity_style, [size[0]-wall_thickness*2, size[1]-wall_thickness*2, height*2], corner_radius_offset=-wall_thickness, offset=-margin);
+		intersection() {
+			translate([0,0,height+floor_thickness]) togridpile_hull_of_style(cavity_style, [size[0]-wall_thickness*2, size[1]-wall_thickness*2, height*2], corner_radius_offset=-wall_thickness, offset=-margin);
+			if( sublip_platform_enabled ) cylinder(d1=1.5*inch + height, d2=1.5*inch, h=size[2]+1);
+		}
 		if(small_holes) for( ym=[-1,0,1] ) for( xm=[-1,0,1] ) {
-			translate([ym*12.7, xm*12.7, floor_thickness]) tog_holelib_hole("THL-1001", overhead_bore_height=height*2);
+			translate([ym*12.7, xm*12.7, floor_thickness]) tog_holelib_hole("THL-1001", overhead_bore_height=floor_thickness);
 		}
 		if(large_holes) {
 			translate([0,0,floor_thickness]) tog_holelib_hole("THL-1002", overhead_bore_height=height*2);
