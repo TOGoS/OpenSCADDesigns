@@ -32,9 +32,9 @@ function togridpile__zip(a0, a1, func) = [
 	for( i=[0:1:len(a0)-1] ) func(a0[i], a1[i])
 ];
 
-// Figure out the scale to apply to an object of a given size such that the resulting size is for(v=vec) v+offset
+// Figure out the scale to apply to an object of a given size such that the resulting size is for(v=vec) v+offset*2
 function togridpile__offset_scale(vec, offset) = [
-	for( v=vec ) (v+offset) / v
+	for( v=vec ) (v+offset*2) / v
 ];
 
 
