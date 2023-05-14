@@ -1,4 +1,4 @@
-// TOGridPileBlock-v2.3-dev
+// TOGridPileBlock-v2.4
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -21,7 +21,10 @@
 // v2.2:
 // - Add sublip platform
 // v2.3:
-// - Multiblock!!
+// - Multiblock!!  First attempt, with problems.
+// v2.4:
+// - Fixed corner sublip sections of multiblock
+// - Added 0.5" hole pattern at bottom
 
 /* [Content] */
 
@@ -146,7 +149,29 @@ module togridpile_multiblock_hull(size_blocks, height, lip_height) {
 	}
 }
 
-translate([0*inch, 0, 0]) togridpile_hollow_cup_with_lip([togridpile_pitch, togridpile_pitch, height], lip_height, wall_thickness, floor_thickness,  true, true);
-translate([2*inch, 0, 0]) togridpile_hollow_cube([togridpile_pitch, togridpile_pitch, togridpile_pitch], wall_thickness);
+module togridpile_multiblock_cup(size_blocks, height, lip_height) {
+	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height];
+	difference() {
+		render() togridpile_multiblock_hull(size_blocks, height, lip_height);
+		translate([0,0,size[2]+floor_thickness]) difference() {
+			render() togridpile_hull_of_style(cavity_style, [size[0]-wall_thickness*2, size[1]-wall_thickness*2, size[2]*2], corner_radius_offset=-wall_thickness, offset=-margin);
+			// Sublip
+			sublip_width = 8;
+			sublip_angwid = sublip_width/sin(45);
+			sublip_angwid2 = sublip_angwid/sin(45);
+			for(xm=[-1,1]) translate([xm*size[0]/2, 0, 0]) rotate([0,45,0]) cube([sublip_angwid,size[1],sublip_angwid], center=true);
+			for(ym=[-1,1]) translate([0, ym*size[0]/2, 0]) rotate([45,0,0]) cube([size[0],sublip_angwid,sublip_angwid], center=true);
+			for(ym=[-1,1]) for(xm=[-1,1]) {
+				translate([xm*size[0]/2, ym*size[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0]) cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
+			}
+		}
+		for( ym=[-size_blocks[1]*3+0.5 : 1 : size_blocks[1]*3-0.5] ) for( xm=[-size_blocks[0]*3+0.5 : 1 : size_blocks[0]*3-0.5] ) {
+			translate([xm*togridpile_pitch/3, ym*togridpile_pitch/3, floor_thickness]) tog_holelib_hole("THL-1001", depth=floor_thickness+1, overhead_bore_height=floor_thickness);
+		}
+	}
+}
 
-translate([0*inch, 2*inch, 0]) togridpile_multiblock_hull(size_blocks, height, lip_height);
+// translate([0*inch, 0, 0]) togridpile_hollow_cup_with_lip([togridpile_pitch, togridpile_pitch, height], lip_height, wall_thickness, floor_thickness,  true, true);
+// translate([2*inch, 0, 0]) togridpile_hollow_cube([togridpile_pitch, togridpile_pitch, togridpile_pitch], wall_thickness);
+
+translate([0*inch, 2*inch, 0]) togridpile_multiblock_cup(size_blocks, height, lip_height);
