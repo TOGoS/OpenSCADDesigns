@@ -1,4 +1,4 @@
-// TOGHoleLib-v1.1
+// TOGHoleLib-v1.2
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -9,6 +9,8 @@
 //   WSITEM-200448 was the first print to use this new, smaller size,
 //   and it seems just about perfect, at least as far as the flat top
 //   sitting just barely below the surface
+// v1.2:
+// - Add 'none' hole style, which does nothing
 
 module tog_holelib_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height) {
 	rotate_extrude() {
@@ -55,7 +57,9 @@ module tog_holelib_hole1002(depth, overhead_bore_height=1) {
 // THL-1002: Countersunk hole for 1/4" flathead machine screws
 
 module tog_holelib_hole(type_name, depth=1000, overhead_bore_height=1) {
-	if( type_name == "THL-1001" ) {
+	if( type_name == "none" ) {
+		// Here so callers don't need to make a special case for it
+	} else if( type_name == "THL-1001" ) {
 		tog_holelib_hole1001(depth, overhead_bore_height);
 	} else if( type_name == "THL-1002" ) {
 		tog_holelib_hole1002(depth, overhead_bore_height);
