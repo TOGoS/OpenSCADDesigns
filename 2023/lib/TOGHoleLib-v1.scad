@@ -36,6 +36,7 @@ module tog_holelib_hole1001(depth, overhead_bore_height=1) {
 
 // Suitable for 1/4" flatheads
 module tog_holelib_hole1002(depth, overhead_bore_height=1) {
+	inch = 25.4;
 	tog_holelib_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, 5/16*inch, 0, overhead_bore_height);
 }
 
