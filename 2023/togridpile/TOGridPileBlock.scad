@@ -25,14 +25,18 @@
 // v2.4:
 // - Fixed corner sublip sections of multiblock
 // - Added 0.5" hole pattern at bottom
+// v2.5:
+// - Thicker default floor
 
 /* [Content] */
 
 size_blocks = [3,2];
+// Height, not including lip; 12.7mm = 1/2", 25.4mm = 1", 38.1mm = 1.5", 76.2mm = 3"
 height = 12.7;           // 0.001
 wall_thickness = 2;      // 0.001
 cavity_style = "rounded"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "minimal" ]
-floor_thickness = 3.175; // 0.001
+// Height of bottom of cavity; 3.175mm (1/8") is fine for single blocks but to avoid gaps, pick a larger value for multi-blocks
+floor_thickness = 4.7625; // 0.001
 
 /* [Grid / Stacking System] */
 
