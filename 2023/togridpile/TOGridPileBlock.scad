@@ -1,4 +1,4 @@
-// TOGridPileBlock-v2.8
+// TOGridPileBlock-v2.9
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -33,6 +33,9 @@
 // - Give multiblocks 'butt cracks' to hopefully reduce sagging
 // v2.8:
 // - Magnet wells
+// v2.9:
+// - Fix hole and sublip platform placement when not square
+// - Above-magnet 'well' can be different size than the magnet
 
 /* [Content] */
 
@@ -48,7 +51,11 @@ small_hole_style = "THL-1001"; // ["none","THL-1001","THL-1002"]
 large_hole_style = "THL-1002"; // ["none","THL-1001","THL-1002"]
 
 magnet_hole_diameter = 6;
-magnet_well_floor_thickness = 0.3;
+magnet_hole_depth = 2;
+magnet_hole_floor_thickness = 0.3;
+// Diameter of hole above the magnet hole
+magnet_well_diameter = 6.5;
+// Diameter of hole below the magnet hole
 magnet_drain_hole_diameter = 3;
 
 /* [Grid / Stacking System] */
@@ -176,18 +183,19 @@ module togridpile_multiblock_cup(size_blocks, height, lip_height) {
 			sublip_angwid = sublip_width/sin(45);
 			sublip_angwid2 = sublip_angwid/sin(45);
 			for(xm=[-1,1]) translate([xm*size[0]/2, 0, 0]) rotate([0,45,0]) cube([sublip_angwid,size[1],sublip_angwid], center=true);
-			for(ym=[-1,1]) translate([0, ym*size[0]/2, 0]) rotate([45,0,0]) cube([size[0],sublip_angwid,sublip_angwid], center=true);
+			for(ym=[-1,1]) translate([0, ym*size[1]/2, 0]) rotate([45,0,0]) cube([size[0],sublip_angwid,sublip_angwid], center=true);
 			for(ym=[-1,1]) for(xm=[-1,1]) {
 				translate([xm*size[0]/2, ym*size[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0]) cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
 			}
 		}
-		for( ym=[-size_blocks[1]+0.5 : 1 : size_blocks[1]-0.5] ) for( xm=[-size_blocks[0]+0.5 : 1 : size_blocks[0]-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch]) {
+		for( ym=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] ) for( xm=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch]) {
 			translate([0, 0, floor_thickness]) tog_holelib_hole(large_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
 			for( subpos=[[0,1],[1,0],[0,-1],[-1,0]] ) {
 				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, floor_thickness]) tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
 			}
 			for( subpos=[[1,1],[1,-1],[-1,-1],[-1,1]] ) {
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, magnet_well_floor_thickness]) cylinder(d=magnet_hole_diameter, h=floor_thickness+1, center=false);
+				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, magnet_hole_floor_thickness]) cylinder(d=magnet_hole_diameter, h=floor_thickness+1, center=false);
+				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, magnet_hole_floor_thickness+magnet_hole_depth]) cylinder(d=magnet_well_diameter, h=floor_thickness+1, center=false);
 				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, 0]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2, center=true);
 			}
 		}
