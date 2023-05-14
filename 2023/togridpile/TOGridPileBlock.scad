@@ -1,4 +1,4 @@
-// TOGridPileBlock-v2.2
+// TOGridPileBlock-v2.3-dev
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -20,9 +20,12 @@
 // - Organize customizable parameters into tabs
 // v2.2:
 // - Add sublip platform
+// v2.3:
+// - Multiblock!!
 
 /* [Content] */
 
+size_blocks = [3,2];
 height = 12.7;           // 0.001
 wall_thickness = 2;      // 0.001
 cavity_style = "rounded"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "minimal" ]
@@ -110,5 +113,40 @@ module togridpile_hollow_cube(size, wall_thickness=2) {
 	}
 }
 
+/*module togridpile_multiblock_xy_hull(size_blocks) {
+	size = [size_blocks[0]*togridpile_pitch, size_blocks[1]*togridpile_pitch];
+	togridpile__rounded_square(size, corner_radius=rounded_corner_radius);
+}*/
+
+module togridpile_multiblock_bottom(size_blocks) {
+	for( ym=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] )
+	for( xm=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] )
+	{
+		translate([xm*togridpile_pitch, ym*togridpile_pitch, togridpile_pitch/2]) {
+			togridpile_hull([togridpile_pitch, togridpile_pitch, togridpile_pitch], corner_radius_offset=0, offset=-margin);
+		}
+	}
+}
+
+module togridpile_multiblock_hull(size_blocks, height, lip_height) {
+	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height+lip_height];
+	union() {
+		intersection() {
+			translate([0,0,beveled_corner_radius/2]) cube([size[0], size[1], beveled_corner_radius], center=true);
+			togridpile_multiblock_bottom(size_blocks);
+		}
+		difference() {
+			intersection() {
+				translate([0,0,beveled_corner_radius+(height+lip_height-beveled_corner_radius)/2]) cube([togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], (height+lip_height-beveled_corner_radius)], center=true);
+				translate([0,0,height]) togridpile_hull([togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height*2], corner_radius_offset=0, offset=-margin);
+			}
+			// Lip
+			translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style(togridpile_lip_style, [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
+		}
+	}
+}
+
 translate([0*inch, 0, 0]) togridpile_hollow_cup_with_lip([togridpile_pitch, togridpile_pitch, height], lip_height, wall_thickness, floor_thickness,  true, true);
 translate([2*inch, 0, 0]) togridpile_hollow_cube([togridpile_pitch, togridpile_pitch, togridpile_pitch], wall_thickness);
+
+translate([0*inch, 2*inch, 0]) togridpile_multiblock_hull(size_blocks, height, lip_height);
