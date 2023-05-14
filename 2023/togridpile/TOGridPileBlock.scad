@@ -77,21 +77,21 @@ module togridpile_hull(size, beveled_corner_radius=beveled_corner_radius, rounde
 module togridpile_hollow_cup_with_lip(size, lip_height, wall_thickness=2, floor_thickness=2, small_holes=false, large_holes=false) {
 	difference() {
 		intersection() {
-			translate([0,0,height]) togridpile_hull([size[0], size[1], size[2]*2], corner_radius_offset=0, offset=-margin);
+			translate([0,0,size[2]]) togridpile_hull([size[0], size[1], size[2]*2], corner_radius_offset=0, offset=-margin);
 			cube([size[0], size[1], (size[2]+lip_height)*2], center=true);
 		}
 		// Lip
-		translate([0,0,height+size[2]/2]) togridpile_hull_of_style(togridpile_lip_style, size, corner_radius_offset=0, offset=+margin);
+		translate([0,0,size[2]+size[2]/2]) togridpile_hull_of_style(togridpile_lip_style, size, corner_radius_offset=0, offset=+margin);
 		// Interior cavity
 		intersection() {
-			translate([0,0,height+floor_thickness]) togridpile_hull_of_style(cavity_style, [size[0]-wall_thickness*2, size[1]-wall_thickness*2, height*2], corner_radius_offset=-wall_thickness, offset=-margin);
-			if( sublip_platform_enabled ) cylinder(d1=1.5*inch + height, d2=1.5*inch, h=size[2]+1);
+			translate([0,0,size[2]+floor_thickness]) togridpile_hull_of_style(cavity_style, [size[0]-wall_thickness*2, size[1]-wall_thickness*2, size[2]*2], corner_radius_offset=-wall_thickness, offset=-margin);
+			if( sublip_platform_enabled ) cylinder(d1=1.5*inch + size[2], d2=1.5*inch, h=size[2]+1);
 		}
 		if(small_holes) for( ym=[-1,0,1] ) for( xm=[-1,0,1] ) {
 			translate([ym*12.7, xm*12.7, floor_thickness]) tog_holelib_hole("THL-1001", overhead_bore_height=floor_thickness);
 		}
 		if(large_holes) {
-			translate([0,0,floor_thickness]) tog_holelib_hole("THL-1002", overhead_bore_height=height*2);
+			translate([0,0,floor_thickness]) tog_holelib_hole("THL-1002", overhead_bore_height=size[2]*2);
 		}
 		if( $preview ) {
 			# translate([-size[0]/2, -size[1]/2, size[2]/2]) cube([size[0]/2, size[1]/2, size[2]*2], center=true);
