@@ -189,9 +189,9 @@ module togridpile_multiblock_cup(size_blocks, height, lip_height) {
 			}
 		}
 		for( ym=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] ) for( xm=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch]) {
-			translate([0, 0, floor_thickness]) tog_holelib_hole(large_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
+			translate([0, 0, floor_thickness]) render() tog_holelib_hole(large_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
 			for( subpos=[[0,1],[1,0],[0,-1],[-1,0]] ) {
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, floor_thickness]) tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
+				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, floor_thickness]) render() tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
 			}
 			for( subpos=[[1,1],[1,-1],[-1,-1],[-1,1]] ) {
 				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, magnet_hole_floor_thickness]) cylinder(d=magnet_hole_diameter, h=floor_thickness+1, center=false);
