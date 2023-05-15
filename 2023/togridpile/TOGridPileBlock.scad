@@ -1,4 +1,4 @@
-// TOGridPileBlock-v2.9
+// TOGridPileBlock-v3.0
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -36,6 +36,8 @@
 // v2.9:
 // - Fix hole and sublip platform placement when not square
 // - Above-magnet 'well' can be different size than the magnet
+// v3.0:
+// - Add 'hybrid3' shape
 
 /* [Content] */
 
@@ -68,9 +70,9 @@ rounded_corner_radius = 4.7625;
 
 // 4.7625mm = 3/16", 3.175 = 1/8"
 // "hybrid1" is hybrid2 but with XZ corners rounded off
-togridpile_style = "hybrid1"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "minimal" ]
+togridpile_style = "hybrid1"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid2"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "maximal" ]
+togridpile_lip_style = "hybrid2"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;

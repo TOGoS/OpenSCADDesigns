@@ -1,3 +1,12 @@
+// TOGridPileLib-v3.0
+//
+// Changes:
+// v3.0:
+// - Add 'hybrid3' shape
+//
+// Notes:
+// - 0.707 = cos(pi/4), or 1/sqrt(2)
+
 module togridpile__rounded_square(size, corner_radius, offset=0) {
 	hull() for( ym=[-1,1] ) for( xm=[-1,1] ) {
 		translate([
@@ -26,6 +35,19 @@ module togridpile__xz_rounded_cube(size, corner_radius) {
 }
 module togridpile__yz_rounded_cube(size, corner_radius) {
 	rotate([0,90,0]) togridpile__xy_rounded_cube([size[2], size[1], size[0]], corner_radius);
+}
+
+module togridpile__xy_rounded_beveled_square(size, bevel_size, rounding_radius, offset=0) {
+	hull() for( ym=[-1,1] ) for( xm=[-1,1] ) {
+		translate([
+			xm*(size[0]/2-rounding_radius),
+			ym*(size[1]/2-bevel_size-rounding_radius*0.707),
+		]) circle(r=rounding_radius+offset);
+		translate([
+			xm*(size[0]/2-bevel_size-rounding_radius*0.707),
+			ym*(size[1]/2-rounding_radius),
+		]) circle(r=rounding_radius+offset);
+	}
 }
 
 function togridpile__zip(a0, a1, func) = [
@@ -96,7 +118,26 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 			togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius);
 			//togridpile__rounded_cube(size, rounded_corner_radius+corner_radius_offset);
 		}
+	} else if( style == "hybrid3-scaled" ) {
+		// Alternate mode of applying the offset; shouldn't matter much, but does seem a little crappier idk
+		rescale = togridpile__offset_scale(size, offset);
+		scale(rescale) union() {
+			togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius);
+			linear_extrude(size[2], center=true) {
+				togridpile__xy_rounded_beveled_square([size[0]-beveled_corner_radius, size[1]-beveled_corner_radius], beveled_corner_radius*0.707+corner_radius_offset, beveled_corner_radius/2);
+			}
+		}
+	} else if( style == "hybrid3" ) {
+		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+		linear_extrude(size[2]+offset*2, center=true) {
+			togridpile__xy_rounded_beveled_square([size[0]-beveled_corner_radius, size[1]-beveled_corner_radius], beveled_corner_radius*0.707+corner_radius_offset, beveled_corner_radius/2, offset);
+		}
+	} else if( style == "hybrid3-rounded" ) {
+		intersection() {
+			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);
+			togridpile_hull_of_style("hybrid3", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+		}
 	} else {
-		assert(false, str("Unrecognized style: '"+style+"'"));
+		assert(false, str("Unrecognized style: '", style, "'"));
 	}
 }
