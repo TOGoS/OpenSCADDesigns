@@ -1,4 +1,4 @@
-// TOGridPileBasePlate-v4.0
+// TOGridPileBasePlate-v4.1
 //
 // Changes:
 //
@@ -11,6 +11,8 @@
 // - Add 'hybrid3' shape
 // v4.0:
 // - Add 'hybrid4' shape
+// v4.1:
+// - Rename 'hybrid4-female' to 'hybrid3+4'
 
 /* [Features] */
 
@@ -32,7 +34,7 @@ beveled_corner_radius = 3.175;
 rounded_corner_radius = 4.7625;
 
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid4-female"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid4-female", "maximal" ]
+togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;
