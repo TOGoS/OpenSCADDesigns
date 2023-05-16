@@ -7,6 +7,8 @@
 // - Add 'hybrid4' shape
 // v1.4.1:
 // - Rename 'hybrid4-female' to 'hybrid3+4'
+// v1.4.2:
+// - Fix hybrid5 to fit into hybrid3 footprint
 // 
 // Notes:
 // - 0.707 = cos(pi/4), or 1/sqrt(2)
@@ -86,6 +88,25 @@ module togridpile__facerounded_beveled_cube(size, corner_radius, face_corner_rad
 		togridpile__xz_rounded_cube([inner_size[0], outer_size[1], inner_size[2]], face_corner_radius+offset);
 		togridpile__yz_rounded_cube([outer_size[0], inner_size[1], inner_size[2]], face_corner_radius+offset);
 	}
+}
+
+module togridpile_h5x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.5875, offset=0) {
+	fwoobwidth = togridpile_pitch/3-inset*2;
+	for( scalex=[-1,1] ) scale([scalex,1]) hull() for( i=[-1,1] ) {
+		translate([i*togridpile_pitch/3,i*togridpile_pitch/3]) // togridpile__rounded_square([fwoobwidth, fwoobwidth], corner_radius, offset);
+			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, offset);
+	}
+}
+
+module togridpile_h5x_xy(togridpile_pitch=38.1, offset=0) {
+	linear_extrude(togridpile_pitch+offset*2, center=true) togridpile_h5x_2d(togridpile_pitch, offset=0);
+}
+
+module togridpile_h5x(togridpile_pitch=38.1) {
+	for( rot=[[0,0,0],[0,90,0],[90,0,0]] ) rotate(rot) {
+		togridpile_h5x_xy(togridpile_pitch);
+	}
+	
 }
 
 module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounded_corner_radius=4.7625, corner_radius_offset=0, offset=0) {
@@ -169,6 +190,15 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 		intersection() {
 			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);
 			togridpile_hull_of_style("hybrid4-xy", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
+		}
+	} else if( style == "hybrid5-xy" ) {
+		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+		togridpile_h5x_xy(offset=offset);
+	} else if( style == "hybrid5-xy-rounded" ) {
+		// Again, this is getting old
+		intersection() {
+			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);
+			togridpile_hull_of_style("hybrid5-xy", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 		}
 	} else {
 		assert(false, str("Unrecognized style: '", style, "'"));

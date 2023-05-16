@@ -42,6 +42,10 @@
 // - Add 'hybrid4' shape
 // v4.1:
 // - Rename 'hybrid4-female' to 'hybrid3+4'
+// v4.2:
+// - magnet_hole_style can be 'normal' for bottom-inserted magnets
+// v4.3:
+// - Add 'hybrid5' shape
 
 /* [Content] */
 
@@ -56,6 +60,7 @@ floor_thickness = 4.7625; // 0.001
 small_hole_style = "THL-1001"; // ["none","THL-1001","THL-1002"]
 large_hole_style = "THL-1002"; // ["none","THL-1001","THL-1002"]
 
+magnet_hole_style = "normal"; // ["none","normal","top-loaded"]
 magnet_hole_diameter = 6;
 magnet_hole_depth = 2;
 magnet_hole_floor_thickness = 0.3;
@@ -74,7 +79,7 @@ rounded_corner_radius = 4.7625;
 
 // 4.7625mm = 3/16", 3.175 = 1/8"
 // "hybrid1" is hybrid2 but with XZ corners rounded off
-togridpile_style = "hybrid3"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "hybrid4-xy-rounded", "minimal" ]
+togridpile_style = "hybrid3"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "hybrid4-xy-rounded", "hybrid5-xy-rounded", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
 togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "maximal" ]
 
@@ -185,6 +190,19 @@ module togridpile_multiblock_hull(size_blocks, height, lip_height) {
 	}
 }
 
+module block_magnet_hole() {
+	if( magnet_hole_style == "none" ) {
+	} else if( magnet_hole_style == "top-loaded" ) {
+		translate([0, 0, magnet_hole_floor_thickness]) cylinder(d=magnet_hole_diameter, h=floor_thickness+1, center=false);
+		translate([0, 0, magnet_hole_floor_thickness+magnet_hole_depth]) cylinder(d=magnet_well_diameter, h=floor_thickness+1, center=false);
+		translate([0, 0, 0]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2, center=true);
+	} else {
+		// normal!
+		cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
+		translate([0, 0, floor_thickness/2]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2, center=true);
+	}
+}
+
 module togridpile_multiblock_cup(size_blocks, height, lip_height) {
 	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height];
 	difference() {
@@ -207,9 +225,7 @@ module togridpile_multiblock_cup(size_blocks, height, lip_height) {
 				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, floor_thickness]) render() tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
 			}
 			for( subpos=[[1,1],[1,-1],[-1,-1],[-1,1]] ) {
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, magnet_hole_floor_thickness]) cylinder(d=magnet_hole_diameter, h=floor_thickness+1, center=false);
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, magnet_hole_floor_thickness+magnet_hole_depth]) cylinder(d=magnet_well_diameter, h=floor_thickness+1, center=false);
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, 0]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2, center=true);
+				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch]) block_magnet_hole();
 			}
 		}
 	}
