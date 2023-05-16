@@ -46,6 +46,8 @@
 // - magnet_hole_style can be 'normal' for bottom-inserted magnets
 // v4.3:
 // - Add 'hybrid5' shape
+// v4.4:
+// - Fixes to hybrid5 shapes
 
 /* [Content] */
 
@@ -79,9 +81,9 @@ rounded_corner_radius = 4.7625;
 
 // 4.7625mm = 3/16", 3.175 = 1/8"
 // "hybrid1" is hybrid2 but with XZ corners rounded off
-togridpile_style = "hybrid3"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "hybrid4-xy-rounded", "hybrid5-xy-rounded", "minimal" ]
+togridpile_style = "hybrid3"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3", "hybrid4-xy", "hybrid5-xy", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid5", "hybrid5-xy", "maximal" ]
+togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid3+5", "hybrid5", "hybrid5-xy", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;
@@ -174,18 +176,18 @@ module togridpile_multiblock_hull(size_blocks, height, lip_height) {
 		intersection() {
 			union() {
 				togridpile_multiblock_bottom(size_blocks);
-				translate([0,0,height+beveled_corner_radius]) togridpile_hull([togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height*2], corner_radius_offset=0, offset=-margin);
+				translate([0,0,height+beveled_corner_radius]) togridpile_hull_of_style("hybrid2", [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height*2], corner_radius_offset=0, offset=-margin);
 			}
 			translate([0,0,(height+lip_height)/2]) cube([size[0], size[1], height+lip_height], center=true);
 		}
 		// Lip
-		if( togridpile_lip_style == "hybrid4" || togridpile_lip_style == "hybrid4-female" ) {
+		if( togridpile_lip_style == "beveled" || togridpile_lip_style == "rounded" || togridpile_lip_style == "hybrid2" || togridpile_lip_style == "hybrid3" ) {
+			translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style(togridpile_lip_style, [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
+		} else {
 			translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style("hybrid2", [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
 			for( ym=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] ) for( xm=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch, height+togridpile_pitch/2]) {
 				togridpile_hull_of_style(togridpile_lip_style, [togridpile_pitch, togridpile_pitch, togridpile_pitch], corner_radius_offset=0, offset=+margin);
 			}
-		} else {
-			translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style(togridpile_lip_style, [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
 		}
 	}
 }
@@ -203,7 +205,7 @@ module block_magnet_hole() {
 	}
 }
 
-module togridpile_multiblock_cup(size_blocks, height, lip_height) {
+module togridpile_multiblock_cup__unrounded(size_blocks, height, lip_height) {
 	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height];
 	difference() {
 		render() togridpile_multiblock_hull(size_blocks, height, lip_height);
@@ -228,6 +230,14 @@ module togridpile_multiblock_cup(size_blocks, height, lip_height) {
 				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch]) block_magnet_hole();
 			}
 		}
+	}
+}
+
+module togridpile_multiblock_cup(size_blocks, height, lip_height) {
+	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height];
+	intersection() {
+		translate([0,0,size[2]/2]) linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset=-margin);
+		togridpile_multiblock_cup__unrounded(size_blocks, height, lip_height);
 	}
 }
 
