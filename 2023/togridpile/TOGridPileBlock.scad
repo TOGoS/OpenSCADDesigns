@@ -81,7 +81,7 @@ rounded_corner_radius = 4.7625;
 // "hybrid1" is hybrid2 but with XZ corners rounded off
 togridpile_style = "hybrid3"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "hybrid4-xy-rounded", "hybrid5-xy-rounded", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "maximal" ]
+togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid5", "hybrid5-xy", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;

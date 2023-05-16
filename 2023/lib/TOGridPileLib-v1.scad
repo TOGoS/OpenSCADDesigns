@@ -102,11 +102,10 @@ module togridpile_h5x_xy(togridpile_pitch=38.1, offset=0) {
 	linear_extrude(togridpile_pitch+offset*2, center=true) togridpile_h5x_2d(togridpile_pitch, offset=0);
 }
 
-module togridpile_h5x(togridpile_pitch=38.1) {
+module togridpile_h5x(togridpile_pitch=38.1, offset=0) {
 	for( rot=[[0,0,0],[0,90,0],[90,0,0]] ) rotate(rot) {
-		togridpile_h5x_xy(togridpile_pitch);
+		togridpile_h5x_xy(togridpile_pitch, offset=offset);
 	}
-	
 }
 
 module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounded_corner_radius=4.7625, corner_radius_offset=0, offset=0) {
@@ -191,6 +190,9 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);
 			togridpile_hull_of_style("hybrid4-xy", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 		}
+	} else if( style == "hybrid5" ) {
+		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+		togridpile_h5x(offset=offset);
 	} else if( style == "hybrid5-xy" ) {
 		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
 		togridpile_h5x_xy(offset=offset);
