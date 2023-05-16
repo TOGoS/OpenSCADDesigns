@@ -1,4 +1,4 @@
-// TOGridPileBlock-v3.0
+// TOGridPileBlock-v4.0
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -38,6 +38,8 @@
 // - Above-magnet 'well' can be different size than the magnet
 // v3.0:
 // - Add 'hybrid3' shape
+// v4.0:
+// - Add 'hybrid4' shape
 
 /* [Content] */
 
@@ -70,9 +72,9 @@ rounded_corner_radius = 4.7625;
 
 // 4.7625mm = 3/16", 3.175 = 1/8"
 // "hybrid1" is hybrid2 but with XZ corners rounded off
-togridpile_style = "hybrid1"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "minimal" ]
+togridpile_style = "hybrid4-xy-rounded"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3-rounded", "hybrid4-xy-rounded", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid2"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "maximal" ]
+togridpile_lip_style = "hybrid4-female"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid4", "hybrid4-female", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;
@@ -170,7 +172,14 @@ module togridpile_multiblock_hull(size_blocks, height, lip_height) {
 			translate([0,0,(height+lip_height)/2]) cube([size[0], size[1], height+lip_height], center=true);
 		}
 		// Lip
-		translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style(togridpile_lip_style, [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
+		if( togridpile_lip_style == "hybrid4" || togridpile_lip_style == "hybrid4-female" ) {
+			translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style("hybrid2", [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
+			for( ym=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] ) for( xm=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch, height+togridpile_pitch/2]) {
+				togridpile_hull_of_style(togridpile_lip_style, [togridpile_pitch, togridpile_pitch, togridpile_pitch], corner_radius_offset=0, offset=+margin);
+			}
+		} else {
+			translate([0,0,height+togridpile_pitch/2]) togridpile_hull_of_style(togridpile_lip_style, [size[0], size[1], togridpile_pitch], corner_radius_offset=0, offset=+margin);
+		}
 	}
 }
 

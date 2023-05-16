@@ -1,4 +1,4 @@
-// TOGridPileBasePlate-v3.0
+// TOGridPileBasePlate-v4.0
 //
 // Changes:
 //
@@ -9,6 +9,8 @@
 // - Make magnet holes and nubbins optional
 // v3.0:
 // - Add 'hybrid3' shape
+// v4.0:
+// - Add 'hybrid4' shape
 
 /* [Features] */
 
@@ -30,7 +32,7 @@ beveled_corner_radius = 3.175;
 rounded_corner_radius = 4.7625;
 
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid2"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "maximal" ]
+togridpile_lip_style = "hybrid4-female"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid4-female", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;
