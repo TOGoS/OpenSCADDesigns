@@ -103,7 +103,7 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 			togridpile_hull_of_style("rounded", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 			togridpile_hull_of_style("hybrid1", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 		}
-	} else if( style == "hybrid1" ) {
+	} else if( style == "hybrid1" || style == "hybrid2-rounded" ) {
 		intersection() {
 			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);
 			// beveled_cube(size, beveled_corner_radius+corner_radius_offset, offset);
@@ -111,6 +111,8 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 		}
 	} else if( style == "hybrid1-inner" ) {
 		union() {
+			// I think 'hybrid1' here is redundant; unioning 'hybrid1' with 'rounded'
+			// should be the same as unioning 'hybrid2' with 'rounded'.
 			togridpile_hull_of_style("hybrid1", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 			togridpile_hull_of_style("rounded", size, beveled_corner_radius, rounded_corner_radius, corner_radius_offset, offset);
 		}
