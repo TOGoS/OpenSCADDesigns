@@ -1,4 +1,4 @@
-// TOGridPileBlock-v4.5
+// TOGridPileBlock-v4.6
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -51,6 +51,10 @@
 // v4.5:
 // - Label lips and fingerslides!
 // - Implement 'overhang remedy' for magnet holes
+// v4.6:
+// - Fix label lip size calculation
+// - Make fingerslide and label width configurable by 0.001mm
+// - Rework sublip cutouts slightly
 
 /* [Content] */
 
@@ -74,8 +78,10 @@ magnet_well_diameter = 6.5;
 // Diameter of hole below the magnet hole
 magnet_drain_hole_diameter = 3;
 
-fingerslide_radius = 12.7;
-label_width = 12.7;
+// Nonzero value if you want a curve at the bottom to help slide things out; recommended value: 12.7
+fingerslide_radius = 0; // 0.001
+// Nonzero value if you want a label platform; recommended value: 12.7
+label_width = 0; // 0.001
 
 /* [Grid / Stacking System] */
 
@@ -221,27 +227,28 @@ module block_magnet_hole() {
 module togridpile_multiblock_cup__unrounded(size_blocks, height, lip_height) {
 	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height];
 	cavity_size = [size[0]-wall_thickness*2, size[1]-wall_thickness*2];
+	cs1 = [cavity_size[0]+0.1, cavity_size[1]+0.1]; // For sticking things in the walls
 	difference() {
 		render() togridpile_multiblock_hull(size_blocks, height, lip_height);
 		if( floor_thickness < size[2] ) difference() {
 			translate([0,0,size[2]+floor_thickness]) render() {
 				togridpile_hull_of_style(cavity_style, [cavity_size[0], cavity_size[1], size[2]*2], corner_radius_offset=-wall_thickness, offset=-margin);
 			}
-			translate([0,0,size[2]+floor_thickness]) {
+			translate([0,0,size[2]]) {
 				// Sublip
-				sublip_width = 8;
+				sublip_width = 2;
 				sublip_angwid = sublip_width/sin(45);
-				sublip_angwid2 = sublip_angwid/sin(45);
-				for(xm=[-1,1]) translate([xm*size[0]/2, 0, 0]) rotate([0,45,0])
+				sublip_angwid2 = sublip_angwid*2*1.414;
+				for(xm=[-1,1]) translate([xm*cs1[0]/2, 0, 0]) rotate([0,45,0])
 					cube([sublip_angwid,size[1],sublip_angwid], center=true);
-				for(ym=[-1,1]) translate([0, ym*size[1]/2, 0]) rotate([45,0,0])
+				for(ym=[-1,1]) translate([0, ym*cs1[1]/2, 0]) rotate([45,0,0])
 					cube([size[0],sublip_angwid,sublip_angwid], center=true);
-				for(ym=[-1,1]) for(xm=[-1,1]) translate([xm*size[0]/2, ym*size[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0])
+				for(ym=[-1,1]) for(xm=[-1,1]) translate([xm*cs1[0]/2, ym*cs1[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0])
 					cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
 				// Label
 				if( label_width > 0 ) {
-					label_angwid = label_width/sin(45);
-					translate([-size[0]/2, 0, 0]) rotate([0,45,0]) cube([label_angwid,size[1],label_angwid], center=true);
+					label_angwid = label_width*2*sin(45);
+					translate([-cs1[0]/2, 0, 0]) rotate([0,45,0]) cube([label_angwid,size[1],label_angwid], center=true);
 				}
 			}
 			// Finger slide
