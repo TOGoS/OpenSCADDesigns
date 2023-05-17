@@ -1,4 +1,4 @@
-// TOGridPileBlock-v4.1
+// TOGridPileBlock-v4.5
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -48,6 +48,8 @@
 // - Add 'hybrid5' shape
 // v4.4:
 // - Fixes to hybrid5 shapes
+// v4.5:
+// - Label lips and fingerslides!
 
 /* [Content] */
 
@@ -71,6 +73,9 @@ magnet_well_diameter = 6.5;
 // Diameter of hole below the magnet hole
 magnet_drain_hole_diameter = 3;
 
+fingerslide_radius = 12.7;
+label_width = 12.7;
+
 /* [Grid / Stacking System] */
 
 // 38.1mm = 1+1/2"
@@ -81,9 +86,9 @@ rounded_corner_radius = 4.7625;
 
 // 4.7625mm = 3/16", 3.175 = 1/8"
 // "hybrid1" is hybrid2 but with XZ corners rounded off
-togridpile_style = "hybrid3"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3", "hybrid4-xy", "hybrid5-xy", "minimal" ]
+togridpile_style = "hybrid5-xy"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3", "hybrid4-xy", "hybrid5-xy", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid3+5", "hybrid5", "hybrid5-xy", "maximal" ]
+togridpile_lip_style = "hybrid3+5"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid3+5", "hybrid5", "hybrid5-xy", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;
@@ -200,34 +205,61 @@ module block_magnet_hole() {
 		translate([0, 0, 0]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2, center=true);
 	} else {
 		// normal!
-		cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
-		translate([0, 0, floor_thickness/2]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2, center=true);
+		render() intersection() {
+			cylinder(d=magnet_hole_diameter, h=floor_thickness*2+1, center=true);
+			union() {
+				//cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
+				cube([magnet_hole_diameter*2, magnet_hole_diameter*2, magnet_hole_depth*2], center=true);
+				cube([magnet_hole_diameter*2, magnet_drain_hole_diameter, magnet_hole_depth*2+1], center=true);
+				translate([0, 0, floor_thickness/2]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2+1, center=true);
+			}
+		}
 	}
 }
 
 module togridpile_multiblock_cup__unrounded(size_blocks, height, lip_height) {
 	size = [togridpile_pitch*size_blocks[0], togridpile_pitch*size_blocks[1], height];
+	cavity_size = [size[0]-wall_thickness*2, size[1]-wall_thickness*2];
 	difference() {
 		render() togridpile_multiblock_hull(size_blocks, height, lip_height);
-		translate([0,0,size[2]+floor_thickness]) difference() {
-			render() togridpile_hull_of_style(cavity_style, [size[0]-wall_thickness*2, size[1]-wall_thickness*2, size[2]*2], corner_radius_offset=-wall_thickness, offset=-margin);
-			// Sublip
-			sublip_width = 8;
-			sublip_angwid = sublip_width/sin(45);
-			sublip_angwid2 = sublip_angwid/sin(45);
-			for(xm=[-1,1]) translate([xm*size[0]/2, 0, 0]) rotate([0,45,0]) cube([sublip_angwid,size[1],sublip_angwid], center=true);
-			for(ym=[-1,1]) translate([0, ym*size[1]/2, 0]) rotate([45,0,0]) cube([size[0],sublip_angwid,sublip_angwid], center=true);
-			for(ym=[-1,1]) for(xm=[-1,1]) {
-				translate([xm*size[0]/2, ym*size[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0]) cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
+		difference() {
+			translate([0,0,size[2]+floor_thickness]) render() {
+				togridpile_hull_of_style(cavity_style, [cavity_size[0], cavity_size[1], size[2]*2], corner_radius_offset=-wall_thickness, offset=-margin);
+			}
+			translate([0,0,size[2]+floor_thickness]) {
+				// Sublip
+				sublip_width = 8;
+				sublip_angwid = sublip_width/sin(45);
+				sublip_angwid2 = sublip_angwid/sin(45);
+				for(xm=[-1,1]) translate([xm*size[0]/2, 0, 0]) rotate([0,45,0])
+					cube([sublip_angwid,size[1],sublip_angwid], center=true);
+				for(ym=[-1,1]) translate([0, ym*size[1]/2, 0]) rotate([45,0,0])
+					cube([size[0],sublip_angwid,sublip_angwid], center=true);
+				for(ym=[-1,1]) for(xm=[-1,1]) translate([xm*size[0]/2, ym*size[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0])
+					cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
+				// Label
+				if( label_width > 0 ) {
+					label_angwid = label_width/sin(45);
+					translate([-size[0]/2, 0, 0]) rotate([0,45,0]) cube([label_angwid,size[1],label_angwid], center=true);
+				}
+			}
+			// Finger slide
+			if( fingerslide_radius > 0 ) translate([0,0,floor_thickness]) difference() {
+				translate([cavity_size[0]/2, 0, 0])
+					cube([fingerslide_radius*2, cavity_size[1]*2, fingerslide_radius*2], center=true);
+				translate([cavity_size[0]/2-fingerslide_radius, 0, fingerslide_radius])
+					rotate([90,0,0]) cylinder(r=fingerslide_radius, h=cavity_size[1]*3, center=true, $fn=max(24,$fn));
 			}
 		}
 		for( ym=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] ) for( xm=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch]) {
 			translate([0, 0, floor_thickness]) render() tog_holelib_hole(large_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
 			for( subpos=[[0,1],[1,0],[0,-1],[-1,0]] ) {
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, floor_thickness]) render() tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
+				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch, floor_thickness]) render()
+					tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=1);
 			}
 			for( subpos=[[1,1],[1,-1],[-1,-1],[-1,1]] ) {
-				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch]) block_magnet_hole();
+				translate([subpos[0]*submod_pitch, subpos[1]*submod_pitch])
+					block_magnet_hole();
 			}
 		}
 	}
