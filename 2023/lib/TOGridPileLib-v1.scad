@@ -1,4 +1,4 @@
-// TOGridPileLib-v1.4.0
+// TOGridPileLib-v1.4.6
 //
 // Changes:
 // v1.3.0:
@@ -11,6 +11,8 @@
 // - Fix hybrid5 to fit into hybrid3 footprint
 // v1.4.3:
 // - Remove '-rounded' postfix; just intersect the block with something round if you want
+// v1.4.6:
+// - Add 'offset' parameter to togridpile__xy_rounded_cube, et al
 // 
 // Notes:
 // - 0.707 = cos(pi/4), or 1/sqrt(2)
@@ -35,14 +37,14 @@ module togridpile__rounded_cube(size, corner_radius, offset=0) {
 	}
 }
 
-module togridpile__xy_rounded_cube(size, corner_radius) {
-	linear_extrude(size[2], center=true) togridpile__rounded_square(size, corner_radius);
+module togridpile__xy_rounded_cube(size, corner_radius, offset=0) {
+	linear_extrude(size[2]+offset*2, center=true) togridpile__rounded_square(size, corner_radius, offset=offset);
 }
-module togridpile__xz_rounded_cube(size, corner_radius) {
-	rotate([90,0,0]) togridpile__xy_rounded_cube([size[0], size[2], size[1]], corner_radius);
+module togridpile__xz_rounded_cube(size, corner_radius, offset=0) {
+	rotate([90,0,0]) togridpile__xy_rounded_cube([size[0], size[2], size[1]], corner_radius, offset=offset);
 }
-module togridpile__yz_rounded_cube(size, corner_radius) {
-	rotate([0,90,0]) togridpile__xy_rounded_cube([size[2], size[1], size[0]], corner_radius);
+module togridpile__yz_rounded_cube(size, corner_radius, offset=0) {
+	rotate([0,90,0]) togridpile__xy_rounded_cube([size[2], size[1], size[0]], corner_radius, offset=offset);
 }
 
 module togridpile__xy_rounded_beveled_square(size, bevel_size, rounding_radius, offset=0) {

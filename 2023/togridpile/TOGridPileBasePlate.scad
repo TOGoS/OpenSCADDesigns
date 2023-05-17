@@ -1,4 +1,4 @@
-// TOGridPileBasePlate-v4.1
+// TOGridPileBasePlate-v4.6
 //
 // Changes:
 //
@@ -13,6 +13,11 @@
 // - Add 'hybrid4' shape
 // v4.1:
 // - Rename 'hybrid4-female' to 'hybrid3+4'
+// v4.6:
+// - Shrink outer hull by hull_xy_margin
+// - Grow lip cutouts by +margin instead of -margin
+// - Default margin to 0, since things fit okay even when I was offsetting the lips the wrong way!
+// - Default lip style to "hybrid3+5"
 
 /* [Features] */
 
@@ -23,27 +28,29 @@ base_thickness = 3.175;
 
 small_nubbins_enabled = false;
 magnet_holes_enabled = true;
-small_hole_style = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
+small_hole_style  = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
+center_hole_style = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
 
 /* [Grid / Stacking System] */
+
+// Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
+togridpile_lip_style = "hybrid3+5"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid3+5", "hybrid5", "maximal" ]
 
 // 38.1mm = 1+1/2"
 togridpile_pitch = 38.1;
 
+// Don't mess with this unless you want to make an incompatible system
 beveled_corner_radius = 3.175;
+// Don't mess with this unless you want to make an incompatible system
 rounded_corner_radius = 4.7625;
-
-// Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid3+4"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "maximal" ]
-
-// Experimental platform under the lip
-sublip_platform_enabled = true;
 
 /* [Sizing Tweaks] */
 
+// How much to shrink the outer hull of the baseplate
+hull_xy_margin = 0.10;       // 0.01
 // How much to shrink blocks and expand cutouts for them for better fits
-margin = 0.1;            // 0.01
-lip_height = 2.54;       // 0.01
+margin         = 0.00;       // 0.01
+lip_height     = 2.54;       // 0.01
 
 baseplate_corner_radius = 4.7625;
 
@@ -128,17 +135,17 @@ magnet_sb_positions       = select_masked(sb_positions, magnet_sb_position_mask)
 small_hole_sb_positions   = select_masked(sb_positions, small_hole_sb_position_mask);
 
 difference() {
-	translate([0,0,body_size[2]/2]) togridpile__xy_rounded_cube(body_size, corner_radius=baseplate_corner_radius);
+	linear_extrude(body_size[2]) togridpile__rounded_square(body_size, corner_radius=baseplate_corner_radius, offset=-hull_xy_margin);
 	for( ym=[-size_tgpu[1]/2+0.5 : 1 : size_tgpu[1]/2-0.5] ) for( xm=[-size_tgpu[0]/2+0.5 : 1 : size_tgpu[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch, base_thickness]) render() {
 		translate([0, 0, togridpile_pitch/2]) {
-			render() togridpile_hull_of_style(togridpile_lip_style, block_size, offset=-margin);
+			render() togridpile_hull_of_style(togridpile_lip_style, block_size, offset=+margin);
 		}
-		tog_holelib_hole("THL-1002", depth=base_thickness+1);			
+		tog_holelib_hole(center_hole_style, depth=base_thickness+1);			
 		for( sbp=magnet_sb_positions ) translate(sbp * togridpile_pitch/3) {
 			cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
 		}
 		for( sbp=small_hole_sb_positions ) translate(sbp * togridpile_pitch/3) {
-			tog_holelib_hole("THL-1001", depth=base_thickness+1);
+			tog_holelib_hole(small_hole_style, depth=base_thickness+1);
 		}
 	}
 }
