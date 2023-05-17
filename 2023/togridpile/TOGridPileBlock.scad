@@ -50,6 +50,7 @@
 // - Fixes to hybrid5 shapes
 // v4.5:
 // - Label lips and fingerslides!
+// - Implement 'overhang remedy' for magnet holes
 
 /* [Content] */
 
@@ -222,7 +223,7 @@ module togridpile_multiblock_cup__unrounded(size_blocks, height, lip_height) {
 	cavity_size = [size[0]-wall_thickness*2, size[1]-wall_thickness*2];
 	difference() {
 		render() togridpile_multiblock_hull(size_blocks, height, lip_height);
-		difference() {
+		if( floor_thickness < size[2] ) difference() {
 			translate([0,0,size[2]+floor_thickness]) render() {
 				togridpile_hull_of_style(cavity_style, [cavity_size[0], cavity_size[1], size[2]*2], corner_radius_offset=-wall_thickness, offset=-margin);
 			}
