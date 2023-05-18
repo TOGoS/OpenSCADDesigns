@@ -13,6 +13,9 @@
 // - Remove '-rounded' postfix; just intersect the block with something round if you want
 // v1.4.6:
 // - Add 'offset' parameter to togridpile__xy_rounded_cube, et al
+// v1.5.0
+// - Add 'togridpile_chunky_multiblock'
+// - Add 'hybrid5-rounded' style, as that actually is a little different than just rounding the result
 // 
 // Notes:
 // - 0.707 = cos(pi/4), or 1/sqrt(2)
@@ -183,6 +186,12 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
 		togridpile__xy_rounded_cube([size[0]-beveled_corner_radius+offset, size[1]/3+offset, size[2]+offset*2], beveled_corner_radius/2+offset);
 		togridpile__xy_rounded_cube([size[0]/3+offset, size[1]-beveled_corner_radius+offset, size[2]+offset*2], beveled_corner_radius/2+offset);
+	} else if( style == "hybrid5-rounded" ) {
+		intersection() {
+			togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+			linear_extrude(size[2]*2, center=true) togridpile__rounded_square(size, rounded_corner_radius, offset);			
+		}
+		togridpile_h5x(offset=offset);
 	} else if( style == "hybrid5" ) {
 		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
 		togridpile_h5x(offset=offset);
@@ -197,5 +206,19 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 		togridpile_h5x_xy(offset=offset);
 	} else {
 		assert(false, str("Unrecognized style: '", style, "'"));
+	}
+}
+
+module togridpile_chunky_multiblock(size_blocks, style="hybrid5", pitch=38.1, beveled_corner_radius=3.175, rounded_corner_radius=4.7625, offset=0, round_vertical_edges=true) {
+	size = [size_blocks[0]*pitch, size_blocks[1]*pitch, size_blocks[2]*pitch];
+	block_size = [pitch,pitch,pitch];
+	core_size = [size[0]-beveled_corner_radius*2, size[1]-beveled_corner_radius*2, size[2]-beveled_corner_radius*2];
+	togridpile__facerounded_beveled_cube(core_size, beveled_corner_radius, rounded_corner_radius, offset);
+	
+	for( xb=[-size_blocks[0]/2+0.5 : 1 : size_blocks[0]/2-0.5] )
+	for( yb=[-size_blocks[1]/2+0.5 : 1 : size_blocks[1]/2-0.5] )
+	for( zb=[-size_blocks[2]/2+0.5 : 1 : size_blocks[2]/2-0.5] )
+	{
+		translate([xb*pitch, yb*pitch, zb*pitch]) togridpile_hull_of_style(style, size=block_size, beveled_corner_radius=beveled_corner_radius, rounded_corner_radius=rounded_corner_radius, offset=offset);
 	}
 }
