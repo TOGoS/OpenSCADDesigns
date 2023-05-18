@@ -19,6 +19,8 @@
 // - Recommend not using margin but doing that part in Slic1ng.
 // v2.5:
 // - Rounded instead of beveled corners
+// v2.6:
+// - Allow bowties only along certain edges
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -37,6 +39,7 @@ margin    = 0.00;  // 0.01
 hole_diameter = 12;
 // How many units to skip at corners
 bowtie_position_offset = 1.0; // 0.5
+bowtie_edges = [true, true, false, false];
 
 bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-maximal"]
 
@@ -71,7 +74,7 @@ translate([0,0,0]) {
 	difference() {
 		linear_extrude(thickness) difference() {
 			rounded_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
-			for( pos=bowtie_positions(panel_size, [bowtie_length, bowtie_length], bowtie_position_offset*bowtie_length ) ) {
+			for( pos=bowtie_positions(panel_size, [bowtie_length, bowtie_length], bowtie_position_offset*bowtie_length, edges=bowtie_edges ) ) {
 				translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_cutout_shape, bowtie_length, margin);
 			}
 			if( bowtie_position_offset == 0.5 ) {

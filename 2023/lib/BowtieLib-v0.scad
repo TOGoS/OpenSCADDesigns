@@ -1,4 +1,7 @@
 // Minimally-altered copy of BowtieLib from ProjectNotes2/2023/3DPrinting/BowtieConnector/BowtieLib.scad
+//
+// v1.1:
+// - `bowtie_positions` can take an `edges` parameter to include points only along certain [N,E,S,W] edges
 
 inch = 25.4;
 
@@ -147,7 +150,7 @@ module bowtie_of_style(style_name, length, r_offset) {
 	}
 }
 
-function fencepost_positions_ofe(length, unit_length, offset_from_ends) = [
+function fencepost_positions_ofe(length, unit_length, offset_from_ends=0) = [
 	for( i=[-length/2 + offset_from_ends : unit_length : +length/2 - offset_from_ends + 0.01] ) i
 ];
 // TODO: hese two could be rewritten in terms of fencepost_positions_ofe
@@ -158,18 +161,19 @@ function fencebeam_positions(length, unit_length, include_ends) = [
 	for( i=[-length/2 + (include_ends ? unit_length/2 : 3*unit_length/2) : unit_length : +length/2 + 0.01 - (include_ends ? unit_length/2 : 3*unit_length/2)] ) i
 ];
 
-function fencepost_positions_ofe_2d(area_size, cell_size, offset_from_ends) = [
+function fencepost_positions_ofe_2d(area_size, cell_size, offset_from_ends=0) = [
 	for( y=fencepost_positions_ofe(area_size[1], cell_size[1], offset_from_ends) )
 		for( x=fencepost_positions_ofe(area_size[0], cell_size[0], offset_from_ends) )
 			[x,y]
 ];
 
-function bowtie_positions(panel_size, unit_size, offset_from_ends) = [
+// edges: +y, +x, -y, -x (top, right, bottom, left / N, E, S, W; same as CSS shorthand)
+function bowtie_positions(panel_size, unit_size, offset_from_ends, edges=[true,true,true,true]) = [
 	for( y=fencepost_positions_ofe(panel_size[1], unit_size[1], offset_from_ends) )
-	     for( x=[-panel_size[0]/2, panel_size[0]/2] )
+	     for( x=[if(edges[3]) -panel_size[0]/2, if(edges[1]) panel_size[0]/2] )
 		[x,y,0],
 	for( x=fencepost_positions_ofe(panel_size[0], unit_size[0], offset_from_ends) )
-	     for( y=[-panel_size[1]/2, panel_size[1]/2] )
+	     for( y=[if(edges[2]) -panel_size[1]/2, if(edges[0]) panel_size[1]/2] )
 		[x,y,90],
 ];
 
