@@ -1,6 +1,7 @@
-preview_fn = 12; // 4
-render_fn  = 48; // 4
 block_style = "hybrid5-rounded";
+margin     =  0.1; // 0.01
+preview_fn = 12;   // 4
+render_fn  = 48;   // 4
 
 module __end_params() { }
 
@@ -22,7 +23,7 @@ module magnet_hole_pattern() {
 }
 
 translate([0,0,19.05]) difference() {
-	render() togridpile_chunky_multiblock([2, 2, 1], style=block_style);
+	render() togridpile_chunky_multiblock([2, 2, 1], style=block_style, offset=-margin);
 	cylinder(d=50.8, h=50, center=true, $fn=max($fn, 48));
 	for(zm=[-1,1]) scale([1,1,zm]) translate([0,0,-18]) cylinder(d1=0, d2=76.2, h=50.8, center=false, $fn=max($fn, 48));
 	for(rz=[0,90,180,270]) rotate([0,0,rz]) for(xb=[-0.5, 0.5]) {
