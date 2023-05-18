@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.5
+// GridbeamPanelRouterTemplate-v2.6
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -21,6 +21,7 @@
 // - Rounded instead of beveled corners
 // v2.6:
 // - Allow bowties only along certain edges
+// - $fn tweaks
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -46,7 +47,8 @@ bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-m
 // Style of in-between holes; THL-1001 is for #6 flatheads, THL-1002 is for 1/4" flatheads
 hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 
-corner_radius = 3.175;
+// 6.35mm = 1/4", 4.7625mm = 3/16"; 3.125mm = 1/8"
+corner_radius = 4.7625;
 
 pocket_wall_thickness = 3.175;
 // Thickness of floor under silly pockets; set to >= thickness to disable the silly pockets
@@ -56,7 +58,10 @@ pocket_interior_wall_thickness = 1.5;
 pocket_interior_wall_spacing = 5;
 pocket_interior_angle = 60;
 
-$fn = 20;
+preview_fn = 12;
+render_fn = 48;
+
+$fn = $preview ? preview_fn : render_fn;
 
 module __end_parameter_list() { }
 
@@ -84,7 +89,7 @@ translate([0,0,0]) {
 				}
 			}
 			if( hole_diameter > 0 ) for( pos=grid_cell_center_positions(panel_size, [grid_unit_size, grid_unit_size]) ) {
-				translate( pos ) circle(d=hole_diameter, $fn=40);
+				translate( pos ) circle(d=hole_diameter, $fn=max($fn,48));
 			}
 		}
 		small_hole_positions = fencepost_positions_ofe_2d(panel_size, [grid_unit_size/2, grid_unit_size/2], grid_unit_size/2);
