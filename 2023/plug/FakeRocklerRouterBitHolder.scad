@@ -1,5 +1,7 @@
 // v1.2:
 // - Configurable sizes, yo
+// v1.3:
+// - Fix some calculations that I had b0rked up lmao
 
 inch = 25.4;
 
@@ -21,14 +23,16 @@ difference() {
 		flange_d = 7/8*inch;
 		flange_thickness = 1/8*inch;
 		rib_d2 = 5/8*inch+rib_protrusion*2 + od_offset;
-		cylinder(d=shaft_length-taper_length, h=shaft_d);
-		translate([0,0,shaft_length-taper_length]) cylinder(d1=shaft_d, d2=tapered_d, h=taper_length);
+		// Main shaft
+		cylinder(d=shaft_d, h=flange_thickness+shaft_length-taper_length);
+		// Taper
+		translate([0,0,flange_thickness+shaft_length-taper_length]) cylinder(d1=shaft_d, d2=tapered_d, h=taper_length);
 		cylinder(d=flange_d, h=flange_thickness);
-		for( i=[1:1:floor((shaft_length-taper_length)/rib_thickness)] ) {
-			translate([0,0,rib_thickness*i])
+		for( i=[0:1:floor((shaft_length-taper_length)/rib_thickness)] ) {
+			translate([0,0,flange_thickness+rib_thickness*i])
 				cylinder(d1=shaft_d, d2=rib_d2, h=rib_thickness/2);
-			translate([0,0,rib_thickness*(i+0.5)])
-			cylinder(d2=shaft_d, d1=rib_d2, h=rib_thickness/2);
+			translate([0,0,flange_thickness+rib_thickness*(i+0.5)])
+				cylinder(d2=shaft_d, d1=rib_d2, h=rib_thickness/2);
 		}
 	}
 	//cylinder(d=1/2*inch, h=7/8*inch, center=true);
