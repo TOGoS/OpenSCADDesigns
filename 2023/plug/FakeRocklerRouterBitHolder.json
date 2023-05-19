@@ -33,6 +33,14 @@
             "od_offset": "0",
             "rib_protrusion": "0.5",
             "small_id_offset": "0.45"
+        },
+        "v1.4": {
+            "$fn": "48",
+            "inch": "25.4",
+            "large_id_offset": "0.25",
+            "od_offset": "0",
+            "rib_protrusion": "0.37",
+            "small_id_offset": "0.45"
         }
     },
     "fileFormatVersion": "1"

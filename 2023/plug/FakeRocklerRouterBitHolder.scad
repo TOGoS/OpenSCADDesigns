@@ -2,6 +2,8 @@
 // - Configurable sizes, yo
 // v1.3:
 // - Fix some calculations that I had b0rked up lmao
+// v1.4:
+// - Fix that small and large offsets were swapped oops
 
 inch = 25.4;
 
@@ -37,12 +39,12 @@ difference() {
 	}
 	//cylinder(d=1/2*inch, h=7/8*inch, center=true);
 	intersection() {
-		cylinder(d=1/2*inch + small_id_offset, h=100, center=true);
+		cylinder(d=1/2*inch + large_id_offset, h=100, center=true);
 		// 'Overhang remedy'
 		union() {
 			cube([100,100,7/8*inch], center=true);
 			cube([1/4*inch,100,7/8*inch+2], center=true);
 		}
 	}
-	cylinder(d=1/4*inch + large_id_offset, h=100, center=true);
+	cylinder(d=1/4*inch + small_id_offset, h=100, center=true);
 }
