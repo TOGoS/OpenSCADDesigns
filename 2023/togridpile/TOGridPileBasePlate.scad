@@ -31,6 +31,9 @@ magnet_holes_enabled = true;
 small_hole_style  = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 center_hole_style = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
 
+bowtie_style = "semi-maximal"; // ["none", "angular", "semi-maximal"]
+bowtie_edges = [0,0,0,0];
+
 /* [Grid / Stacking System] */
 
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
@@ -44,10 +47,13 @@ beveled_corner_radius = 3.175;
 // Don't mess with this unless you want to make an incompatible system
 rounded_corner_radius = 4.7625;
 
+bowtie_length = 19.05;
+
 /* [Sizing Tweaks] */
 
 // How much to shrink the outer hull of the baseplate
 hull_xy_margin = 0.10;       // 0.01
+bowtie_xy_margin = 0;
 // How much to shrink blocks and expand cutouts for them for better fits
 margin         = 0.00;       // 0.01
 lip_height     = 2.54;       // 0.01
@@ -73,7 +79,7 @@ $fn = $preview ? preview_fn : render_fn;
 
 include <../lib/TOGHoleLib-v1.scad>
 include <../lib/TOGridPileLib-v1.scad>
-
+use <../lib/BowtieLib-v0.scad>
 
 body_size = [
 	size_tgpu[0] * togridpile_pitch - margin*2,
@@ -135,7 +141,12 @@ magnet_sb_positions       = select_masked(sb_positions, magnet_sb_position_mask)
 small_hole_sb_positions   = select_masked(sb_positions, small_hole_sb_position_mask);
 
 difference() {
-	linear_extrude(body_size[2]) togridpile__rounded_square(body_size, corner_radius=baseplate_corner_radius, offset=-hull_xy_margin);
+	linear_extrude(body_size[2]) difference() {
+		togridpile__rounded_square(body_size, corner_radius=baseplate_corner_radius, offset=-hull_xy_margin);
+		if( bowtie_style != "none" ) for( pos=bowtie_positions(body_size, [togridpile_pitch, togridpile_pitch], 0.5*togridpile_pitch, bowtie_edges) ) {
+			translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_style, bowtie_length, +bowtie_xy_margin);
+		}
+	}
 	for( ym=[-size_tgpu[1]/2+0.5 : 1 : size_tgpu[1]/2-0.5] ) for( xm=[-size_tgpu[0]/2+0.5 : 1 : size_tgpu[0]/2-0.5] ) translate([xm*togridpile_pitch, ym*togridpile_pitch, base_thickness]) render() {
 		translate([0, 0, togridpile_pitch/2]) {
 			render() togridpile_hull_of_style(togridpile_lip_style, block_size, offset=+margin);

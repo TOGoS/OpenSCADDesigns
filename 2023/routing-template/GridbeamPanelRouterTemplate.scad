@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.6
+// GridbeamPanelRouterTemplate-v2.7
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -22,6 +22,8 @@
 // v2.6:
 // - Allow bowties only along certain edges
 // - $fn tweaks
+// v2.7:
+// - Add option for 'bowtie' cutouts along the edges
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
