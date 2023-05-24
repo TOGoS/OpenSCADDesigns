@@ -1,4 +1,4 @@
-// TOGridPileBlock-v4.6
+// TOGridPileBlock-v4.7
 //
 // v1.1:
 // - Add bevel option, though I want to change it a little bit...
@@ -55,6 +55,8 @@
 // - Fix label lip size calculation
 // - Make fingerslide and label width configurable by 0.001mm
 // - Rework sublip cutouts slightly
+// v4.7:
+// - Add 'hybrid6' and related shapes
 
 /* [Content] */
 
@@ -93,9 +95,9 @@ rounded_corner_radius = 4.7625;
 
 // 4.7625mm = 3/16", 3.175 = 1/8"
 // "hybrid1" is hybrid2 but with XZ corners rounded off
-togridpile_style = "hybrid5-xy"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3", "hybrid4-xy", "hybrid5-xy", "minimal" ]
+togridpile_style = "hybrid5-xy"; // [ "rounded", "beveled", "hybrid1", "hybrid2", "hybrid3", "hybrid4-xy", "hybrid5-xy", "hybrid6-xy", "minimal" ]
 // Style for purposes of lip cutout; "maximal" will accomodate all others; "hybrid1-inner" will accomodate rounded or hybrid1 bottoms
-togridpile_lip_style = "hybrid3+5"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid3+5", "hybrid5", "hybrid5-xy", "maximal" ]
+togridpile_lip_style = "hybrid3+6"; // [ "rounded", "beveled", "hybrid1-inner", "hybrid2", "hybrid3", "hybrid3+4", "hybrid4", "hybrid3+5", "hybrid5", "hybrid5-xy", "hybrid3+6", "hybrid6", "hybrid6-xy", "maximal" ]
 
 // Experimental platform under the lip
 sublip_platform_enabled = true;

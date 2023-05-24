@@ -1,6 +1,5 @@
 *~
 # In general, want to ignore these:
 *.stl
-*.json
 *.gcode
 /test-output.stl

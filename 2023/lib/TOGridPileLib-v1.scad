@@ -1,4 +1,4 @@
-// TOGridPileLib-v1.5.1
+// TOGridPileLib-v1.6.0
 //
 // Changes:
 // v1.3.0:
@@ -18,6 +18,8 @@
 // - Add 'hybrid5-rounded' style, as that actually is a little different than just rounding the result
 // v1.5.1:
 // - Add 'extend_pylons' option so that hybrid5 multiblocks can be made without gaps
+// v1.6.0:
+// - Add 'hybrid6' shape
 // 
 // Notes:
 // - 0.707 = cos(pi/4), or 1/sqrt(2)
@@ -107,15 +109,33 @@ module togridpile_h5x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.58
 	}
 }
 
+module togridpile_h6x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.5875, offset=0) {
+	fwoobwidth = togridpile_pitch/3-inset*2;
+	for( xm=[-1,0,1] ) for( ym=[-1,0,1] ) {
+		translate([xm*togridpile_pitch/3, ym*togridpile_pitch/3])
+			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, offset);
+	}
+}
+
 module togridpile_h5x_xy(togridpile_pitch=38.1, offset=0, length_offset="auto") {
 	length_offset = length_offset == "auto" ? offset : length_offset;
 	linear_extrude(togridpile_pitch+length_offset*2, center=true) togridpile_h5x_2d(togridpile_pitch, offset=offset);
 }
+module togridpile_h6x_xy(togridpile_pitch=38.1, offset=0, length_offset="auto") {
+	length_offset = length_offset == "auto" ? offset : length_offset;
+	linear_extrude(togridpile_pitch+length_offset*2, center=true) togridpile_h6x_2d(togridpile_pitch, offset=offset);
+}
+
+module each_axis() {
+	for( rot=[[0,0,0],[0,90,0],[90,0,0]] ) rotate(rot) children();
+}
 
 module togridpile_h5x(togridpile_pitch=38.1, offset=0, length_offset="auto") {
-	for( rot=[[0,0,0],[0,90,0],[90,0,0]] ) rotate(rot) {
-		togridpile_h5x_xy(togridpile_pitch, offset=offset, length_offset=length_offset);
-	}
+	each_axis() togridpile_h5x_xy(togridpile_pitch, offset=offset, length_offset=length_offset);
+}
+
+module togridpile_h6x(togridpile_pitch=38.1, offset=0, length_offset="auto") {
+	each_axis() togridpile_h6x_xy(togridpile_pitch, offset=offset, length_offset=length_offset);
 }
 
 module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounded_corner_radius=4.7625, corner_radius_offset=0, offset=0, extend_pylons=false) {
@@ -200,15 +220,27 @@ module togridpile_hull_of_style(style, size, beveled_corner_radius=3.175, rounde
 	} else if( style == "hybrid5" ) {
 		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
 		togridpile_h5x(offset=offset, length_offset=h5x_length_offset);
+	} else if( style == "hybrid6" ) {
+		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+		togridpile_h6x(offset=offset, length_offset=h5x_length_offset);
 	} else if( style == "hybrid3+5" ) {
 		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
 		linear_extrude(size[2]+offset*2, center=true) {
 			togridpile__xy_rounded_beveled_square([size[0]-beveled_corner_radius, size[1]-beveled_corner_radius], beveled_corner_radius*0.707+corner_radius_offset, beveled_corner_radius/2, offset);
 		}
 		togridpile_h5x(offset=offset, length_offset=h5x_length_offset);
+	} else if( style == "hybrid3+6" ) {
+		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+		linear_extrude(size[2]+offset*2, center=true) {
+			togridpile__xy_rounded_beveled_square([size[0]-beveled_corner_radius, size[1]-beveled_corner_radius], beveled_corner_radius*0.707+corner_radius_offset, beveled_corner_radius/2, offset);
+		}
+		togridpile_h6x(offset=offset, length_offset=h5x_length_offset);
 	} else if( style == "hybrid5-xy" ) {
 		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
 		togridpile_h5x_xy(offset=offset, length_offset=h5x_length_offset);
+	} else if( style == "hybrid6-xy" ) {
+		togridpile__facerounded_beveled_cube(size, beveled_corner_radius+corner_radius_offset, rounded_corner_radius+corner_radius_offset-beveled_corner_radius, offset);
+		togridpile_h6x_xy(offset=offset, length_offset=h5x_length_offset);
 	} else {
 		assert(false, str("Unrecognized style: '", style, "'"));
 	}
