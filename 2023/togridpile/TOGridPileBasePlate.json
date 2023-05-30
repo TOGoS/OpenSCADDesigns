@@ -1,0 +1,31 @@
+{
+	"parameterSets": {
+		"p1052": {
+			"base_thickness": "3.175",
+			"baseplate_corner_radius": "4.7625",
+			"beveled_corner_radius": "3.175",
+			"bowtie_edges": "[1, 1, 1, 1]",
+			"bowtie_length": "19.05",
+			"bowtie_style": "semi-maximal",
+			"bowtie_xy_margin": "0",
+			"center_hole_style": "THL-1001",
+			"hull_xy_margin": "0.1",
+			"lip_height": "2.54",
+			"magnet_hole_depth": "2",
+			"magnet_hole_diameter": "6",
+			"magnet_holes_enabled": "true",
+			"margin": "0",
+			"preview_fn": "12",
+			"render_fn": "48",
+			"rounded_corner_radius": "4.7625",
+			"size_tgpu": "[4, 4]",
+			"small_hole_style": "THL-1001",
+			"small_nubbin_diameter": "4.4",
+			"small_nubbin_height": "1.5875",
+			"small_nubbins_enabled": "false",
+			"togridpile_lip_style": "hybrid3+5",
+			"togridpile_pitch": "38.1"
+		}
+	},
+	"fileFormatVersion": "1"
+}
