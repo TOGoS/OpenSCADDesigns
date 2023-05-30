@@ -1,0 +1,35 @@
+#+TITLE: TOGridPile
+
+Goal is a system of stacking cups whose dimensions
+are multiples of 1+1/2" or 1/2" (to fit with my gridbeam stuff)
+and that can, at least in some cases, fit into baseplates/lower cups
+even when rotated around the X or Y axes (Z being up).
+
+** Versions
+
+X-rounded means X radius curves.
+
+Shape versions:
+- 0 :: 3/16" radius rounded 1.5" cube
+- 1 :: 1/8" beveled 1.5" cube
+- 2 :: 1/8" beveled cube except faces have a 1/16"-rounding
+- 3 :: same as 2 plus a straight-sided 'column', an extruded 1/16"-rounded 1/8*0.707" beveled 1+1/4" square
+- 4 :: Compatible with v3 baseplates but with the column only along the center of each edge
+  - Sits less securely than v3 or v5
+- 5 :: Compatible with v3 baseplates but with the column only in the corners
+- 6 :: Compatible with v3 baseplates but with the column around each 1/2" block
+- 7 :: An experimental simplification based on 3/16"-rounded cubes + 1/8"-rounded 3/8" columns
+  - See TGx7.scad
+- 8 :: Hypothetical (as of [2023-05-29T23:44]) further simplification,
+  based on spherical atoms with cylindrical columns.
+
+*** Notes
+
+- As of [2023-05-29], I am wondering how the 0.707 multiplier for the bevel was chosen.
+  ~0.707 = cos(pi/4), or 1/sqrt(2)~ and is used to calculate the offset from the corners
+  where circles of which we take the hull are placed, but that is taken into account
+  by ~togridpile__xy_rounded_beveled_square~, and yet ~inset*2*0.707~
+  (where inset is the inset from the edge of the block to the column, usually 1/16")
+  is passed to that function (v3-v6 all do this).
+  It may have been to make the beveledness more closely match that
+  of the outer hull, but I don't remember exactly how it was calculated.
