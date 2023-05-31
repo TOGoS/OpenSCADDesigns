@@ -1,4 +1,4 @@
-// TOGridPileLib-v1.6.0
+// TOGridPileLib-v1.6.1
 //
 // Changes:
 // v1.3.0:
@@ -20,6 +20,9 @@
 // - Add 'extend_pylons' option so that hybrid5 multiblocks can be made without gaps
 // v1.6.0:
 // - Add 'hybrid6' shape
+// v1.6.1:
+// - Fix rounded beveled squares; this will increase their size slightly compared to the old, buggy calculation!
+// - Old block shapes pass in _adj=0.707 to retain the old behavior
 // 
 // Notes:
 // - 0.707 = cos(pi/4), or 1/sqrt(2)
@@ -54,17 +57,35 @@ module togridpile__yz_rounded_cube(size, corner_radius, offset=0) {
 	rotate([0,90,0]) togridpile__xy_rounded_cube([size[2], size[1], size[0]], corner_radius, offset=offset);
 }
 
-module togridpile__xy_rounded_beveled_square(size, bevel_size, rounding_radius, offset=0) {
+/**
+ * Previously, _adj, the factor of rounding_radius by which to scoot the circles inward,
+ * was 0.707 (i.e. sqrt(2)/2), but this was *wrong*!
+ * That value should be 0.414 (i.e. sqrt(2)-1).
+ *
+ * (adjustment is sqrt(2)*r - r = r * (aqrt(2)-1) = r * 1.414-1 = r * 0.414
+ */
+module togridpile__rounded_beveled_square(size, bevel_size, rounding_radius, offset=0, _adj=0.414) {
+	// Could special-case these, but in the meantime:
+	assert(bevel_size > 0);
+	// Make sure things don't go negative:
+	assert(size[0]/2 - bevel_size - rounding_radius*_adj >= 0);
+	assert(size[1]/2 - bevel_size - rounding_radius*_adj >= 0);
+
 	hull() for( ym=[-1,1] ) for( xm=[-1,1] ) {
 		translate([
-			xm*(size[0]/2-rounding_radius),
-			ym*(size[1]/2-bevel_size-rounding_radius*0.707),
+			xm*(size[0]/2 - rounding_radius),
+			ym*(size[1]/2 - bevel_size - rounding_radius*_adj),
 		]) circle(r=rounding_radius+offset);
 		translate([
-			xm*(size[0]/2-bevel_size-rounding_radius*0.707),
-			ym*(size[1]/2-rounding_radius),
+			xm*(size[0]/2 - bevel_size - rounding_radius*_adj),
+			ym*(size[1]/2 - rounding_radius),
 		]) circle(r=rounding_radius+offset);
 	}
+}
+
+/** Legacy (wrong) version */
+module togridpile__xy_rounded_beveled_square(size, bevel_size, rounding_radius, offset=0, _adj=0.707) {
+	togridpile__rounded_beveled_square(size, bevel_size, rounding_radius, offset=offset, _adj=_adj);
 }
 
 function togridpile__zip(a0, a1, func) = [
@@ -101,19 +122,19 @@ module togridpile__facerounded_beveled_cube(size, corner_radius, face_corner_rad
 	}
 }
 
-module togridpile_h5x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.5875, offset=0) {
+module togridpile_h5x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.5875, _adj=0.707, offset=0) {
 	fwoobwidth = togridpile_pitch/3-inset*2;
 	for( scalex=[-1,1] ) scale([scalex,1]) hull() for( i=[-1,1] ) {
-		translate([i*togridpile_pitch/3,i*togridpile_pitch/3]) // togridpile__rounded_square([fwoobwidth, fwoobwidth], corner_radius, offset);
-			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, offset);
+		translate([i*togridpile_pitch/3,i*togridpile_pitch/3]) // togridpile__rounded_square([fwoobwidth, fwoobwidth], corner_radius, _adj=_adj, offset=offset);
+			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, _adj=_adj, offset);
 	}
 }
 
-module togridpile_h6x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.5875, offset=0) {
+module togridpile_h6x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.5875, _adj=0.707, offset=0) {
 	fwoobwidth = togridpile_pitch/3-inset*2;
 	for( xm=[-1,0,1] ) for( ym=[-1,0,1] ) {
 		translate([xm*togridpile_pitch/3, ym*togridpile_pitch/3])
-			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, offset);
+			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, _adj=_adj, offset=ffset);
 	}
 }
 
