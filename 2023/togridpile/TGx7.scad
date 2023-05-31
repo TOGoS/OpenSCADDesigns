@@ -14,8 +14,9 @@ margin = 0.1;
 /* [Stacking System - Do Not Change Unless You Know What You're Doing] */
 
 atom_size = 12.7;
-rounded_cube_corner_radius = 4.7625;
-column_corner_radius = 3.175;
+rounded_cube_corner_radius = 4.7625; // 0.0001
+// 3.175" = 1/8", 1.5875 = 1/16"
+column_corner_radius = 3.175; // 0.0001
 
 /* [Detail Level] */
 
