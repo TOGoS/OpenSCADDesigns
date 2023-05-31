@@ -20,8 +20,11 @@ Shape versions:
 - 6 :: Compatible with v3 baseplates but with the column around each 1/2" block
 - 7 :: An experimental simplification based on 3/16"-rounded cubes + 1/8"-rounded 3/8" columns
   - See TGx7.scad
-- 8 :: Hypothetical (as of [2023-05-29T23:44]) further simplification,
-  based on spherical atoms with cylindrical columns.
+- 8 :: Further simplification, based on 1/2" spherical atoms with 3/8" cylindrical columns,
+  closely approximating the shape of v6 blocks.
+  While a v8 block is 'smaler' than a v6 block,
+  with v8 blocks fittiong loosely into v3, v5, v6 baseplates,
+  with margins taken into account, v5/v6 blocks snap snugly into v8 baseplates, too.
 
 *** Notes
 
