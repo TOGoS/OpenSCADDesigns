@@ -22,6 +22,7 @@ margin = 0.1;
 block_pitch_atoms = 3;
 body_style = "segmented"; // ["none","swiss","segmented","atomic-hull","rounded-3/16","rounded-beveled","beveled"]
 column_style = "v8.4"; // ["v6", "v6.1", "v6.2", "v8.0", "v8.4"]
+use_legacy_v6_function = false;
 
 atom_render_fn   = 48;
 column_render_fn = 48;
@@ -40,6 +41,7 @@ baseplate_floor_thickness = 3.175;
 min_corner_radius = 1.5875;
 
 use <../lib/TOGridPileLib-v1.scad>
+use <../lib/TOGridPileLib-v2.scad>
 use <../lib/TOGHoleLib-v1.scad>
 
 module __end_params() { }
@@ -62,29 +64,6 @@ max_flat_lip_height = min(column_inset, column_corner_radius * (1-sin(blangle)))
 echo(str("Blangle = ", blangle, " = acos(", column_corner_radius/rounded_cube_corner_radius, ")"));
 echo("Max lip height:", max_flat_lip_height);
 
-module togridpile_column_atom_footprint(column_style="v8", atom_pitch=atom_pitch, column_diameter=column_diameter, min_corner_radius=min_corner_radius, offset=0) {
-	if( column_style == "v6" ) {
-		column_inset = (atom_pitch - column_diameter)/2;
-		togridpile__xy_rounded_beveled_square([column_diameter, column_diameter], column_inset*2*0.707, min_corner_radius, offset);
-	} else if( column_style == "v6.1" ) {
-		column_inset = (atom_pitch - column_diameter)/2;
-		togridpile__rounded_beveled_square([column_diameter, column_diameter], column_inset*2*0.707, min_corner_radius, offset);
-	} else if( column_style == "v6.2" ) {
-		// similar to v6 or v6.1, but with deep-enough bevels to fit another diagonally, as in v8.4
-		column_inset = (atom_pitch - column_diameter)/2;
-		togridpile__rounded_beveled_square([column_diameter, column_diameter], atom_pitch/2-(atom_pitch-column_diameter), min_corner_radius, offset);
-	} else if( column_style == "v8.0" ) {
-		circle(d=column_diameter+offset);
-	} else if( column_style == "v8.4" ) {
-		// rounded but with corners trimmed so another can fit between diagonally
-		intersection() {
-			circle(d=column_diameter+offset);
-			rotate([0,0,45]) square(atom_pitch*0.707+offset, center=true);
-		}
-	} else {
-		assert(false, str("Unrecognized column column_style: '", column_style, "'"));
-	}
-}
 
 module togridpile_shape8_atom_sphere(offset=0) {
 	sphere(d=atom_pitch+offset*2, $fn=atom_fn);
@@ -171,21 +150,21 @@ module togridpile_shape8_block(block_pitch_atoms=block_pitch_atoms, body_style=b
 	for( z=line_segment_center_positions(block_size_atoms[2], atom_pitch) )
 	translate([0,y,z])
 		linear_extrude_x_nicked(atom_pitch*block_size_atoms[2]+column_length_offset*2, d=column_diameter+offset*2, bevel_size=overhang_nick_size)
-			togridpile_column_atom_footprint(column_style=column_style, $fn=column_fn);
+			togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
 	
 	if( column_axes[1] )
 	for( x=line_segment_center_positions(block_size_atoms[0], atom_pitch) )
 	for( z=line_segment_center_positions(block_size_atoms[2], atom_pitch) )
 	translate([x,0,z]) rotate([0,0,90])
 		linear_extrude_x_nicked(atom_pitch*block_size_atoms[2]+column_length_offset*2, d=column_diameter+offset*2, bevel_size=overhang_nick_size)
-			togridpile_column_atom_footprint(column_style=column_style, $fn=column_fn);
+			togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
 	
 	if( column_axes[2] )
 	for( x=line_segment_center_positions(block_size_atoms[0], atom_pitch) )
 	for( y=line_segment_center_positions(block_size_atoms[1], atom_pitch) )
 	translate([x,y,0])
 		linear_extrude(atom_pitch*block_size_atoms[2]+column_length_offset*2, center=true)
-			togridpile_column_atom_footprint(column_style=column_style, $fn=column_fn);
+			togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
 }
 
 module togridpile_shape8_extruded_baseplate(size_blocks, block_pitch_atoms) {
@@ -251,7 +230,7 @@ translate([0,0,block_size/2]) difference() {
 		for( y=line_segment_center_positions(block_pitch_atoms-1, atom_pitch) )
 		translate([x,y,0])
 			linear_extrude(atom_pitch*block_pitch_atoms*2, center=true)
-				togridpile_column_atom_footprint(column_style=column_style, $fn=column_fn);
+				togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
 	}
 }
 
