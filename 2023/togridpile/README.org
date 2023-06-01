@@ -10,21 +10,29 @@ even when rotated around the X or Y axes (Z being up).
 X-rounded means X radius curves.
 
 Shape versions:
-- 0 :: 3/16" radius rounded 1.5" cube
-- 1 :: 1/8" beveled 1.5" cube
-- 2 :: 1/8" beveled cube except faces have a 1/16"-rounding
-- 3 :: same as 2 plus a straight-sided 'column', an extruded 1/16"-rounded 1/8*0.707" beveled 1+1/4" square
-- 4 :: Compatible with v3 baseplates but with the column only along the center of each edge
+- v0.0 :: 3/16" radius rounded 1.5" cube
+- v0.1 :: 1/8" beveled 1.5" cube
+- v1 :: Same as v2 but with vertical corners always rounded 3/8"
+- v2 :: 1/8" beveled cube except faces have a 1/16"-rounding
+- v3 :: same as v2 plus a straight-sided 'column', an extruded 1/16"-rounded 1/8*0.707" beveled 1+1/4" square
+- v4 :: Compatible with v3 baseplates but with the column only along the center of each edge
   - Sits less securely than v3 or v5
-- 5 :: Compatible with v3 baseplates but with the column only in the corners
-- 6 :: Compatible with v3 baseplates but with the column around each 1/2" block
-- 7 :: An experimental simplification based on 3/16"-rounded cubes + 1/8"-rounded 3/8" columns
+- v5 :: Compatible with v3 baseplates but with the column only in the corners
+- v6 :: Compatible with v3 baseplates but with the column around each 1/2" block
+- v6.1 :: Smaller column bevels (so thicker columns) than v6 due to fixing some math; perhaps not useful
+- v6.2 :: Larger column bevels (so narrower columns) to accomodate columns diagonally between the columns, similar to v8.4
+- v7 :: An experimental simplification based on 3/16"-rounded cubes + 1/8"-rounded 3/8" columns
   - See TGx7.scad
-- 8 :: Further simplification, based on 1/2" spherical atoms with 3/8" cylindrical columns,
+- v8 :: Further simplification, based on 1/2" spherical atoms with 3/8" cylindrical columns,
   closely approximating the shape of v6 blocks.
   While a v8 block is 'smaler' than a v6 block,
   with v8 blocks fittiong loosely into v3, v5, v6 baseplates,
   with margins taken into account, v5/v6 blocks snap snugly into v8 baseplates, too.
+- v8.4 :: Slice off corners of columns so that, as with v6.2, another could fit between them diagonally
+
+Current recommendation:
+- female (subtract from baseplates/lips) :: v6 or v6.1
+- male (blocks/feet) :: v6, v6.2, or v8.4
 
 *** Notes
 
