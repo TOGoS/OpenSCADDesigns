@@ -21,7 +21,7 @@ module togridpile2_atom_column_footprint(column_style="v8", atom_pitch=atom_pitc
 		tog_shapelib_rounded_beveled_square([column_diameter, column_diameter], atom_pitch/2-(atom_pitch-column_diameter), min_corner_radius, offset);
 	} else if( column_style == "v8.0" ) {
 		circle(d=column_diameter+offset);
-	} else if( column_style == "v8.4" ) {
+	} else if( column_style == "v8" || column_style == "v8.4" ) {
 		// rounded but with corners trimmed so another can fit between diagonally
 		intersection() {
 			circle(d=column_diameter+offset);
