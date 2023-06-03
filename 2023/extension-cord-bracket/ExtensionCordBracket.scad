@@ -1,8 +1,13 @@
-// ExtensionCordBracket-v1.0
+// ExtensionCordBracket-v1.1
 //
 // This is a bracket for holding the outlet end of
 // one of those extension cords with a block of 3 outlets on the
 // end and a flangey bit along the sides.
+//
+// v1.0
+// - "Definitely flexible but plenty sturdy" -- Renee, 2023-06-03T00:37
+// v1.1
+// - Cut out front and back so that power bricks can fit over the outlets, hopefully
 
 inch = 25.4;
 
@@ -43,9 +48,9 @@ difference() {
 	translate([0,0,-block_height/2 + bottom_thickness + flange_distance_from_bottom+block_height/2])
 		cube([outlet_flange_thickness, outlet_flange_depth, block_height], center=true);
 	translate([-block_width/2, 0, bottom_thickness + left_wall_height])
-		cube([block_width, outlet_body_depth, block_height], center=true);
+		cube([(block_width-outlet_body_width)+2, block_depth*2, block_height], center=true);
 	translate([ block_width/2, 0, bottom_thickness + right_wall_height])
-		cube([block_width, outlet_body_depth, block_height], center=true);
+		cube([(block_width-outlet_body_width)+2, block_depth*2, block_height], center=true);
 
 	for( zm=[-1, 0, 1] ) translate([0, -block_depth/2 + (block_depth-outlet_flange_depth)/2, zm*19.05]) {
 		rotate([-90,0,0]) tog_holelib_hole("THL-1001", overhead_bore_height=100);
