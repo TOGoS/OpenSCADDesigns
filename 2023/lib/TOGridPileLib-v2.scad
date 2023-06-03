@@ -1,8 +1,8 @@
-// TOGridPileLib-v2.2.0
+// TOGridPileLib-v2.2.1
 //
 // Changes:
-// v2.2.0:
-// - Start work on togridpile2_block_bottom_intersector et al
+// v2.2:
+// - togridpile2_block_bottom_intersector et al
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -90,19 +90,13 @@ function togridpile2_column_positions(
 // - "v8" - rounded cube with radius=atom_pitch/2
 
 module togridpile2_chunk_body(
-	size_atoms=[1,1,1],
-	atom_pitch=togridpile2_default_atom_pitch,
+	size=[38.1,38.1,38.1],
 	style="v1",
 	min_corner_radius=togridpile2_default_min_corner_radius,
 	rounded_corner_radius=togridpile2_default_rounded_corner_radius,
 	beveled_corner_radius=togridpile2_default_beveled_corner_radius,
 	offset=0
 ) {
-	size = [
-		size_atoms[0]*atom_pitch,
-		size_atoms[1]*atom_pitch,
-		size_atoms[2]*atom_pitch,
-	];
 	assert(style == "v1");
 	tog_shapelib_facerounded_beveled_cube(
 		size,
@@ -112,61 +106,65 @@ module togridpile2_chunk_body(
 	);
 }
 
-module togridpile2_block_bottom_chunk_body(
-	atom_pitch=togridpile2_default_atom_pitch,
-	size_atoms=[1,1,1],
-	style="v1",
-	min_corner_radius=togridpile2_default_min_corner_radius,
-	rounded_corner_radius=togridpile2_default_rounded_corner_radius,
-	beveled_corner_radius=togridpile2_default_beveled_corner_radius,
-	offset=0
-) {
-	translate([0, 0, atom_pitch*2]) togridpile2_chunk_body(
-		size_atoms=size_atoms,
-		atom_pitch=atom_pitch,
-		style=style,
-		min_corner_radius=min_corner_radius,
-		rounded_corner_radius=rounded_corner_radius,
-		beveled_corner_radius=beveled_corner_radius,
-		offset=offset
-	);
-}
-
 function togridpile2__tovec3(v) = is_list(v) ? v : [v,v,v];
 
-module togridpile2_block_bottom_intersector(
+function togridpile2__corner_radius_for_body_style(
+	body_style,
+	rounded_corner_radius,
+	beveled_corner_radius,
+	atom_radius
+) =
+	body_style == "v0.0" ? rounded_corner_radius :
+	body_style == "v0.1" || body_style == "v1" || body_style == "v2" ? beveled_corner_radius :
+	assert(false, str("Unrecognized body style: '", body_style, "'"));
+
+function togridpile2__body_inset_for_segmentation(
+	segmentation,
+	body_style,
+	rounded_corner_radius,
+	beveled_corner_radius,
+	atom_radius
+) =
+	segmentation == "block" ? 0 :
+	togridpile2__corner_radius_for_body_style(body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
+
+module togridpile2_block(
 	column_style="v8",
 	atom_pitch=togridpile2_default_atom_pitch,
 	chunk_pitch_atoms=3,
-	block_size_chunks=[1,1],
+	block_size_chunks=[1,1,1],
 	column_diameter=togridpile2_default_column_diameter,
 	min_corner_radius=togridpile2_default_min_corner_radius,
 	rounded_corner_radius=togridpile2_default_rounded_corner_radius,
 	beveled_corner_radius=togridpile2_default_beveled_corner_radius,
 	bottom_segmentation="chunk",
+	side_segmentation="block",
 	chunk_column_placement=togridpile2_default_chunk_column_placement,
+	chunk_body_style="v1",
 	offset=0,
-	// side_segmentation="block", // Not needed for bottom intersector!
-	height=12.7
 ) {
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
 	{
 		assert(bottom_segmentation == "chunk"); // Assume for now
+		assert(side_segmentation == "chunk"); // Assume for now
 		translate([
 			xm*chunk_pitch_atoms*atom_pitch,
 			ym*chunk_pitch_atoms*atom_pitch,
 			0,
-		]) togridpile2_block_bottom_chunk_body(
-			size_atoms=togridpile2__tovec3(chunk_pitch_atoms),
-			atom_pitch=atom_pitch,
-			// column_diameter=togridpile2_default_column_diameter,
+		]) togridpile2_chunk_body(
+			style=chunk_body_style,
+			size = [
+				chunk_pitch_atoms*atom_pitch,
+				chunk_pitch_atoms*atom_pitch,
+				chunk_pitch_atoms*atom_pitch,
+			],
 			min_corner_radius=min_corner_radius,
 			rounded_corner_radius=rounded_corner_radius,
 			beveled_corner_radius=beveled_corner_radius
 		);
 	}
-	linear_extrude(height) { // TODO
+	linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch, center=true) { // TODO
 		for( pos=togridpile2_column_positions(
 			block_size_chunks=block_size_chunks,
 			chunk_pitch_atoms=chunk_pitch_atoms,
@@ -180,5 +178,25 @@ module togridpile2_block_bottom_intersector(
 			);
 		}
 	}
+
+	atom_radius = atom_pitch/2;
+
+	block_body_bottom_inset = togridpile2__body_inset_for_segmentation(bottom_segmentation, chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
+	block_body_side_inset   = togridpile2__body_inset_for_segmentation(side_segmentation  , chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
+
+	// Main body
+	body_bottom_inset = beveled_corner_radius;
+	translate([0,0,(block_body_bottom_inset-block_body_side_inset)/2]) togridpile2_chunk_body(
+		style=chunk_body_style,
+		size=[
+			block_size_chunks[0]*chunk_pitch_atoms*atom_pitch - block_body_side_inset*2,
+			block_size_chunks[1]*chunk_pitch_atoms*atom_pitch - block_body_side_inset*2,
+			block_size_chunks[2]*chunk_pitch_atoms*atom_pitch - block_body_bottom_inset - block_body_side_inset,
+		],
+		min_corner_radius=min_corner_radius,
+		rounded_corner_radius=rounded_corner_radius,
+		beveled_corner_radius=beveled_corner_radius
+	);
+	
 	// TODO: The 'intersection' part
 }
