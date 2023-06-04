@@ -1,4 +1,4 @@
-// TOGridPileLib-v2.2.2
+// TOGridPileLib-v2.2.3
 //
 // Changes:
 // v2.2:
@@ -8,6 +8,8 @@
 //   though some combinations (namely, those where side_segmentation="chunk"
 //   and bottom_segmentation is something else)
 //   give not-useful results as currently interpreted; I may change them later
+// v2.2.3:
+// - Improve handling of side_segmentation = "chunk"
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -170,7 +172,8 @@ module togridpile2_block(
 	chunk_column_placement=togridpile2_default_chunk_column_placement,
 	chunk_body_style="v1",
 	offset=0,
-) {
+	origin="center"
+) translate([0, 0, origin=="center"?0:block_size_chunks[2]*chunk_pitch_atoms*atom_pitch/2] ) {
 	// Columns!  The kinda easy part!
 	linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) { // TODO
 		for( pos=togridpile2_column_positions(
@@ -187,10 +190,11 @@ module togridpile2_block(
 		}
 	}
 
-	block_size = atom_pitch*chunk_pitch_atoms*block_size_chunks;
+	chunk_pitch = chunk_pitch_atoms *  atom_pitch;
+	block_size  = block_size_chunks * chunk_pitch;
 	unit_sizes = [
 		/* atom  */ togridpile2__tovec3(atom_pitch),
-		/* chunk */ togridpile2__tovec3(atom_pitch*chunk_pitch_atoms),
+		/* chunk */ togridpile2__tovec3(chunk_pitch),
 		/* block */ block_size
 	];
 	pillar_size = [
@@ -216,6 +220,37 @@ module togridpile2_block(
 
 	block_body_bottom_inset = togridpile2__body_inset_for_segmentation(bottom_segmentation, chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
 	block_body_side_inset   = togridpile2__body_inset_for_segmentation(side_segmentation  , chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
+
+	// Chunk bodies, if not redundant
+	if( side_segmentation == "chunk" && bottom_segmentation != "chunk" ) {
+		assert( bottom_segmentation == "atom" || bottom_segmentation == "chunk" );
+
+		for( x=[-block_size[0]/2+chunk_pitch/2 : chunk_pitch : +block_size[0]/2-chunk_pitch/3] ) // The 3 is on purpose lol
+		for( y=[-block_size[1]/2+chunk_pitch/2 : chunk_pitch : +block_size[1]/2-chunk_pitch/3] ) // The 3 is on purpose lol
+		for( z=[-block_size[2]/2+chunk_pitch/2 : chunk_pitch : +block_size[2]/2-chunk_pitch/3] ) // The 3 is on purpose lol
+		{
+			// Bottom layer needs to be shrunk so feet can stick out
+			if( z == -block_size[2]/2+chunk_pitch/2 ) {
+				translate([x,y,z + block_body_bottom_inset/2]) togridpile2_chunk_body(
+					style=chunk_body_style,
+					size = [chunk_pitch,chunk_pitch,chunk_pitch-block_body_bottom_inset],
+					min_corner_radius=min_corner_radius,
+					rounded_corner_radius=rounded_corner_radius,
+					beveled_corner_radius=beveled_corner_radius,
+					atom_radius = atom_pitch/2
+				);
+			} else {
+				translate([x,y,z]) togridpile2_chunk_body(
+					style=chunk_body_style,
+					size = [chunk_pitch,chunk_pitch,chunk_pitch],
+					min_corner_radius=min_corner_radius,
+					rounded_corner_radius=rounded_corner_radius,
+					beveled_corner_radius=beveled_corner_radius,
+					atom_radius = atom_pitch/2
+				);
+			}
+		}	
+	}	
 
 	// Main body
 	body_bottom_inset = beveled_corner_radius;
