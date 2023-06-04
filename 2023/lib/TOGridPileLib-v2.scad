@@ -1,8 +1,13 @@
-// TOGridPileLib-v2.2.1
+// TOGridPileLib-v2.2.2
 //
 // Changes:
 // v2.2:
 // - togridpile2_block_bottom_intersector et al
+// v2.2.2:
+// - Actually implement some different chunk body sizes,
+//   though some combinations (namely, those where side_segmentation="chunk"
+//   and bottom_segmentation is something else)
+//   give not-useful results as currently interpreted; I may change them later
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -95,15 +100,31 @@ module togridpile2_chunk_body(
 	min_corner_radius=togridpile2_default_min_corner_radius,
 	rounded_corner_radius=togridpile2_default_rounded_corner_radius,
 	beveled_corner_radius=togridpile2_default_beveled_corner_radius,
+	atom_radius=togridpile2_default_atom_pitch/2,
 	offset=0
 ) {
-	assert(style == "v1");
-	tog_shapelib_facerounded_beveled_cube(
-		size,
-		beveled_corner_radius + offset*0.4, // Approximate; figure out proper offset amount if relying on this for larger offsets!
-		min_corner_radius,
-		offset
-	);
+	if( style == "v1" ) {
+		intersection() {
+			tog_shapelib_facerounded_beveled_cube(
+				size,
+				beveled_corner_radius + offset*0.4, // Approximate; figure out proper offset amount if relying on this for larger offsets!
+				min_corner_radius,
+				offset
+			);
+			tog_shapelib_xy_rounded_cube(size, rounded_corner_radius, offset);
+		}
+	} else if( style == "v2" ) {
+		tog_shapelib_facerounded_beveled_cube(
+			size,
+			beveled_corner_radius + offset*0.4, // Approximate; figure out proper offset amount if relying on this for larger offsets!
+			min_corner_radius,
+			offset
+		);
+	} else if( style == "v8" ) {
+		tog_shapelib_rounded_cube(size, atom_radius, offset);
+	} else {
+		assert(false, str("Unrecognized chunk body style: '", style, "'"));
+	}
 }
 
 function togridpile2__tovec3(v) = is_list(v) ? v : [v,v,v];
@@ -116,6 +137,7 @@ function togridpile2__corner_radius_for_body_style(
 ) =
 	body_style == "v0.0" ? rounded_corner_radius :
 	body_style == "v0.1" || body_style == "v1" || body_style == "v2" ? beveled_corner_radius :
+	body_style == "v8" ? atom_radius :
 	assert(false, str("Unrecognized body style: '", body_style, "'"));
 
 function togridpile2__body_inset_for_segmentation(
@@ -127,6 +149,12 @@ function togridpile2__body_inset_for_segmentation(
 ) =
 	segmentation == "block" ? 0 :
 	togridpile2__corner_radius_for_body_style(body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
+
+function togridpile2__unit_index(name) =
+	name == "atom"  ? 0 :
+	name == "chunk" ? 1 :
+	name == "block" ? 2 :
+	assert(false, str("Invalid unit name: '", name, "'"));
 
 module togridpile2_block(
 	column_style="v8",
@@ -143,28 +171,8 @@ module togridpile2_block(
 	chunk_body_style="v1",
 	offset=0,
 ) {
-	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
-	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
-	{
-		assert(bottom_segmentation == "chunk"); // Assume for now
-		assert(side_segmentation == "chunk"); // Assume for now
-		translate([
-			xm*chunk_pitch_atoms*atom_pitch,
-			ym*chunk_pitch_atoms*atom_pitch,
-			0,
-		]) togridpile2_chunk_body(
-			style=chunk_body_style,
-			size = [
-				chunk_pitch_atoms*atom_pitch,
-				chunk_pitch_atoms*atom_pitch,
-				chunk_pitch_atoms*atom_pitch,
-			],
-			min_corner_radius=min_corner_radius,
-			rounded_corner_radius=rounded_corner_radius,
-			beveled_corner_radius=beveled_corner_radius
-		);
-	}
-	linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch, center=true) { // TODO
+	// Columns!  The kinda easy part!
+	linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) { // TODO
 		for( pos=togridpile2_column_positions(
 			block_size_chunks=block_size_chunks,
 			chunk_pitch_atoms=chunk_pitch_atoms,
@@ -177,6 +185,31 @@ module togridpile2_block(
 				column_diameter=column_diameter
 			);
 		}
+	}
+
+	block_size = atom_pitch*chunk_pitch_atoms*block_size_chunks;
+	unit_sizes = [
+		/* atom  */ togridpile2__tovec3(atom_pitch),
+		/* chunk */ togridpile2__tovec3(atom_pitch*chunk_pitch_atoms),
+		/* block */ block_size
+	];
+	pillar_size = [
+		unit_sizes[togridpile2__unit_index(bottom_segmentation)][0],
+		unit_sizes[togridpile2__unit_index(bottom_segmentation)][1],
+		unit_sizes[togridpile2__unit_index(side_segmentation)][2]
+	];
+	for( x=[-block_size[0]/2+pillar_size[0]/2 : pillar_size[0] : +block_size[0]/2-pillar_size[0]/3] ) // The 3 is on purpose lol
+	for( y=[-block_size[1]/2+pillar_size[1]/2 : pillar_size[1] : +block_size[1]/2-pillar_size[1]/3] ) // The 3 is on purpose lol
+	for( z=[-block_size[2]/2+pillar_size[2]/2 : pillar_size[2] : +block_size[2]/2-pillar_size[2]/3] ) // The 3 is on purpose lol
+	{
+		translate([x,y,z]) togridpile2_chunk_body(
+			style=chunk_body_style,
+			size = pillar_size,
+			min_corner_radius=min_corner_radius,
+			rounded_corner_radius=rounded_corner_radius,
+			beveled_corner_radius=beveled_corner_radius,
+			atom_radius = atom_pitch/2
+		);
 	}
 
 	atom_radius = atom_pitch/2;
@@ -195,8 +228,7 @@ module togridpile2_block(
 		],
 		min_corner_radius=min_corner_radius,
 		rounded_corner_radius=rounded_corner_radius,
-		beveled_corner_radius=beveled_corner_radius
+		beveled_corner_radius=beveled_corner_radius,
+		atom_radius = atom_pitch/2
 	);
-	
-	// TODO: The 'intersection' part
 }
