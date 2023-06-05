@@ -18,14 +18,33 @@ side_segmentation = "block"; // ["atom","chunk","block"]
 origin = "bottom"; // ["center","bottom"]
 $fn = 24;
 
-togridpile2_block(	
-	block_size_chunks = block_size_chunks,
-	chunk_pitch_atoms = chunk_pitch_atoms,
-	atom_pitch = atom_pitch,
-	column_style = column_style,
-	chunk_column_placement = chunk_column_placement,
-	chunk_body_style = chunk_body_style,
-	bottom_segmentation = bottom_segmentation,
-	side_segmentation = side_segmentation,
-	origin = origin
-);
+module hkfyua83g4s__end_params() {}
+
+chunk_pitch = atom_pitch*chunk_pitch_atoms;
+block_size = block_size_chunks*chunk_pitch;
+
+difference() {
+	togridpile2_block(
+		block_size_chunks = block_size_chunks,
+		chunk_pitch_atoms = chunk_pitch_atoms,
+		atom_pitch = atom_pitch,
+		column_style = column_style,
+		chunk_column_placement = chunk_column_placement,
+		chunk_body_style = chunk_body_style,
+		bottom_segmentation = bottom_segmentation,
+		side_segmentation = side_segmentation,
+		origin = origin
+	);
+	
+	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
+	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
+	for( xcm=[-1,1] ) for( ycm=[-1,1] ) {
+		translate([
+			xm*chunk_pitch + xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
+			ym*chunk_pitch + ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
+			0
+		]) {
+			render() togridpile2_block_magnet_hole();
+		}
+	}
+}

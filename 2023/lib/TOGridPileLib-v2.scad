@@ -158,6 +158,24 @@ function togridpile2__unit_index(name) =
 	name == "block" ? 2 :
 	assert(false, str("Invalid unit name: '", name, "'"));
 
+/* Subtract this to make a magnet hole in the bottom of blocks; origin=block bottom */
+module togridpile2_block_magnet_hole(
+	magnet_hole_diameter=6,
+	magnet_drain_hole_diameter=3,
+	floor_thickness=6,
+	magnet_hole_depth=2,
+) {
+	intersection() {
+		cylinder(d=magnet_hole_diameter, h=floor_thickness*2+1, center=true);
+		union() {
+			//cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
+			cube([magnet_hole_diameter*2, magnet_hole_diameter*2, magnet_hole_depth*2], center=true);
+			cube([magnet_hole_diameter*2, magnet_drain_hole_diameter, magnet_hole_depth*2+1], center=true);
+			translate([0, 0, floor_thickness/2]) cylinder(d=magnet_drain_hole_diameter, h=floor_thickness*2+1, center=true);
+		}
+	}
+}
+
 module togridpile2_block(
 	column_style="v8",
 	atom_pitch=togridpile2_default_atom_pitch,
