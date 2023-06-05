@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.3
+// TOGridPileBlock-v8.4
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -14,6 +14,8 @@
 // v8.3:
 // - Height no longer needs to be an integer multiple of chunk pitch
 // - Add 'v3' as a block bottom column style option
+// v8.4:
+// - Make segmentation of top/female side configurable
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -22,15 +24,19 @@ use <../lib/TOGridPileLib-v2.scad>
 atom_pitch = 12.7;
 chunk_pitch_atoms = 3;
 column_style = "v8.4"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
-female_column_style = "v3"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
 chunk_body_style = "v1"; // ["v0.0","v0.1","v1","v2","v8"]
 block_size_chunks = [2,3];
 // Height, not including lip
-height = 25.4;
-lip_height = 2.54;
+height = 25.4; // 0.0001
 chunk_column_placement = "grid"; // ["none","corners","grid"]
 bottom_segmentation = "atom"; // ["atom","chunk","block"]
 side_segmentation = "block"; // ["atom","chunk","block"]
+
+/* [Female Shape] */
+
+female_column_style = "v3"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
+female_segmentation = "block"; // ["atom", "chunk", "block"]
+lip_height = 2.54; // 0.0001
 
 /* [Cavity] */
 
@@ -92,7 +98,7 @@ module the_fingerslide() {
 	}
 }
 
-module the_cup_cavity() difference() {
+module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	togridpile2_chunk_body(
 		style="v1",
 		size=[cavity_size[0], cavity_size[1], cavity_size[2]*2],
@@ -115,7 +121,7 @@ module the_lip_cavity() difference() {
 		column_style = female_column_style,
 		chunk_column_placement = chunk_column_placement,
 		chunk_body_style = chunk_body_style,
-		bottom_segmentation = "block",
+		bottom_segmentation = female_segmentation,
 		side_segmentation = "atom",
 		offset = margin,
 		origin = "bottom"
@@ -143,10 +149,10 @@ module the_block_hull() intersection() {
 }
 
 module the_block() difference() {
-	the_block_hull();
+	render() the_block_hull();
 
 	translate([0, 0, block_size[2]]) the_cup_cavity();
-	translate([0, 0, block_size[2]]) the_lip_cavity();
+	translate([0, 0, block_size[2]]) render() the_lip_cavity();
 	
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
