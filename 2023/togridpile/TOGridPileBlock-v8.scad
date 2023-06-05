@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.2.5
+// TOGridPileBlock-v8.2.6
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -9,6 +9,8 @@
 //   not per atom
 // v8.2.5:
 // - 'origin' is always "bottom"
+// v8.2.6:
+// - Default female_column_style = "v3"
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -17,7 +19,7 @@ use <../lib/TOGridPileLib-v2.scad>
 atom_pitch = 12.7;
 chunk_pitch_atoms = 3;
 column_style = "v8.4"; // ["v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
-female_column_style = "v6.1"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
+female_column_style = "v3"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
 chunk_body_style = "v1"; // ["v0.0","v0.1","v1","v2","v8"]
 block_size_chunks = [2,3,1];
 chunk_column_placement = "grid"; // ["none","corners","grid"]
