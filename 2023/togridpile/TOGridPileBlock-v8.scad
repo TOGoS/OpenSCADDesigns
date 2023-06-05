@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.5
+// TOGridPileBlock-v8.6
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -18,8 +18,8 @@
 // - Make segmentation of top/female side configurable
 // v8.5:
 // - Add option of topside magnet holes
-
-use <../lib/TOGridPileLib-v2.scad>
+// v8.6:
+// - Flathead screw holes in topside
 
 /* [Block Shape] */
 
@@ -55,12 +55,18 @@ label_width = 0; // 0.001
 magnet_holes_in_bottom = true;
 magnet_holes_in_top = false;
 
+small_hole_style = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
+large_hole_style = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
+
 /* [Detail] */
 
 margin = 0.1;
 $fn = 24;
 
 module hkfyua83g4s__end_params() {}
+
+use <../lib/TOGridPileLib-v2.scad>
+use <../lib/TOGHoleLib-v1.scad>
 
 chunk_pitch = atom_pitch*chunk_pitch_atoms;
 block_size = [
@@ -161,23 +167,32 @@ module the_block() difference() {
 	translate([0, 0, block_size[2]]) the_cup_cavity();
 	translate([0, 0, block_size[2]]) render() the_lip_cavity();
 
+	top_hole_z = min(floor_thickness, block_size[2]);
+
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
-	for( xcm=[-1,1] ) for( ycm=[-1,1] ) {
-		if( magnet_holes_in_bottom ) translate([
-			xm*chunk_pitch + xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
-			ym*chunk_pitch + ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
-			0
-		]) {
-			render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
+	translate([xm*chunk_pitch, ym*chunk_pitch]) {
+		translate([0, 0, top_hole_z]) render() tog_holelib_hole(large_hole_style, depth=floor_thickness+1, overhead_bore_height=floor_thickness);
+		for( subpos=[[0,1],[1,0],[0,-1],[-1,0]] ) {
+			translate([subpos[0]*atom_pitch, subpos[1]*atom_pitch, top_hole_z]) render()
+				tog_holelib_hole(small_hole_style, depth=floor_thickness+1, overhead_bore_height=1);
 		}
+		for( xcm=[-1,1] ) for( ycm=[-1,1] ) {
+			if( magnet_holes_in_bottom ) translate([
+				xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
+				ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
+				0
+			]) {
+				render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
+			}
 
-		if( magnet_holes_in_top ) translate([
-			xm*chunk_pitch + xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
-			ym*chunk_pitch + ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
-			height
-		]) rotate([0,180,0]) {
-			render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
+			if( magnet_holes_in_top ) translate([
+				xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
+				ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
+				top_hole_z
+			]) rotate([0,180,0]) {
+				render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
+			}
 		}
 	}
 }
