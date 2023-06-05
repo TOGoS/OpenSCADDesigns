@@ -1,0 +1,47 @@
+{
+	"parameterSets": {
+		"p1070": {
+			"$fn": "24",
+			"atom_pitch": "12.7",
+			"block_size_chunks": "[2, 1]",
+			"bottom_segmentation": "chunk",
+			"chunk_body_style": "v1",
+			"chunk_column_placement": "grid",
+			"chunk_pitch_atoms": "3",
+			"column_style": "v8.4",
+			"female_column_style": "v3",
+			"fingerslide_radius": "12.7",
+			"floor_thickness": "6.35",
+			"height": "25.4",
+			"label_width": "12.7",
+			"lip_height": "1.59",
+			"margin": "0.1",
+			"side_segmentation": "block",
+			"wall_thickness": "2"
+		},
+		"p1071": {
+			"$fn": "24",
+			"atom_pitch": "12.7",
+			"block_size_chunks": "[3, 3]",
+			"bottom_segmentation": "chunk",
+			"chunk_body_style": "v1",
+			"chunk_column_placement": "grid",
+			"chunk_pitch_atoms": "3",
+			"column_style": "v8.4",
+			"female_column_style": "v3",
+			"female_segmentation": "chunk",
+			"fingerslide_radius": "0",
+			"floor_thickness": "999",
+			"height": "3.175",
+			"label_width": "0",
+			"lip_height": "1.5875",
+			"magnet_holes_in_bottom": "false",
+			"magnet_holes_in_top": "true",
+			"margin": "0.1",
+			"side_segmentation": "block",
+			"wall_thickness": "2"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}

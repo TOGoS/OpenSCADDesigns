@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.4
+// TOGridPileBlock-v8.5
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -16,6 +16,8 @@
 // - Add 'v3' as a block bottom column style option
 // v8.4:
 // - Make segmentation of top/female side configurable
+// v8.5:
+// - Add option of topside magnet holes
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -47,6 +49,11 @@ floor_thickness = 6.35;
 fingerslide_radius = 0; // 0.001
 // Nonzero value if you want a label platform; recommended value: 12.7
 label_width = 0; // 0.001
+
+/* [Magnets] */
+
+magnet_holes_in_bottom = true;
+magnet_holes_in_top = false;
 
 /* [Detail] */
 
@@ -153,15 +160,23 @@ module the_block() difference() {
 
 	translate([0, 0, block_size[2]]) the_cup_cavity();
 	translate([0, 0, block_size[2]]) render() the_lip_cavity();
-	
+
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
 	for( xcm=[-1,1] ) for( ycm=[-1,1] ) {
-		translate([
+		if( magnet_holes_in_bottom ) translate([
 			xm*chunk_pitch + xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
 			ym*chunk_pitch + ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
 			0
 		]) {
+			render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
+		}
+
+		if( magnet_holes_in_top ) translate([
+			xm*chunk_pitch + xcm*(chunk_pitch_atoms-1)/2*atom_pitch,
+			ym*chunk_pitch + ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
+			height
+		]) rotate([0,180,0]) {
 			render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
 		}
 	}
