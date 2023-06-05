@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.2.4
+// TOGridPileBlock-v8.2.5
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -7,6 +7,8 @@
 // v8.2.4:
 // - Support 'v3' feet, which are the same as v6 but one per chunk,
 //   not per atom
+// v8.2.5:
+// - 'origin' is always "bottom"
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -19,9 +21,8 @@ female_column_style = "v6.1"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.
 chunk_body_style = "v1"; // ["v0.0","v0.1","v1","v2","v8"]
 block_size_chunks = [2,3,1];
 chunk_column_placement = "grid"; // ["none","corners","grid"]
-bottom_segmentation = "chunk"; // ["atom","chunk","block"]
+bottom_segmentation = "atom"; // ["atom","chunk","block"]
 side_segmentation = "block"; // ["atom","chunk","block"]
-origin = "bottom"; // ["center","bottom"]
 
 /* [Cavity] */
 
@@ -105,7 +106,7 @@ module the_lip_cavity() difference() {
 		bottom_segmentation = "block",
 		side_segmentation = "atom",
 		offset = margin,
-		origin = origin
+		origin = "bottom"
 	);
 }
 
@@ -127,7 +128,7 @@ module the_block_hull() intersection() {
 		bottom_segmentation = bottom_segmentation,
 		side_segmentation = side_segmentation,
 		offset = -margin,
-		origin = origin
+		origin = "bottom"
 	);
 }
 
