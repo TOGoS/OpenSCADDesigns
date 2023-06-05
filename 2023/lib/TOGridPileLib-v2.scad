@@ -1,4 +1,4 @@
-// TOGridPileLib-v2.2.3
+// TOGridPileLib-v2.2.4
 //
 // Changes:
 // v2.2:
@@ -10,6 +10,9 @@
 //   give not-useful results as currently interpreted; I may change them later
 // v2.2.3:
 // - Improve handling of side_segmentation = "chunk"
+// v2.2.4:
+// - Support 'v3' feet, which are the same as v6 but one per chunk, not per atom
+// - Fix that offset was not being taken into account for some parts of block
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -33,9 +36,11 @@ module togridpile2_atom_column_footprint(
 	min_corner_radius=togridpile2_default_min_corner_radius,
 	offset=0
 ) {
-	if( column_style == "v6" ) {
+	if( column_style == "v3" || column_style == "v6" ) {
 		column_inset = (atom_pitch - column_diameter)/2;
 		// (0.707-0.414)*min_corner_radius should be equivalent to the old _adj=... hack
+		// It might be better if the adjustment was redefined in terms of column_inset instead of min_corner_radius
+		// ...which should be easy since hey're both by default 1/16"
 		tog_shapelib_rounded_beveled_square([column_diameter, column_diameter], column_inset*2*0.707 + (0.707-0.414)*min_corner_radius, min_corner_radius, offset);
 	} else if( column_style == "v6.1" ) {
 		column_inset = (atom_pitch - column_diameter)/2;
@@ -192,15 +197,29 @@ module togridpile2_block(
 	offset=0,
 	origin="center"
 ) translate([0, 0, origin=="center"?0:block_size_chunks[2]*chunk_pitch_atoms*atom_pitch/2] ) {
+
 	// Columns!  The kinda easy part!
+
+	columns_are_chunk_based = column_style == "v3";
 	linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) { // TODO
-		for( pos=togridpile2_column_positions(
-			block_size_chunks=block_size_chunks,
-			chunk_pitch_atoms=chunk_pitch_atoms,
-			atom_pitch=atom_pitch,
-			chunk_column_placement=chunk_column_placement
-		) ) translate(pos) {
-			togridpile2_atom_column_footprint(
+		if( columns_are_chunk_based ) {
+			for( pos=togridpile2_column_positions(
+				block_size_chunks=block_size_chunks,
+				chunk_pitch_atoms=1,
+				atom_pitch=atom_pitch*chunk_pitch_atoms,
+				chunk_column_placement="grid"
+			) ) translate(pos) togridpile2_atom_column_footprint(
+				column_style = column_style,
+				atom_pitch = atom_pitch*chunk_pitch_atoms,
+				column_diameter = atom_pitch*chunk_pitch_atoms - (atom_pitch-column_diameter)
+			);
+		} else {
+			for( pos=togridpile2_column_positions(
+				block_size_chunks=block_size_chunks,
+				chunk_pitch_atoms=chunk_pitch_atoms,
+				atom_pitch=atom_pitch,
+				chunk_column_placement=chunk_column_placement
+			) ) translate(pos) togridpile2_atom_column_footprint(
 				column_style=column_style,
 				atom_pitch=atom_pitch,
 				column_diameter=column_diameter
@@ -230,7 +249,8 @@ module togridpile2_block(
 			min_corner_radius=min_corner_radius,
 			rounded_corner_radius=rounded_corner_radius,
 			beveled_corner_radius=beveled_corner_radius,
-			atom_radius = atom_pitch/2
+			atom_radius = atom_pitch/2,
+			offset = offset
 		);
 	}
 
@@ -255,7 +275,8 @@ module togridpile2_block(
 					min_corner_radius=min_corner_radius,
 					rounded_corner_radius=rounded_corner_radius,
 					beveled_corner_radius=beveled_corner_radius,
-					atom_radius = atom_pitch/2
+					atom_radius = atom_pitch/2,
+					offset = offset
 				);
 			} else {
 				translate([x,y,z]) togridpile2_chunk_body(
@@ -264,7 +285,8 @@ module togridpile2_block(
 					min_corner_radius=min_corner_radius,
 					rounded_corner_radius=rounded_corner_radius,
 					beveled_corner_radius=beveled_corner_radius,
-					atom_radius = atom_pitch/2
+					atom_radius = atom_pitch/2,
+					offset = offset
 				);
 			}
 		}	
@@ -282,6 +304,7 @@ module togridpile2_block(
 		min_corner_radius=min_corner_radius,
 		rounded_corner_radius=rounded_corner_radius,
 		beveled_corner_radius=beveled_corner_radius,
-		atom_radius = atom_pitch/2
+		atom_radius = atom_pitch/2,
+		offset = offset
 	);
 }

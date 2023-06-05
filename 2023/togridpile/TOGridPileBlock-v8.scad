@@ -1,9 +1,12 @@
-// TOGridPileBlock-v8.2.3
+// TOGridPileBlock-v8.2.4
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
 //   side_segmentation = "chunk" is more useful
 // - Atom pitch, chunk pitch, origin parameters
+// v8.2.4:
+// - Support 'v3' feet, which are the same as v6 but one per chunk,
+//   not per atom
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -129,10 +132,10 @@ module the_block_hull() intersection() {
 }
 
 module the_block() difference() {
-	render() the_block_hull();
+	the_block_hull();
 
-	translate([0, 0, block_size[2]]) render() the_lip_cavity();
-	translate([0, 0, block_size[2]]) render() the_cup_cavity();
+	translate([0, 0, block_size[2]]) the_cup_cavity();
+	translate([0, 0, block_size[2]]) the_lip_cavity();
 	
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
