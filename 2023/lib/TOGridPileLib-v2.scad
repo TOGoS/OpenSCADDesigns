@@ -227,6 +227,9 @@ module togridpile2_block(
 		}
 	}
 
+	// TODO: Side columns, if asked for!
+	// Important for cutting out the lips!
+
 	chunk_pitch = chunk_pitch_atoms *  atom_pitch;
 	block_size  = block_size_chunks * chunk_pitch;
 	unit_sizes = [

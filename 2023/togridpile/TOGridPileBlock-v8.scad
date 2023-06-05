@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.2.6
+// TOGridPileBlock-v8.3
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -11,6 +11,9 @@
 // - 'origin' is always "bottom"
 // v8.2.6:
 // - Default female_column_style = "v3"
+// v8.3:
+// - Height no longer needs to be an integer multiple of chunk pitch
+// - Add 'v3' as a block bottom column style option
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -18,10 +21,13 @@ use <../lib/TOGridPileLib-v2.scad>
 
 atom_pitch = 12.7;
 chunk_pitch_atoms = 3;
-column_style = "v8.4"; // ["v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
+column_style = "v8.4"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
 female_column_style = "v3"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
 chunk_body_style = "v1"; // ["v0.0","v0.1","v1","v2","v8"]
-block_size_chunks = [2,3,1];
+block_size_chunks = [2,3];
+// Height, not including lip
+height = 25.4;
+lip_height = 2.54;
 chunk_column_placement = "grid"; // ["none","corners","grid"]
 bottom_segmentation = "atom"; // ["atom","chunk","block"]
 side_segmentation = "block"; // ["atom","chunk","block"]
@@ -44,7 +50,11 @@ $fn = 24;
 module hkfyua83g4s__end_params() {}
 
 chunk_pitch = atom_pitch*chunk_pitch_atoms;
-block_size = block_size_chunks*chunk_pitch;
+block_size = [
+	block_size_chunks[0]*chunk_pitch,
+	block_size_chunks[1]*chunk_pitch,
+	height,
+];
 
 cavity_size = [
 	block_size[0]-(margin+wall_thickness)*2,
@@ -98,7 +108,7 @@ module the_lip_cavity() difference() {
 		block_size_chunks = [
 			block_size_chunks[0],
 			block_size_chunks[1],
-			block_size_chunks[2]*2
+			1
 		],
 		chunk_pitch_atoms = chunk_pitch_atoms,
 		atom_pitch = atom_pitch,
@@ -113,14 +123,12 @@ module the_lip_cavity() difference() {
 }
 
 module the_block_hull() intersection() {
-	lip_height = 2.54;
-
 	cube([block_size[0]*2, block_size[1]*2, (block_size[2]+lip_height)*2], center=true);
 	togridpile2_block(
 		block_size_chunks = [
 			block_size_chunks[0],
 			block_size_chunks[1],
-			block_size_chunks[2]*2
+			ceil(height / chunk_pitch) + 1
 		],
 		chunk_pitch_atoms = chunk_pitch_atoms,
 		atom_pitch = atom_pitch,
