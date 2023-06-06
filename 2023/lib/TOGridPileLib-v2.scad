@@ -1,4 +1,4 @@
-// TOGridPileLib-v2.2.4
+// TOGridPileLib-v2.3
 //
 // Changes:
 // v2.2:
@@ -13,6 +13,8 @@
 // v2.2.4:
 // - Support 'v3' feet, which are the same as v6 but one per chunk, not per atom
 // - Fix that offset was not being taken into account for some parts of block
+// v2.3:
+// - Simplify magnet hole shape when drian diameter=0
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -170,7 +172,9 @@ module togridpile2_block_magnet_hole(
 	floor_thickness=6,
 	magnet_hole_depth=2,
 ) {
-	intersection() {
+	if( magnet_drain_hole_diameter == 0 ) {
+		cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
+	} else intersection() {
 		cylinder(d=magnet_hole_diameter, h=floor_thickness*2+1, center=true);
 		union() {
 			//cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);

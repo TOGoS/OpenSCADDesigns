@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.6
+// TOGridPileBlock-v8.7
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -20,6 +20,8 @@
 // - Add option of topside magnet holes
 // v8.6:
 // - Flathead screw holes in topside
+// v8.7:
+// - Magnet drain hole diameter is customizable
 
 /* [Block Shape] */
 
@@ -50,10 +52,11 @@ fingerslide_radius = 0; // 0.001
 // Nonzero value if you want a label platform; recommended value: 12.7
 label_width = 0; // 0.001
 
-/* [Magnets] */
+/* [Magnet and screw holes] */
 
 magnet_holes_in_bottom = true;
 magnet_holes_in_top = false;
+magnet_drain_hole_diameter = 3; // 0.1
 
 small_hole_style = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 large_hole_style = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
@@ -183,7 +186,7 @@ module the_block() difference() {
 				ycm*(chunk_pitch_atoms-1)/2*atom_pitch,
 				0
 			]) {
-				render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness);
+				render() togridpile2_block_magnet_hole(floor_thickness=floor_thickness, magnet_drain_hole_diameter=magnet_drain_hole_diameter);
 			}
 
 			if( magnet_holes_in_top ) translate([
