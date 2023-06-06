@@ -24,7 +24,7 @@ $fn = 48;
 
 small_id = 1/4*inch + small_id_offset;
 large_id = 1/2*inch + large_id_offset;
-large_depth = 7/16*inch
+large_depth = 7/16*inch;
 
 difference() {
 	union() {
