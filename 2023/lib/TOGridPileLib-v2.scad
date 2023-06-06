@@ -1,4 +1,4 @@
-// TOGridPileLib-v2.3
+// TOGridPileLib-v2.4
 //
 // Changes:
 // v2.2:
@@ -15,6 +15,8 @@
 // - Fix that offset was not being taken into account for some parts of block
 // v2.3:
 // - Simplify magnet hole shape when drian diameter=0
+// v2.4:
+// - Add side columns with separately-configurable style and placement
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -38,7 +40,8 @@ module togridpile2_atom_column_footprint(
 	min_corner_radius=togridpile2_default_min_corner_radius,
 	offset=0
 ) {
-	if( column_style == "v3" || column_style == "v6" ) {
+	if( column_style == "none" ) {
+	} else if( column_style == "v3" || column_style == "v6" ) {
 		column_inset = (atom_pitch - column_diameter)/2;
 		// (0.707-0.414)*min_corner_radius should be equivalent to the old _adj=... hack
 		// It might be better if the adjustment was redefined in terms of column_inset instead of min_corner_radius
@@ -196,41 +199,74 @@ module togridpile2_block(
 	beveled_corner_radius=togridpile2_default_beveled_corner_radius,
 	bottom_segmentation="chunk",
 	side_segmentation="block",
+	side_column_style="auto",
 	chunk_column_placement=togridpile2_default_chunk_column_placement,
+	chunk_side_column_placement="auto",
 	chunk_body_style="v1",
 	offset=0,
 	origin="center"
 ) translate([0, 0, origin=="center"?0:block_size_chunks[2]*chunk_pitch_atoms*atom_pitch/2] ) {
 
 	// Columns!  The kinda easy part!
-
+	// Well it was before it got all complicated anyway!
+	
 	columns_are_chunk_based = column_style == "v3";
-	linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) { // TODO
-		if( columns_are_chunk_based ) {
+
+	// 'column effective' stuff
+	ce_chunk_pitch_atoms = columns_are_chunk_based ? 1                                                           : chunk_pitch_atoms;
+	ce_column_diameter   = columns_are_chunk_based ? atom_pitch*chunk_pitch_atoms - (atom_pitch-column_diameter) : column_diameter;
+	ce_atom_pitch        = columns_are_chunk_based ? atom_pitch*chunk_pitch_atoms                                : atom_pitch;
+	ce_chunk_column_placement = columns_are_chunk_based ? "grid" : chunk_column_placement;
+
+	if( column_style != "none" && ce_chunk_column_placement != "none") {
+		linear_extrude(block_size_chunks[2]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) {
 			for( pos=togridpile2_column_positions(
-				block_size_chunks=block_size_chunks,
-				chunk_pitch_atoms=1,
-				atom_pitch=atom_pitch*chunk_pitch_atoms,
-				chunk_column_placement="grid"
+				block_size_chunks      = block_size_chunks,
+				chunk_pitch_atoms      = ce_chunk_pitch_atoms,
+				atom_pitch             = ce_atom_pitch,
+				chunk_column_placement = ce_chunk_column_placement
 			) ) translate(pos) togridpile2_atom_column_footprint(
-				column_style = column_style,
-				atom_pitch = atom_pitch*chunk_pitch_atoms,
-				column_diameter = atom_pitch*chunk_pitch_atoms - (atom_pitch-column_diameter)
-			);
-		} else {
-			for( pos=togridpile2_column_positions(
-				block_size_chunks=block_size_chunks,
-				chunk_pitch_atoms=chunk_pitch_atoms,
-				atom_pitch=atom_pitch,
-				chunk_column_placement=chunk_column_placement
-			) ) translate(pos) togridpile2_atom_column_footprint(
-				column_style=column_style,
-				atom_pitch=atom_pitch,
-				column_diameter=column_diameter
+				column_style    = column_style,
+				atom_pitch      = ce_atom_pitch,
+				column_diameter = ce_column_diameter
 			);
 		}
 	}
-
+	
+	sce_column_style = side_column_style == "auto" ? (column_style == "v3" ? "v6" : column_style) : side_column_style;
+	sce_chunk_column_placement = chunk_side_column_placement == "auto" ? chunk_column_placement : chunk_side_column_placement;
+	
+	assert( sce_column_style != "v3" || sce_chunk_column_placement == "none" );
+	// Need to refactor all of this so that this module doesn't need to care about 'v3'
+	
+	if( side_column_style != "none" && sce_chunk_column_placement != "none" ) {
+		// TODO: Maybe dry this out a bit somehow
+		rotate([0,90,0]) linear_extrude(block_size_chunks[0]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) { // TODO
+			for( pos=togridpile2_column_positions(
+				block_size_chunks      = [block_size_chunks[2], block_size_chunks[1]],
+				chunk_pitch_atoms      = chunk_pitch_atoms,
+				atom_pitch             = atom_pitch,
+				chunk_column_placement = sce_chunk_column_placement
+			) ) translate(pos) togridpile2_atom_column_footprint(
+				column_style    = sce_column_style,
+				atom_pitch      = atom_pitch,
+				column_diameter = column_diameter
+			);
+		}
+		rotate([90,0,0]) linear_extrude(block_size_chunks[1]*chunk_pitch_atoms*atom_pitch + offset*2, center=true) { // TODO
+			for( pos=togridpile2_column_positions(
+				block_size_chunks      = [block_size_chunks[0], block_size_chunks[2]],
+				chunk_pitch_atoms      = chunk_pitch_atoms,
+				atom_pitch             = atom_pitch,
+				chunk_column_placement = sce_chunk_column_placement
+			) ) translate(pos) togridpile2_atom_column_footprint(
+				column_style    = sce_column_style,
+				atom_pitch      = atom_pitch,
+				column_diameter = column_diameter
+			);
+		}
+	}
+	
 	// TODO: Side columns, if asked for!
 	// Important for cutting out the lips!
 

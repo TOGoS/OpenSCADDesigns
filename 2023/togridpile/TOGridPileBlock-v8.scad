@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.8
+// TOGridPileBlock-v8.9
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -24,6 +24,8 @@
 // - Magnet drain hole diameter is customizable
 // v8.8:
 // - Customizable bulkhead positions to break up the cavity
+// v8.9
+// - Configurable male/female side column style/placement
 
 /* [Block Shape] */
 
@@ -37,11 +39,15 @@ height = 25.4; // 0.0001
 chunk_column_placement = "grid"; // ["none","corners","grid"]
 bottom_segmentation = "atom"; // ["atom","chunk","block"]
 side_segmentation = "block"; // ["atom","chunk","block"]
+side_column_style = "none"; // ["none", "auto", "v6", "v8"]
+side_column_placement = "grid"; // ["none","auto","grid","corners"]
 
 /* [Female Shape] */
 
 female_column_style = "v3"; // ["v3", "v6", "v6.1", "v6.2", "v8", "v8.0", "v8.4"]
 female_segmentation = "block"; // ["atom", "chunk", "block"]
+female_side_column_style = "auto"; // ["none", "auto", "v6", "v8"]
+female_side_column_placement = "grid"; // ["none","auto","grid","corners"]
 lip_height = 2.54; // 0.0001
 
 /* [Cavity] */
@@ -141,6 +147,8 @@ module the_lip_cavity() difference() {
 		chunk_pitch_atoms = chunk_pitch_atoms,
 		atom_pitch = atom_pitch,
 		column_style = female_column_style,
+		side_column_style = female_side_column_style,
+		chunk_side_column_placement = female_side_column_placement,
 		chunk_column_placement = chunk_column_placement,
 		chunk_body_style = chunk_body_style,
 		bottom_segmentation = female_segmentation,
@@ -161,6 +169,8 @@ module the_block_hull() intersection() {
 		chunk_pitch_atoms = chunk_pitch_atoms,
 		atom_pitch = atom_pitch,
 		column_style = column_style,
+		side_column_style = side_column_style,
+		chunk_side_column_placement = side_column_placement,
 		chunk_column_placement = chunk_column_placement,
 		chunk_body_style = chunk_body_style,
 		bottom_segmentation = bottom_segmentation,
@@ -171,10 +181,15 @@ module the_block_hull() intersection() {
 }
 
 module the_block() difference() {
-	render() the_block_hull();
-
-	translate([0, 0, block_size[2]]) the_cup_cavity();
-	translate([0, 0, block_size[2]]) render() the_lip_cavity();
+	// Sometimes you need to fiddle with the order
+	// of operations and whether or not different parts
+	// are render()ed in order to get this to work without errors.
+	render() difference() {
+		the_block_hull();
+		translate([0, 0, block_size[2]]) the_cup_cavity();
+	}
+	
+	translate([0, 0, block_size[2]]) the_lip_cavity();
 
 	top_hole_z = min(floor_thickness, block_size[2]);
 
