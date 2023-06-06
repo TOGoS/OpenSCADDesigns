@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.7
+// TOGridPileBlock-v8.8
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -22,6 +22,8 @@
 // - Flathead screw holes in topside
 // v8.7:
 // - Magnet drain hole diameter is customizable
+// v8.8:
+// - Customizable bulkhead positions to break up the cavity
 
 /* [Block Shape] */
 
@@ -46,6 +48,7 @@ lip_height = 2.54; // 0.0001
 
 wall_thickness = 2;
 floor_thickness = 6.35;
+cavity_bulkhead_positions = [];
 
 // Nonzero value if you want a curve at the bottom to help slide things out; recommended value: 12.7
 fingerslide_radius = 0; // 0.001
@@ -123,6 +126,9 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	the_sublip();
 	the_label_platform();
 	translate([0,0,-cavity_size[2]]) the_fingerslide();
+	for( x=cavity_bulkhead_positions ) {
+		translate([x,0,0]) cube([wall_thickness, block_size[1], block_size[2]*2], center=true);
+	}
 }
 
 module the_lip_cavity() difference() {
