@@ -1,4 +1,8 @@
-// TOGridPileMinimalBasePlate-v1.0
+// TOGridPileMinimalBasePlate-v1.1
+//
+// v1.1:
+// - Replace 'offset' with 'margin' because apparently the change
+//   confused me and I did it backwards and so v1.0 was too tight.
 
 use <../lib/TOGridPileLib-v2.scad>
 use <../lib/TOGShapeLib-v1.scad>
@@ -12,7 +16,7 @@ column_diameter = 9.525;
 column_style = "v6"; // ["v3", "v6", "v8"]
 min_corner_radius = 1.5875;
 
-offset = -0.1;
+margin = 0.1;
 $fn = 24;
 
 module 123789eyqkwfuybd__end_params() { }
@@ -33,10 +37,10 @@ function column_positions(size_atoms, atom_pitch) = [
 ];
 
 linear_extrude(thickness) difference() {
-	tog_shapelib_rounded_square(size_chunks*effective_chunk_pitch_atoms*effective_atom_pitch, 3/16*inch, offset);
+	tog_shapelib_rounded_square(size_chunks*effective_chunk_pitch_atoms*effective_atom_pitch, 3/16*inch, offset=-margin);
 	// togridpile2_atom_column_footprint(column_style, atom_pitch, 
 
 	for( pos=column_positions(size_chunks*effective_chunk_pitch_atoms, effective_atom_pitch) ) {
-		translate(pos) togridpile2_atom_column_footprint(effective_column_style, effective_atom_pitch, effective_column_diameter, min_corner_radius, offset=offset);
+		translate(pos) togridpile2_atom_column_footprint(effective_column_style, effective_atom_pitch, effective_column_diameter, min_corner_radius, offset=margin);
 	}
 }
