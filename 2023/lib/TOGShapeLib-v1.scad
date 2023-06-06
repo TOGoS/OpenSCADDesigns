@@ -11,7 +11,6 @@ module tog_shapelib_rounded_square(size, corner_radius, offset=0) {
 	assert(corner_radius + offset > 0);
 	assert(corner_radius < size[0]/2);
 	assert(corner_radius < size[1]/2);
-	assert(corner_radius < size[2]/2);
 	// TODO: Special cases when those assertions would fail
 	hull() for( ym=[-1,1] ) for( xm=[-1,1] ) {
 		translate([
