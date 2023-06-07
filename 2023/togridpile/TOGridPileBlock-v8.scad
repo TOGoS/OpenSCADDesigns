@@ -194,15 +194,16 @@ module the_block() difference() {
 	// Sometimes you need to fiddle with the order
 	// of operations and whether or not different parts
 	// are render()ed in order to get this to work without errors.
-	render() difference() {
+	difference() {
 		the_block_hull();
-		translate([0, 0, block_size[2]]) the_cup_cavity();
+		union() {
+			translate([0, 0, block_size[2]]) the_lip_cavity();
+			translate([0, 0, block_size[2]]) the_cup_cavity();
+		}
 	}
 	
-	translate([0, 0, block_size[2]]) the_lip_cavity();
-
 	top_hole_z = min(floor_thickness, block_size[2]);
-
+	
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
 	translate([xm*chunk_pitch, ym*chunk_pitch]) {
