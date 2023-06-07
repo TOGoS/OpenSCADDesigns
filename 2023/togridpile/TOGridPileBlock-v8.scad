@@ -1,4 +1,4 @@
-// TOGridPileBlock-v8.9
+// TOGridPileBlock-v8.10
 //
 // v8.2.3:
 // - Updates based on TOGridPileLib-v2.2.3;
@@ -26,6 +26,8 @@
 // - Customizable bulkhead positions to break up the cavity
 // v8.9
 // - Configurable male/female side column style/placement
+// v8.10
+// - Configurable cavity bulkhead axis
 
 /* [Block Shape] */
 
@@ -55,6 +57,7 @@ lip_height = 2.54; // 0.0001
 wall_thickness = 2;
 floor_thickness = 6.35;
 cavity_bulkhead_positions = [];
+cavity_bulkhead_axis = "x"; // ["x", "y"]
 
 // Nonzero value if you want a curve at the bottom to help slide things out; recommended value: 12.7
 fingerslide_radius = 0; // 0.001
@@ -123,6 +126,12 @@ module the_fingerslide() {
 	}
 }
 
+function kasjhd_swapxy(vec, swap=true) = [
+	swap ? vec[1] : vec[0],
+	swap ? vec[0] : vec[1],
+	for( i=[2:1:len(vec)-1] ) vec[i]
+];
+
 module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	togridpile2_chunk_body(
 		style="v1",
@@ -132,8 +141,9 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	the_sublip();
 	the_label_platform();
 	translate([0,0,-cavity_size[2]]) the_fingerslide();
-	for( x=cavity_bulkhead_positions ) {
-		translate([x,0,0]) cube([wall_thickness, block_size[1], block_size[2]*2], center=true);
+	for( i=cavity_bulkhead_positions ) {
+		maybeswapxy = cavity_bulkhead_axis == "x" ? function(v) kasjhd_swapxy(v) : function(v) v;
+		translate(maybeswapxy([i,0,0])) cube(maybeswapxy([wall_thickness, block_size[1], block_size[2]*2]), center=true);
 	}
 }
 
