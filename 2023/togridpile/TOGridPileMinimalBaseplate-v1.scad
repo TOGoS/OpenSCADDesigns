@@ -1,8 +1,10 @@
-// TOGridPileMinimalBasePlate-v1.1
+// TOGridPileMinimalBasePlate-v1.2
 //
 // v1.1:
 // - Replace 'offset' with 'margin' because apparently the change
 //   confused me and I did it backwards and so v1.0 was too tight.
+// v1.2:
+// - margin can be configured down to 0.01mm
 
 use <../lib/TOGridPileLib-v2.scad>
 use <../lib/TOGShapeLib-v1.scad>
@@ -16,7 +18,7 @@ column_diameter = 9.525;
 column_style = "v6"; // ["v3", "v6", "v8"]
 min_corner_radius = 1.5875;
 
-margin = 0.1;
+margin = 0.1; // 0.01
 $fn = 24;
 
 module 123789eyqkwfuybd__end_params() { }
