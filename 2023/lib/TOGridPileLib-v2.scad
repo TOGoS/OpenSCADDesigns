@@ -1,4 +1,4 @@
-// TOGridPileLib-v2.4
+// TOGridPileLib-v2.4.1
 //
 // Changes:
 // v2.2:
@@ -17,6 +17,9 @@
 // - Simplify magnet hole shape when drian diameter=0
 // v2.4:
 // - Add side columns with separately-configurable style and placement
+// v2.4.1:
+// - Add 'deplane_offset' parameter in attempt to avoid Z-fighting or whatever
+//   which leads to leaky surfaces
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -157,9 +160,10 @@ function togridpile2__body_inset_for_segmentation(
 	body_style,
 	rounded_corner_radius,
 	beveled_corner_radius,
-	atom_radius
+	atom_radius,
+	deplane_offset = 0.1, // Almost-zero offset to use to avoid coplanar planes
 ) =
-	segmentation == "block" ? 0 :
+	segmentation == "block" ? deplane_offset :
 	togridpile2__corner_radius_for_body_style(body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
 
 function togridpile2__unit_index(name) =
@@ -204,6 +208,7 @@ module togridpile2_block(
 	chunk_side_column_placement="auto",
 	chunk_body_style="v1",
 	offset=0,
+	deplane_offset=0.1,
 	origin="center"
 ) translate([0, 0, origin=="center"?0:block_size_chunks[2]*chunk_pitch_atoms*atom_pitch/2] ) {
 
@@ -299,8 +304,8 @@ module togridpile2_block(
 
 	atom_radius = atom_pitch/2;
 
-	block_body_bottom_inset = togridpile2__body_inset_for_segmentation(bottom_segmentation, chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
-	block_body_side_inset   = togridpile2__body_inset_for_segmentation(side_segmentation  , chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius);
+	block_body_bottom_inset = togridpile2__body_inset_for_segmentation(bottom_segmentation, chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius, deplane_offset=deplane_offset);
+	block_body_side_inset   = togridpile2__body_inset_for_segmentation(side_segmentation  , chunk_body_style, rounded_corner_radius, beveled_corner_radius, atom_radius, deplane_offset=deplane_offset);
 
 	// Chunk bodies, if not redundant
 	if( side_segmentation == "chunk" && bottom_segmentation != "chunk" ) {
