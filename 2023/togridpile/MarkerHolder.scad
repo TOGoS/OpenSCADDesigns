@@ -1,3 +1,5 @@
+// MarkerHolder-v1.0
+
 // Cap diameter: ~13.5mm
 // Total length: ~131mm = ~5.16"
 
@@ -12,7 +14,10 @@ female_column_style = "v3";
 
 margin = 0.05;
 
-$fn = 24;
+preview_fn = 12;
+render_fn = 36;
+
+$fn = $preview ? preview_fn : render_fn;
 
 use <../lib/TOGridPileLib-v2.scad>
 
@@ -47,7 +52,7 @@ module a_hook() rotate([180,-90,0]) {
 		linear_extrude(12.7, center=true) intersection() {
 			difference() {
 				circle(r=1*inch - corner_rad, $fn=$fn*2);
-				translate([6,0]) circle(r=14 + corner_rad, $fn=$fn*2);
+				translate([6,0]) circle(r=14 + corner_rad, $fn=min(48, $fn*2));
 			}
 			square([25,25], center=false);
 		}
