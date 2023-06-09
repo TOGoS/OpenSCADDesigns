@@ -1,4 +1,4 @@
-// TGx9.1.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.3 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -11,6 +11,12 @@
 // - Margin/offset is not yet being taken into account!  Probably don't print this.
 // 9.1.2:
 // - Offset points to be extruded
+// 9.1.3:
+// - Add THL-1001 holes
+// - Note that the `child_ops` thing doesn't actually work; bummersauce!
+//   Need to either transpile my own language to OpenSCAD or hack in a way
+//   to pass modules by name (["module_name", arg1, arg2, ...] kind of thing)
+// - Fix that `atomic_chunk_foot` didn't take or use `offset`
 
 block_size_chunks = [2,2];
 height = 38.1; // 0.001
@@ -30,6 +36,7 @@ module tgx9__end_params() { }
 inch = 25.4;
 
 use <../lib/TOGShapeLib-v1.scad>
+use <../lib/TOGHoleLib-v1.scad>
 
 // [x, y, offset_factor_x, offset_factor_y]
 function tgx9_bottom_points(u, height) = [
@@ -64,9 +71,9 @@ module tgx9_smooth_chunk_foot(height=100, offset=0) {
 	translate([0,0,height/2]) cube([1*inch, 1*inch, height], center=true);
 }
 
-module tgx9_atomic_chunk_foot(height=100) {
+module tgx9_atomic_chunk_foot(height=100, offset=0) {
 	for( xm=[-1,0,1] ) for( ym=[-1,0,1] ) {
-		translate([xm*inch/2, ym*inch/2, 0]) tgx9_atom_foot(height=height);
+		translate([xm*inch/2, ym*inch/2, 0]) tgx9_atom_foot(height=height, offset=offset);
 	}
 }
 
@@ -152,6 +159,10 @@ module tgx9_1_0_block(block_size_chunks=[1,1], height=100, offset=0, chunk_child
 }
 
 module tgx9_1_0_cup(block_size_chunks=[1,1], height=100, lip_height=2.54, offset=0, bottom_chunk_child_ops=[], top_subtraction_chunk_child_ops=[]) difference() {
+	// Note: children() becomes one child to the called module, here!
+	// `each chilren()` is not a thing.
+	// So the child_ops thing doesn't actually work.
+	// Guess I need to make my own language that transpiles to OpenSCAD. :P
 	tgx9_1_0_block(block_size_chunks, height=height+lip_height, offset=offset, chunk_child_ops=bottom_chunk_child_ops) children();
 	
 	translate([0,0,height]) tgx9_1_0_block_foot(block_size_chunks, offset=-offset, chunk_child_ops=top_subtraction_chunk_child_ops) children();
@@ -164,8 +175,11 @@ tgx9_1_0_cup(
 	offset=-margin,
 	bottom_chunk_child_ops = [],
 	top_subtraction_chunk_child_ops = ["add"]
-) {
+) union() {
 	for( pos=[[-1,-1],[1,-1],[-1,1],[1,1]] ) {
 		translate(pos*inch/2) cylinder(d=magnet_hole_diameter, h=4, center=true);
+	}
+	for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
+		translate(pos*inch/2) tog_holelib_hole("THL-1001");
 	}
 }

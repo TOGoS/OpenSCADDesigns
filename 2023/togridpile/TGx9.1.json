@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p1085": {
+			"block_size_chunks": "[3, 3]",
+			"foot_segmentation": "chunk",
+			"height": "3.175",
+			"lip_height": "2.5",
+			"magnet_hole_diameter": "6.2",
+			"margin": "0.05",
+			"preview_fn": "12",
+			"render_fn": "36"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
