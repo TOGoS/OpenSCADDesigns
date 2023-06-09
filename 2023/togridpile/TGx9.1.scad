@@ -1,4 +1,4 @@
-// TGx9.1.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -9,6 +9,8 @@
 //   to cache the results more easily than going back over the whole block,
 //   visiting the chunks twice.
 // - Margin/offset is not yet being taken into account!  Probably don't print this.
+// 9.1.2:
+// - Offset points to be extruded
 
 block_size_chunks = [2,2];
 height = 38.1; // 0.001
@@ -16,7 +18,7 @@ magnet_hole_diameter = 6.2;
 lip_height = 1.5;
 foot_segmentation = "atom"; // ["atom","chunk"]
 
-margin = 0.1;
+margin = 0.05; // 0.01
 
 preview_fn = 12;
 render_fn = 36;
@@ -29,20 +31,24 @@ inch = 25.4;
 
 use <../lib/TOGShapeLib-v1.scad>
 
+// [x, y, offset_factor_x, offset_factor_y]
 function tgx9_bottom_points(u, height) = [
-	[ 0*u, 0*u],
-	[-3*u, 0*u],
-	[-3*u, 1*u],
-	[-6*u, 4*u],
-	[-6*u, height],
-	[ 0*u, height],
+	[ 0*u, 0*u,     0, -1  ],
+	[-3*u, 0*u,    -1, -1  ],
+	[-3*u, 1*u,    -1, -0.4],
+	[-6*u, 4*u,    -1, -0.4],
+	[-6*u, height, -1,  1  ],
+	[ 0*u, height,  0,  1  ],
+];
+
+function tgx9_offset_points(points, offset) = [
+	for(p=points) [p[0]+offset*p[2], p[1]+offset*p[3]]
 ];
 
 module tgx9_atom_foot(height=100, offset=0) {
 	u = inch * 1 / 16;
 	rotate_extrude() {
-		// TODO: Offset the points somehow
-		polygon(tgx9_bottom_points(u, height));
+		polygon(tgx9_offset_points(tgx9_bottom_points(u, height), offset));
 	}
 }
 
@@ -54,7 +60,7 @@ module tgx9_smooth_chunk_foot(height=100, offset=0) {
 		[ 1/2*inch, -1/2*inch],
 		[ 1/2*inch,  1/2*inch],
 		[-1/2*inch,  1/2*inch],
-	]) polygon(tgx9_bottom_points(1/16*inch, 100));
+	]) polygon(tgx9_offset_points(tgx9_bottom_points(1/16*inch, 100), offset));
 	translate([0,0,height/2]) cube([1*inch, 1*inch, height], center=true);
 }
 
