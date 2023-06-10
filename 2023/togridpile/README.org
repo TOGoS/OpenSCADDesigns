@@ -29,6 +29,12 @@ Shape versions:
   with v8 blocks fittiong loosely into v3, v5, v6 baseplates,
   with margins taken into account, v5/v6 blocks snap snugly into v8 baseplates, too.
 - v8.4 :: Slice off corners of columns so that, as with v6.2, another could fit between them diagonally
+- v9 :: A new design based on extruding along a path, similar to gridfinity, intended to be easier for OpenSCAD to handle
+  and make make pieces that are more aesthetically pleasing (thickness of walls being consistent around corners,
+  no weird jagged bits, etc), generally compatible with earlier versions.
+- v9.0 :: Both male and female shapes use 1/4" / 3/16" (outer and for the column) radius corners
+- v9.1 :: Female shape uses 3/16" / 1/4" radius corners,
+  making it able to accept v3..v6 blocks, but v9.1 blocks won't fit sideways into v3 or their own base plates.
 
 Current recommendation:
 - female (subtract from baseplates/lips) :: v6 or v6.1
