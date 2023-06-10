@@ -1,4 +1,4 @@
-// TGx9.1.7 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.8 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -29,13 +29,18 @@
 //   and use the new TOGUnitTable-v1.scad library.
 // - Still no magnet holes in the bottom lol sorry
 // - No cup cavity, either!
+// 9.1.8:
+// - Configure block X/Y and Z sizes separately,
+//   since it's inconvenient to specify them in the same units.
 
-// 1.5875mm = 1/16"
+// Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
 atom_pitch_u = 8;
 chunk_pitch_atoms = 3;
-// Block size, in u; X/Y will be rounded to the nearest chunk
-block_size_u = [48, 24, 16];
+// X/Y block size, in chunks:
+block_size_chunks = [2, 1];
+// Block height, in 'u'
+block_height_u    = 16;
 magnet_hole_diameter = 6.2;
 lip_height = 2.54;
 foot_segmentation = "atom"; // ["atom","chunk"]
@@ -52,6 +57,8 @@ module tgx9__end_params() { }
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGHoleLib-v1.scad>
 use <../lib/TOGUnitTable-v1.scad>
+
+function tgx9_map(arr, fn) = [ for(item=arr) fn(item) ];
 
 $tgx9_mating_offset = -margin;
 $tgx9_unit_table = [
@@ -279,8 +286,6 @@ module tgx9_1_6_cup_top(
 	*/
 }
 
-function tgx9_map(arr, fn) = [ for(item=arr) fn(item) ];
-
 module tgx9_1_6_cup(
 	block_size_ca,
 	lip_height        = 2.54,
@@ -304,7 +309,11 @@ module tgx9_1_6_cup(
 	) children();
 }
 
-block_size_ca = tgx9_map(block_size_u, function (dim_u) [dim_u, "u"]);
+block_size_ca = [
+	[block_size_chunks[0], "chunk"],
+	[block_size_chunks[1], "chunk"],
+	[block_height_u      ,     "u"],
+];
 
 tgx9_1_6_cup(
 	block_size_ca = block_size_ca,
