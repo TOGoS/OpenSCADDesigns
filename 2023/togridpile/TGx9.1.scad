@@ -1,4 +1,4 @@
-// TGx9.1.5 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.6 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -21,6 +21,8 @@
 // - Different corner radius for bottom (1/4") and top (3/16", for [near?] compatibility with other designs)
 // 9.1.5:
 // - Fix to avoid CGAL error for short blocks
+// 9.1.6:
+// - Refactor child_ops stuff to a more general S-expression system, where 'child' is one possible named module
 
 block_size_chunks = [2,2];
 height = 38.1; // 0.001
@@ -143,7 +145,17 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 	}
 }
 
-module tgx9_1_0_block_foot(block_size_chunks=[1,1], offset=0, corner_radius_u=4, chunk_child_ops=[]) {
+module tgx9_do_module(expression) {
+	assert( len(expression) > 0 );
+	function_name = expression[0];
+	if( function_name == "child" ) {
+		children(0);
+	} else {
+		assert(false, str("Unrecognized expression type: '", function_name, "'"));
+	}
+}
+
+module tgx9_1_0_block_foot(block_size_chunks=[1,1], offset=0, corner_radius_u=4, chunk_ops=[]) {
 	chunk_pitch = chunk_pitch_atoms * atom_pitch;
 	
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
@@ -152,13 +164,15 @@ module tgx9_1_0_block_foot(block_size_chunks=[1,1], offset=0, corner_radius_u=4,
 			difference() {
 				union() {
 					tgx9_chunk_foot(foot_segmentation, u=u, height=height*2, corner_radius_u=corner_radius_u, offset=offset);
-					for( i=[0 : 1 : len(chunk_child_ops)-1] ) {
-						if( chunk_child_ops[i] == "add" ) children(i);
+					for( i=[0 : 1 : len(chunk_ops)-1] ) {
+						op = chunk_ops[i];
+						if( op[0] == "add" ) tgx9_do_module(op[1]) children();
 					}
 				}
 				
-				for( i=[0 : 1 : len(chunk_child_ops)-1] ) {
-					if( chunk_child_ops[i] == "subtract" ) children(i);
+				for( i=[0 : 1 : len(chunk_ops)-1] ) {
+					op = chunk_ops[i];
+					if( op[0] == "subtract" ) tgx9_do_module(op[1]) children();				
 				}
 			}
 }
@@ -166,11 +180,11 @@ module tgx9_1_0_block_foot(block_size_chunks=[1,1], offset=0, corner_radius_u=4,
 basic_corner_rad_u = 4;
 female_corner_rad_u = 3;
 
-module tgx9_1_0_block(block_size_chunks=[1,1], height=100, offset=0, chunk_child_ops=[]) intersection() {
+module tgx9_1_0_block(block_size_chunks=[1,1], height=100, offset=0, chunk_ops=[]) intersection() {
 	chunk_pitch = chunk_pitch_atoms * atom_pitch;
 	block_size = block_size_chunks * chunk_pitch;
 
-	tgx9_1_0_block_foot(block_size_chunks, offset=offset, corner_radius_u=basic_corner_rad_u, chunk_child_ops=chunk_child_ops) children();
+	tgx9_1_0_block_foot(block_size_chunks, offset=offset, corner_radius_u=basic_corner_rad_u, chunk_ops=chunk_ops) children();
 	
 	tog_shapelib_xy_rounded_cube([
 		block_size[0],
@@ -179,14 +193,10 @@ module tgx9_1_0_block(block_size_chunks=[1,1], height=100, offset=0, chunk_child
 	], u*female_corner_rad_u, offset=offset);
 }
 
-module tgx9_1_0_cup(block_size_chunks=[1,1], height=100, lip_height=2.54, offset=0, bottom_chunk_child_ops=[], top_subtraction_chunk_child_ops=[]) difference() {
-	// Note: children() becomes one child to the called module, here!
-	// `each chilren()` is not a thing.
-	// So the child_ops thing doesn't actually work.
-	// Guess I need to make my own language that transpiles to OpenSCAD. :P
-	tgx9_1_0_block(block_size_chunks, height=height+lip_height, offset=offset, chunk_child_ops=bottom_chunk_child_ops) children();
+module tgx9_1_0_cup(block_size_chunks=[1,1], height=100, lip_height=2.54, offset=0, bottom_chunk_ops=[], top_subtraction_chunk_ops=[]) difference() {
+	tgx9_1_0_block(block_size_chunks, height=height+lip_height, offset=offset, chunk_ops=bottom_chunk_ops) children();
 	
-	translate([0,0,height]) tgx9_1_0_block_foot(block_size_chunks, corner_radius_u=female_corner_rad_u, offset=-offset, chunk_child_ops=top_subtraction_chunk_child_ops) children();
+	translate([0,0,height]) tgx9_1_0_block_foot(block_size_chunks, corner_radius_u=female_corner_rad_u, offset=-offset, chunk_ops=top_subtraction_chunk_ops) children();
 }
 
 tgx9_1_0_cup(
@@ -194,8 +204,8 @@ tgx9_1_0_cup(
 	height=height,
 	lip_height=lip_height,
 	offset=-margin,
-	bottom_chunk_child_ops = [],
-	top_subtraction_chunk_child_ops = ["add"]
+	bottom_chunk_ops = [],
+	top_subtraction_chunk_ops = [["add",["child"]]]
 ) union() {
 	for( pos=[[-1,-1],[1,-1],[-1,1],[1,1]] ) {
 		translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=4, center=true);
@@ -204,5 +214,3 @@ tgx9_1_0_cup(
 		translate(pos*atom_pitch) tog_holelib_hole("THL-1001");
 	}
 }
-
-// tgx9_smooth_chunk_foot();
