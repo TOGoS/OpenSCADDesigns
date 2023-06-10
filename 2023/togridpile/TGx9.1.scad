@@ -1,4 +1,4 @@
-// TGx9.1.4 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.5 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -19,6 +19,8 @@
 // - Fix that `atomic_chunk_foot` didn't take or use `offset`
 // 9.1.4:
 // - Different corner radius for bottom (1/4") and top (3/16", for [near?] compatibility with other designs)
+// 9.1.5:
+// - Fix to avoid CGAL error for short blocks
 
 block_size_chunks = [2,2];
 height = 38.1; // 0.001
@@ -48,7 +50,8 @@ atom_pitch_u = 8;
 atom_pitch = atom_pitch_u*u;
 
 // [x, y, offset_factor_x, offset_factor_y]
-function tgx9_bottom_points(u, height, radius_u=4) = [
+function tgx9_bottom_points(u, height, radius_u=4) =
+let( height=max(height, 6*u) ) [
 	[            0*u, 0*u,     0, -1  ],
 	[-(radius_u-1)*u, 0*u,    -1, -1  ],
 	[-(radius_u-1)*u, 1*u,    -1, -0.4],
@@ -67,6 +70,10 @@ module tgx9_atom_foot(height=100, offset=0, u=u, radius_u=4) {
 	}
 }
 
+// Here to mess with in case things need to be fattened a little bit
+// in order to make CGAL happy.  So far, so good with theoretically exact matches.
+epsilon     = 0; // 1/256; // of a millimiter
+rot_epsilon = 0; // 1/ 16; // of a degree
 
 module tgx9_smooth_chunk_foot(height=100, u=default_u, chunk_pitch_u=24, corner_radius_u=4, offset=0) {
 	corner_dist_u = (chunk_pitch_u/2)-corner_radius_u;
@@ -76,8 +83,12 @@ module tgx9_smooth_chunk_foot(height=100, u=default_u, chunk_pitch_u=24, corner_
 		[ corner_dist, -corner_dist],
 		[ corner_dist,  corner_dist],
 		[-corner_dist,  corner_dist],
-	]) polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=height, radius_u=corner_radius_u), offset));
-	translate([0,0,height/2]) cube([(chunk_pitch_u-corner_radius_u*2+0.5)*u, (chunk_pitch_u-corner_radius_u*2+0.5)*u, height+offset*2], center=true);
+	], rot_epsilon=rot_epsilon) polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=height, radius_u=corner_radius_u), offset));
+	translate([0,0,height/2]) cube([
+		(chunk_pitch_u-corner_radius_u*2)*u + epsilon*2,
+		(chunk_pitch_u-corner_radius_u*2)*u + epsilon*2,
+		height                    +offset*2 + epsilon*2
+	], center=true);
 }
 
 module tgx9_atomic_chunk_foot(u=default_u, height=100, offset=0) {
@@ -102,7 +113,7 @@ function tgx9_vector_angle(normalized_vector) =
 function tgx9_angle_difference(angle1, angle0) =
 	angle1 < angle0 ? tgx9_angle_difference(angle1+360, angle0) : angle1-angle0;
 
-module tgx9_extrude_along_loop(path) {
+module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 	if( len(path) == 1 ) {
 		translate(path[0]) rotate_extrude(angle=360) children();
 	} else for( i=[0:1:len(path)-1] ) {
@@ -128,7 +139,7 @@ module tgx9_extrude_along_loop(path) {
 		
 		// Convex corners only for now!!
 		//echo(b2c_normalized_vector=b2c_normalized_vector, a2b_angle=a2b_angle, b2c_angle=b2c_angle, b2c_turn=b2c_turn);
-		translate(point_b) rotate([0, 0, 90 + a2b_angle]) rotate_extrude(angle=b2c_turn) children();
+		translate(point_b) rotate([0, 0, 90 + a2b_angle - rot_epsilon]) rotate_extrude(angle=b2c_turn+rot_epsilon*2) children();
 	}
 }
 
