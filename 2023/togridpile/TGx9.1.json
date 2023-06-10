@@ -9,6 +9,16 @@
 			"margin": "0.05",
 			"preview_fn": "12",
 			"render_fn": "36"
+		},
+		"p1087": {
+			"block_size_chunks": "[1, 1]",
+			"foot_segmentation": "chunk",
+			"height": "6.35",
+			"lip_height": "2.5",
+			"magnet_hole_diameter": "6.2",
+			"margin": "0.1",
+			"preview_fn": "12",
+			"render_fn": "36"
 		}
 	},
 	"parameterSets": "",
