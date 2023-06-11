@@ -1,4 +1,4 @@
-// TGx9.1.9 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.10 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -38,6 +38,8 @@
 //   then comment most of it out.
 // - Add more types of shapes that tgx9_do_sshape (formerly tgx9_do_module) can do:
 //   - translate, the_cup_cavity, tgx9_usermod_1, and tgx9_usermod_2!
+// 9.1.10:
+// - Give cavity beveled corners using extrude_along_loop technology
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -111,7 +113,19 @@ let( height=max(height, 6*u) ) [
 	[        0*u, height,  0,  1  ],
 ];
 
-function tgx9_offset_points(points, offset) = [
+function tgx9_cavity_side_profile_points(height, radius, bottom_bevel_size=1, top_bevel_size=3) =
+let( tb=min(radius-0.2, top_bevel_size), bb=min(radius-0.1, bottom_bevel_size) )
+[
+	[      0       ,      0    ,     0,   -1   ],
+	[-radius+bb    ,      0    ,    -0.4, -1   ],
+	[-radius       ,        bb ,    -1  , -0.4 ],
+	[-radius       , height-tb ,    -1  ,  0.4 ],
+   [-radius+tb    , height    ,    -1  ,  0.4 ],
+	[-radius+tb    , height*2  ,    -1  ,  1   ],
+	[      0       , height*2  ,     0  ,  1   ],
+];
+
+function tgx9_offset_points(points, offset=0) = [
 	for(p=points) [p[0]+offset*p[2], p[1]+offset*p[3]]
 ];
 
@@ -126,6 +140,25 @@ module tgx9_atom_foot(height=100, offset=0, radius) {
 // So far, so good with exact (rounding errors notwithstanding) matches.
 epsilon     = 0; // 1/256; // of a millimiter
 rot_epsilon = 0; // 1/ 16; // of a degree
+
+module tgx9_rounded_profile_extruded_square(size, radius) {
+	adjusted_size = [
+	  size[0] - radius*2,
+	  size[1] - radius*2,
+	  size[2],
+	];
+	tgx9_extrude_along_loop([
+		[-adjusted_size[0]/2, -adjusted_size[1]/2],
+		[ adjusted_size[0]/2, -adjusted_size[1]/2],
+		[ adjusted_size[0]/2,  adjusted_size[1]/2],
+		[-adjusted_size[0]/2,  adjusted_size[1]/2],
+	], rot_epsilon=rot_epsilon) children();
+	translate([0,0,adjusted_size[2]/2]) cube([
+		adjusted_size[0] + epsilon*2,
+		adjusted_size[1] + epsilon*2,
+		adjusted_size[2] + epsilon*2,
+	], center=true);	
+}
 
 module tgx9_smooth_chunk_foot(
 	height       ,
@@ -350,10 +383,14 @@ function kasjhd_swapxy(vec, swap=true) = [
 module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	outer_corner_radius     = tog_unittable__divide_ca($tgx9_unit_table, [1, "f-outer-corner-radius"], [1, "mm"]);
 	cavity_corner_radius    = outer_corner_radius - wall_thickness;
+	// Double-height cavity size, to cut through any lip protrusions, etc:
+	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
+	//tog_shapelib_xy_rounded_cube(dh_cavity_size, corner_radius=cavity_corner_radius);
+	translate([0,0,-cavity_size[2]])
+		tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius)
+			polygon(tgx9_offset_points(tgx9_cavity_side_profile_points(cavity_size[2], cavity_corner_radius)));
 	
-	tog_shapelib_xy_rounded_cube([cavity_size[0], cavity_size[1], cavity_size[2]*2], corner_radius=cavity_corner_radius);
-	
-	the_sublip();
+	// the_sublip();
 	the_label_platform();
 	translate([0,0,-cavity_size[2]]) the_fingerslide();
 	for( i=cavity_bulkhead_positions ) {
