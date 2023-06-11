@@ -1,4 +1,4 @@
-// TGx9.1.8 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.9 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -32,6 +32,12 @@
 // 9.1.8:
 // - Configure block X/Y and Z sizes separately,
 //   since it's inconvenient to specify them in the same units.
+// 9.1.9:
+// - Cavity!
+// - Add an ad hoc, informally-specified, bug-ridden, slow implementation of lisp,
+//   then comment most of it out.
+// - Add more types of shapes that tgx9_do_sshape (formerly tgx9_do_module) can do:
+//   - translate, the_cup_cavity, tgx9_usermod_1, and tgx9_usermod_2!
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -43,7 +49,22 @@ block_size_chunks = [2, 1];
 block_height_u    = 16;
 magnet_hole_diameter = 6.2;
 lip_height = 2.54;
-foot_segmentation = "atom"; // ["atom","chunk"]
+foot_segmentation = "chunk"; // ["atom","chunk"]
+
+/* [Connectors] */
+
+bottom_magnet_holes_enabled = true;
+top_magnet_holes_enabled = true;
+screw_hole_style = "THL-1001"; // ["none","THL-1001","THL-1002"]
+
+/* [Cavity] */
+
+wall_thickness = 2;
+floor_thickness = 4.7625;
+label_width = 12.5;
+fingerslide_radius = 12.5;
+cavity_bulkhead_positions = [];
+cavity_bulkhead_axis = "x"; // ["x", "y"]
 
 margin = 0.05; // 0.01
 
@@ -71,6 +92,13 @@ $tgx9_unit_table = [
 	["m-outer-corner-radius", [4, "u"]],
 	["f-outer-corner-radius", [3, "u"]],
 ];
+
+block_size_ca = [
+	[block_size_chunks[0], "chunk"],
+	[block_size_chunks[1], "chunk"],
+	[block_height_u      ,     "u"],
+];
+block_size = tgx9_map(block_size_ca, function (ca) tog_unittable__divide_ca($tgx9_unit_table, ca, [1, "mm"]));
 
 // [x, y, offset_factor_x, offset_factor_y]
 function tgx9_bottom_points(u, height, radius) =
@@ -184,13 +212,54 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 	}
 }
 
-module tgx9_do_module(expression) {
-	assert( len(expression) > 0 );
-	function_name = expression[0];
-	if( function_name == "child" ) {
+// SValues: ('S' for 'S-expression', I guess)
+// - ["literal", v] - the literal OpenSCAD value, v
+// - ["list", ...] - a list of values, each of which is also an SValue
+// - ["translate", translation, shape] - a shape defined by translating another shape
+// - ["module", name, args...] - a shape defined by a named module and literal arguments to it
+// - ["lambda", ...] - whoa let's not get carried away
+
+// Turns out I don't [yet] need to evaluate expressions;
+// I just needed a way to represent shapes!
+/*
+function tgx9_unwrap_svalue(svalue) =
+	assert( is_list(svalue) ) 
+	assert( len(svalue) > 0 )
+	svalue[0] == "literal" ? svalue[1] :
+	assert(false, str("Unwrapping of S-Value type ", svalue[0], " not [yet] implemented"));
+
+function tgx9_eval_funcapp(expression) =
+	assert( is_list(expression) ) 
+	assert( len(expression) > 0 )
+	let( func = tgx9_eval_expression(expression[0]) )
+	assert( is_string(func) ) // Until I implement 'lambda', roffle
+	func == "quote" ? assert(len(expression) == 2) ["literal", expression[1]] :
+	func == "list" ? ["list", for(i=[1:1:len(expression)-1]) tgx9_eval_expression(expression[i])] :
+	func == "translate" ? ["translate", tgx9_unwrap_svalue(tgx9_eval_expression(expression[1])), tgx9_eval_expression(expression[2])] : 
+	assert(false, str("Unrecognized function, '", func, "'"));
+
+function tgx9_eval_expression(expression) =
+	is_list(expression) ? tgx9_eval_funcapp(expression) :
+	["literal", expression];
+*/
+
+// Shapes are a subset of S-Values
+module tgx9_do_sshape(shape) {
+	assert( is_list(shape), str("shape passed to tgx9_do_sshape should be represented as a list, but got ", shape) );
+	assert( len(shape) > 0 );
+	type = shape[0];
+	if( type == "child" ) {
 		children(0);
+	} else if( type == "translate" ) {
+		translate(shape[1]) tgx9_do_sshape(shape[2]);
+	} else if( type == "the_cup_cavity" ) {
+		the_cup_cavity();
+	} else if( type == "tgx9_usermod_1" ) {
+		tgx9_usermod_1(len(shape) > 1 ? shape[1] : undef);
+	} else if( type == "tgx9_usermod_2" ) {
+		tgx9_usermod_2(len(shape) > 1 ? shape[1] : undef);
 	} else {
-		assert(false, str("Unrecognized expression type: '", function_name, "'"));
+		assert(false, str("Unrecognized S-shape type: '", type, "'"));
 	}
 }
 
@@ -215,13 +284,13 @@ module tgx9_1_0_block_foot(
 					tgx9_chunk_foot(foot_segmentation, height=block_size[2]*2, corner_radius=corner_radius, offset=offset);
 					for( i=[0 : 1 : len(chunk_ops)-1] ) {
 						op = chunk_ops[i];
-						if( op[0] == "add" ) tgx9_do_module(op[1]) children();
+						if( op[0] == "add" ) tgx9_do_sshape(op[1]) children();
 					}
 				}
 				
 				for( i=[0 : 1 : len(chunk_ops)-1] ) {
 					op = chunk_ops[i];
-					if( op[0] == "subtract" ) tgx9_do_module(op[1]) children();				
+					if( op[0] == "subtract" ) tgx9_do_sshape(op[1]) children();				
 				}
 			}
 }
@@ -234,6 +303,72 @@ module tgx9_block_hull(block_size, corner_radius, offset=0) intersection() {
 	], corner_radius, offset=offset);
 }
 
+//// Cavity stuff
+
+cavity_size = [
+	block_size[0] - wall_thickness*2 + $tgx9_mating_offset*2,
+	block_size[1] - wall_thickness*2 + $tgx9_mating_offset*2,
+	block_size[2] - floor_thickness
+];
+
+cs1 = [cavity_size[0]+0.1, cavity_size[1]+0.1]; // For sticking things in the walls
+
+module the_sublip() {
+	sublip_width = 2;
+	sublip_angwid = sublip_width/sin(45);
+	sublip_angwid2 = sublip_angwid*2*1.414;
+	for(xm=[-1,1]) translate([xm*cs1[0]/2, 0, 0]) rotate([0,45,0])
+		cube([sublip_angwid,block_size[1],sublip_angwid], center=true);
+	for(ym=[-1,1]) translate([0, ym*cs1[1]/2, 0]) rotate([45,0,0])
+		cube([block_size[0],sublip_angwid,sublip_angwid], center=true);
+	for(ym=[-1,1]) for(xm=[-1,1]) translate([xm*cs1[0]/2, ym*cs1[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0])
+		cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
+}
+
+module the_label_platform() {
+	if( label_width > 0 ) {
+		label_angwid = label_width*2*sin(45);
+		translate([-cs1[0]/2, 0, 0]) rotate([0,45,0]) cube([label_angwid,block_size[1],label_angwid], center=true);
+	}
+}
+
+module the_fingerslide() {
+	if( fingerslide_radius > 0 ) difference() {
+		translate([cavity_size[0]/2, 0, 0])
+			cube([fingerslide_radius*2, cavity_size[1]*2, fingerslide_radius*2], center=true);
+		translate([cavity_size[0]/2-fingerslide_radius, 0, fingerslide_radius])
+			rotate([90,0,0]) cylinder(r=fingerslide_radius, h=cavity_size[1]*3, center=true, $fn=max(24,$fn));
+	}
+}
+
+function kasjhd_swapxy(vec, swap=true) = [
+	swap ? vec[1] : vec[0],
+	swap ? vec[0] : vec[1],
+	for( i=[2:1:len(vec)-1] ) vec[i]
+];
+
+module the_cup_cavity() if(cavity_size[2] > 0) difference() {
+	outer_corner_radius     = tog_unittable__divide_ca($tgx9_unit_table, [1, "f-outer-corner-radius"], [1, "mm"]);
+	cavity_corner_radius    = outer_corner_radius - wall_thickness;
+	
+	tog_shapelib_xy_rounded_cube([cavity_size[0], cavity_size[1], cavity_size[2]*2], corner_radius=cavity_corner_radius);
+	
+	the_sublip();
+	the_label_platform();
+	translate([0,0,-cavity_size[2]]) the_fingerslide();
+	for( i=cavity_bulkhead_positions ) {
+		maybeswapxy = cavity_bulkhead_axis == "x" ? function(v) kasjhd_swapxy(v) : function(v) v;
+		bulkhead_length = cavity_bulkhead_axis == "x" ? block_size[0] : block_size[1];
+		translate(maybeswapxy([i,0,0])) cube(maybeswapxy([wall_thickness, bulkhead_length, block_size[2]*2]), center=true);
+	}
+}
+
+function tgx9_invert_op(op) =
+	op[0] == "add" ? ["subtract", op[1]] :
+	op[0] == "subtract" ? ["add", op[1]] :
+	op; // Meh
+function tgx9_invert_ops(ops) = tgx9_map(ops, function (op) tgx9_invert_op(op));
+
 // An attempt at refactoring for some reason...
 // Oh right, because I want this to have the cavity in it; everything but the foot.
 module tgx9_1_6_cup_top(
@@ -241,8 +376,8 @@ module tgx9_1_6_cup_top(
 	lip_height,
 	wall_thickness,
 	floor_thickness,
-	lip_subtraction_chunk_ops = [],
-	floor_subtraction_chunk_ops = [],
+	lip_chunk_ops = [],
+	block_top_ops = [],
 ) {
 	block_size        = tgx9_map(block_size_ca, function(ca) tog_unittable__divide_ca($tgx9_unit_table, ca, [1,    "mm"]));
 	corner_radius     = tog_unittable__divide_ca($tgx9_unit_table, [1, "f-outer-corner-radius"], [1, "mm"]);
@@ -264,11 +399,19 @@ module tgx9_1_6_cup_top(
 			foot_segmentation = "chunk",
 			corner_radius = corner_radius,
 			offset    = -$tgx9_mating_offset,
-			chunk_ops = lip_subtraction_chunk_ops
+			chunk_ops = tgx9_invert_ops(lip_chunk_ops)
 		) children();
 		
 		// Cavity
-		// TODO....
+		// translate([0,0,block_size[2]]) the_cup_cavity();
+
+		translate([0,0,block_size[2]]) {
+			for( op=block_top_ops ) if(op[0] == "subtract") tgx9_do_sshape(op[1]);
+		}
+	}
+
+	translate([0,0,block_size[2]]) {
+		for( op=block_top_ops ) if(op[0] == "add") tgx9_do_sshape(op[1]);
 	}
 
 	/*
@@ -288,9 +431,13 @@ module tgx9_1_6_cup_top(
 
 module tgx9_1_6_cup(
 	block_size_ca,
+	wall_thickness,
+	floor_thickness,		
 	lip_height        = 2.54,
 	bottom_chunk_ops          = [],
-	lip_subtraction_chunk_ops = []
+	lip_chunk_ops = [],
+	// floor_chunk_ops = []
+	block_top_ops = [],
 ) intersection() {
 	// 'block foot' is *just* the bottom mating surface intersector
 	tgx9_1_0_block_foot(
@@ -305,28 +452,49 @@ module tgx9_1_6_cup(
 	tgx9_1_6_cup_top(
 		block_size_ca     = block_size_ca,
 		lip_height        = lip_height,
-		lip_subtraction_chunk_ops = lip_subtraction_chunk_ops
+		wall_thickness    = wall_thickness,
+		floor_thickness   = floor_thickness,		
+		// floor_chunk_ops   = floor_chunk_ops
+		block_top_ops     = block_top_ops,
+		lip_chunk_ops     = lip_chunk_ops
 	) children();
 }
 
-block_size_ca = [
-	[block_size_chunks[0], "chunk"],
-	[block_size_chunks[1], "chunk"],
-	[block_height_u      ,     "u"],
-];
+//// The Top-Level Program
+
+if( false ) undefined_module(); // Doesn't crash OpenSCAD
+
+// effective_floor_thickness = min(floor_thickness, block_size[2]);
+
+atom_pitch = tog_unittable__divide_ca($tgx9_unit_table, [1, "atom"], [1, "mm"]);
+
+module tgx9_usermod_1(what) {
+	if( what == "magnet-holes" ) {
+		for( pos=[[-1,-1],[1,-1],[-1,1],[1,1]] ) {
+			translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=4, center=true);
+		}
+	} else if( what == "screw-holes" ) {
+		for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
+			translate(pos*atom_pitch) tog_holelib_hole(screw_hole_style);
+		}
+	} else {
+		assert(false, str("Unrecognized user module argument: '", what, "'"));
+	}
+}
 
 tgx9_1_6_cup(
 	block_size_ca = block_size_ca,
 	lip_height    = lip_height,
-	bottom_chunk_ops = [],
-	lip_subtraction_chunk_ops = [["add",["child"]]]
-) union() {
-	atom_pitch = tog_unittable__divide_ca($tgx9_unit_table, [1, "atom"], [1, "mm"]);
-	
-	for( pos=[[-1,-1],[1,-1],[-1,1],[1,1]] ) {
-		translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=4, center=true);
-	}
-	for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
-		translate(pos*atom_pitch) tog_holelib_hole("THL-1001");
-	}
-}
+	floor_thickness = floor_thickness,
+	wall_thickness = wall_thickness,
+	block_top_ops = [
+		if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]]
+	],
+	lip_chunk_ops = [
+		if(top_magnet_holes_enabled) ["subtract",["tgx9_usermod_1", "magnet-holes"]]
+	],
+	bottom_chunk_ops = [
+		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "screw-holes"]]],
+		if(bottom_magnet_holes_enabled) ["subtract",["tgx9_usermod_1", "magnet-holes"]],
+	]
+);
