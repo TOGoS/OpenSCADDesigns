@@ -1,4 +1,4 @@
-// TGx9.1.11 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.12 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -43,6 +43,8 @@
 // 9.1.11:
 // - Make 'label magnet holes' separate from 'top magnet holes' to avoid
 //   extraneous cuts into the lip
+// 9.1.12:
+// - lip_segmentation = "block"|"chunk".
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -54,7 +56,8 @@ block_size_chunks = [2, 1];
 block_height_u    = 16;
 magnet_hole_diameter = 6.2;
 lip_height = 2.54;
-foot_segmentation = "chunk"; // ["atom","chunk"]
+foot_segmentation = "chunk"; // ["atom","chunk","block"]
+lip_segmentation = "block"; // ["chunk","block"]
 
 /* [Connectors] */
 
@@ -66,13 +69,13 @@ screw_hole_style = "THL-1001"; // ["none","THL-1001","THL-1002"]
 /* [Cavity] */
 
 wall_thickness = 2;
-floor_thickness = 4.7625;
+floor_thickness = 6.35; // 0.0001
 label_width = 12.5;
 fingerslide_radius = 12.5;
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
 
-margin = 0.05; // 0.01
+margin = 0.075; // 0.001
 
 preview_fn = 12;
 render_fn = 36;
@@ -146,11 +149,18 @@ module tgx9_atom_foot(height=100, offset=0, radius) {
 epsilon     = $preview ? 0.001 : 0; // 1/256; // of a millimiter
 rot_epsilon = $preview ? 0.001 : 0; // 1/ 16; // of a degree
 
-module tgx9_rounded_profile_extruded_square(size, radius) {
+module tgx9_rounded_profile_extruded_square(size, corner_radius, z_offset) {
+	assert( is_list(size) );
+	assert( len(size) == 3 );
+	assert( is_num(size[0]) );
+	assert( is_num(size[1]) );
+	assert( is_num(size[2]) );
+	assert( is_num(corner_radius) );
+	assert( is_num(z_offset) );
 	adjusted_size = [
-	  size[0] - radius*2,
-	  size[1] - radius*2,
-	  size[2],
+	  size[0] - corner_radius*2,
+	  size[1] - corner_radius*2,
+	  size[2]
 	];
 	tgx9_extrude_along_loop([
 		[-adjusted_size[0]/2, -adjusted_size[1]/2],
@@ -158,12 +168,23 @@ module tgx9_rounded_profile_extruded_square(size, radius) {
 		[ adjusted_size[0]/2,  adjusted_size[1]/2],
 		[-adjusted_size[0]/2,  adjusted_size[1]/2],
 	], rot_epsilon=rot_epsilon) children();
-	translate([0,0,adjusted_size[2]/2]) cube([
+	translate([0,0,adjusted_size[2]/2+z_offset]) cube([
 		adjusted_size[0] + epsilon*2,
 		adjusted_size[1] + epsilon*2,
-		adjusted_size[2] + epsilon*2,
+		adjusted_size[2]
 	], center=true);	
 }
+
+module tgx9_smooth_foot(
+	size         ,
+	corner_radius,
+	offset
+) {
+	u               = tog_unittable__divide_ca($tgx9_unit_table, [1, "u"], [1, "mm"]);
+	tgx9_rounded_profile_extruded_square([size[0], size[1], size[2]+offset*2], corner_radius=corner_radius, z_offset=-offset)
+		polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=corner_radius), offset));
+}
+
 
 module tgx9_smooth_chunk_foot(
 	height       ,
@@ -171,19 +192,7 @@ module tgx9_smooth_chunk_foot(
 	offset
 ) {
 	chunk_pitch     = tog_unittable__divide_ca($tgx9_unit_table, [1, "chunk"], [1, "mm"]);
-	u               = tog_unittable__divide_ca($tgx9_unit_table, [1, "u"], [1, "mm"]);
-	corner_dist = chunk_pitch/2 - corner_radius;
-	tgx9_extrude_along_loop([
-		[-corner_dist, -corner_dist],
-		[ corner_dist, -corner_dist],
-		[ corner_dist,  corner_dist],
-		[-corner_dist,  corner_dist],
-	], rot_epsilon=rot_epsilon) polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=height, radius=corner_radius), offset));
-	translate([0,0,height/2]) cube([
-		chunk_pitch - corner_radius*2 + epsilon*2,
-		chunk_pitch - corner_radius*2 + epsilon*2,
-		height      +        offset*2 + epsilon*2
-	], center=true);
+	tgx9_smooth_foot([chunk_pitch, chunk_pitch, height], corner_radius=corner_radius, offset=offset);
 }
 
 module tgx9_atomic_chunk_foot(
@@ -313,7 +322,12 @@ module tgx9_1_0_block_foot(
 
 	block_size_chunks = tgx9_map(block_size_ca, function(ca) tog_unittable__divide_ca($tgx9_unit_table, ca, [1, "chunk"]));
 	block_size        = tgx9_map(block_size_ca, function(ca) tog_unittable__divide_ca($tgx9_unit_table, ca, [1,    "mm"]));
-	
+	dh_block_size = [block_size[0], block_size[1], block_size[2]*2];
+
+	if( foot_segmentation == "block" ) {
+		tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
+	}
+	else
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
 	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2-0.5] )
 		translate([xm*chunk_pitch, ym*chunk_pitch])
@@ -392,7 +406,7 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_cavity_size, corner_radius=cavity_corner_radius);
 	translate([0,0,-cavity_size[2]])
-		tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius)
+		tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius, z_offset=0)
 			polygon(tgx9_offset_points(tgx9_cavity_side_profile_points(cavity_size[2], cavity_corner_radius)));
 	
 	// the_sublip();
@@ -438,7 +452,7 @@ module tgx9_1_6_cup_top(
 		// Lip	
 		translate([0,0,block_size[2]]) tgx9_1_0_block_foot(
 			block_size_ca     = block_size_ca,
-			foot_segmentation = "chunk",
+			foot_segmentation = lip_segmentation,
 			corner_radius = corner_radius,
 			offset    = -$tgx9_mating_offset,
 			chunk_ops = tgx9_invert_ops(lip_chunk_ops)
