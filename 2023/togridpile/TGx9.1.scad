@@ -1,4 +1,4 @@
-// TGx9.1.10 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.11 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -40,6 +40,9 @@
 //   - translate, the_cup_cavity, tgx9_usermod_1, and tgx9_usermod_2!
 // 9.1.10:
 // - Give cavity beveled corners using extrude_along_loop technology
+// 9.1.11:
+// - Make 'label magnet holes' separate from 'top magnet holes' to avoid
+//   extraneous cuts into the lip
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -56,6 +59,7 @@ foot_segmentation = "chunk"; // ["atom","chunk"]
 /* [Connectors] */
 
 bottom_magnet_holes_enabled = true;
+label_magnet_holes_enabled = true;
 top_magnet_holes_enabled = true;
 screw_hole_style = "THL-1001"; // ["none","THL-1001","THL-1002"]
 
@@ -137,9 +141,10 @@ module tgx9_atom_foot(height=100, offset=0, radius) {
 
 // Here to mess with in case things need to be fattened a little bit
 // in order to make CGAL happy.
-// So far, so good with exact (rounding errors notwithstanding) matches.
-epsilon     = 0; // 1/256; // of a millimiter
-rot_epsilon = 0; // 1/ 16; // of a degree
+// So far, so good with exact (rounding errors notwithstanding) matches,
+// though adding some overlap seems to clean up the preview somewhat.
+epsilon     = $preview ? 0.001 : 0; // 1/256; // of a millimiter
+rot_epsilon = $preview ? 0.001 : 0; // 1/ 16; // of a degree
 
 module tgx9_rounded_profile_extruded_square(size, radius) {
 	adjusted_size = [
@@ -503,16 +508,25 @@ if( false ) undefined_module(); // Doesn't crash OpenSCAD
 
 // effective_floor_thickness = min(floor_thickness, block_size[2]);
 
-atom_pitch = tog_unittable__divide_ca($tgx9_unit_table, [1, "atom"], [1, "mm"]);
+atom_pitch  = tog_unittable__divide_ca($tgx9_unit_table, [1, "atom"], [1, "mm"]);
+chunk_pitch = tog_unittable__divide_ca($tgx9_unit_table, [1, "chunk"], [1, "mm"]);
 
 module tgx9_usermod_1(what) {
-	if( what == "magnet-holes" ) {
+	if( what == "chunk-magnet-holes" ) {
 		for( pos=[[-1,-1],[1,-1],[-1,1],[1,1]] ) {
 			translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=4, center=true);
 		}
-	} else if( what == "screw-holes" ) {
+	} else if( what == "chunk-screw-holes" ) {
 		for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
 			translate(pos*atom_pitch) tog_holelib_hole(screw_hole_style);
+		}
+	} else if( what == "label-magnet-holes" ) {
+		for( xm=[-block_size_chunks[0]/2+0.5] )
+		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] ) {
+			translate([xm*chunk_pitch, ym*chunk_pitch, 0])
+			for( pos=[[-1,-1],[-1,1]] ) {
+				translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=4, center=true);
+			}
 		}
 	} else {
 		assert(false, str("Unrecognized user module argument: '", what, "'"));
@@ -525,13 +539,14 @@ tgx9_1_6_cup(
 	floor_thickness = floor_thickness,
 	wall_thickness = wall_thickness,
 	block_top_ops = [
-		if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]]
+		if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
+		if( label_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "label-magnet-holes"]],
 	],
 	lip_chunk_ops = [
-		if(top_magnet_holes_enabled) ["subtract",["tgx9_usermod_1", "magnet-holes"]]
+		if( top_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]]
 	],
 	bottom_chunk_ops = [
-		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "screw-holes"]]],
-		if(bottom_magnet_holes_enabled) ["subtract",["tgx9_usermod_1", "magnet-holes"]],
+		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "chunk-screw-holes"]]],
+		if( bottom_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
 	]
 );
