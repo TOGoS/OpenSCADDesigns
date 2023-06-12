@@ -1,4 +1,4 @@
-// TGx9.2.0 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.2.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -53,6 +53,9 @@
 // - Bevel the outer hull, and then round that, such that it fits within either
 //   the requested rounding radius or the standard beveled rectangle.
 // - Magnet hole depth is configurable
+// 9.2.1:
+// - Fix that offset wasn't being taken into account when generating rounded beveled block hull
+//   (i.e. tgx9_smooth_foot)
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -206,14 +209,22 @@ module tgx9_atom_foot(height=100, offset=0, radius) {
 // though adding some overlap seems to clean up the preview somewhat.
 epsilon     = $preview ? 0.001 : 0; // 1/256; // of a millimiter
 rot_epsilon = $preview ? 0.001 : 0; // 1/ 16; // of a degree
+polygon_fill_epsilon = 0.001;
 
 // Extrude children() along the outside of path, and fill the inside with an extruded polygon
 module tgx9_filled_extruded_path(inner_path, z0, z1) {
 	tgx9_extrude_along_loop(inner_path, rot_epsilon=rot_epsilon) children();
-	translate([0,0,z0]) linear_extrude(z1-z0, center=false) polygon(inner_path);
+	// TODO: Offset the points instead of scaling
+	// Note: When, in TGx9.1.13, this was done using a cube, epsilon=0 seemed to do the job;
+	// switching from cube to extruded polygon seems to result in a zero-width wall around betwen
+	// the fill and the horizontally-extruded edges.
+	translate([0,0,z0]) scale([1+polygon_fill_epsilon, 1+polygon_fill_epsilon, 1])
+		linear_extrude(z1-z0, center=false) polygon(inner_path);
 }
 
-// Old fashioned, never-bevels-the-corners version
+// Old fashioned, never-bevels-the-corners version.
+// Might be worth refactoring to use cubes instead of
+// extruded polygons for the center fill, since th....
 module tgx9_rounded_profile_extruded_square(size, corner_radius, z_offset) {
 	assert( is_list(size) );
 	assert( len(size) == 3 );
@@ -243,7 +254,7 @@ module tgx9_smooth_foot(
 	} else {
 		path_info = tgx9_block_hull_extrusion_path_info(size, rounding_radius=corner_radius);
 		tgx9_filled_extruded_path(path_info[1], -offset, size[2]+offset)
-			polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=path_info[0]), 0));
+			polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=path_info[0]), offset));
 	}
 }
 
