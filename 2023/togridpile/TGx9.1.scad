@@ -1,4 +1,4 @@
-// TGx9.1.13.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.13.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -49,6 +49,8 @@
 // - Support foot chunk additions when segmentation="block"
 // 9.1.13.1:
 // - Fix a tab lmao
+// 9.1.13.2:
+// - Add $tgx9_rounded_profile_extruded_square_fill_method option
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -85,6 +87,11 @@ preview_fn = 12;
 render_fn = 36;
 
 $fn = $preview ? preview_fn : render_fn;
+
+/* [Internals] */
+
+// Set to "polygon" to see zero overlap between side extrusions/fill fail to work
+$tgx9_rounded_profile_extruded_square_fill_method = "cube"; // ["cube", "polygon"]
 
 module tgx9__end_params() { }
 
@@ -166,17 +173,25 @@ module tgx9_rounded_profile_extruded_square(size, corner_radius, z_offset) {
 	  size[1] - corner_radius*2,
 	  size[2]
 	];
-	tgx9_extrude_along_loop([
+	inner_path = [
 		[-adjusted_size[0]/2, -adjusted_size[1]/2],
 		[ adjusted_size[0]/2, -adjusted_size[1]/2],
 		[ adjusted_size[0]/2,  adjusted_size[1]/2],
 		[-adjusted_size[0]/2,  adjusted_size[1]/2],
-	], rot_epsilon=rot_epsilon) children();
-	translate([0,0,adjusted_size[2]/2+z_offset]) cube([
-		adjusted_size[0] + epsilon*2,
-		adjusted_size[1] + epsilon*2,
-		adjusted_size[2]
-	], center=true);	
+	];
+	tgx9_extrude_along_loop(inner_path, rot_epsilon=rot_epsilon) children();
+	
+	translate([0,0,adjusted_size[2]/2+z_offset]) {
+		if( $tgx9_rounded_profile_extruded_square_fill_method == "cube" ) {
+			cube([
+				adjusted_size[0] + epsilon*2,
+				adjusted_size[1] + epsilon*2,
+				adjusted_size[2]
+			], center=true);
+		} else {
+			linear_extrude(adjusted_size[2], center=true) polygon(inner_path);
+		}
+	}
 }
 
 module tgx9_smooth_foot(
