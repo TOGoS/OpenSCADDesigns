@@ -1,4 +1,4 @@
-// TGx9.1.13 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.13.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -47,6 +47,8 @@
 // - lip_segmentation = "block"|"chunk".
 // 9.1.13:
 // - Support foot chunk additions when segmentation="block"
+// 9.1.13.1:
+// - Fix a tab lmao
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -129,7 +131,7 @@ let( tb=min(radius-0.2, top_bevel_size), bb=min(radius-0.1, bottom_bevel_size) )
 	[-radius+bb    ,      0    ,    -0.4, -1   ],
 	[-radius       ,        bb ,    -1  , -0.4 ],
 	[-radius       , height-tb ,    -1  ,  0.4 ],
-   [-radius+tb    , height    ,    -1  ,  0.4 ],
+	[-radius+tb    , height    ,    -1  ,  0.4 ],
 	[-radius+tb    , height*2  ,    -1  ,  1   ],
 	[      0       , height*2  ,     0  ,  1   ],
 ];
