@@ -1,4 +1,4 @@
-// TOGridPileLib-v1.6.1
+// TOGridPileLib-v1.6.2
 //
 // Changes:
 // v1.3.0:
@@ -23,6 +23,8 @@
 // v1.6.1:
 // - Fix rounded beveled squares; this will increase their size slightly compared to the old, buggy calculation!
 // - Old block shapes pass in _adj=0.707 to retain the old behavior
+// v1.6.2:
+// - Fix misspelled "[o]ffset" that prevented some hybrid6 shapes from working
 // 
 // Notes:
 // - 0.707 = cos(pi/4), or 1/sqrt(2)
@@ -134,7 +136,7 @@ module togridpile_h6x_2d(togridpile_pitch=38.1, inset=1.5875, corner_radius=1.58
 	fwoobwidth = togridpile_pitch/3-inset*2;
 	for( xm=[-1,0,1] ) for( ym=[-1,0,1] ) {
 		translate([xm*togridpile_pitch/3, ym*togridpile_pitch/3])
-			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, _adj=_adj, offset=ffset);
+			togridpile__xy_rounded_beveled_square([fwoobwidth, fwoobwidth], inset*2*0.707, corner_radius, _adj=_adj, offset=offset);
 	}
 }
 
