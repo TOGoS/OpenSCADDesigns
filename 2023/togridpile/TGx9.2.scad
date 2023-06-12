@@ -1,4 +1,4 @@
-// TGx9.2.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.2.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -56,30 +56,39 @@
 // 9.2.1:
 // - Fix that offset wasn't being taken into account when generating rounded beveled block hull
 //   (i.e. tgx9_smooth_foot)
+// 9.2.2:
+// - Make bevel size configurable, do the math to determine rounded corner squishing accordingly
+// - Change default settings to be a simpler block (1x1x1; no magnet/screw holes)
+// - Change default magnet hole depth to 2.2mm;
+
+/* [Atom/chunk/block size] */
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
 atom_pitch_u = 8;
 chunk_pitch_atoms = 3;
 // X/Y block size, in chunks:
-block_size_chunks = [2, 1];
-// Block height, in 'u'
-block_height_u    = 16;
-magnet_hole_diameter = 6.2;
-magnet_hole_depth = 2;
+block_size_chunks = [1, 1];
+// Block height, in 'u', not including lip
+block_height_u    = 24;
 lip_height = 2.54;
 foot_segmentation = "chunk"; // ["atom","chunk","block"]
 lip_segmentation = "block"; // ["chunk","block"]
+
+// 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm
+bevel_size_u = 2;
 
 // Squash too-sharp rounded corners to fit in 1/8" bevels
 $tgx9_force_bevel_rounded_corners = true;
 
 /* [Connectors] */
 
-bottom_magnet_holes_enabled = true;
-label_magnet_holes_enabled = true;
-top_magnet_holes_enabled = true;
-screw_hole_style = "THL-1001"; // ["none","THL-1001","THL-1002"]
+magnet_hole_diameter = 6.2; // 0.1
+magnet_hole_depth = 2.2;    // 0.1
+bottom_magnet_holes_enabled = false;
+label_magnet_holes_enabled = false;
+top_magnet_holes_enabled = false;
+screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 
 /* [Cavity] */
 
@@ -113,6 +122,7 @@ $tgx9_unit_table = [
 	["u",     [u,                   "mm"]],
 	["atom",  [atom_pitch_u,         "u"]],
 	["chunk", [chunk_pitch_atoms, "atom"]],
+	["tgp-standard-bevel"   , [bevel_size_u, "u"]], // Usuually 1/8"
 	["m-outer-corner-radius", [4, "u"]],
 	["f-outer-corner-radius", [3, "u"]],
 ];
@@ -181,6 +191,12 @@ function tgx9_rounded_beveled_rectangle_inner_path_points(size, bevel_size, roun
 		[-size[0]/2+acy, -size[1]/2+acx],
 	 ];
 
+sqrt2 = 1.414;
+
+function tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) =
+	bevel_size / (2 - sqrt2);
+// (/ 0.125 (- 2 1.414)) = 0.21 ~= (/ 13 64.0), which seems about right; between 3/16" and 1/4"
+
 // Returns [rounding_radius assumed by the path, path point list]
 // of the 'inner path' for either a rounded rectangle,
 // or if that rounded rectangle would not fit entirely within the
@@ -188,13 +204,15 @@ function tgx9_rounded_beveled_rectangle_inner_path_points(size, bevel_size, roun
 // for the beveled rectangle with minimum rounding radius such that it
 // the offset result fits within both the beveled and rounded (by the requested rounding radius)
 // rectangles.
-function tgx9_block_hull_extrusion_path_info( size, rounding_radius ) =
-	// TODO: Make 'bevel size' a unit in the unit table,
-	// do the math to determine minimum rounding radius
-	// and rounding radius for the rounded beveled version based on that.
+function tgx9_block_hull_extrusion_path_info(
+	size,
+	bevel_size = tog_unittable__divide_ca($tgx9_unit_table, [1, "tgp-standard-bevel"], [1, "mm"]),
+	rounding_radius
+) =
 	let( inch = tog_unittable__divide_ca($tgx9_unit_table, [1, "inch"], [1, "mm"]) )
-	$tgx9_force_bevel_rounded_corners && rounding_radius < 1/4*inch ?
-		[5/32*inch, tgx9_rounded_beveled_rectangle_inner_path_points( size, 1/8*inch, 5/32*inch )] :
+	let( rb_mult = 2.5 ) // TODO: The trigonometry to calculate this value exactly; but 2.5 is a nice round upper limit
+	$tgx9_force_bevel_rounded_corners && rounding_radius < tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) ?
+		[5/32*inch, tgx9_rounded_beveled_rectangle_inner_path_points( size, bevel_size, rb_mult * (rounding_radius-bevel_size) )] :
 		[rounding_radius, tgx9_rounded_rectangle_inner_path_points( size, rounding_radius )];
 
 module tgx9_atom_foot(height=100, offset=0, radius) {
@@ -663,7 +681,7 @@ inch = 25.4;
 
 a_rounding_radius = 3.96875;
 //a_path = tgx9_rounded_beveled_rectangle_inner_path_points([38.1, 38.1], 1/8*inch, 5/32*inch);
-path_info = tgx9_block_hull_extrusion_path_info([38.1, 38.1], 3/16*inch);
+path_info = tgx9_block_hull_extrusion_path_info([38.1, 38.1], rounding_radius=3/16*inch);
 tgx9_filled_extruded_path(path_info[1], -1, 1)
 	polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=38.1, radius=3/16*inch), 0));
 /*
