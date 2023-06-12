@@ -1,4 +1,11 @@
-// TGx9.2.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.2.2.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+//
+// Version numbering:
+// M.I.C.R
+// - Major shape version
+// - mInor shape variation
+// - minor Change to functionality/parameters
+// - non-functionality-altering Refactoring
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -60,6 +67,8 @@
 // - Make bevel size configurable, do the math to determine rounded corner squishing accordingly
 // - Change default settings to be a simpler block (1x1x1; no magnet/screw holes)
 // - Change default magnet hole depth to 2.2mm;
+// 9.2.2.1:
+// - Don't really need a sqrt2 constant
 
 /* [Atom/chunk/block size] */
 
@@ -191,10 +200,8 @@ function tgx9_rounded_beveled_rectangle_inner_path_points(size, bevel_size, roun
 		[-size[0]/2+acy, -size[1]/2+acx],
 	 ];
 
-sqrt2 = 1.414;
-
 function tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) =
-	bevel_size / (2 - sqrt2);
+	bevel_size / (2 - sqrt(2));
 // (/ 0.125 (- 2 1.414)) = 0.21 ~= (/ 13 64.0), which seems about right; between 3/16" and 1/4"
 
 // Returns [rounding_radius assumed by the path, path point list]
