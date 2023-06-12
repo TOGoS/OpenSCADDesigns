@@ -1,4 +1,4 @@
-// TGx9.1.12 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.1.13 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // 9.1.0:
 // - Initial demo of simple atomic feet
@@ -45,6 +45,8 @@
 //   extraneous cuts into the lip
 // 9.1.12:
 // - lip_segmentation = "block"|"chunk".
+// 9.1.13:
+// - Support foot chunk additions when segmentation="block"
 
 // Base unit; 1.5875mm = 1/16"
 u = 1.5875; // 0.0001
@@ -326,11 +328,22 @@ module tgx9_1_0_block_foot(
 
 	if( foot_segmentation == "block" ) {
 		tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
-	}
-	else
-	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
-	for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2-0.5] )
+		// TODO: Support chunk subtractions, here
+		
+		for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
+		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2-0.5] )
 		translate([xm*chunk_pitch, ym*chunk_pitch])
+		{
+			for( i=[0 : 1 : len(chunk_ops)-1] ) {
+				op = chunk_ops[i];
+				if( op[0] == "add" ) tgx9_do_sshape(op[1]) children();
+			}
+		}
+	} else {
+		for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
+		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2-0.5] )
+		translate([xm*chunk_pitch, ym*chunk_pitch])
+		{
 			difference() {
 				union() {
 					tgx9_chunk_foot(foot_segmentation, height=block_size[2]*2, corner_radius=corner_radius, offset=offset);
@@ -345,6 +358,8 @@ module tgx9_1_0_block_foot(
 					if( op[0] == "subtract" ) tgx9_do_sshape(op[1]) children();				
 				}
 			}
+		}
+	}
 }
 
 module tgx9_block_hull(block_size, corner_radius, offset=0) intersection() {
