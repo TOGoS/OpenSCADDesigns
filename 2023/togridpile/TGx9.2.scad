@@ -1,4 +1,4 @@
-// TGx9.2.2.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -69,6 +69,8 @@
 // - Change default magnet hole depth to 2.2mm;
 // 9.2.2.1:
 // - Don't really need a sqrt2 constant
+// 9.3:
+// - Add option to subtract tgx1001_v6hc_block_subtractor from lip
 
 /* [Atom/chunk/block size] */
 
@@ -86,6 +88,9 @@ lip_segmentation = "block"; // ["chunk","block"]
 
 // 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm
 bevel_size_u = 2;
+
+// Subtract from lip such that blocks with horizontal v6 (or v8) columns can fit
+v6hc_subtraction_enabled = false;
 
 // Squash too-sharp rounded corners to fit in 1/8" bevels
 $tgx9_force_bevel_rounded_corners = true;
@@ -387,6 +392,8 @@ function tgx9_eval_expression(expression) =
 	["literal", expression];
 */
 
+use <../lib/TGX1001.scad>
+
 // Shapes are a subset of S-Values
 module tgx9_do_sshape(shape) {
 	assert( is_list(shape), str("shape passed to tgx9_do_sshape should be represented as a list, but got ", shape) );
@@ -402,6 +409,14 @@ module tgx9_do_sshape(shape) {
 		tgx9_usermod_1(len(shape) > 1 ? shape[1] : undef);
 	} else if( type == "tgx9_usermod_2" ) {
 		tgx9_usermod_2(len(shape) > 1 ? shape[1] : undef);
+	} else if( type == "tgx1001_v6hc_block_subtractor" ) {
+		assert(len(shape) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
+		assert(len(shape[1]) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
+		render(10) tgx1001_v6hc_block_subtractor(
+			block_size_ca = shape[1],
+			unit_table    = $tgx9_unit_table,
+			offset        = margin
+		);
 	} else {
 		assert(false, str("Unrecognized S-shape type: '", type, "'"));
 	}
@@ -665,6 +680,10 @@ module tgx9_usermod_1(what) {
 	}
 }
 
+if( v6hc_subtraction_enabled && lip_height <= u-margin ) {
+	echo("v6hc_subtraction_enabled enabled but not needed due to low lip (assuming column inset=1u, which is standard), so I won't bother to actually subtract it");
+}
+
 tgx9_1_6_cup(
 	block_size_ca = block_size_ca,
 	lip_height    = lip_height,
@@ -673,26 +692,14 @@ tgx9_1_6_cup(
 	block_top_ops = [
 		if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
 		if( label_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "label-magnet-holes"]],
+		// TODO (maybe, if it increases performance): If lip segmentation = "chunk", do this in lip_chunk_ops instead of for the whole block
+		if( v6hc_subtraction_enabled && lip_height > u-margin ) ["subtract", ["tgx1001_v6hc_block_subtractor", block_size_ca]],
 	],
 	lip_chunk_ops = [
-		if( top_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]]
+		if( top_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
 	],
 	bottom_chunk_ops = [
 		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "chunk-screw-holes"]]],
 		if( bottom_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
 	]
 );
-
-/*
-inch = 25.4;
-
-a_rounding_radius = 3.96875;
-//a_path = tgx9_rounded_beveled_rectangle_inner_path_points([38.1, 38.1], 1/8*inch, 5/32*inch);
-path_info = tgx9_block_hull_extrusion_path_info([38.1, 38.1], rounding_radius=3/16*inch);
-tgx9_filled_extruded_path(path_info[1], -1, 1)
-	polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=38.1, radius=3/16*inch), 0));
-/*
-linear_extrude(8, center=true) polygon(a_path);
-tgx9_extrude_along_loop(a_path) translate([-a_rounding_radius/2, 0]) //square([a_rounding_radius, 4], center=true);
-	polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=38.1, radius=3/16*inch), 0));
-*/
