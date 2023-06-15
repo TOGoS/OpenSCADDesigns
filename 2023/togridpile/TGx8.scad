@@ -1,4 +1,4 @@
-// TOGridPile [experimental] shape 8.4
+// TOGridPile [experimental] shape 8.4.2
 //
 // Changes:
 // v8.2:
@@ -16,6 +16,8 @@
 // - Add 'none' body style, to make a block that's just columns
 // - Add 'swiss' body style, which puts space for an entire column diagonally between the columns
 // - Put screw holes through along X and Y axes
+// v8.4.2:
+// - Actually apply size parameters to column shape
 
 margin = 0.1;
 
@@ -150,21 +152,21 @@ module togridpile_shape8_block(block_pitch_atoms=block_pitch_atoms, body_style=b
 	for( z=line_segment_center_positions(block_size_atoms[2], atom_pitch) )
 	translate([0,y,z])
 		linear_extrude_x_nicked(atom_pitch*block_size_atoms[2]+column_length_offset*2, d=column_diameter+offset*2, bevel_size=overhang_nick_size)
-			togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
+			the_atom_column_footprint();
 	
 	if( column_axes[1] )
 	for( x=line_segment_center_positions(block_size_atoms[0], atom_pitch) )
 	for( z=line_segment_center_positions(block_size_atoms[2], atom_pitch) )
 	translate([x,0,z]) rotate([0,0,90])
 		linear_extrude_x_nicked(atom_pitch*block_size_atoms[2]+column_length_offset*2, d=column_diameter+offset*2, bevel_size=overhang_nick_size)
-			togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
+			the_atom_column_footprint();
 	
 	if( column_axes[2] )
 	for( x=line_segment_center_positions(block_size_atoms[0], atom_pitch) )
 	for( y=line_segment_center_positions(block_size_atoms[1], atom_pitch) )
 	translate([x,y,0])
 		linear_extrude(atom_pitch*block_size_atoms[2]+column_length_offset*2, center=true)
-			togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
+			the_atom_column_footprint();
 }
 
 module togridpile_shape8_extruded_baseplate(size_blocks, block_pitch_atoms) {
@@ -211,6 +213,16 @@ module togridpile_shape8_3d_baseplate(size_blocks, floor_thickness=0, lip_height
 	}
 }
 
+module the_atom_column_footprint() {
+	togridpile2_atom_column_footprint(
+		column_style      = column_style,
+		atom_pitch        = atom_pitch,
+		column_diameter   = column_diameter,
+		min_corner_radius = min_corner_radius,
+		offset            = -margin,
+		$fn               = column_fn
+	);
+}
 
 block_size = block_pitch_atoms*atom_pitch;
 
@@ -229,8 +241,7 @@ translate([0,0,block_size/2]) difference() {
 		for( x=line_segment_center_positions(block_pitch_atoms-1, atom_pitch) )
 		for( y=line_segment_center_positions(block_pitch_atoms-1, atom_pitch) )
 		translate([x,y,0])
-			linear_extrude(atom_pitch*block_pitch_atoms*2, center=true)
-				togridpile2_atom_column_footprint(column_style=column_style, $fn=column_fn);
+			linear_extrude(atom_pitch*block_pitch_atoms*2, center=true) the_atom_column_footprint();
 	}
 }
 
