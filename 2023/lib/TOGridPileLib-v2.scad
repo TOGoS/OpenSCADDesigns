@@ -1,4 +1,4 @@
-// TOGridPileLib-v2.4.1
+// TOGridPileLib-v2.4.2
 //
 // Changes:
 // v2.2:
@@ -20,6 +20,10 @@
 // v2.4.1:
 // - Add 'deplane_offset' parameter in attempt to avoid Z-fighting or whatever
 //   which leads to leaky surfaces
+// v2.4.2:
+// - Redefine v6[.0] feet using a constant multiplier (1.707 = sqrt(2)/2 + 1) of column_inset
+// - Redefine v7.1 feet using sqrt(2) instead of 2*0.707
+// - Redefine v8[.4] feet using sqrt(2)/2 instead of 0.707
 
 // 12.7mm = 1/2"
 togridpile2_default_atom_pitch        = 12.7000; // 0.0001
@@ -44,15 +48,18 @@ module togridpile2_atom_column_footprint(
 	offset=0
 ) {
 	if( column_style == "none" ) {
-	} else if( column_style == "v3" || column_style == "v6" ) {
+	} else if( column_style == "v3" || column_style == "v6" || column_style == "v6.0" ) {
 		column_inset = (atom_pitch - column_diameter)/2;
-		// (0.707-0.414)*min_corner_radius should be equivalent to the old _adj=... hack
-		// It might be better if the adjustment was redefined in terms of column_inset instead of min_corner_radius
-		// ...which should be easy since hey're both by default 1/16"
-		tog_shapelib_rounded_beveled_square([column_diameter, column_diameter], column_inset*2*0.707 + (0.707-0.414)*min_corner_radius, min_corner_radius, offset);
+		tog_shapelib_rounded_beveled_square([column_diameter, column_diameter],
+			// Previously column_inset*2*0.707 + (0.707-0.414)*min_corner_radius;
+			// this is equivalent, when the inset is the same as tha min_corner_radius (each 1/16", usually)
+			// to how the bevel was originally miscalcualted.
+			column_inset*(sqrt(2)/2+1), // 1.707
+			min_corner_radius, offset
+		);
 	} else if( column_style == "v6.1" ) {
 		column_inset = (atom_pitch - column_diameter)/2;
-		tog_shapelib_rounded_beveled_square([column_diameter, column_diameter], column_inset*2*0.707, min_corner_radius, offset);
+		tog_shapelib_rounded_beveled_square([column_diameter, column_diameter], column_inset*sqrt(2), min_corner_radius, offset);
 	} else if( column_style == "v6.2" ) {
 		// similar to v6 or v6.1, but with deep-enough bevels to fit another diagonally, as in v8.4
 		column_inset = (atom_pitch - column_diameter)/2;
@@ -63,7 +70,7 @@ module togridpile2_atom_column_footprint(
 		// rounded but with corners trimmed so another can fit between diagonally
 		intersection() {
 			circle(d=column_diameter+offset);
-			rotate([0,0,45]) square(atom_pitch*0.707+offset, center=true);
+			rotate([0,0,45]) square(atom_pitch*sqrt(2)/2+offset, center=true);
 		}
 	} else {
 		assert(false, str("Unrecognized column column_style: '", column_style, "'"));
