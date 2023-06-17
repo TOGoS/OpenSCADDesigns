@@ -1,4 +1,4 @@
-// TGx9.3.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.2.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -76,6 +76,8 @@
 // - Adjust default label width to 10.0mm
 // 9.3.2:
 // - Trim sublip from above fingerslide
+// 9.3.2.1:
+// - Refactor some for loops to use tgx9_chunk_xy_positions
 
 /* [Atom/chunk/block size] */
 
@@ -427,6 +429,15 @@ module tgx9_do_sshape(shape) {
 	}
 }
 
+function tgx9_chunk_xy_positions(block_size_chunks) =
+	let( chunk_pitch = tog_unittable__divide_ca($tgx9_unit_table, [1, "chunk"], [1, "mm"]) )
+[
+	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
+		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
+			[xm*chunk_pitch, ym*chunk_pitch]
+];
+
+
 module tgx9_1_0_block_foot(
 	block_size_ca,
 	foot_segmentation,
@@ -444,21 +455,15 @@ module tgx9_1_0_block_foot(
 	if( foot_segmentation == "block" ) {
 		tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
 		// TODO: Support chunk subtractions, here
-		
-		for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
-		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2-0.5] )
-		translate([xm*chunk_pitch, ym*chunk_pitch])
-		{
+
+		for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 			for( i=[0 : 1 : len(chunk_ops)-1] ) {
 				op = chunk_ops[i];
 				if( op[0] == "add" ) tgx9_do_sshape(op[1]) children();
 			}
 		}
 	} else {
-		for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2-0.5] )
-		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2-0.5] )
-		translate([xm*chunk_pitch, ym*chunk_pitch])
-		{
+		for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 			difference() {
 				union() {
 					tgx9_chunk_foot(foot_segmentation, height=block_size[2]*2, corner_radius=corner_radius, offset=offset);
