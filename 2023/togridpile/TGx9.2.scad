@@ -1,4 +1,4 @@
-// TGx9.3.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -74,6 +74,8 @@
 // 9.3.1:
 // - Adjust default magnet hole depth to 2.4mm
 // - Adjust default label width to 10.0mm
+// 9.3.2:
+// - Trim sublip from above fingerslide
 
 /* [Atom/chunk/block size] */
 
@@ -541,9 +543,20 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_cavity_size, corner_radius=cavity_corner_radius);
-	translate([0,0,-cavity_size[2]])
-		tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius, z_offset=0)
-			polygon(tgx9_offset_points(tgx9_cavity_side_profile_points(cavity_size[2], cavity_corner_radius)));
+	union() {
+		top_bevel_size = 3;
+		profile_points = tgx9_offset_points(tgx9_cavity_side_profile_points(cavity_size[2], cavity_corner_radius, top_bevel_size=top_bevel_size));
+		
+		translate([0,0,-cavity_size[2]])
+			tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius, z_offset=0)
+				polygon(profile_points);
+
+		if( fingerslide_radius > 0 ) {
+			// Trim sublip from fingerslide end;
+			too_fancy = 0; // -profile_points[len(profile_points)-2][0]*2;
+			translate([cavity_size[1]/2-top_bevel_size,0,0]) cube([top_bevel_size*2, cavity_size[1]-cavity_corner_radius*2+too_fancy, top_bevel_size*2], center=true);
+		}
+	}
 	
 	// the_sublip();
 	the_label_platform();
