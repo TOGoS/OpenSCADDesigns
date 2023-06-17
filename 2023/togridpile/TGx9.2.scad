@@ -1,4 +1,4 @@
-// TGx9.3 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -71,6 +71,9 @@
 // - Don't really need a sqrt2 constant
 // 9.3:
 // - Add option to subtract tgx1001_v6hc_block_subtractor from lip
+// 9.3.1:
+// - Adjust default magnet hole depth to 2.4mm
+// - Adjust default label width to 10.0mm
 
 /* [Atom/chunk/block size] */
 
@@ -98,7 +101,7 @@ $tgx9_force_bevel_rounded_corners = true;
 /* [Connectors] */
 
 magnet_hole_diameter = 6.2; // 0.1
-magnet_hole_depth = 2.2;    // 0.1
+magnet_hole_depth    = 2.4; // 0.1
 bottom_magnet_holes_enabled = false;
 label_magnet_holes_enabled = false;
 top_magnet_holes_enabled = false;
@@ -106,10 +109,10 @@ screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 
 /* [Cavity] */
 
-wall_thickness = 2;
-floor_thickness = 6.35; // 0.0001
-label_width = 12.5;
-fingerslide_radius = 12.5;
+wall_thickness     =  2;    // 0.1
+floor_thickness    =  6.35; // 0.0001
+label_width        = 10.0 ; // 0.1
+fingerslide_radius = 12.5 ; // 0.1
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
 
