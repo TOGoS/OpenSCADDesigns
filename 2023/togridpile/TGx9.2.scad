@@ -1,4 +1,4 @@
-// TGx9.3.2.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.2.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -78,6 +78,8 @@
 // - Trim sublip from above fingerslide
 // 9.3.2.1:
 // - Refactor some for loops to use tgx9_chunk_xy_positions
+// 9.3.2.2:
+// - Note that label_width parameter specifies width from edge of cavity
 
 /* [Atom/chunk/block size] */
 
@@ -115,6 +117,7 @@ screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
+// How far label platform sticks out from the inside of the cup
 label_width        = 10.0 ; // 0.1
 fingerslide_radius = 12.5 ; // 0.1
 cavity_bulkhead_positions = [];
