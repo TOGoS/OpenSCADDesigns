@@ -1,17 +1,24 @@
-// PanelConnector-v1.1
+// PanelConnector-v1.2
 //
 // Changes:
 // v1.1:
 // - Adjust height of teeth such that they are lower near the center and higher at the edges
+// v1.2:
+// - Make sizes adjustable
+
+// Bolt hole diameter, in mm; 11 ~= 7/16", 8mm ~= 5/16"
+bolt_hole_diameter  = 11;
+connector_length    = 76.2;
+connector_width     = 25.4;
+// Thickness of piece, not including the teeth; 4.7625mm = 3/16"
+connector_thickness =  4.7625; // 0.0001
+
+module __oiserfv98h34_end_params() { }
 
 inch = 25.4;
 
-connector_length = 3*inch;
-connector_width  = 1*inch;
-connector_thickness = 3/16*inch;
 zig_height       = 1/8*inch;
 zig_slope        = 1/32;
-bolt_hole_diameter = 7/16*inch; // should accommodate a 3/8" bolt
 
 preview_fn = 12;
 render_fn  = 36;
