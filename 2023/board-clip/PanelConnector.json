@@ -1,0 +1,24 @@
+{
+	"parameterSets": {
+		"p1099 - cabinet clip": {
+			"barrel_diameter": "19.05",
+			"barrel_height": "10",
+			"bolt_hole_diameter": "8",
+			"bottom_text": "Not for      babies",
+			"connector_length": "76.2",
+			"connector_thickness": "4.7625",
+			"connector_width": "20"
+		},
+		"p1100": {
+			"barrel_diameter": "19.05",
+			"barrel_height": "5",
+			"barrel_offset": "-12",
+			"bolt_hole_diameter": "8",
+			"bottom_text": "No bab      ",
+			"connector_length": "50.8",
+			"connector_thickness": "4.7625",
+			"connector_width": "20"
+		}
+	},
+	"fileFormatVersion": "1"
+}

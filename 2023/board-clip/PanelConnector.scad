@@ -1,4 +1,4 @@
-// PanelConnector-v1.3
+// PanelConnector-v1.4
 //
 // Changes:
 // v1.1:
@@ -7,14 +7,18 @@
 // - Make sizes adjustable
 // v1.3:
 // - Option for FUN TEXT on the bottom
+// v1.4:
+// - barrel_offset
 
 // Bolt hole diameter, in mm; 11 ~= 7/16", 8mm ~= 5/16"
 bolt_hole_diameter  = 11;
+
 connector_length    = 76.2;
 connector_width     = 25.4;
 // Thickness of piece, not including the teeth; 4.7625mm = 3/16"
 connector_thickness =  4.7625; // 0.0001
 
+barrel_offset    =  0;
 barrel_height       =  0; //3.175;
 barrel_diameter     = 19.05;
 
@@ -43,14 +47,14 @@ intersection() {
 
 		translate([0,0,connector_thickness/2]) cube([connector_length*2, connector_width*2, connector_thickness], center=true);
 
-		if( barrel_height > 0 ) cylinder(d=barrel_diameter, h=connector_thickness+barrel_height, center=false);
+		if( barrel_height > 0 ) translate([barrel_offset, 0, 0]) cylinder(d=barrel_diameter, h=connector_thickness+barrel_height, center=false);
 	}
 
 	difference() {
 		linear_extrude((connector_thickness+barrel_height)*2) difference() {
 			tog_shapelib_rounded_square([connector_length, connector_width], 1/4*inch);
 			
-			circle(d=bolt_hole_diameter);
+			translate([barrel_offset, 0, 0]) circle(d=bolt_hole_diameter);
 		}
 
 		if( len(bottom_text) > 0 ) linear_extrude(1, center=true) scale([-1,1]) text(bottom_text, halign="center", valign="center", font="Arial", size=7);
