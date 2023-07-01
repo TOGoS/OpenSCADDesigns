@@ -1,4 +1,10 @@
 // TOGUnitTable-v1.0.0 - Library for handling 'complex amounts' in the form of [multiplier, unit name], e.g. [1.5, "inch"]
+//
+// 2023-07-01: the following 'annotation' is something I just made up,
+// but is intended as a way for future packaging tools to know that it's 'safe'
+// (because everything has been somewhat namespaced) to turn a `use <x>`
+// into an `include <x>`, making it inlinable:
+// safe-to-include: true
 // 
 // Versions:
 // v1.0.0:
