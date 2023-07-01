@@ -1,4 +1,9 @@
-// TOGridPileBracketShelf-v1.0
+// TOGridPileBracketShelf-v1.1
+// 
+// Changes:
+// v1.1:
+// - Cut 'window' out of top of front edge
+// - Cut off extra bit at top so hull_size[2] = capacity[2] + wall_thickness
 
 margin = 0.075;
 capacity_chunks = [6, 1];
@@ -17,7 +22,7 @@ outer_bevel_size = wall_thickness/2;
 hull_size = [
 	capacity[0] + wall_thickness*2,
 	capacity[1] + wall_thickness*2,
-	capacity[2] + wall_thickness*2
+	capacity[2] + wall_thickness
 ];
 
 $fn = $preview ? preview_fn : render_fn;
@@ -47,12 +52,20 @@ module block_subtraction(block_size_ca) intersection() {
 	);
 }
 
-difference() {
-	tog_shapelib_xy_rounded_cube(hull_size, outer_bevel_size);
+translate([0,0,(hull_size[2]+wall_thickness)/2]) difference() {
+	translate([0, 0, -wall_thickness/2]) tog_shapelib_xy_rounded_cube(hull_size, outer_bevel_size);
 	
-	translate([0, -hull_size[1]/2, hull_size[2]/2]) rotate([45, 0, 0]) cube([hull_size[0]+2, hull_size[1]*1, hull_size[2]*1], center=true);
+	// Bevel the top by some arbitrary amount
+	translate([0, -hull_size[1]/2, hull_size[2]/2]) rotate([45, 0, 0]) cube([hull_size[0]+2, hull_size[2]*1.2, hull_size[2]*1.2], center=true);
+	
+	// TOGridPile block cavity
 	translate([0, 0, -capacity[2]/2]) block_subtraction(capacity_ca);
-	echo(capacity_chunks=capacity_chunks);
+
+	// Front 'window'
+	translate([0, -hull_size[1]/2, 0]) tog_shapelib_xz_rounded_cube(
+		[capacity[0], wall_thickness*4, togridpile3_decode([2, "atom"])],
+		tgx9_decode_corner_radius("f"), margin);
+
 	for( xc=[-capacity_chunks[0]/2+0.5 : 1 : capacity_chunks[0]/2] ) {
 		x = togridpile3_decode([xc, "chunk"]);
 		echo(hole_pos=x);
