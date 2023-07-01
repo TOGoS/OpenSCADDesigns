@@ -1,4 +1,4 @@
-// TOGridPileLib-v3
+// TOGridPileLib-v3.1
 //
 // HOKAY WHAT ARE THE COMMON
 // things that I want the library to do?
@@ -7,11 +7,17 @@
 // - [X] Allow unit table to be overridden easily, but default by default
 // - [ ] Support common configurations by name (e.g. "V9", or some "WSTYPE-...")
 //   without having to pass 50 different parameters in
+// - [ ] Support subtractions for those common configurations also,
+//   such that you don't need to remember to 'do less rounding', etc.
 // - [ ] Make a simple foot-only block that I can subtract stuff from
 //   params: foot style
 // - [ ] Make a block with a lip
 // - [ ] Make a block foot, and I'll intersect it with some other things
 // - [X] Translate a block_size_ca to mm
+// 
+// Changes:
+// v3.1:
+// - s/togridpile3_decode_size/togridpile3_decode_vector/
 
 use <../lib/TOGUnitTable-v1.scad>
 
@@ -32,10 +38,11 @@ togridpile3_default_unit_table = [
 function togridpile3_get_default_unit_table() = togridpile3_default_unit_table;
 function togridpile3_get_unit_table() = is_undef($togridpile3_unit_table) ? togridpile3_default_unit_table : $togridpile3_unit_table;
 
-function togridpile3_decode_size(size) =
-	let( unit_table = togridpile3_get_unit_table() )
-	togridpile3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, [1, "mm"]));
+function togridpile3_decode(dim, unit_table=togridpile3_get_unit_table(), unit=[1, "mm"]) =
+	tog_unittable__divide_ca(unit_table, dim, unit);
+function togridpile3_decode_vector(size, unit_table=togridpile3_get_unit_table(), unit=[1, "mm"]) =
+	togridpile3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit));
 
 module togridpile3_cube(size, offset=0) {
-	cube(togridpile3_decode_size(size), center=true);
+	cube(togridpile3_decode_vector(size), center=true);
 }

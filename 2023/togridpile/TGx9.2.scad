@@ -416,9 +416,9 @@ module tgx9_do_sshape(shape) {
 	} else if( type == "the_cup_cavity" ) {
 		the_cup_cavity();
 	} else if( type == "tgx9_usermod_1" ) {
-		tgx9_usermod_1(len(shape) > 1 ? shape[1] : undef);
+		tgx9_usermod_1(len(shape) > 1 ? shape[1] : undef, len(shape) > 2 ? shape[2] : undef);
 	} else if( type == "tgx9_usermod_2" ) {
-		tgx9_usermod_2(len(shape) > 1 ? shape[1] : undef);
+		tgx9_usermod_2(len(shape) > 1 ? shape[1] : undef, len(shape) > 2 ? shape[2] : undef);
 	} else if( type == "tgx1001_v6hc_block_subtractor" ) {
 		assert(len(shape) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
 		assert(len(shape[1]) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
@@ -440,6 +440,11 @@ function tgx9_chunk_xy_positions(block_size_chunks) =
 			[xm*chunk_pitch, ym*chunk_pitch]
 ];
 
+function tgx9_decode_corner_radius(spec) =
+	is_num(spec) ? spec :
+	spec == "f" ? tog_unittable__divide_ca($tgx9_unit_table, [1, "f-outer-corner-radius"], [1, "mm"]) :
+	spec == "m" ? tog_unittable__divide_ca($tgx9_unit_table, [1, "m-outer-corner-radius"], [1, "mm"]) :
+	tog_unittable__divide_ca($tgx9_unit_table, spec, [1, "mm"]);
 
 module tgx9_1_0_block_foot(
 	block_size_ca,
@@ -448,6 +453,12 @@ module tgx9_1_0_block_foot(
 	offset=0,
 	chunk_ops=[]
 ) {
+	assert( !is_undef(block_size_ca) );
+	assert( !is_undef(foot_segmentation) );
+	assert( !is_undef(corner_radius) );
+
+	corner_radius = tgx9_decode_corner_radius(corner_radius);
+	
 	atom_pitch  = atom_pitch_u * u;
 	chunk_pitch = chunk_pitch_atoms * atom_pitch;
 
@@ -682,14 +693,14 @@ if( false ) undefined_module(); // Doesn't crash OpenSCAD
 atom_pitch  = tog_unittable__divide_ca($tgx9_unit_table, [1, "atom"], [1, "mm"]);
 chunk_pitch = tog_unittable__divide_ca($tgx9_unit_table, [1, "chunk"], [1, "mm"]);
 
-module tgx9_usermod_1(what) {
+module tgx9_usermod_1(what, arg0) {
 	if( what == "chunk-magnet-holes" ) {
 		for( pos=[[-1,-1],[1,-1],[-1,1],[1,1]] ) {
 			translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
 		}
 	} else if( what == "chunk-screw-holes" ) {
 		for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
-			translate(pos*atom_pitch) tog_holelib_hole(screw_hole_style);
+			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
 		}
 	} else if( what == "label-magnet-holes" ) {
 		for( xm=[-block_size_chunks[0]/2+0.5] )

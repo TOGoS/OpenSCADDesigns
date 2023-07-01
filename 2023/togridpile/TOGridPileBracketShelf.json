@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p1103": {
+			"capacity_chunks": "[3, 1]",
+			"margin": "0.075",
+			"preview_fn": "12",
+			"render_fn": "36",
+			"wall_thickness": "6.35"
+		}
+	},
+	"fileFormatVersion": "1"
+}
