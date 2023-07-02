@@ -1,4 +1,4 @@
-// TGx9.3.3 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.4 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -82,6 +82,8 @@
 // - Note that label_width parameter specifies width from edge of cavity
 // 9.3.3:
 // - Rewrite dimension decoding to use TOGridPileLib-v3
+// 9.3.4:
+// - tgx9_1_0_block_foot supports 'none' segmentation, which gives you one big cube
 
 /* [Atom/chunk/block size] */
 
@@ -449,6 +451,20 @@ function tgx9_decode_corner_radius(spec) =
 	spec == "m" ? togridpile3_decode([1, "m-outer-corner-radius"]) :
 	togridpile3_decode(spec);
 
+module tgx9_block_chunk_ops(
+	block_size_ca,
+	chunk_ops=[]
+) {
+	block_size_chunks = togridpile3_decode_vector(block_size_ca, unit=[1, "chunk"]);
+	// This currently doesn't subtract anything because I don't yet need it to.
+	for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
+		for( i=[0 : 1 : len(chunk_ops)-1] ) {
+			op = chunk_ops[i];
+			if( op[0] == "add" ) tgx9_do_sshape(op[1]) children();
+		}
+	}
+}
+
 module tgx9_1_0_block_foot(
 	block_size_ca,
 	foot_segmentation,
@@ -465,20 +481,16 @@ module tgx9_1_0_block_foot(
 	atom_pitch  = atom_pitch_u * u;
 	chunk_pitch = chunk_pitch_atoms * atom_pitch;
 
-	block_size_chunks = tgx9_map(block_size_ca, function(ca) togridpile3_decode(ca, unit=[1, "chunk"]));
+	block_size_chunks = togridpile3_decode_vector(block_size_ca, unit=[1, "chunk"]);
 	block_size        = tgx9_map(block_size_ca, function(ca) togridpile3_decode(ca));
 	dh_block_size = [block_size[0], block_size[1], block_size[2]*2];
 
-	if( foot_segmentation == "block" ) {
+	if( foot_segmentation == "none" ) {
+		translate([0, 0, block_size[2]]) cube([block_size[0]*2, block_size[1]*2, block_size[2]*2], center=true);
+		tgx9_block_chunk_ops(block_size_ca, chunk_ops);
+	} else if( foot_segmentation == "block" ) {
 		tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
-		// TODO: Support chunk subtractions, here
-
-		for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
-			for( i=[0 : 1 : len(chunk_ops)-1] ) {
-				op = chunk_ops[i];
-				if( op[0] == "add" ) tgx9_do_sshape(op[1]) children();
-			}
-		}
+		tgx9_block_chunk_ops(block_size_ca, chunk_ops);
 	} else {
 		for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 			difference() {
