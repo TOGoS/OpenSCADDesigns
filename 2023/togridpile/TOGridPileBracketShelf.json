@@ -6,6 +6,14 @@
 			"preview_fn": "12",
 			"render_fn": "36",
 			"wall_thickness": "6.35"
+		},
+		"p1105": {
+			"capacity_chunks": "[3, 1]",
+			"lip_segmentation": "none",
+			"margin": "0.075",
+			"preview_fn": "12",
+			"render_fn": "36",
+			"wall_thickness": "6.35"
 		}
 	},
 	"fileFormatVersion": "1"
