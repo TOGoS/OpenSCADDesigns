@@ -1,4 +1,4 @@
-// TGx9.3.4 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.5 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -84,6 +84,8 @@
 // - Rewrite dimension decoding to use TOGridPileLib-v3
 // 9.3.4:
 // - tgx9_1_0_block_foot supports 'none' segmentation, which gives you one big cube
+// 9.3.5:
+// - Fill in body underside between atoms/chunks
 
 /* [Atom/chunk/block size] */
 
@@ -492,6 +494,16 @@ module tgx9_1_0_block_foot(
 		tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
 		tgx9_block_chunk_ops(block_size_ca, chunk_ops);
 	} else {
+		// Underside cleavage comes up much higher than necessary
+		// in between chunks/atoms; put a cube there to fill it in.
+		body_inset = togridpile3_decode([2, "u"]);
+		underside_filler_thickness = togridpile3_decode([4, "u"]); // shrug
+		translate([0,0,body_inset+underside_filler_thickness/2-offset]) cube([
+			block_size[0]-atom_pitch,
+			block_size[1]-atom_pitch,
+			underside_filler_thickness
+		], center=true);
+		
 		for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 			difference() {
 				union() {
