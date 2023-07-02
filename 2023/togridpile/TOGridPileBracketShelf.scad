@@ -1,12 +1,16 @@
-// TOGridPileBracketShelf-v1.1
+// TOGridPileBracketShelf-v1.2
 // 
 // Changes:
 // v1.1:
 // - Cut 'window' out of top of front edge
 // - Cut off extra bit at top so hull_size[2] = capacity[2] + wall_thickness
+// v1.2:
+// - Options for different lip segmentation
 
 margin = 0.075;
 capacity_chunks = [6, 1];
+
+lip_segmentation = "none"; // ["none","chunk","block"]
 
 preview_fn = 12;
 render_fn = 36;
@@ -39,10 +43,11 @@ module block_subtraction(block_size_ca) intersection() {
 		togridpile3_decode([1, "tgp-standard-bevel"]),
 		offset = margin
 	);
+	
 	tgx9_1_0_block_foot(
 		block_size_ca,
 		corner_radius     = "f",
-		foot_segmentation = "chunk",
+		foot_segmentation = lip_segmentation,
 		chunk_ops         = [
 			["add", ["tgx9_usermod_1", "chunk-magnet-holes"]],
 			["add", ["tgx9_usermod_1", "chunk-screw-holes", "THL-1001"]]
