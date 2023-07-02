@@ -1,5 +1,5 @@
-// TOGridPileLib-v3.1
-//
+// TOGridPileLib-v3.2
+// 
 // HOKAY WHAT ARE THE COMMON
 // things that I want the library to do?
 // 
@@ -18,6 +18,8 @@
 // Changes:
 // v3.1:
 // - s/togridpile3_decode_size/togridpile3_decode_vector/
+// v3.2:
+// - togridpile3_decode(num) = num
 
 use <../lib/TOGUnitTable-v1.scad>
 
@@ -39,7 +41,7 @@ function togridpile3_get_default_unit_table() = togridpile3_default_unit_table;
 function togridpile3_get_unit_table() = is_undef($togridpile3_unit_table) ? togridpile3_default_unit_table : $togridpile3_unit_table;
 
 function togridpile3_decode(dim, unit_table=togridpile3_get_unit_table(), unit=[1, "mm"]) =
-	tog_unittable__divide_ca(unit_table, dim, unit);
+	is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit);
 function togridpile3_decode_vector(size, unit_table=togridpile3_get_unit_table(), unit=[1, "mm"]) =
 	togridpile3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit));
 
