@@ -1,4 +1,4 @@
-// 3WaySwitchPlug-v1.1
+// 3WaySwitchPlug-v1.2
 // 
 // Adapter so that the 3-way (a-b c, a b-c, a b c) switches I bought from DigiKey years ago
 // (TODO: link might be nice) can be put into a round hole.
@@ -11,19 +11,19 @@
 // Changes:
 // v1.1:
 // - Make hole length/width configurable
+// v1.2:
+// - Make all dimensions configurable in 0.1mm increments
 
 diagonal = 33;
 
-// inset = 2;
-flange_thickness = 3.175;
-flange_diameter  = 50.8; // 2"
-// flange_inner_diameter  = 36;
-shaft_length     = 12;
-shaft_diameter   = 37; // For a 1.5" hole
-shaft_inner_diameter = 35;
+flange_thickness = 3.175;  // 0.1
+flange_diameter  = 50.8;   // 0.1
+shaft_length     = 12;     // 0.1
+shaft_diameter   = 37;     // 0.1
+shaft_inner_diameter = 35; // 0.1
 
-hole_length = 31;
-hole_width  = 13;
+hole_length = 31; // 0.1
+hole_width  = 13; // 0.1
 
 $fn = 48;
 
