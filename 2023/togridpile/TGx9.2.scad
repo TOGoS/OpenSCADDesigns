@@ -1,4 +1,4 @@
-// TGx9.3.7 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.8 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -90,6 +90,8 @@
 // - Fix trimming of sublip above fingerslide to be in the right place
 // 9.3.7:
 // - Separate option to trim front sublip
+// 9.3.8:
+// - sublip_slope, defaulting to 2
 
 /* [Atom/chunk/block size] */
 
@@ -130,6 +132,8 @@ floor_thickness    =  6.35; // 0.0001
 // How far label platform sticks out from the inside of the cup
 label_width        = 10.0 ; // 0.1
 fingerslide_radius = 12.5 ; // 0.1
+// dz/dx of sublip; minimum is 1 = 45 degrees, 2 may be gentler
+sublip_slope       = 2;
 trim_front_sublip  = false;
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
@@ -181,13 +185,14 @@ let( height=max(height, 6*u) ) [
 	[        0*u, height,  0,  1  ],
 ];
 
-function tgx9_cavity_side_profile_points(height, radius, bottom_bevel_size=1, top_bevel_size=3) =
-let( tb=min(radius-0.2, top_bevel_size), bb=min(radius-0.1, bottom_bevel_size) )
+function tgx9_cavity_side_profile_points(height, radius, bottom_bevel_size=1, top_bevel_width=3, top_bevel_height=0) =
+let( tb=min(radius-0.2, top_bevel_width), bb=min(radius-0.1, bottom_bevel_size) )
+let( tbh=max(tb, top_bevel_height) )
 [
 	[      0       ,      0    ,     0,   -1   ],
 	[-radius+bb    ,      0    ,    -0.4, -1   ],
 	[-radius       ,        bb ,    -1  , -0.4 ],
-	[-radius       , height-tb ,    -1  ,  0.4 ],
+	[-radius       , height-tbh,    -1  ,  0.4 ],
 	[-radius+tb    , height    ,    -1  ,  0.4 ],
 	[-radius+tb    , height*2  ,    -1  ,  1   ],
 	[      0       , height*2  ,     0  ,  1   ],
@@ -554,18 +559,6 @@ cavity_size = [
 
 cs1 = [cavity_size[0]+0.1, cavity_size[1]+0.1]; // For sticking things in the walls
 
-module the_sublip() {
-	sublip_width = 2;
-	sublip_angwid = sublip_width/sin(45);
-	sublip_angwid2 = sublip_angwid*2*1.414;
-	for(xm=[-1,1]) translate([xm*cs1[0]/2, 0, 0]) rotate([0,45,0])
-		cube([sublip_angwid,block_size[1],sublip_angwid], center=true);
-	for(ym=[-1,1]) translate([0, ym*cs1[1]/2, 0]) rotate([45,0,0])
-		cube([block_size[0],sublip_angwid,sublip_angwid], center=true);
-	for(ym=[-1,1]) for(xm=[-1,1]) translate([xm*cs1[0]/2, ym*cs1[1]/2, 0]) rotate([0,0,ym*xm*45]) rotate([0,45,0])
-		cube([sublip_angwid2,sublip_angwid2,sublip_angwid2], center=true);
-}
-
 module the_label_platform() {
 	if( label_width > 0 ) {
 		label_angwid = label_width*2*sin(45);
@@ -594,9 +587,16 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_cavity_size, corner_radius=cavity_corner_radius);
+
+	top_bevel_width = 3;
+	top_bevel_height = top_bevel_width*sublip_slope;
+	
 	union() {
-		top_bevel_size = 3;
-		profile_points = tgx9_offset_points(tgx9_cavity_side_profile_points(cavity_size[2], cavity_corner_radius, top_bevel_size=top_bevel_size));
+		profile_points = tgx9_offset_points(tgx9_cavity_side_profile_points(
+			cavity_size[2], cavity_corner_radius,
+			top_bevel_width=top_bevel_width,
+			top_bevel_height=top_bevel_height
+		));
 		
 		translate([0,0,-cavity_size[2]])
 			tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius, z_offset=0)
@@ -605,11 +605,10 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 		if( trim_front_sublip ) {
 			// Trim sublip from fingerslide end;
 			too_fancy = 0; // -profile_points[len(profile_points)-2][0]*2;
-			translate([cavity_size[0]/2-top_bevel_size,0,0]) cube([top_bevel_size*2, cavity_size[1]-cavity_corner_radius*2+too_fancy, top_bevel_size*2], center=true);
+			translate([cavity_size[0]/2-top_bevel_width,0,0]) cube([top_bevel_width*2, cavity_size[1]-cavity_corner_radius*2+too_fancy, top_bevel_height*2], center=true);
 		}
 	}
 	
-	// the_sublip();
 	the_label_platform();
 	translate([0,0,-cavity_size[2]]) the_fingerslide();
 	for( i=cavity_bulkhead_positions ) {
