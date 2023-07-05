@@ -1,4 +1,4 @@
-// TGx9.3.5 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.6 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -86,6 +86,8 @@
 // - tgx9_1_0_block_foot supports 'none' segmentation, which gives you one big cube
 // 9.3.5:
 // - Fill in body underside between atoms/chunks
+// 9.3.6:
+// - Fix trimming of sublip above fingerslide to be in the right place
 
 /* [Atom/chunk/block size] */
 
@@ -600,7 +602,7 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 		if( fingerslide_radius > 0 ) {
 			// Trim sublip from fingerslide end;
 			too_fancy = 0; // -profile_points[len(profile_points)-2][0]*2;
-			translate([cavity_size[1]/2-top_bevel_size,0,0]) cube([top_bevel_size*2, cavity_size[1]-cavity_corner_radius*2+too_fancy, top_bevel_size*2], center=true);
+			translate([cavity_size[0]/2-top_bevel_size,0,0]) cube([top_bevel_size*2, cavity_size[1]-cavity_corner_radius*2+too_fancy, top_bevel_size*2], center=true);
 		}
 	}
 	
