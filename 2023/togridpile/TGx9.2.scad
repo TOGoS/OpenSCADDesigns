@@ -1,4 +1,4 @@
-// TGx9.3.6 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.7 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -88,6 +88,8 @@
 // - Fill in body underside between atoms/chunks
 // 9.3.6:
 // - Fix trimming of sublip above fingerslide to be in the right place
+// 9.3.7:
+// - Separate option to trim front sublip
 
 /* [Atom/chunk/block size] */
 
@@ -128,6 +130,7 @@ floor_thickness    =  6.35; // 0.0001
 // How far label platform sticks out from the inside of the cup
 label_width        = 10.0 ; // 0.1
 fingerslide_radius = 12.5 ; // 0.1
+trim_front_sublip  = false;
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
 
@@ -599,7 +602,7 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 			tgx9_rounded_profile_extruded_square(dh_cavity_size, cavity_corner_radius, z_offset=0)
 				polygon(profile_points);
 
-		if( fingerslide_radius > 0 ) {
+		if( trim_front_sublip ) {
 			// Trim sublip from fingerslide end;
 			too_fancy = 0; // -profile_points[len(profile_points)-2][0]*2;
 			translate([cavity_size[0]/2-top_bevel_size,0,0]) cube([top_bevel_size*2, cavity_size[1]-cavity_corner_radius*2+too_fancy, top_bevel_size*2], center=true);
