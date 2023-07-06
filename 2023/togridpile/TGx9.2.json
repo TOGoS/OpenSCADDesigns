@@ -229,7 +229,7 @@
 			"screw_hole_style": "none",
 			"sublip_slope": "2",
 			"top_magnet_holes_enabled": "false",
-			"trim_front_sublip": "false",
+			"trim_front_sublip": "false"
 		}
 	},
 	"fileFormatVersion": "1"
