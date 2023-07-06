@@ -136,7 +136,7 @@
 			"v6hc_subtraction_enabled": "true",
 			"wall_thickness": "2"
 		},
-		"1107": {
+		"p1107 - 1x1x1 fingerslide cup": {
 			"$tgx9_force_bevel_rounded_corners": "true",
 			"atom_pitch_u": "8",
 			"bevel_size_u": "2",
@@ -159,7 +159,9 @@
 			"preview_fn": "12",
 			"render_fn": "36",
 			"screw_hole_style": "none",
+			"sublip_slope": "1",
 			"top_magnet_holes_enabled": "false",
+			"trim_front_sublip": "true",
 			"u": "1.5875",
 			"v6hc_subtraction_enabled": "false",
 			"wall_thickness": "2"
