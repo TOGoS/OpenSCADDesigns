@@ -1,4 +1,4 @@
-// TGx9.3.8 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.9 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -92,6 +92,8 @@
 // - Separate option to trim front sublip
 // 9.3.8:
 // - sublip_slope, defaulting to 2
+// 9.3.9:
+// - Fix that screw holes got blocked by the block body bottom
 
 /* [Atom/chunk/block size] */
 
@@ -506,24 +508,26 @@ module tgx9_1_0_block_foot(
 	} else {
 		// Underside cleavage comes up much higher than necessary
 		// in between chunks/atoms; put a cube there to fill it in.
-		body_inset = togridpile3_decode([2, "u"]);
-		underside_filler_thickness = togridpile3_decode([4, "u"]); // shrug
-		translate([0,0,body_inset+underside_filler_thickness/2-offset]) cube([
-			block_size[0]-atom_pitch,
-			block_size[1]-atom_pitch,
-			underside_filler_thickness
-		], center=true);
-		
-		for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
-			difference() {
-				union() {
+		difference() {
+			union() {
+				body_inset = togridpile3_decode([2, "u"]);
+				underside_filler_thickness = togridpile3_decode([4, "u"]); // shrug
+				translate([0,0,body_inset+underside_filler_thickness/2-offset]) cube([
+					block_size[0]-atom_pitch,
+					block_size[1]-atom_pitch,
+					underside_filler_thickness
+				], center=true);
+				
+				for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 					tgx9_chunk_foot(foot_segmentation, height=block_size[2]*2, corner_radius=corner_radius, offset=offset);
 					for( i=[0 : 1 : len(chunk_ops)-1] ) {
 						op = chunk_ops[i];
 						if( op[0] == "add" ) tgx9_do_sshape(op[1]) children();
 					}
 				}
-				
+			}
+			
+			for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 				for( i=[0 : 1 : len(chunk_ops)-1] ) {
 					op = chunk_ops[i];
 					if( op[0] == "subtract" ) tgx9_do_sshape(op[1]) children();
