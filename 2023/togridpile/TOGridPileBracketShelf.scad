@@ -1,4 +1,4 @@
-// TOGridPileBracketShelf-v1.2
+// TOGridPileBracketShelf-v1.3
 // 
 // Changes:
 // v1.1:
@@ -6,8 +6,13 @@
 // - Cut off extra bit at top so hull_size[2] = capacity[2] + wall_thickness
 // v1.2:
 // - Options for different lip segmentation
+// v1.3:
+// - Apply margin to exterior hull
+// - Add separate inner_margin option for interior cavity
 
 margin = 0.075;
+// Margin for the main cavity, x, and y
+inner_margin = [1.5, 0.3]; // 0.1
 capacity_chunks = [6, 1];
 
 lip_segmentation = "none"; // ["none","chunk","block"]
@@ -39,9 +44,8 @@ module block_subtraction(block_size_ca) intersection() {
 	block_size = togridpile3_decode_vector(block_size_ca);
 	// TODO: Make TOGridPileLib-v3 do this stuff for us
 	linear_extrude(block_size[2]*3, center=true) tog_shapelib_rounded_square(
-		[block_size[0], block_size[1]],
-		togridpile3_decode([1, "tgp-standard-bevel"]),
-		offset = margin
+		[block_size[0]+inner_margin[0]*2, block_size[1]+inner_margin[1]*2],
+		togridpile3_decode([1, "tgp-standard-bevel"])
 	);
 	
 	tgx9_1_0_block_foot(
@@ -58,7 +62,7 @@ module block_subtraction(block_size_ca) intersection() {
 }
 
 translate([0,0,(hull_size[2]+wall_thickness)/2]) difference() {
-	translate([0, 0, -wall_thickness/2]) tog_shapelib_xy_rounded_cube(hull_size, outer_bevel_size);
+	translate([0, 0, -wall_thickness/2]) tog_shapelib_xy_rounded_cube(hull_size, outer_bevel_size, margin);
 	
 	// Bevel the top by some arbitrary amount
 	translate([0, -hull_size[1]/2, hull_size[2]/2]) rotate([45, 0, 0]) cube([hull_size[0]+2, hull_size[2]*1.2, hull_size[2]*1.2], center=true);
