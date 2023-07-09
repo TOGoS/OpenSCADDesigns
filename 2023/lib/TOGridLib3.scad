@@ -20,12 +20,14 @@
 // - s/togridpile3_decode_size/togridpile3_decode_vector/
 // v3.2:
 // - togridpile3_decode(num) = num
+// v3.3:
+// - Change prefix from `togridpile3` to `togridlib3`
 
 use <../lib/TOGUnitTable-v1.scad>
 
-function togridpile3_map(arr, fn) = [ for(item=arr) fn(item) ];
+function togridlib3_map(arr, fn) = [ for(item=arr) fn(item) ];
 
-togridpile3_default_unit_table = [
+togridlib3_default_unit_table = [
 	["um",    [    1,               "um"]],
 	["mm",    [ 1000,               "um"]],
 	["inch",  [25400,               "um"]],
@@ -37,14 +39,14 @@ togridpile3_default_unit_table = [
 	["f-outer-corner-radius", [3,    "u"]],
 ];
 
-function togridpile3_get_default_unit_table() = togridpile3_default_unit_table;
-function togridpile3_get_unit_table() = is_undef($togridpile3_unit_table) ? togridpile3_default_unit_table : $togridpile3_unit_table;
+function togridlib3_get_default_unit_table() = togridlib3_default_unit_table;
+function togridlib3_get_unit_table() = is_undef($togridlib3_unit_table) ? togridlib3_default_unit_table : $togridlib3_unit_table;
 
-function togridpile3_decode(dim, unit_table=togridpile3_get_unit_table(), unit=[1, "mm"]) =
+function togridlib3_decode(dim, unit_table=togridlib3_get_unit_table(), unit=[1, "mm"]) =
 	is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit);
-function togridpile3_decode_vector(size, unit_table=togridpile3_get_unit_table(), unit=[1, "mm"]) =
-	togridpile3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit));
+function togridlib3_decode_vector(size, unit_table=togridlib3_get_unit_table(), unit=[1, "mm"]) =
+	togridlib3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit));
 
-module togridpile3_cube(size, offset=0) {
-	cube(togridpile3_decode_vector(size), center=true);
+module togridlib3_cube(size, offset=0) {
+	cube(togridlib3_decode_vector(size), center=true);
 }

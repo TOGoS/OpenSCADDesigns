@@ -98,6 +98,8 @@
 // - Move core function and module definitions to TGx9Lib-v1.scad
 // - Simplify some function names
 // - Explicitly pass foot_segmentation to tgx9_cup
+// 9.4.10:
+// - Update `togridpile3` -> `togridlib3` prefixes
 
 /* [Atom/chunk/block size] */
 
@@ -156,7 +158,7 @@ module tgx9__end_params() { }
 // use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGHoleLib-v1.scad>
 // use <../lib/TOGUnitTable-v1.scad>
-use <../lib/TOGridPileLib-v3.scad>
+use <../lib/TOGridLib3.scad>
 include <../lib/TGx9.4Lib.scad>
 
 if( false ) undefined_module(); // Doesn't crash OpenSCAD
@@ -165,8 +167,8 @@ $tgx9_mating_offset = -margin;
 
 // effective_floor_thickness = min(floor_thickness, block_size[2]);
 
-atom_pitch  = togridpile3_decode([1, "atom"]);
-chunk_pitch = togridpile3_decode([1, "chunk"]);
+atom_pitch  = togridlib3_decode([1, "atom"]);
+chunk_pitch = togridlib3_decode([1, "chunk"]);
 block_size_ca = [
 	[block_size_chunks[0], "chunk"],
 	[block_size_chunks[1], "chunk"],
@@ -210,7 +212,7 @@ function kasjhd_swapxy(vec, swap=true) = [
 ];
 
 module the_cup_cavity() if(cavity_size[2] > 0) difference() {
-	outer_corner_radius     = togridpile3_decode([1, "f-outer-corner-radius"]);
+	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
 	cavity_corner_radius    = outer_corner_radius - wall_thickness;
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];

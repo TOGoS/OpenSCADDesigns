@@ -1,4 +1,4 @@
-// TGx9.3.9 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.3.10 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -94,6 +94,8 @@
 // - sublip_slope, defaulting to 2
 // 9.3.9:
 // - Fix that screw holes got blocked by the block body bottom
+// 9.3.10:
+// - Update `togridpile3` -> `togridlib3` prefixes
 
 /* [Atom/chunk/block size] */
 
@@ -152,12 +154,12 @@ module tgx9__end_params() { }
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGHoleLib-v1.scad>
 use <../lib/TOGUnitTable-v1.scad>
-use <../lib/TOGridPileLib-v3.scad>
+use <../lib/TOGridLib3.scad>
 
 function tgx9_map(arr, fn) = [ for(item=arr) fn(item) ];
 
 $tgx9_mating_offset = -margin;
-$togridpile3_unit_table = [
+$togridlib3_unit_table = [
 	["um",    [    1,               "um"]],
 	["mm",    [ 1000,               "um"]],
 	["inch",  [25400,               "um"]],
@@ -174,7 +176,7 @@ block_size_ca = [
 	[block_size_chunks[1], "chunk"],
 	[block_height_u      ,     "u"],
 ];
-block_size = tgx9_map(block_size_ca, function (ca) togridpile3_decode(ca));
+block_size = tgx9_map(block_size_ca, function (ca) togridlib3_decode(ca));
 
 // [x, y, offset_factor_x, offset_factor_y]
 function tgx9_bottom_points(u, height, radius) =
@@ -247,10 +249,10 @@ function tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) =
 // rectangles.
 function tgx9_block_hull_extrusion_path_info(
 	size,
-	bevel_size = togridpile3_decode([1, "tgp-standard-bevel"]),
+	bevel_size = togridlib3_decode([1, "tgp-standard-bevel"]),
 	rounding_radius
 ) =
-	let( inch = togridpile3_decode([1, "inch"]) )
+	let( inch = togridlib3_decode([1, "inch"]) )
 	let( rb_mult = 2.5 ) // TODO: The trigonometry to calculate this value exactly; but 2.5 is a nice round upper limit
 	$tgx9_force_bevel_rounded_corners && rounding_radius < tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) ?
 		[5/32*inch, tgx9_rounded_beveled_rectangle_inner_path_points( size, bevel_size, rb_mult * (rounding_radius-bevel_size) )] :
@@ -302,7 +304,7 @@ module tgx9_smooth_foot(
 	corner_radius,
 	offset
 ) {
-	u = togridpile3_decode([1, "u"]);
+	u = togridlib3_decode([1, "u"]);
 
 	if( $tgx9_force_bevel_rounded_corners == false ) {
 		// Redundant; tgx9_block_hull_extrusion_path_info would take care of it;
@@ -322,7 +324,7 @@ module tgx9_smooth_chunk_foot(
 	corner_radius,
 	offset
 ) {
-	chunk_pitch     = togridpile3_decode([1, "chunk"]);
+	chunk_pitch     = togridlib3_decode([1, "chunk"]);
 	tgx9_smooth_foot([chunk_pitch, chunk_pitch, height], corner_radius=corner_radius, offset=offset);
 }
 
@@ -330,8 +332,8 @@ module tgx9_atomic_chunk_foot(
 	height = 100,
 	offset = 0
 ) {
-	u          = togridpile3_decode([1,    "u"]);
-	atom_pitch = togridpile3_decode([1, "atom"]);
+	u          = togridlib3_decode([1,    "u"]);
+	atom_pitch = togridlib3_decode([1, "atom"]);
 	for( xm=[-1,0,1] ) for( ym=[-1,0,1] ) {
 		translate([xm*atom_pitch, ym*atom_pitch, 0]) tgx9_atom_foot(height=height, offset=offset, radius=atom_pitch/2);
 	}
@@ -346,7 +348,7 @@ module tgx9_chunk_foot(
 	if( segmentation == "chunk" ) {
 		tgx9_smooth_chunk_foot(height=height, corner_radius=corner_radius, offset=offset);
 	} else if( segmentation == "atom" ) {
-		assert(corner_radius == togridpile3_decode([1/2, "atom"]));
+		assert(corner_radius == togridlib3_decode([1/2, "atom"]));
 		tgx9_atomic_chunk_foot(height=height, offset=offset);
 	} else {
 		assert(false, str("Unrecognized chunk foot segmentation: '", segmentation, "'"));
@@ -443,7 +445,7 @@ module tgx9_do_sshape(shape) {
 		assert(len(shape[1]) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
 		render(10) tgx1001_v6hc_block_subtractor(
 			block_size_ca = shape[1],
-			unit_table    = $togridpile3_unit_table,
+			unit_table    = $togridlib3_unit_table,
 			offset        = margin
 		);
 	} else {
@@ -452,7 +454,7 @@ module tgx9_do_sshape(shape) {
 }
 
 function tgx9_chunk_xy_positions(block_size_chunks) =
-	let( chunk_pitch = togridpile3_decode([1, "chunk"]) )
+	let( chunk_pitch = togridlib3_decode([1, "chunk"]) )
 [
 	for( xm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
 		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
@@ -461,15 +463,15 @@ function tgx9_chunk_xy_positions(block_size_chunks) =
 
 function tgx9_decode_corner_radius(spec) =
 	is_num(spec) ? spec :
-	spec == "f" ? togridpile3_decode([1, "f-outer-corner-radius"]) :
-	spec == "m" ? togridpile3_decode([1, "m-outer-corner-radius"]) :
-	togridpile3_decode(spec);
+	spec == "f" ? togridlib3_decode([1, "f-outer-corner-radius"]) :
+	spec == "m" ? togridlib3_decode([1, "m-outer-corner-radius"]) :
+	togridlib3_decode(spec);
 
 module tgx9_block_chunk_ops(
 	block_size_ca,
 	chunk_ops=[]
 ) {
-	block_size_chunks = togridpile3_decode_vector(block_size_ca, unit=[1, "chunk"]);
+	block_size_chunks = togridlib3_decode_vector(block_size_ca, unit=[1, "chunk"]);
 	// This currently doesn't subtract anything because I don't yet need it to.
 	for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
 		for( i=[0 : 1 : len(chunk_ops)-1] ) {
@@ -495,8 +497,8 @@ module tgx9_1_0_block_foot(
 	atom_pitch  = atom_pitch_u * u;
 	chunk_pitch = chunk_pitch_atoms * atom_pitch;
 
-	block_size_chunks = togridpile3_decode_vector(block_size_ca, unit=[1, "chunk"]);
-	block_size        = tgx9_map(block_size_ca, function(ca) togridpile3_decode(ca));
+	block_size_chunks = togridlib3_decode_vector(block_size_ca, unit=[1, "chunk"]);
+	block_size        = tgx9_map(block_size_ca, function(ca) togridlib3_decode(ca));
 	dh_block_size = [block_size[0], block_size[1], block_size[2]*2];
 
 	if( foot_segmentation == "none" ) {
@@ -510,8 +512,8 @@ module tgx9_1_0_block_foot(
 		// in between chunks/atoms; put a cube there to fill it in.
 		difference() {
 			union() {
-				body_inset = togridpile3_decode([2, "u"]);
-				underside_filler_thickness = togridpile3_decode([4, "u"]); // shrug
+				body_inset = togridlib3_decode([2, "u"]);
+				underside_filler_thickness = togridlib3_decode([4, "u"]); // shrug
 				translate([0,0,body_inset+underside_filler_thickness/2-offset]) cube([
 					block_size[0]-atom_pitch,
 					block_size[1]-atom_pitch,
@@ -586,7 +588,7 @@ function kasjhd_swapxy(vec, swap=true) = [
 ];
 
 module the_cup_cavity() if(cavity_size[2] > 0) difference() {
-	outer_corner_radius     = togridpile3_decode([1, "f-outer-corner-radius"]);
+	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
 	cavity_corner_radius    = outer_corner_radius - wall_thickness;
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
@@ -638,8 +640,8 @@ module tgx9_1_6_cup_top(
 	lip_chunk_ops = [],
 	block_top_ops = [],
 ) {
-	block_size        = tgx9_map(block_size_ca, function(ca) togridpile3_decode(ca));
-	corner_radius     = togridpile3_decode([1, "f-outer-corner-radius"]);
+	block_size        = tgx9_map(block_size_ca, function(ca) togridlib3_decode(ca));
+	corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
 	
 	difference() {
 		tgx9_block_hull(
@@ -702,7 +704,7 @@ module tgx9_1_6_cup(
 	tgx9_1_0_block_foot(
 		block_size_ca     = block_size_ca,
 		foot_segmentation = foot_segmentation,
-		corner_radius     = togridpile3_decode([1, "m-outer-corner-radius"]),
+		corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
 		offset            = $tgx9_mating_offset,
 		chunk_ops         = bottom_chunk_ops
 	) children();
@@ -725,8 +727,8 @@ if( false ) undefined_module(); // Doesn't crash OpenSCAD
 
 // effective_floor_thickness = min(floor_thickness, block_size[2]);
 
-atom_pitch  = togridpile3_decode([1, "atom"]);
-chunk_pitch = togridpile3_decode([1, "chunk"]);
+atom_pitch  = togridlib3_decode([1, "atom"]);
+chunk_pitch = togridlib3_decode([1, "chunk"]);
 
 module tgx9_usermod_1(what, arg0) {
 	if( what == "chunk-magnet-holes" ) {
