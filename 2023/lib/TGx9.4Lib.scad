@@ -1,5 +1,7 @@
 // v1.0
-// - Created based on TGx9.3.3
+// - Created based on TGx9.3.9
+// v1.1
+// - Treat undefined $tgx9_force_bevel_rounded_corners as true
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridPileLib-v3.scad>
@@ -68,6 +70,9 @@ function tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) =
 	bevel_size / (2 - sqrt(2));
 // (/ 0.125 (- 2 1.414)) = 0.21 ~= (/ 13 64.0), which seems about right; between 3/16" and 1/4"
 
+function tgx9_should_force_bevel_rounded_corners() =
+	is_undef($tgx9_force_bevel_rounded_corners) || $tgx9_force_bevel_rounded_corners;
+
 // Returns [rounding_radius assumed by the path, path point list]
 // of the 'inner path' for either a rounded rectangle,
 // or if that rounded rectangle would not fit entirely within the
@@ -82,7 +87,7 @@ function tgx9_block_hull_extrusion_path_info(
 ) =
 	let( inch = togridpile3_decode([1, "inch"]) )
 	let( rb_mult = 2.5 ) // TODO: The trigonometry to calculate this value exactly; but 2.5 is a nice round upper limit
-	$tgx9_force_bevel_rounded_corners && rounding_radius < tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) ?
+	tgx9_should_force_bevel_rounded_corners() && rounding_radius < tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) ?
 		[5/32*inch, tgx9_rounded_beveled_rectangle_inner_path_points( size, bevel_size, rb_mult * (rounding_radius-bevel_size) )] :
 		[rounding_radius, tgx9_rounded_rectangle_inner_path_points( size, rounding_radius )];
 
@@ -134,7 +139,7 @@ module tgx9_smooth_foot(
 ) {
 	u = togridpile3_decode([1, "u"]);
 
-	if( $tgx9_force_bevel_rounded_corners == false ) {
+	if( !tgx9_should_force_bevel_rounded_corners() ) {
 		// Redundant; tgx9_block_hull_extrusion_path_info would take care of it;
 		// this is here to make sure tgx9_rounded_profile_extruded_square still works,
 		// in case I want to keep it around for *shrug* reasons.

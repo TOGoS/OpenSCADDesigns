@@ -1,4 +1,4 @@
-// TOGridPileBracketShelf-v1.3
+// TOGridPileBracketShelf-v1.3.1
 // 
 // Changes:
 // v1.1:
@@ -9,6 +9,8 @@
 // v1.3:
 // - Apply margin to exterior hull
 // - Add separate inner_margin option for interior cavity
+// v1.3.1:
+// - Switch to TGx9.4.scad
 
 margin = 0.075;
 // Margin for the main cavity, x, and y
@@ -36,7 +38,8 @@ hull_size = [
 
 $fn = $preview ? preview_fn : render_fn;
 
-use <TGx9.2.scad>
+// include <../lib/TGx9.4Lib.scad>
+use <./TGx9.4.scad> // Defines tgx9_usermod_1, which this script uses
 use <../lib/TOGHoleLib-v1.scad>
 use <../lib/TOGShapeLib-v1.scad>
 
@@ -48,7 +51,7 @@ module block_subtraction(block_size_ca) intersection() {
 		togridpile3_decode([1, "tgp-standard-bevel"])
 	);
 	
-	tgx9_1_0_block_foot(
+	tgx9_block_foot(
 		block_size_ca,
 		corner_radius     = "f",
 		foot_segmentation = lip_segmentation,
@@ -74,7 +77,7 @@ translate([0,0,(hull_size[2]+wall_thickness)/2]) difference() {
 	translate([0, -hull_size[1]/2, 0]) tog_shapelib_xz_rounded_cube(
 		[capacity[0], wall_thickness*4, togridpile3_decode([2, "atom"])],
 		tgx9_decode_corner_radius("f"), margin);
-
+	
 	for( xc=[-capacity_chunks[0]/2+0.5 : 1 : capacity_chunks[0]/2] ) {
 		x = togridpile3_decode([xc, "chunk"]);
 		echo(hole_pos=x);
