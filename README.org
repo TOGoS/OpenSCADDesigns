@@ -1,0 +1,10 @@
+#+TITLE: TOGoS's OpenSCAD designs
+
+** Testing
+
+As of [2023-07-09], `test.bat` will use `find` (location specified by `%UNIX_FIND_EXE%`)
+to find all `.scad` files and attempt to evaluate them.
+
+A nicer system would cache results and pass in every defined preset for each OpenSCAD design.
+For some reason I decided to use Janet for that system.
+It is in progress and not yet functional.
