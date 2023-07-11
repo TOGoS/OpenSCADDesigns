@@ -4,6 +4,8 @@
 // - Treat undefined $tgx9_force_bevel_rounded_corners as true
 // v1.2:
 // - Update `togridpile3` -> `togridlib3` prefixes
+// v1.3:
+// - Call togridlib3_get_unit_table() instead of referencing $togridlib3_unit_table directly.
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -249,7 +251,7 @@ module tgx9_do_sshape(shape) {
 		assert(len(shape[1]) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
 		render(10) tgx1001_v6hc_block_subtractor(
 			block_size_ca = shape[1],
-			unit_table    = $togridlib3_unit_table,
+			unit_table    = togridlib3_get_unit_table(),
 			offset        = margin
 		);
 	} else {
