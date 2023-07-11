@@ -1,4 +1,4 @@
-// TGx9.4 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.4.10 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
