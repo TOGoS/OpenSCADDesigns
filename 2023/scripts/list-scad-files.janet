@@ -29,6 +29,6 @@
 		  # (print "Checking: " file-path)
 		  (def prefix (matcher file-path))
 		  (if prefix
-		    (print "Found: " file-path)))))
+		    (print file-path)))))
 
 (find-scad-files ".")

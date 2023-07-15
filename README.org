@@ -8,3 +8,12 @@ to find all `.scad` files and attempt to evaluate them.
 A nicer system would cache results and pass in every defined preset for each OpenSCAD design.
 For some reason I decided to use Janet for that system.
 It is in progress and not yet functional.
+
+*** [2023-07-09] Thoughts on improved testing system
+
+Principles:
+- Unix-style: Small programs that operate on text streams
+
+Parts:
+- List files (basically 'find')
+- Hash files, list out filename + hash ('ccouch3 id -show-inputs' may already do this!)
