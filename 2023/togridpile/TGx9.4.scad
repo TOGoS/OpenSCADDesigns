@@ -1,4 +1,4 @@
-// TGx9.4.11 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.0 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -102,6 +102,8 @@
 // - Update `togridpile3` -> `togridlib3` prefixes
 // 9.4.11:
 // - Move margin and $fn parameters to 'Detail' section
+// 9.5.0:
+// - Add 'chatom' foot segmentation, which is similar to v6 or v8
 
 /* [Atom/chunk/block size] */
 
@@ -114,7 +116,7 @@ block_size_chunks = [1, 1];
 // Block height, in 'u', not including lip
 block_height_u    = 24;
 lip_height = 2.54;
-foot_segmentation = "chunk"; // ["atom","chunk","block"]
+foot_segmentation = "chunk"; // ["chatom","atom","chunk","block"]
 lip_segmentation = "block"; // ["chunk","block"]
 
 // 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm

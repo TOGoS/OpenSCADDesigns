@@ -6,6 +6,9 @@
 // - Update `togridpile3` -> `togridlib3` prefixes
 // v1.3:
 // - Call togridlib3_get_unit_table() instead of referencing $togridlib3_unit_table directly.
+// v1.4:
+// - Add 'chatom' foot segmentation option, where the main body is chunked,
+//   but the columns are atomically subdivided, similar to v6/v8.
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -13,11 +16,15 @@ use <../lib/TOGridLib3.scad>
 function tgx9_map(arr, fn) = [ for(item=arr) fn(item) ];
 
 // [x, y, offset_factor_x, offset_factor_y]
-function tgx9_bottom_points(u, height, radius) =
+function tgx9_bottom_points(u, height, radius, bottom_shape="footed") =
 let( height=max(height, 6*u) ) [
 	[        0*u, 0*u,     0, -1  ],
-	[-radius+1*u, 0*u,    -1, -1  ],
-	[-radius+1*u, 1*u,    -1, -0.4],
+	each bottom_shape == "footed" ? [
+		[-radius+1*u, 0*u,    -1, -1  ],
+		[-radius+1*u, 1*u,    -1, -0.4],
+	] : [
+		[-radius+2*u, 0*u,    -0.4, -1],
+	],
 	[-radius-2*u, 4*u,    -1, -0.4],
 	[-radius-2*u, height, -1,  1  ],
 	[        0*u, height,  0,  1  ],
@@ -95,9 +102,9 @@ function tgx9_block_hull_extrusion_path_info(
 		[5/32*inch, tgx9_rounded_beveled_rectangle_inner_path_points( size, bevel_size, rb_mult * (rounding_radius-bevel_size) )] :
 		[rounding_radius, tgx9_rounded_rectangle_inner_path_points( size, rounding_radius )];
 
-module tgx9_atom_foot(height=100, offset=0, radius) {
+module tgx9_atom_foot(height=100, offset=0, radius, bottom_shape="footed") {
 	rotate_extrude() {
-		polygon(tgx9_offset_points(tgx9_bottom_points(u, height, radius), offset));
+		polygon(tgx9_offset_points(tgx9_bottom_points(u, height, radius, bottom_shape=bottom_shape), offset));
 	}
 }
 
@@ -139,7 +146,8 @@ module tgx9_rounded_profile_extruded_square(size, corner_radius, z_offset) {
 module tgx9_smooth_foot(
 	size         ,
 	corner_radius,
-	offset
+	offset       ,
+	bottom_shape = "footed"
 ) {
 	u = togridlib3_decode([1, "u"]);
 
@@ -148,11 +156,36 @@ module tgx9_smooth_foot(
 		// this is here to make sure tgx9_rounded_profile_extruded_square still works,
 		// in case I want to keep it around for *shrug* reasons.
 		tgx9_rounded_profile_extruded_square([size[0], size[1], size[2]+offset*2], corner_radius=corner_radius, z_offset=-offset)
-			polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=corner_radius), offset));
+			polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=corner_radius, bottom_shape=bottom_shape), offset));
 	} else {
 		path_info = tgx9_block_hull_extrusion_path_info(size, rounding_radius=corner_radius);
 		tgx9_filled_extruded_path(path_info[1], -offset, size[2]+offset)
-			polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=path_info[0]), offset));
+			polygon(tgx9_offset_points(tgx9_bottom_points(u=u, height=size[2], radius=path_info[0], bottom_shape=bottom_shape), offset));
+	}
+}
+
+function tgx9__rect_edge_cell_center_positions(size) = [
+	for( x=[-size[0]/2+0.5 : 1 : size[0]/2-0  ] ) for( y=[-size[1]/2 + 0.5,      size[1]/2 - 0.5] ) [x, y],
+	for( x=[-size[0]/2+0.5,      size[0]/2-0.5] ) for( y=[-size[1]/2 + 1.5 : 1 : size[1]/2 - 1  ] ) [x, y],
+];
+
+module tgx9_chatomic_chunk_foot(
+	height       ,
+	corner_radius,
+	offset
+) {
+	chunk_pitch     = togridlib3_decode([1, "chunk"]);
+	tgx9_smooth_foot([chunk_pitch, chunk_pitch, height], corner_radius=corner_radius, offset=offset, bottom_shape="beveled");
+	
+	atom_pitch        = togridlib3_decode([1, "atom"]);
+	chunk_pitch_atoms = togridlib3_decode([1, "chunk"], unit=[1, "atom"]);
+	u                 = togridlib3_decode([1, "u"]);
+
+	for( pos=tgx9__rect_edge_cell_center_positions([chunk_pitch_atoms, chunk_pitch_atoms]) ) {
+		translate([pos[0]*atom_pitch, pos[1]*atom_pitch, -offset]) {
+			// Should be a rounded/beveled square, but circles's close enough for now:
+			linear_extrude(2*u + 2*offset) circle(d=atom_pitch - 2*u + 2*offset);
+		}
 	}
 }
 
@@ -182,7 +215,9 @@ module tgx9_chunk_foot(
 	height = 100,
 	offset = 0
 ) {
-	if( segmentation == "chunk" ) {
+	if( segmentation == "chatom" ) {
+		tgx9_chatomic_chunk_foot(height=height, corner_radius=corner_radius, offset=offset);
+	} else if( segmentation == "chunk" ) {
 		tgx9_smooth_chunk_foot(height=height, corner_radius=corner_radius, offset=offset);
 	} else if( segmentation == "atom" ) {
 		assert(corner_radius == togridlib3_decode([1/2, "atom"]));
