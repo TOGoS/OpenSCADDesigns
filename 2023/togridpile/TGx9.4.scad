@@ -1,4 +1,4 @@
-// TGx9.4.10 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.4.11 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -100,6 +100,8 @@
 // - Explicitly pass foot_segmentation to tgx9_cup
 // 9.4.10:
 // - Update `togridpile3` -> `togridlib3` prefixes
+// 9.4.11:
+// - Move margin and $fn parameters to 'Detail' section
 
 /* [Atom/chunk/block size] */
 
@@ -145,6 +147,8 @@ sublip_slope       = 2;
 trim_front_sublip  = false;
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
+
+/* [Detail] */
 
 margin = 0.075; // 0.001
 
