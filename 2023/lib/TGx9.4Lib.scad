@@ -9,6 +9,8 @@
 // v1.4:
 // - Add 'chatom' foot segmentation option, where the main body is chunked,
 //   but the columns are atomically subdivided, similar to v6/v8.
+// v1.5:
+// - Allow column shape to be overridden for chatomic feet
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -169,10 +171,14 @@ function tgx9__rect_edge_cell_center_positions(size) = [
 	for( x=[-size[0]/2+0.5,      size[0]/2-0.5] ) for( y=[-size[1]/2 + 1.5 : 1 : size[1]/2 - 1  ] ) [x, y],
 ];
 
+// Only used for togridpile2_atom_column_footprint:
+use <TOGridPileLib-v2.scad>
+
 module tgx9_chatomic_chunk_foot(
 	height       ,
 	corner_radius,
-	offset
+	offset       ,
+	column_style = !is_undef($tgx9_chatomic_foot_column_style) ? $tgx9_chatomic_foot_column_style : "v8"
 ) {
 	chunk_pitch     = togridlib3_decode([1, "chunk"]);
 	tgx9_smooth_foot([chunk_pitch, chunk_pitch, height], corner_radius=corner_radius, offset=offset, bottom_shape="beveled");
@@ -182,9 +188,19 @@ module tgx9_chatomic_chunk_foot(
 	u                 = togridlib3_decode([1, "u"]);
 
 	for( pos=tgx9__rect_edge_cell_center_positions([chunk_pitch_atoms, chunk_pitch_atoms]) ) {
-		translate([pos[0]*atom_pitch, pos[1]*atom_pitch, -offset]) {
+		translate([pos[0]*atom_pitch, pos[1]*atom_pitch, -offset]) linear_extrude(2*u + 2*offset) {
+			column_diameter = atom_pitch - 2*u;
 			// Should be a rounded/beveled square, but circles's close enough for now:
-			linear_extrude(2*u + 2*offset) circle(d=atom_pitch - 2*u + 2*offset);
+			// circle(d=column_diameter+ 2*offset);
+			// v6.2 shape:
+			// tog_shapelib_rounded_beveled_square([column_diameter, column_diameter], atom_pitch/2-(atom_pitch-column_diameter), u, offset);
+			togridpile2_atom_column_footprint(
+				column_style=column_style,
+				atom_pitch=atom_pitch,
+				column_diameter=column_diameter,
+				min_corner_radius=u,
+				offset=offset
+			);
 		}
 	}
 }

@@ -1,4 +1,4 @@
-// TGx9.5.0 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -104,6 +104,8 @@
 // - Move margin and $fn parameters to 'Detail' section
 // 9.5.0:
 // - Add 'chatom' foot segmentation, which is similar to v6 or v8
+// 9.5.1:
+// - Different options for chatomic_foot_column_style
 
 /* [Atom/chunk/block size] */
 
@@ -117,6 +119,8 @@ block_size_chunks = [1, 1];
 block_height_u    = 24;
 lip_height = 2.54;
 foot_segmentation = "chunk"; // ["chatom","atom","chunk","block"]
+// Foot column shape; only applicable when foot_segmentation = "chunk"
+chatomic_foot_column_style = "v8.0"; // ["v6.0", "v6.1", "v6.2", "v8.0", "v8.4"]
 lip_segmentation = "block"; // ["chunk","block"]
 
 // 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm
@@ -286,6 +290,7 @@ tgx9_cup(
 	lip_height    = lip_height,
 	floor_thickness = floor_thickness,
 	wall_thickness = wall_thickness,
+	$tgx9_chatomic_foot_column_style = chatomic_foot_column_style,
 	block_top_ops = [
 		if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
 		if( label_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "label-magnet-holes"]],
