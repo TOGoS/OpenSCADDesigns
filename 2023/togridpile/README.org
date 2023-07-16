@@ -5,6 +5,8 @@ are multiples of 1+1/2" or 1/2" (to fit with my gridbeam stuff)
 and that can, at least in some cases, fit into baseplates/lower cups
 even when rotated around the X or Y axes (Z being up).
 
+Supposedly canonical documentation: http://www.nuke24.net/docs/2023/TOGridPile.html
+
 ** Versions
 
 X-rounded means X radius curves.
