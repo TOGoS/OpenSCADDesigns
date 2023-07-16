@@ -1,4 +1,4 @@
-// TGx9.5.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -106,6 +106,8 @@
 // - Add 'chatom' foot segmentation, which is similar to v6 or v8
 // 9.5.1:
 // - Different options for chatomic_foot_column_style
+// 9.5.2:
+// - Allow "atom", "chatom" lip segmentation so long as lip height <= 0
 
 /* [Atom/chunk/block size] */
 
@@ -117,11 +119,13 @@ chunk_pitch_atoms = 3;
 block_size_chunks = [1, 1];
 // Block height, in 'u', not including lip
 block_height_u    = 24;
+// Height that lip extends beyond top; 0 for no lip, negative for an inverted lip
 lip_height = 2.54;
-foot_segmentation = "chunk"; // ["chatom","atom","chunk","block"]
+foot_segmentation = "chunk"; // ["atom","chatom","chunk","block"]
 // Foot column shape; only applicable when foot_segmentation = "chunk"
 chatomic_foot_column_style = "v8.0"; // ["v6.0", "v6.1", "v6.2", "v8.0", "v8.4"]
-lip_segmentation = "block"; // ["chunk","block"]
+// Segmentation for lip; 'atom' and 'chatom' not advised unless lip is inverted
+lip_segmentation = "block"; // ["atom","chatom","chunk","block"]
 
 // 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm
 bevel_size_u = 2;
@@ -164,6 +168,13 @@ render_fn = 36;
 $fn = $preview ? preview_fn : render_fn;
 
 module tgx9__end_params() { }
+
+if( lip_height > 0 ) {
+	assert(
+		lip_segmentation != "atom" && lip_segmentation != "chatom",
+		"'atom' lip segmentation only supported when lip_height <= 0"
+	);
+}
 
 // use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGHoleLib-v1.scad>

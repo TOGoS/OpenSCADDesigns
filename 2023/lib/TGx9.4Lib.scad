@@ -13,6 +13,9 @@
 // - Allow column shape to be overridden for chatomic feet
 // v1.6:
 // - Negative lip height inverts the lip, i.e. puts a foot on the top
+// v1.7:
+// - Use lip_segmentation instead of foot_segmentation for topside foot
+//   when lip is inverted
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -492,41 +495,35 @@ module tgx9_cup(
 	lip_chunk_ops = [],
 	// floor_chunk_ops = []
 	block_top_ops = [],
-) {
+) intersection() {
 	block_size = togridlib3_decode_vector(block_size_ca);
+
+	// 'block foot' is *just* the bottom mating surface intersector
+	tgx9_block_foot(
+		block_size_ca     = block_size_ca,
+		foot_segmentation = foot_segmentation,
+		corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
+		offset            = $tgx9_mating_offset,
+		chunk_ops         = bottom_chunk_ops
+	) children();
+
+	// 'cup top' is *everything else*
+	tgx9_cup_top(
+		block_size_ca     = block_size_ca,
+		foot_segmentation = foot_segmentation,
+		lip_height        = lip_height,
+		wall_thickness    = wall_thickness,
+		floor_thickness   = floor_thickness,
+		// floor_chunk_ops   = floor_chunk_ops
+		block_top_ops     = block_top_ops,
+		lip_chunk_ops     = lip_chunk_ops
+	) children();
 	
-	to_intersect = [
-		[[0,0,            0], [360,0,0], "bottom"],
-		[[0,0,            0], [360,0,0], "top"   ],
-		if( lip_height < 0 ) [[0,0,block_size[2]], [180,0,0], "bottom"],
-	];
-	
-	intersection_for(soup=to_intersect) {
-		translate(soup[0]) rotate(soup[1]) {
-			if(soup[2] == "bottom") {
-				// 'block foot' is *just* the bottom mating surface intersector
-				tgx9_block_foot(
-					 block_size_ca     = block_size_ca,
-					 foot_segmentation = foot_segmentation,
-					 corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
-					 offset            = $tgx9_mating_offset,
-					 chunk_ops         = bottom_chunk_ops
-				) children();
-			} else if(soup[2] == "top") {
-				// 'cup top' is *everything else*
-				tgx9_cup_top(
-					block_size_ca     = block_size_ca,
-					foot_segmentation = foot_segmentation,
-					lip_height        = lip_height,
-					wall_thickness    = wall_thickness,
-					floor_thickness   = floor_thickness,
-					// floor_chunk_ops   = floor_chunk_ops
-					block_top_ops     = block_top_ops,
-					lip_chunk_ops     = lip_chunk_ops
-				) children();
-			} else {
-				assert(false, str("Ruh roh, dunno about soup[2] = \"", soup[2], "\""));
-			}
-		}
-	}
+	if( lip_height < 0 ) translate([0,0,block_size[2]]) rotate([180,0,0]) tgx9_block_foot(
+		block_size_ca     = block_size_ca,
+		foot_segmentation = lip_segmentation,
+		corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
+		offset            = $tgx9_mating_offset,
+		chunk_ops         = [] // bottom_chunk_ops
+	) children();
 }
