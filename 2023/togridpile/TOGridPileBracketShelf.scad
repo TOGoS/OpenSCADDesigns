@@ -1,4 +1,4 @@
-// TOGridPileBracketShelf-v1.3.1
+// TOGridPileBracketShelf-v1.4.0
 // 
 // Changes:
 // v1.1:
@@ -13,10 +13,14 @@
 // - Switch to TGx9.4.scad
 // v1.3.2:
 // - Update `togridpile3` -> `togridlib3` prefixes
+// v1.4.0:
+// - Reduce default inner margin to 0.6, 0.3
+// - Remove configuration option for outer corner 'bevel', which was actually rounding radius
+// - Make front top bevel size configurable, default to 38.1mm
 
 margin = 0.075;
 // Margin for the main cavity, x, and y
-inner_margin = [1.5, 0.3]; // 0.1
+inner_margin = [0.6, 0.3]; // 0.1
 capacity_chunks = [6, 1];
 
 lip_segmentation = "none"; // ["none","chunk","block"]
@@ -24,13 +28,14 @@ lip_segmentation = "none"; // ["none","chunk","block"]
 preview_fn = 12;
 render_fn = 36;
 
+front_top_bevel_size = 38.1;// 44.45;
+
 include <../lib/TOGridLib3.scad>
 
 capacity_ca = [[capacity_chunks[0], "chunk"], [capacity_chunks[1], "chunk"], [1, "chunk"]];
 capacity = togridlib3_decode_vector(capacity_ca);
 
 wall_thickness = 6.35;
-outer_bevel_size = wall_thickness/2;
 
 hull_size = [
 	capacity[0] + wall_thickness*2,
@@ -67,10 +72,14 @@ module block_subtraction(block_size_ca) intersection() {
 }
 
 translate([0,0,(hull_size[2]+wall_thickness)/2]) difference() {
-	translate([0, 0, -wall_thickness/2]) tog_shapelib_xy_rounded_cube(hull_size, outer_bevel_size, margin);
+	translate([0, 0, -wall_thickness/2]) linear_extrude(hull_size[2], center=true) intersection() {
+		tog_shapelib_rounded_square(hull_size, wall_thickness, offset=-margin);
+		tog_shapelib_rounded_beveled_square(hull_size, 3.175, 3.175, offset=-margin);
+	}
 	
 	// Bevel the top by some arbitrary amount
-	translate([0, -hull_size[1]/2, hull_size[2]/2]) rotate([45, 0, 0]) cube([hull_size[0]+2, hull_size[2]*1.2, hull_size[2]*1.2], center=true);
+	translate([0, -hull_size[1]/2, hull_size[2]/2]) rotate([45, 0, 0])
+		cube([hull_size[0]+2, front_top_bevel_size*sqrt(2)+margin*2, front_top_bevel_size*sqrt(2)+margin*2], center=true);
 	
 	// TOGridPile block cavity
 	translate([0, 0, -capacity[2]/2]) block_subtraction(capacity_ca);

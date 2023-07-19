@@ -14,6 +14,16 @@
 			"preview_fn": "12",
 			"render_fn": "36",
 			"wall_thickness": "6.35"
+		},
+		"p1128 - 6x2": {
+			"capacity_chunks": "[6, 2]",
+			"front_top_bevel_size": "38.1",
+			"inner_margin": "[0.6, 0.3]",
+			"lip_segmentation": "none",
+			"margin": "0.075",
+			"preview_fn": "12",
+			"render_fn": "48",
+			"wall_thickness": "6.35"
 		}
 	},
 	"fileFormatVersion": "1"
