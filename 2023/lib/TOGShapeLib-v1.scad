@@ -26,6 +26,8 @@ module tog_shapelib_rounded_beveled_square(size, bevel_size, rounding_radius, of
 	// Make sure things don't go negative:
 	assert(size[0]/2 - bevel_size - rounding_radius*0.414 >= 0);
 	assert(size[1]/2 - bevel_size - rounding_radius*0.414 >= 0);
+	// Maybe not exactly necessary
+	assert(rounding_radius <= bevel_size);
 	
 	hull() for( ym=[-1,1] ) for( xm=[-1,1] ) {
 		translate([
