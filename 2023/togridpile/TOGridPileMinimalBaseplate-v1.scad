@@ -7,6 +7,8 @@
 // - margin can be configured down to 0.01mm
 // v1.3:
 // - Support v6.0, v6.1, or v6.2, and segmentation configured separately.
+// - Outer corners are rounded beveled to ensure fit within 1/8"
+//   beveled boxes
 
 use <../lib/TOGridPileLib-v2.scad>
 use <../lib/TOGShapeLib-v1.scad>
