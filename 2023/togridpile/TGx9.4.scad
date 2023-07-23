@@ -1,4 +1,4 @@
-// TGx9.5.2 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.3 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -108,6 +108,8 @@
 // - Different options for chatomic_foot_column_style
 // 9.5.2:
 // - Allow "atom", "chatom" lip segmentation so long as lip height <= 0
+// 9.5.3:
+// - Add support for 'tograck' cavity
 
 /* [Atom/chunk/block size] */
 
@@ -146,6 +148,8 @@ top_magnet_holes_enabled = false;
 screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 
 /* [Cavity] */
+
+cavity_style = "cup"; // ["none","cup","tograck"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
@@ -295,6 +299,20 @@ if( v6hc_subtraction_enabled && lip_height <= u-margin ) {
 	echo("v6hc_subtraction_enabled enabled but not needed due to low lip (assuming column inset=1u, which is standard), so I won't bother to actually subtract it");
 }
 
+cavity_ops = [
+	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
+	if( cavity_style == "tograck" ) each [
+		["subtract", ["tgx9_cavity_cube", [block_size[0]-wall_thickness*2, 63.5, (block_size[2]-floor_thickness)*2]]],
+		["subtract", ["tgx9_cavity_cube", [block_size[0]-wall_thickness*2, 88.9, max(3.175, (block_size[2]-floor_thickness-19.05))*2]]],
+		for( xm=[-(block_size[0]/12.7/2)+0.5 : 1 : block_size[0]/12.7/2-0.4] ) for( ym=[-3, 3] )
+			let(pos=[xm*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["subtract", ["translate", pos, ["cylinder", 5, block_size[2]*3]]],
+		for( xm=[0 : 1 : block_size[0]/12.7] ) for( ym=[0] )
+			let(pos=[-block_size[0]/2+(xm+0.5)*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["subtract", ["translate", pos, [xm % 3 == 1 ? "THL-1002" : "THL-1001", floor_thickness*2, block_size[2]]]],
+		for( xm=[-(block_size[0]/12.7/2)+1.5 : 3 : block_size[0]/12.7/2-0.4] ) for( ym=[-2, -1, 0, 1, 2] )
+			let(pos=[xm*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["subtract", ["translate", pos, ["THL-1001", floor_thickness*2, block_size[2]]]],
+	]
+];
+
 tgx9_cup(
 	block_size_ca = block_size_ca,
 	foot_segmentation = foot_segmentation,
@@ -303,7 +321,7 @@ tgx9_cup(
 	wall_thickness = wall_thickness,
 	$tgx9_chatomic_foot_column_style = chatomic_foot_column_style,
 	block_top_ops = [
-		if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
+		each cavity_ops,
 		if( label_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "label-magnet-holes"]],
 		// TODO (maybe, if it increases performance): If lip segmentation = "chunk", do this in lip_chunk_ops instead of for the whole block
 		if( v6hc_subtraction_enabled && lip_height > u-margin ) ["subtract", ["tgx1001_v6hc_block_subtractor", block_size_ca]],

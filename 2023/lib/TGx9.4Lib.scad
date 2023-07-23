@@ -16,9 +16,12 @@
 // v1.7:
 // - Use lip_segmentation instead of foot_segmentation for topside foot
 //   when lip is inverted
+// v1.8:
+// - tgx9_do_sshape: Support for THL-1001, THL-1002, cylinder, and tgx9_cavity_cube
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
+use <../lib/TOGHoleLib-v1.scad>
 
 function tgx9_map(arr, fn) = [ for(item=arr) fn(item) ];
 
@@ -287,6 +290,29 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 
 use <../lib/TGX1001.scad>
 
+// Standard cavity with no frills; z=0 is at the center
+module tgx9_cavity_cube(size) if(size[2] > 0) {
+	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
+	cavity_corner_radius    = outer_corner_radius - wall_thickness;
+	// Double-height cavity size, to cut through any lip protrusions, etc:
+	dh_size = [size[0], size[1], size[2]*2];
+	//tog_shapelib_xy_rounded_cube(dh_size, corner_radius=cavity_corner_radius);
+
+	top_bevel_width = 3;
+	top_bevel_height = top_bevel_width*sublip_slope;
+	
+	profile_points = tgx9_offset_points(tgx9_cavity_side_profile_points(
+		size[2], cavity_corner_radius,
+		top_bevel_width=top_bevel_width,
+		top_bevel_height=top_bevel_height
+	));
+	
+	translate([0,0,-size[2]/2])
+		tgx9_rounded_profile_extruded_square(dh_size, cavity_corner_radius, z_offset=0)
+			polygon(profile_points);
+}
+
+
 // Shapes are a subset of S-Values
 module tgx9_do_sshape(shape) {
 	assert( is_list(shape), str("shape passed to tgx9_do_sshape should be represented as a list, but got ", shape) );
@@ -296,6 +322,13 @@ module tgx9_do_sshape(shape) {
 		children(0);
 	} else if( type == "translate" ) {
 		translate(shape[1]) tgx9_do_sshape(shape[2]);
+	} else if( type == "cylinder" ) {
+		cylinder(d=shape[1], h=shape[2], center=true);
+	} else if( type == "THL-1001" || type == "THL-1002" ) {
+		tog_holelib_hole(type, depth=shape[1], overhead_bore_height=shape[2]);
+	} else if( type == "tgx9_cavity_cube" ) {
+		size = shape[1];
+		tgx9_cavity_cube(size);
 	} else if( type == "the_cup_cavity" ) {
 		the_cup_cavity();
 	} else if( type == "tgx9_usermod_1" ) {
@@ -382,7 +415,7 @@ module tgx9_block_foot(
 					underside_filler_thickness
 				], center=true);
 				
-				for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) {
+				for( pos=tgx9_chunk_xy_positions(block_size_chunks) ) translate(pos) render() {
 					tgx9_chunk_foot(foot_segmentation, height=block_size[2]*2, corner_radius=corner_radius, offset=offset);
 					for( i=[0 : 1 : len(chunk_ops)-1] ) {
 						op = chunk_ops[i];
