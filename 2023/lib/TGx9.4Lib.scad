@@ -22,6 +22,8 @@
 // - tgx9_do_sshape: Support for rotate, union, intersection, difference
 // v1.10:
 // - Breaking change: tgx9_cup_cavity origin is now at the top
+// v1.10.1:
+// - Use tog_holelib_is_hole_type instead of hardcoding list of supported hole type names
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -342,7 +344,7 @@ module tgx9_do_sshape(shape) {
 		cube(shape[1], center=true);
 	} else if( type == "cylinder" ) {
 		cylinder(d=shape[1], h=shape[2], center=true);
-	} else if( type == "THL-1001" || type == "THL-1002" ) {
+	} else if( tog_holelib_is_hole_type(type) ) {
 		tog_holelib_hole(type, depth=shape[1], overhead_bore_height=shape[2]);
 	} else if( type == "tgx9_cavity_cube" ) {
 		size = shape[1];

@@ -11,6 +11,8 @@
 //   sitting just barely below the surface
 // v1.2:
 // - Add 'none' hole style, which does nothing
+// v1.3:
+// - Add 'tog_holelib_get_hole_types()' and `tog_holelib_is_hole_type(name)` functions
 
 module tog_holelib_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height) {
 	rotate_extrude() {
@@ -67,3 +69,15 @@ module tog_holelib_hole(type_name, depth=1000, overhead_bore_height=1) {
 		assert(false, str("Unknown hole type: '", type_name, "'"));
 	}
 }
+
+tog_holelib_hole_types = [
+	["THL-1001", "Suitable for #6 flatheads"],
+	["THL-1002", "Suitable for 1/4\" flatheads"],
+];
+
+function tog_holelib_get_hole_types() = tog_holelib_hole_types;
+
+function tog_holelib_is_hole_type(type_name, idx=0) =
+	idx > len(tog_holelib_hole_types) ? false :
+	tog_holelib_hole_types[idx][0] == type_name ? true :
+	tog_holelib_is_hole_type(type_name, idx=idx + 1);
