@@ -1,4 +1,4 @@
-// TGx9.5.5 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.6 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -118,6 +118,9 @@
 // - `label_magnet_holes_enabled` is now deprecated and a synonym for
 //   `top_magnet_holes_enabled`.
 // - Calculate top magnet hole positions differently based on cavity style
+// v9.5.6:
+// - Default TOGRack cavity rim modes to 'none' for compatibility with v9.5.3 presets
+// - Add experimental TOGRack conduit subtraction option
 
 /* [Atom/chunk/block size] */
 
@@ -176,8 +179,11 @@ cavity_bulkhead_axis = "x"; // ["x", "y"]
 
 /* [Cavity (TOGRack)] */
 
-tograck_upper_cavity_rim_mode = "x"; // ["none","x","full"]
-tograck_lower_cavity_rim_mode = "x"; // ["none","x","full"]
+tograck_upper_cavity_rim_mode = "none"; // ["none","x","full"]
+tograck_lower_cavity_rim_mode = "none"; // ["none","x","full"]
+
+// Experimental/unstable
+x_tograck_conduit_diameter = 0;
 
 /* [Detail] */
 
@@ -386,6 +392,19 @@ tgx9_cup(
 		if( is_list(top_magnet_hole_positions) ) ["subtract", ["union", for(pos=top_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
 		// TODO (maybe, if it increases performance): If lip segmentation = "chunk", do this in lip_chunk_ops instead of for the whole block
 		if( v6hc_subtraction_enabled && lip_height > u-margin ) ["subtract", ["tgx1001_v6hc_block_subtractor", block_size_ca]],
+		if( cavity_style == "tograck" && x_tograck_conduit_diameter > 0 ) ["subtract", ["union",
+			for( z=[atom_pitch : atom_pitch : block_size[2]-atom_pitch/2] )
+			for( ym=[-1, 1] ) ["translate", [0, ym * (block_size[1]/2-atom_pitch*2/3), z-block_size[2]],
+				["rotate", [0,90,0],
+					["cylinder", x_tograck_conduit_diameter, block_size[0]*2]
+				]
+			],
+			for( x=[-block_size[0]/2+atom_pitch*2 : atom_pitch : block_size[0]/2-atom_pitch*1.9] ) ["translate", [x, 0, atom_pitch-block_size[2]],
+				["rotate", [90,0,0],
+					["cylinder", x_tograck_conduit_diameter, block_size[1]*2]
+				]
+			]
+		]],
 	],
 	lip_chunk_ops = [
 		if( top_magnet_hole_positions == "all" ) ["subtract", ["union", for(pos=chunk_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
