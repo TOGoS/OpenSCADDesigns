@@ -1,4 +1,4 @@
-// TGx9.5.4 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.5 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -114,6 +114,10 @@
 // - Refactor to use "union" sshape
 // 9.5.4:
 // - Add configuration for TOGRack sublips
+// v9.5.5:
+// - `label_magnet_holes_enabled` is now deprecated and a synonym for
+//   `top_magnet_holes_enabled`.
+// - Calculate top magnet hole positions differently based on cavity style
 
 /* [Atom/chunk/block size] */
 
@@ -147,6 +151,7 @@ $tgx9_force_bevel_rounded_corners = true;
 magnet_hole_diameter = 6.2; // 0.1
 magnet_hole_depth    = 2.4; // 0.1
 bottom_magnet_holes_enabled = false;
+// Deprecated; just use top_magnet_holes_enabled
 label_magnet_holes_enabled = false;
 top_magnet_holes_enabled = false;
 screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
@@ -184,6 +189,8 @@ render_fn = 36;
 $fn = $preview ? preview_fn : render_fn;
 
 module tgx9__end_params() { }
+
+top_magnet_holes_enabled2 = top_magnet_holes_enabled || label_magnet_holes_enabled;
 
 if( lip_height > 0 ) {
 	assert(
@@ -294,14 +301,6 @@ module tgx9_usermod_1(what, arg0) {
 		for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
 			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
 		}
-	} else if( what == "label-magnet-holes" ) {
-		for( xm=[-block_size_chunks[0]/2+0.5] )
-		for( ym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] ) {
-			translate([xm*chunk_pitch, ym*chunk_pitch, 0])
-			for( pos=[[-1,-1],[-1,1]] ) {
-				translate(pos*atom_pitch) cylinder(d=magnet_hole_diameter, h=magnet_hole_depth*2, center=true);
-			}
-		}
 	} else {
 		assert(false, str("Unrecognized user module argument: '", what, "'"));
 	}
@@ -343,6 +342,38 @@ cavity_ops = [
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()]
 ];
 
+//// Magnet hole precalculations
+
+// Positions of top magnet holes unless they are on every chunk!
+top_magnet_hole_positions =
+	!top_magnet_holes_enabled2 ? [] :
+	// TODO: Same for all but 'none', where they are (for dubious performance reasons) chunk based
+	(cavity_style == "cup" && label_width > atom_pitch/2) ? [
+		for( cym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
+		for( cxm=[-block_size_chunks[0]/2+0.5] )
+		for( aym=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
+		for( axm=[-chunk_pitch_atoms/2+0.5] )
+			[cxm*chunk_pitch+axm*atom_pitch, cym*chunk_pitch+aym*atom_pitch]
+	] :
+	cavity_style == "tograck" ? [
+		for( y=[-(block_size[1]+atom_pitch)/2+atom_pitch, (block_size[1]-atom_pitch)/2] )
+		for( cxm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
+		for( axm=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
+			[cxm*chunk_pitch+axm*atom_pitch, y]
+	] :
+	cavity_style == "none" ? "all" :
+	[];
+
+chunk_magnet_hole_positions = [
+	for( aym=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
+	for( axm=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
+		[axm*atom_pitch, aym*atom_pitch]
+];
+
+magnet_hole_sshape = ["cylinder", magnet_hole_diameter, magnet_hole_depth*2];
+
+//// Main
+
 tgx9_cup(
 	block_size_ca = block_size_ca,
 	foot_segmentation = foot_segmentation,
@@ -352,12 +383,12 @@ tgx9_cup(
 	$tgx9_chatomic_foot_column_style = chatomic_foot_column_style,
 	block_top_ops = [
 		each cavity_ops,
-		if( label_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "label-magnet-holes"]],
+		if( is_list(top_magnet_hole_positions) ) ["subtract", ["union", for(pos=top_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
 		// TODO (maybe, if it increases performance): If lip segmentation = "chunk", do this in lip_chunk_ops instead of for the whole block
 		if( v6hc_subtraction_enabled && lip_height > u-margin ) ["subtract", ["tgx1001_v6hc_block_subtractor", block_size_ca]],
 	],
 	lip_chunk_ops = [
-		if( top_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
+		if( top_magnet_hole_positions == "all" ) ["subtract", ["union", for(pos=chunk_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
 	],
 	bottom_chunk_ops = [
 		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "chunk-screw-holes"]]],

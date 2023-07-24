@@ -24,6 +24,8 @@
 // - Breaking change: tgx9_cup_cavity origin is now at the top
 // v1.10.1:
 // - Use tog_holelib_is_hole_type instead of hardcoding list of supported hole type names
+// v1.11:
+// - tgx9_cavity_cube: Minimum corner radius = 1u
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -299,7 +301,7 @@ use <../lib/TGX1001.scad>
 // Standard cavity with no frills; z=0 is at the top
 module tgx9_cavity_cube(size) if(size[2] > 0) {
 	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
-	cavity_corner_radius    = outer_corner_radius - wall_thickness;
+	cavity_corner_radius    = max(togridlib3_decode([1, "u"]), outer_corner_radius - wall_thickness);
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_size = [size[0], size[1], size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_size, corner_radius=cavity_corner_radius);
