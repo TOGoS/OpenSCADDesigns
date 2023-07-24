@@ -302,6 +302,8 @@ if( v6hc_subtraction_enabled && lip_height <= u-margin ) {
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
 	if( cavity_style == "tograck" ) each [
+		// TODO: leave sublips on the +x and -x top edges
+		// TODO: wire conduit through the otherwise unused space along -y and +y
 		["subtract", ["tgx9_cavity_cube", [block_size[0]-wall_thickness*2, 63.5, (block_size[2]-floor_thickness)*2]]],
 		["subtract", ["tgx9_cavity_cube", [block_size[0]-wall_thickness*2, 88.9, max(3.175, (block_size[2]-floor_thickness-19.05))*2]]],
 		for( xm=[-(block_size[0]/12.7/2)+0.5 : 1 : block_size[0]/12.7/2-0.4] ) for( ym=[-3, 3] )
