@@ -18,6 +18,8 @@
 //   when lip is inverted
 // v1.8:
 // - tgx9_do_sshape: Support for THL-1001, THL-1002, cylinder, and tgx9_cavity_cube
+// v1.9:
+// - tgx9_do_sshape: Support for rotate, union, intersection, difference
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -321,7 +323,19 @@ module tgx9_do_sshape(shape) {
 	if( type == "child" ) {
 		children(0);
 	} else if( type == "translate" ) {
-		translate(shape[1]) tgx9_do_sshape(shape[2]);
+		translate(shape[1]) tgx9_do_sshape(shape[2]) children();
+	} else if( type == "rotate" ) {
+		rotate(shape[1]) tgx9_do_sshape(shape[2]) children();
+	} else if( type == "union" ) {
+		for( i=[1:1:len(shape)-1] ) tgx9_do_sshape(shape[i]) children();
+	} else if( type == "intersection" ) {
+		intersection_for( i=[1:1:len(shape)-1] ) tgx9_do_sshape(shape[i]) children();
+	} else if( type == "difference" ) {
+		difference() {
+			tgx9_do_sshape(shape[2]) children();
+			
+			for( i=[3:1:len(shape)-1] ) tgx9_do_sshape(shape[i]) children();
+		}
 	} else if( type == "cylinder" ) {
 		cylinder(d=shape[1], h=shape[2], center=true);
 	} else if( type == "THL-1001" || type == "THL-1002" ) {
