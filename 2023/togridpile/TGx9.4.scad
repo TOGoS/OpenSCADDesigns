@@ -1,4 +1,4 @@
-// TGx9.5.3 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.4 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -112,6 +112,8 @@
 // - Add support for 'tograck' cavity
 // 9.5.3.1:
 // - Refactor to use "union" sshape
+// 9.5.4:
+// - Add configuration for TOGRack sublips
 
 /* [Atom/chunk/block size] */
 
@@ -155,14 +157,22 @@ cavity_style = "cup"; // ["none","cup","tograck"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
+sublip_slope       = 2;
+
+/* [Cavity (Cup)] */
+
 // How far label platform sticks out from the inside of the cup
 label_width        = 10.0 ; // 0.1
 fingerslide_radius = 12.5 ; // 0.1
 // dz/dx of sublip; minimum is 1 = 45 degrees, 2 may be gentler
-sublip_slope       = 2;
 trim_front_sublip  = false;
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
+
+/* [Cavity (TOGRack)] */
+
+tograck_upper_cavity_rim_mode = "x"; // ["none","x","full"]
+tograck_lower_cavity_rim_mode = "x"; // ["none","x","full"]
 
 /* [Detail] */
 
@@ -301,20 +311,36 @@ if( v6hc_subtraction_enabled && lip_height <= u-margin ) {
 	echo("v6hc_subtraction_enabled enabled but not needed due to low lip (assuming column inset=1u, which is standard), so I won't bother to actually subtract it");
 }
 
+tograck_lower_cavity_depth = min(block_size[2]-floor_thickness-3.175, 19.05);
+tograck_upper_cavity_depth = max(3.175, block_size[2]-tograck_lower_cavity_depth-floor_thickness);
+
+function rimless_cavity_sshape(size)   = ["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8]]];
+function y_rimless_cavity_sshape(size) = ["intersection",
+	["translate", [0,0,0], ["tgx9_cavity_cube", [size[0], size[1]*2, size[2]]]],
+	["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8]]] // z+8 to clear sublip
+];
+function modified_cavity_sshape(size, rim_mode="full") =
+	rim_mode == "full" ? ["tgx9_cavity_cube", size] :
+	rim_mode == "x"    ? y_rimless_cavity_sshape(size) :
+	rim_mode == "none" ? rimless_cavity_sshape(size) :
+	assert(false, str("Bad rim_mode to `modified_cavity_sshape`: '", rim_mode, "'"));
+
+function tograck_cavity_sshape() = ["union",
+	// TODO: leave sublips on the +x and -x top edges
+	// TODO: wire conduit through the otherwise unused space along -y and +y
+	modified_cavity_sshape([block_size[0]-wall_thickness*2, 88.9, tograck_upper_cavity_depth], tograck_upper_cavity_rim_mode),
+	["translate", [0,0,-tograck_upper_cavity_depth], modified_cavity_sshape([block_size[0]-wall_thickness*2, 63.5, tograck_lower_cavity_depth], tograck_lower_cavity_rim_mode)],
+	for( xm=[-(block_size[0]/12.7/2)+0.5 : 1 : block_size[0]/12.7/2-0.4] ) for( ym=[-3, 3] )
+		let(pos=[xm*12.7, ym*12.7, -block_size[2]]) ["translate", pos, ["cylinder", 5, (block_size[2]-8)*2]], // -8 to avoid cutting through upper sublip
+	for( xm=[0 : 1 : block_size[0]/12.7] ) for( ym=[0] )
+		let(pos=[-block_size[0]/2+(xm+0.5)*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["translate", pos, [xm % 3 == 1 ? "THL-1002" : "THL-1001", floor_thickness*2, 2]],
+	for( xm=[-(block_size[0]/12.7/2)+1.5 : 3 : block_size[0]/12.7/2-0.4] ) for( ym=[-2, -1, 0, 1, 2] )
+		let(pos=[xm*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["translate", pos, ["THL-1001", floor_thickness*2, block_size[2]]],
+];
+
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
-	if( cavity_style == "tograck" ) ["subtract", ["union",
-		// TODO: leave sublips on the +x and -x top edges
-		// TODO: wire conduit through the otherwise unused space along -y and +y
-		["tgx9_cavity_cube", [block_size[0]-wall_thickness*2, 63.5, (block_size[2]-floor_thickness)*2]],
-		["tgx9_cavity_cube", [block_size[0]-wall_thickness*2, 88.9, max(3.175, (block_size[2]-floor_thickness-19.05))*2]],
-		for( xm=[-(block_size[0]/12.7/2)+0.5 : 1 : block_size[0]/12.7/2-0.4] ) for( ym=[-3, 3] )
-			let(pos=[xm*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["translate", pos, ["cylinder", 5, block_size[2]*3]],
-		for( xm=[0 : 1 : block_size[0]/12.7] ) for( ym=[0] )
-			let(pos=[-block_size[0]/2+(xm+0.5)*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["translate", pos, [xm % 3 == 1 ? "THL-1002" : "THL-1001", floor_thickness*2, block_size[2]]],
-		for( xm=[-(block_size[0]/12.7/2)+1.5 : 3 : block_size[0]/12.7/2-0.4] ) for( ym=[-2, -1, 0, 1, 2] )
-			let(pos=[xm*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["translate", pos, ["THL-1001", floor_thickness*2, block_size[2]]],
-	]]
+	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()]
 ];
 
 tgx9_cup(

@@ -20,6 +20,8 @@
 // - tgx9_do_sshape: Support for THL-1001, THL-1002, cylinder, and tgx9_cavity_cube
 // v1.9:
 // - tgx9_do_sshape: Support for rotate, union, intersection, difference
+// v1.10:
+// - Breaking change: tgx9_cup_cavity origin is now at the top
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -292,7 +294,7 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 
 use <../lib/TGX1001.scad>
 
-// Standard cavity with no frills; z=0 is at the center
+// Standard cavity with no frills; z=0 is at the top
 module tgx9_cavity_cube(size) if(size[2] > 0) {
 	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
 	cavity_corner_radius    = outer_corner_radius - wall_thickness;
@@ -309,7 +311,7 @@ module tgx9_cavity_cube(size) if(size[2] > 0) {
 		top_bevel_height=top_bevel_height
 	));
 	
-	translate([0,0,-size[2]/2])
+	translate([0,0,-size[2]])
 		tgx9_rounded_profile_extruded_square(dh_size, cavity_corner_radius, z_offset=0)
 			polygon(profile_points);
 }
@@ -332,10 +334,12 @@ module tgx9_do_sshape(shape) {
 		intersection_for( i=[1:1:len(shape)-1] ) tgx9_do_sshape(shape[i]) children();
 	} else if( type == "difference" ) {
 		difference() {
-			tgx9_do_sshape(shape[2]) children();
+			tgx9_do_sshape(shape[1]) children();
 			
-			for( i=[3:1:len(shape)-1] ) tgx9_do_sshape(shape[i]) children();
+			for( i=[2:1:len(shape)-1] ) tgx9_do_sshape(shape[i]) children();
 		}
+	} else if( type == "cube" ) {
+		cube(shape[1], center=true);
 	} else if( type == "cylinder" ) {
 		cylinder(d=shape[1], h=shape[2], center=true);
 	} else if( type == "THL-1001" || type == "THL-1002" ) {
