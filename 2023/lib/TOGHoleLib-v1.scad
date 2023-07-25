@@ -1,4 +1,4 @@
-// TOGHoleLib-v1.4
+// TOGHoleLib-v1.5
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -15,6 +15,8 @@
 // - Add 'tog_holelib_get_hole_types()' and `tog_holelib_is_hole_type(name)` functions
 // v1.4:
 // - Add THL-1013, a hole for the CRE24F2HBBNE SPDT rocker switches I got from DigiKey years ago
+// v1.5:
+// - Add partial, experimental, unstable support for THL-1021, a square hole for Mini-PV/Dupont connectors
 
 module tog_holelib_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height) {
 	rotate_extrude() {
@@ -84,10 +86,73 @@ module tog_holelib_hole1013(
 	translate([0,0,-depth-1]) linear_extrude(depth+overhead_bore_height+2) circle(d=shaft_inner_diameter);	
 }
 
+
+/**
+ * A wide-at-the-bottom (z=0), narrow (width, height)-at-the-top (z=border) wedge..thing
+ */
+module tog_holelib_hole1021__widener(width, height, border) {
+	polyhedron([
+		[-width/2-border, -height/2-border, -border  ],
+		[+width/2+border, -height/2-border, -border  ],
+		[-width/2-border, +height/2+border, -border  ],
+		[+width/2+border, +height/2+border, -border  ],
+		[-width/2-border, -height/2-border,         0],
+		[+width/2+border, -height/2-border,         0],
+		[-width/2-border, +height/2+border,         0],
+		[+width/2+border, +height/2+border,         0],
+		[-width/2       , -height/2       , +border*2],
+		[+width/2       , -height/2       , +border*2],
+		[-width/2       , +height/2       , +border*2],
+		[+width/2       , +height/2       , +border*2]
+	], [
+		[2,3,1,0], // bottom
+		[2,0,4,6], // flat sides...
+		[0,1,5,4],
+		[1,3,7,5],
+		[3,2,6,7],
+		[6,4,8,10], // tapered sides...
+		[4,5,9,8],
+		[5,7,11,9],
+		[7,6,10,11],
+		[8,9,11,10] // top
+	]);
+}
+
+// Experimental/unstable.
+// Don't rely on this not changing just yet.
+module tog_holelib_hole1021(
+	hole_size,
+	front_depth = 7,
+	depth = 28,
+	back_margin = 0.1,
+	front_margin = 0.5,
+	include_pin1_marker = true,
+) rotate([180,0,0]) {
+	// This is written upside-down because
+	// that's how it was done in the old MiniPVSleeve-v3.
+	// But in TOGHoleLib-v1, holes go down!
+	back_hole_width   = 2.54 * hole_size[0] + back_margin*2;
+	back_hole_height  = 2.54 * hole_size[1] + back_margin*2;
+	front_hole_width  = 2.54 * hole_size[0] + front_margin*2;
+	front_hole_height = 2.54 * hole_size[1] + front_margin*2;
+	taper_dx = front_margin - back_margin;
+	taper_dz = taper_dx * 2;
+	translate([0, 0, depth/2]) cube([back_hole_width,back_hole_height,depth], true);
+	translate([0, 0, front_depth/2]) cube([front_hole_width,front_hole_height,front_depth], true);
+	translate([0, 0, front_depth])
+		tog_holelib_hole1021__widener(back_hole_width, back_hole_height, taper_dx);
+	translate([0, 0, 0])
+	   tog_holelib_hole1021__widener(front_hole_width, front_hole_height, 0.5);
+	if( include_pin1_marker ) {
+		translate([-hole_size[0]*2.54/2 + 0.5, -hole_size[1]*2.54/2 - 1, 0]) cube([1, 1.1, 1], center=true);
+	}
+}
+
 tog_holelib_hole_types = [
 	["THL-1001", "Suitable for #6 flathead"],
 	["THL-1002", "Suitable for 1/4\" flathead"],
 	["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
+	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 ];
 
 function tog_holelib_get_hole_types() = tog_holelib_hole_types;
