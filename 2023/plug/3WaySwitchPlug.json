@@ -10,6 +10,19 @@
 			"shaft_diameter": "37",
 			"shaft_inner_diameter": "35",
 			"shaft_length": "12"
+		},
+		"p1143": {
+			"$fn": "48",
+			"diagonal": "33",
+			"flange_diameter": "50.8",
+			"flange_thickness": "3.175",
+			"hole_length": "30",
+			"hole_style": "beveled",
+			"hole_width": "12",
+			"mode": "tograck-panel",
+			"shaft_diameter": "37",
+			"shaft_inner_diameter": "35",
+			"shaft_length": "12"
 		}
 	},
 	"fileFormatVersion": "1"

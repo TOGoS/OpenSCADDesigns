@@ -10,6 +10,28 @@
 			"front_margin": "0.5",
 			"hole_size": "[4, 1]",
 			"margin": "0.4"
+		},
+		"p1141": {
+			"$fn": "50",
+			"back_margin": "0.1",
+			"bulkhead_lip_width": "0.5",
+			"cavity_mode": "differential",
+			"connector_length": "14",
+			"flange_thickness": "0.9",
+			"front_margin": "0.3",
+			"hole_size": "[3, 1]",
+			"margin": "0.4"
+		},
+		"p1142": {
+			"$fn": "50",
+			"back_margin": "0.2",
+			"bulkhead_lip_width": "0.5",
+			"cavity_mode": "differential",
+			"connector_length": "14",
+			"flange_thickness": "0.9",
+			"front_margin": "0.3",
+			"hole_size": "[3, 1]",
+			"margin": "0.4"
 		}
 	},
 	"parameterSets": "",
