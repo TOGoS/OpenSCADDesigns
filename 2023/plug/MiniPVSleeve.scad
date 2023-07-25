@@ -1,11 +1,39 @@
+// MiniPVSleeve-v5.0
+//
+// Versions:
+// v3: 2018-02-03
+// - Same as ProjectNotes2/2018/MiniPVSleeve/MiniPVSleeve-v3.scad,
+//   a.k.a. x-git-object:6fff61a76d842dfa115b24c827d32c9b12e57355
+// v5.0: 2023-07-25
+// - Refactoring/clean-up, esp. to make configurable parameters make sense
+// - Default parameter values remain the same as 0.3's
+
+connector_length = 14;
+flange_thickness = 0.9;
+
+size = [4,1];
+
+cavity_mode = "differential"; // ["straight","bulkhead","differential"]
+
+/* [Differential Cavity] */
+back_margin  = 0.3;
+front_margin = 0.5;
+
+/* [Straight/Bulkhead] */
+margin = 0.4; // v2: Increased from 0.2 to 0.4
+bulkhead_lip_width = 0.5;
+
+/* [Detail] */
+
 $fn = 50;
+
+module __asdasd_end_params() { };
 
 function mm(millimeters) = millimeters;
 function inches(inc) = mm(25.4 * inc);
 function pvunits(hole_count) = mm(2.54 * hole_count);
 // For 3D printing stuff, Dad says make thickness a multiple of 0.3mm.
 // Width is less important but a multiple of 0.42mm might work best.
-function extruded_layers(layer_count) = mm(0.3 * layer_count);
 function extruded_beads(bead_count) = mm(0.42 * bead_count);
 
 function unit_ceil(unit, value) =
@@ -20,19 +48,12 @@ function unit_ceil(unit, value) =
 // while their 2p is exactly 2x2.54mm = 5.08mm).  *shrug*
 // The pins themselves are about 0.65mm square
 
-bulkhead_lip_width = mm(0.5);
 bulkhead_thickness = bulkhead_lip_width*2;
-connector_length = mm(14);
-margin = mm(0.4); // v2: Increased from 0.2 to 0.4
-back_margin = mm(0.3);
-front_margin = mm(0.5);
 
-cm_straight = 1;
-cm_bulkhead = 2;
-cm_diff = 3;
+cm_straight = "straight";
+cm_bulkhead = "bulkhead";
+cm_diff = "differential";
 cm_default = cm_straight;
-
-flange_thickness = extruded_layers(3);
 
 module pyramid(width, depth, height) {
 	polyhedron([
@@ -111,18 +132,18 @@ function sleeve_cavity_diagonal(columns,rows,margin=margin) =
 
 module rectangular_opening_widener(width, height, border) {
 	polyhedron([
-		[-width/2-border, -height/2-border, -border],
-		[+width/2+border, -height/2-border, -border],
-		[-width/2-border, +height/2+border, -border],
-		[+width/2+border, +height/2+border, -border],
-		[-width/2-border, -height/2-border, 0],
-		[+width/2+border, -height/2-border, 0],
-		[-width/2-border, +height/2+border, 0],
-		[+width/2+border, +height/2+border, 0],
-		[-width/2, -height/2, +border*2],
-		[+width/2, -height/2, +border*2],
-		[-width/2, +height/2, +border*2],
-		[+width/2, +height/2, +border*2]
+		[-width/2-border, -height/2-border, -border  ],
+		[+width/2+border, -height/2-border, -border  ],
+		[-width/2-border, +height/2+border, -border  ],
+		[+width/2+border, +height/2+border, -border  ],
+		[-width/2-border, -height/2-border,         0],
+		[+width/2+border, -height/2-border,         0],
+		[-width/2-border, +height/2+border,         0],
+		[+width/2+border, +height/2+border,         0],
+		[-width/2       , -height/2       , +border*2],
+		[+width/2       , -height/2       , +border*2],
+		[-width/2       , +height/2       , +border*2],
+		[+width/2       , +height/2       , +border*2]
 	], [
 		[2,3,1,0], // bottom
 		[2,0,4,6], // flat sides...
@@ -143,16 +164,17 @@ module diff_sleeve_cavity(
 	back_margin=back_margin,
 	front_margin=front_margin
 ) {
-	back_hole_width = sleeve_cavity_width(columns, back_margin);
-	back_hole_height = sleeve_cavity_width(rows, back_margin);
-	front_hole_width = sleeve_cavity_width(columns, front_margin);
+	back_hole_width   = sleeve_cavity_width(columns, back_margin);
+	back_hole_height  = sleeve_cavity_width(rows, back_margin);
+	front_hole_width  = sleeve_cavity_width(columns, front_margin);
 	front_hole_height = sleeve_cavity_width(rows, front_margin);
 	taper_dx = front_margin - back_margin;
 	taper_dz = taper_dx * 2;
 	half_length = (sleeve_length+2)/2;
-	translate([0, 0, +half_length/2-taper_dz]) cube([back_hole_width,back_hole_height,half_length], true);
+	translate([0, 0, +half_length/2-taper_dz]) cube([back_hole_width,back_hole_height,half_length+2], true);
 	translate([0, 0, -half_length/2-taper_dz]) cube([front_hole_width,front_hole_height,half_length], true);
-	translate([0, 0, -taper_dz]) rectangular_opening_widener(back_hole_width, back_hole_height, taper_dx);
+	translate([0, 0, -taper_dz])
+		rectangular_opening_widener(back_hole_width, back_hole_height, taper_dx);
 	translate([0,0,-sleeve_length/2])
 		rectangular_opening_widener(front_hole_width, front_hole_height, mm(0.5));
 }
@@ -168,7 +190,6 @@ module sleeve_cavity(
 		diff_sleeve_cavity(
 			columns, rows,
 			sleeve_length=sleeve_length,
-			cavity_mode = cavity_mode,
 			back_margin = back_margin,
 			front_margin = front_margin
 		);
@@ -186,12 +207,8 @@ module sleeve_cavity(
 	}
 }
 
-module pin_marker() {
-	/* let's leave it out for now
-	translate([0,0,-pin_marker_size*2]) {
-		pyramid(pin_marker_size*2, pin_marker_size*2, pin_marker_size*4);
-	}
-	*/
+module pin_marker(width=pin_marker_size+0.1) {
+	cube([pin_marker_size, width, pin_marker_size*2], center=true);
 }
 
 module rectangular_sleeve(
@@ -220,8 +237,8 @@ module rectangular_sleeve(
 			}
 		}
 		sleeve_cavity(columns, rows, sleeve_length=sleeve_length, cavity_mode=cavity_mode);
-		translate([pvunits(columns-1)/2, pvunits(rows)/2+margin+sleeve_wall_thickness/2, -sleeve_length/2]) {
-			pin_marker();
+		translate([pvunits(columns-1)/2, pvunits(rows)/2+margin+sleeve_wall_thickness/2-0.3, -sleeve_length/2]) {
+			pin_marker(width=sleeve_wall_thickness);
 		}
 	};
 }
@@ -243,8 +260,9 @@ module round_sleeve(
 				cylinder(d=flange_diameter, h=flange_thickness, center=true);
 			}
 		}
+		
 		sleeve_cavity(columns, rows, sleeve_length=sleeve_length, cavity_mode=cavity_mode);
-		translate([pvunits(columns-1)/2, pvunits(rows)/2+margin+pin_marker_size, -sleeve_length/2]) {
+		translate([pvunits(columns-1)/2, pvunits(rows)/2+margin+pin_marker_size/2, -sleeve_length/2]) {
 			pin_marker();
 		}
 	}
@@ -279,14 +297,17 @@ module outer_shape_variations(
 			cavity_mode=cavity_mode
 		);
 	}
+	translate(sample_position(+2, 0)) {
+		sleeve_cavity(4, 1, cavity_mode=cavity_mode);
+	}
 }
 
 module variations(
 	columns, rows
 ) {
 	translate(sample_position(0,0)) {
-		outer_shape_variations(columns, rows, cavity_mode=cm_diff);
+		outer_shape_variations(columns, rows, cavity_mode=cavity_mode);
 	}
 }
 
-variations(4, 1);
+variations(size[0], size[1]);
