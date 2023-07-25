@@ -1,4 +1,4 @@
-// 3WaySwitchPlug-v1.3.2
+// 3WaySwitchPlug-v1.3.3
 // 
 // Adapter so that the 3-way (a-b c, a b-c, a b c) switches I bought from DigiKey years ago
 // (TODO: link might be nice) can be put into a round hole.
@@ -21,6 +21,9 @@
 // - Smaller hole (29mm x 12mm)
 // v1.3.2:
 // - Default hole length = 30mm
+// v1.3.3:
+// - Copy hole shape to TOGHoleLib, use that as default implementation,
+//   keeping `hole_style = "beveled-original"` for reference
 
 diagonal = 33;
 
@@ -35,9 +38,11 @@ hole_length = 30; // 0.1
 hole_width  = 12; // 0.1
 
 mode = "full"; // ["full","snap-test"]
-hole_style = "beveled"; // ["beveled","square"]
+hole_style = "beveled"; // ["beveled","beveled-original","square"]
 
 $fn = 48;
+
+use <../lib/TOGHoleLib-v1.scad>
 
 module panel_hole() {
 	square([hole_length, hole_width], center=true);
@@ -48,20 +53,19 @@ module shaft_hole() {
 
 total_height = flange_thickness+shaft_length;
 
-module the_hole() intersection() {
+module the_hole(hole_style="beveled", depth=flange_thickness+shaft_length+1) intersection() {
 	if( hole_style == "square" ) {
 		linear_extrude(total_height*3, center=true) panel_hole();
 		translate([0,0,flange_thickness-0.01]) linear_extrude(total_height) shaft_hole();
 	} else {
 		bevel_length = (shaft_diameter-hole_length)/2;
 		bevel_start_z = 0.5;
-		max_z = flange_thickness+shaft_length+1;
-		rotate([90,0,0]) linear_extrude(hole_width, center=true) polygon([
+		rotate([-90,0,0]) linear_extrude(hole_width, center=true) polygon([
 			[-hole_length/2               ,                           -1],
 			[-hole_length/2               , bevel_start_z               ],
 			[-hole_length/2 - bevel_length, bevel_start_z + bevel_length],
-			[-hole_length/2 - bevel_length,                        max_z],
-			[+hole_length/2 + bevel_length,                        max_z],
+			[-hole_length/2 - bevel_length,                        depth],
+			[+hole_length/2 + bevel_length,                        depth],
 			[+hole_length/2 + bevel_length, bevel_start_z + bevel_length],
 			[+hole_length/2               , bevel_start_z               ],
 			[+hole_length/2               ,                           -1]
@@ -86,5 +90,9 @@ difference() {
 		}
 	}
 
-	the_hole();
+	rotate([180,0,0]) if( hole_style == "square" || hole_style == "beveled-original" ) {
+		the_hole(hole_style=hole_style);
+	} else {
+		tog_holelib_hole("THL-1013", depth=flange_thickness+shaft_length+1);
+	}
 }
