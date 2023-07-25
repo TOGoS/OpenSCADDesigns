@@ -1,4 +1,4 @@
-// 3WaySwitchPlug-v1.3.3
+// 3WaySwitchPlug-v1.4
 // 
 // Adapter so that the 3-way (a-b c, a b-c, a b c) switches I bought from DigiKey years ago
 // (TODO: link might be nice) can be put into a round hole.
@@ -24,6 +24,8 @@
 // v1.3.3:
 // - Copy hole shape to TOGHoleLib, use that as default implementation,
 //   keeping `hole_style = "beveled-original"` for reference
+// v1.4:
+// - TOGRack mode!
 
 diagonal = 33;
 
@@ -37,12 +39,17 @@ shaft_inner_diameter = 35; // 0.1
 hole_length = 30; // 0.1
 hole_width  = 12; // 0.1
 
-mode = "full"; // ["full","snap-test"]
+mode = "round-plug"; // ["round-plug","snap-test","tograck-panel"]
 hole_style = "beveled"; // ["beveled","beveled-original","square"]
 
 $fn = 48;
 
+module __123uih12_end_params() { }
+
+inch = 25.4;
+
 use <../lib/TOGHoleLib-v1.scad>
+use <../lib/TOGShapeLib-v1.scad>
 
 module panel_hole() {
 	square([hole_length, hole_width], center=true);
@@ -76,7 +83,7 @@ module the_hole(hole_style="beveled", depth=flange_thickness+shaft_length+1) int
 }
 
 difference() {
-	if( mode == "full" ) union() {
+	if( mode == "full" || mode == "round-plug" ) union() {
 		epsilon = flange_thickness/2;
 		if(flange_thickness > 0) linear_extrude(flange_thickness) circle(d=flange_diameter);
 		translate([0,0,flange_thickness-epsilon]) linear_extrude(shaft_length+epsilon) difference() {
@@ -87,6 +94,17 @@ difference() {
 		linear_extrude(flange_thickness+2) intersection() {
 			square([shaft_diameter+2,hole_width+2], center=true);
 			circle(d=shaft_diameter);
+		}
+	} else if( mode == "tograck-panel" ) {
+		linear_extrude(3.175) difference() {
+			tog_shapelib_rounded_beveled_square([3.5*inch, 0.75*inch], 1/8*inch, offset=-2);
+			
+			for( y=[-1/8*inch, 1/8*inch] ) for( x=[-1.5*inch, 1.5*inch] ) {
+				translate([x,y]) circle(d=4);
+			}
+		}
+		linear_extrude(6.35) {
+			tog_shapelib_rounded_beveled_square([2*inch, 0.75*inch], 1/8*inch, offset=-2);
 		}
 	}
 

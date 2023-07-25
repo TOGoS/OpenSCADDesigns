@@ -20,7 +20,8 @@ module tog_shapelib_rounded_square(size, corner_radius, offset=0) {
 	}	
 }
 
-module tog_shapelib_rounded_beveled_square(size, bevel_size, rounding_radius, offset=0) {
+module tog_shapelib_rounded_beveled_square(size, bevel_size=3.175, rounding_radius=undef, offset=0) {
+	rounding_radius = is_undef(rounding_radius) ? bevel_size : rounding_radius;
 	// Could special-case these, but in the meantime:
 	assert(bevel_size > 0);
 	// Make sure things don't go negative:
