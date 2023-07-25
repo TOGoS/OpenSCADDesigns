@@ -1,0 +1,17 @@
+{
+	"parameterSets": {
+		"v3 defaults": {
+			"$fn": "50",
+			"back_margin": "0.3",
+			"bulkhead_lip_width": "0.5",
+			"cavity_mode": "differential",
+			"connector_length": "14",
+			"flange_thickness": "0.9",
+			"front_margin": "0.5",
+			"hole_size": "[4, 1]",
+			"margin": "0.4"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
