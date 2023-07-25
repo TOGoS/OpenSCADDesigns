@@ -1,4 +1,4 @@
-// TOGHoleLib-v1.5
+// TOGHoleLib-v1.5.1
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -17,6 +17,8 @@
 // - Add THL-1013, a hole for the CRE24F2HBBNE SPDT rocker switches I got from DigiKey years ago
 // v1.5:
 // - Add partial, experimental, unstable support for THL-1021, a square hole for Mini-PV/Dupont connectors
+// v1.5.1:
+// - tog_holelib_hole1021: change default margins (0.2mm and 0.3mm) and include_pin1_marker (false)
 
 module tog_holelib_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height) {
 	rotate_extrude() {
@@ -124,9 +126,9 @@ module tog_holelib_hole1021(
 	hole_size,
 	front_depth = 7,
 	depth = 28,
-	back_margin = 0.1,
-	front_margin = 0.5,
-	include_pin1_marker = true,
+	back_margin = 0.2,
+	front_margin = 0.3,
+	include_pin1_marker = false,
 ) rotate([180,0,0]) {
 	// This is written upside-down because
 	// that's how it was done in the old MiniPVSleeve-v3.

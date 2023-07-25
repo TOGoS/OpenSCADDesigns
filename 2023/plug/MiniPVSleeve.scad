@@ -1,4 +1,4 @@
-// MiniPVSleeve-v5.1
+// MiniPVSleeve-v5.2
 //
 // Versions:
 // v3: 2018-02-03
@@ -10,6 +10,9 @@
 // v5.1: 2023-07-25
 // - Replace columns,rows parameters with single hole_size parameter
 // - Add a TOGHoleLib variation
+// v5.2: 2023-07-25
+// - Reduce front/back margins to 0.2mm and 0.3mm,
+//   as p1141 showed that this worked well.
 
 connector_length = 14;
 flange_thickness = 0.9;
@@ -19,8 +22,8 @@ hole_size = [4,1];
 cavity_mode = "differential"; // ["straight","bulkhead","differential"]
 
 /* [Differential Cavity] */
-back_margin  = 0.3;
-front_margin = 0.5;
+back_margin  = 0.2;
+front_margin = 0.3;
 
 /* [Straight/Bulkhead] */
 margin = 0.4; // v2: Increased from 0.2 to 0.4

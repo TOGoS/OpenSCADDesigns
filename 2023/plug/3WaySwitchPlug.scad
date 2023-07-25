@@ -1,4 +1,4 @@
-// 3WaySwitchPlug-v1.4
+// 3WaySwitchPlug-v1.4.1
 // 
 // Adapter so that the 3-way (a-b c, a b-c, a b c) switches I bought from DigiKey years ago
 // (TODO: link might be nice) can be put into a round hole.
@@ -26,6 +26,8 @@
 //   keeping `hole_style = "beveled-original"` for reference
 // v1.4:
 // - TOGRack mode!
+// v1.4.1:
+// - Add 3p MiniPVSleeve
 
 diagonal = 33;
 
@@ -96,6 +98,8 @@ difference() {
 			circle(d=shaft_diameter);
 		}
 	} else if( mode == "tograck-panel" ) {
+		translate([1*inch, 0, 7]) cube([6, 10, 14], center=true);
+		
 		linear_extrude(3.175) difference() {
 			tog_shapelib_rounded_beveled_square([3.5*inch, 0.75*inch], 1/8*inch, offset=-2);
 			
@@ -112,5 +116,9 @@ difference() {
 		the_hole(hole_style=hole_style);
 	} else {
 		tog_holelib_hole("THL-1013", depth=flange_thickness+shaft_length+1);
+	}
+
+	if( mode == "tograck-panel" ) {
+		translate([1*inch, 0, 0]) rotate([180,0,90]) tog_holelib_hole1021([3,1]);
 	}
 }
