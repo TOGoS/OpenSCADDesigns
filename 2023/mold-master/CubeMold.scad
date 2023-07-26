@@ -1,4 +1,4 @@
-// CubeMold-v1.3
+// CubeMold-v1.4
 //
 // v1.1:
 // - Set $fn to a reasonable value
@@ -8,10 +8,13 @@
 // v1.3:
 // - Correct usage of wall_thickness, and value to compensate
 // - Make corners of mold just *barely* connected
+// v1.4:
+// - Configurable and smaller-by-default mold wall thickness
 
 outer_margin = 0.075;
 preview_fn = 16;
 render_fn = 64;
+mold_wall_thickness = 12.7;
 $fn = $preview ? preview_fn : render_fn;
 
 use <../lib/TOGShapeLib-v1.scad>
@@ -21,10 +24,10 @@ inch = 25.4;
 
 floor_thickness = 1/16*inch;
 wall_thickness = 1/32*inch;
-mold_size = [3*inch, 3*inch, 2.25*inch];
 raft_height = 1/16*inch;
 cube_size = [1.5*inch, 1.5*inch, 1.5*inch];
 cube_hole_diameter = 7.5;
+mold_size = [cube_size[0]+wall_thickness*2+mold_wall_thickness*2, cube_size[1]+wall_thickness*2+mold_wall_thickness*2, 2.25*inch];
 
 difference() {
 	cc_square_size = [mold_size[0]-wall_thickness*4, mold_size[1]-wall_thickness*4];
