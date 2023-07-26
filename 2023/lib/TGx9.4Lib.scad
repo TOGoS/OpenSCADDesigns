@@ -243,7 +243,7 @@ module tgx9_atomic_chunk_foot(
 
 module tgx9_chunk_foot(
 	segmentation = "chunk",
-	corner_radius,
+	corner_radius = togridlib3_decode([1/2, "atom"]),
 	height = 100,
 	offset = 0
 ) {
