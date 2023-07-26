@@ -1,4 +1,13 @@
-// CubeMold-v1.0
+// CubeMold-v1.1
+//
+// v1.1:
+// - Set $fn to a reasonable value
+// - Add outer_margin parameter
+
+outer_margin = 0.075;
+preview_fn = 16;
+render_fn = 64;
+$fn = $preview ? preview_fn : render_fn;
 
 use <../lib/TOGShapeLib-v1.scad>
 
@@ -18,7 +27,7 @@ difference() {
 }
 translate([0,0,floor_thickness]) {
 	linear_extrude(cube_size[2]) difference() {
-		tog_shapelib_rounded_beveled_square(cube_size);
+		tog_shapelib_rounded_beveled_square(cube_size, offset=-outer_margin);
 		
 		circle(d=cube_hole_diameter);
 	}
