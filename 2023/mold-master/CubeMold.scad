@@ -1,10 +1,13 @@
-// CubeMold-v1.2
+// CubeMold-v1.3
 //
 // v1.1:
 // - Set $fn to a reasonable value
 // - Add outer_margin parameter
 // v1.2:
 // - Make the bottom of the to-be-cast cube (+z in this design) TOGridPile-compatible
+// v1.3:
+// - Correct usage of wall_thickness, and value to compensate
+// - Make corners of mold just *barely* connected
 
 outer_margin = 0.075;
 preview_fn = 16;
@@ -17,16 +20,21 @@ use <../lib/TGx9.4Lib.scad>
 inch = 25.4;
 
 floor_thickness = 1/16*inch;
-wall_thickness = 1/16*inch;
+wall_thickness = 1/32*inch;
 mold_size = [3*inch, 3*inch, 2.25*inch];
 raft_height = 1/16*inch;
 cube_size = [1.5*inch, 1.5*inch, 1.5*inch];
 cube_hole_diameter = 7.5;
 
 difference() {
+	cc_square_size = [mold_size[0]-wall_thickness*4, mold_size[1]-wall_thickness*4];
+
 	linear_extrude(mold_size[2]) tog_shapelib_rounded_beveled_square(mold_size);
 	
-	translate([0,0,floor_thickness+mold_size[2]/2]) cube([mold_size[0]-wall_thickness, mold_size[1]-wall_thickness, mold_size[2]], center=true);
+	translate([0,0,floor_thickness]) linear_extrude(mold_size[2]) {
+		tog_shapelib_rounded_beveled_square(mold_size, offset=-wall_thickness);
+		square(cc_square_size, center=true);
+	}
 }
 translate([0,0,floor_thickness]) {
 	intersection() {
