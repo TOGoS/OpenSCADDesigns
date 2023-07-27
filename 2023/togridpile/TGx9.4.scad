@@ -1,4 +1,4 @@
-// TGx9.5.6 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.7 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -121,6 +121,11 @@
 // v9.5.6:
 // - Default TOGRack cavity rim modes to 'none' for compatibility with v9.5.3 presets
 // - Add experimental TOGRack conduit subtraction option
+// v9.5.7:
+// - Don't try to make cup cavity with any negative dimension
+// - Force cavity corner radius to be at least 1u
+// - Bulkhead thickness can be configured, but defaults to -1, which means
+//   'wall thickness or 1.2mm, whichever is smaller'
 
 /* [Atom/chunk/block size] */
 
@@ -132,7 +137,7 @@ chunk_pitch_atoms = 3;
 block_size_chunks = [1, 1];
 // Block height, in 'u', not including lip
 block_height_u    = 24;
-// Height that lip extends beyond top; 0 for no lip, negative for an inverted lip
+// Height that lip extends beyond top; 0 for no lip, -1 for an inverted lip
 lip_height = 2.54;
 foot_segmentation = "chunk"; // ["atom","chatom","chunk","block"]
 // Foot column shape; only applicable when foot_segmentation = "chunk"
@@ -176,6 +181,8 @@ fingerslide_radius = 12.5 ; // 0.1
 trim_front_sublip  = false;
 cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
+// Bulkhead thickness; -1 means default based on min(wall_thickness, 1.2mm)
+bulkhead_thickness = -1; // [-1 : 0.1 : 4]
 
 /* [Cavity (TOGRack)] */
 
@@ -196,6 +203,7 @@ $fn = $preview ? preview_fn : render_fn;
 
 module tgx9__end_params() { }
 
+effective_bulkhead_thickness = bulkhead_thickness > 0 ? bulkhead_thickness : min(1.2, wall_thickness);
 top_magnet_holes_enabled2 = top_magnet_holes_enabled || label_magnet_holes_enabled;
 
 if( lip_height > 0 ) {
@@ -261,9 +269,9 @@ function kasjhd_swapxy(vec, swap=true) = [
 	for( i=[2:1:len(vec)-1] ) vec[i]
 ];
 
-module the_cup_cavity() if(cavity_size[2] > 0) difference() {
+module the_cup_cavity() if(cavity_size[0] > 0 && cavity_size[1] > 0 && cavity_size[2] > 0) difference() {
 	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
-	cavity_corner_radius    = outer_corner_radius - wall_thickness;
+	cavity_corner_radius    = max(togridlib3_decode([1, "u"]), outer_corner_radius - wall_thickness);
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_cavity_size, corner_radius=cavity_corner_radius);
@@ -294,7 +302,7 @@ module the_cup_cavity() if(cavity_size[2] > 0) difference() {
 	for( i=cavity_bulkhead_positions ) {
 		maybeswapxy = cavity_bulkhead_axis == "x" ? function(v) kasjhd_swapxy(v) : function(v) v;
 		bulkhead_length = cavity_bulkhead_axis == "x" ? block_size[0] : block_size[1];
-		translate(maybeswapxy([i,0,0])) cube(maybeswapxy([wall_thickness, bulkhead_length, block_size[2]*2]), center=true);
+		translate(maybeswapxy([i,0,0])) cube(maybeswapxy([effective_bulkhead_thickness, bulkhead_length, block_size[2]*2]), center=true);
 	}
 }
 
@@ -354,6 +362,7 @@ cavity_ops = [
 top_magnet_hole_positions =
 	!top_magnet_holes_enabled2 ? [] :
 	// TODO: Same for all but 'none', where they are (for dubious performance reasons) chunk based
+	// TODO: Place magnet holes anywhere they'll fit, e.g. if wall_thickness > 1/2"
 	(cavity_style == "cup" && label_width > atom_pitch/2) ? [
 		for( cym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
 		for( cxm=[-block_size_chunks[0]/2+0.5] )
