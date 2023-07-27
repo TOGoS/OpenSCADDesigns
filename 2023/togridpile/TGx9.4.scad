@@ -1,4 +1,4 @@
-// TGx9.5.7 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.8 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -126,6 +126,8 @@
 // - Force cavity corner radius to be at least 1u
 // - Bulkhead thickness can be configured, but defaults to -1, which means
 //   'wall thickness or 1.2mm, whichever is smaller'
+// v9.5.8:
+// - Remove special "all" case for chunk-based top magnet holes; 'twas more trouble than it was worth!
 
 /* [Atom/chunk/block size] */
 
@@ -376,7 +378,13 @@ top_magnet_hole_positions =
 		for( axm=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
 			[cxm*chunk_pitch+axm*atom_pitch, y]
 	] :
-	cavity_style == "none" ? "all" :
+	cavity_style == "none" ? [
+		for( cym=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2] )
+		for( cxm=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2] )
+		for( aym=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
+		for( axm=[-chunk_pitch_atoms/2+0.5, chunk_pitch_atoms/2-0.5] )
+			[cxm*chunk_pitch+axm*atom_pitch, cym*chunk_pitch+aym*atom_pitch]
+	] :
 	[];
 
 chunk_magnet_hole_positions = [
@@ -416,7 +424,7 @@ tgx9_cup(
 		]],
 	],
 	lip_chunk_ops = [
-		if( top_magnet_hole_positions == "all" ) ["subtract", ["union", for(pos=chunk_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
+		// if( top_magnet_hole_positions == "all" ) ["subtract", ["union", for(pos=chunk_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
 	],
 	bottom_chunk_ops = [
 		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "chunk-screw-holes"]]],
