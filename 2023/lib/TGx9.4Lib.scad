@@ -114,6 +114,8 @@ function tgx9_block_hull_extrusion_path_info(
 	bevel_size = togridlib3_decode([1, "tgp-standard-bevel"]),
 	rounding_radius
 ) =
+	// TODO: 5/32" = 2.5 standard "u"s, or (rb_mult=2.5)*(rounding_radius-bevel_size)
+	// Do that instead of hardcoding inches!
 	let( inch = togridlib3_decode([1, "inch"]) )
 	let( rb_mult = 2.5 ) // TODO: The trigonometry to calculate this value exactly; but 2.5 is a nice round upper limit
 	tgx9_should_force_bevel_rounded_corners() && rounding_radius < tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) ?
@@ -510,6 +512,13 @@ module tgx9_cup_top(
 			foot_segmentation = lip_segmentation,
 			corner_radius = corner_radius,
 			offset    = -$tgx9_mating_offset,
+			// I may have originally intended for the concave corners to *not* be forced
+			// to the beveled size, but as many prints have demonstrated,
+			// beveling the concave corners as well as the convex ones leads to nice
+			// consistent-width rims/baseplate borders, and hasn't actually seemed to
+			// cause any compatibility problems.
+			// If I were to disable it:
+			// $tgx9_force_bevel_rounded_corners = false,
 			chunk_ops = tgx9_invert_ops(lip_chunk_ops)
 		) children();
 		
