@@ -26,6 +26,8 @@
 // - Use tog_holelib_is_hole_type instead of hardcoding list of supported hole type names
 // v1.11:
 // - tgx9_cavity_cube: Minimum corner radius = 1u
+// v1.12:
+// - [tgx9_]beveled_cylinder
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -298,6 +300,19 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 	}
 }
 
+module tgx9_beveled_cylinder(d, h, bevel_size) {
+	assert(bevel_size < d/2);
+	assert(bevel_size < h/2);
+	rotate_extrude(angle=360) polygon([
+		[             0,-h/2           ],
+		[d/2-bevel_size,-h/2           ],
+		[d/2           ,-h/2+bevel_size],
+		[d/2           ,-h/2+bevel_size],
+		[d/2-bevel_size,+h/2           ],
+		[             0,+h/2           ]
+	]);
+}
+
 use <../lib/TGX1001.scad>
 
 // Standard cavity with no frills; z=0 is at the top
@@ -348,6 +363,10 @@ module tgx9_do_sshape(shape) {
 		cube(shape[1], center=true);
 	} else if( type == "cylinder" ) {
 		cylinder(d=shape[1], h=shape[2], center=true);
+	} else if( type == "beveled_cylinder" ) {
+		// TODO: Calculate $fn based on what it is anyway, and some max based on diameter,
+		// or make a ["fn", 123, [...]] sshape form
+		tgx9_beveled_cylinder($fn=72, d=shape[1], h=shape[2], bevel_size=shape[3]);
 	} else if( tog_holelib_is_hole_type(type) ) {
 		tog_holelib_hole(type, depth=shape[1], overhead_bore_height=shape[2]);
 	} else if( type == "tgx9_cavity_cube" ) {
