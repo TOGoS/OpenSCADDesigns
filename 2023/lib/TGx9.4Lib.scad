@@ -28,6 +28,8 @@
 // - tgx9_cavity_cube: Minimum corner radius = 1u
 // v1.12:
 // - [tgx9_]beveled_cylinder
+// v1.13:
+// - tgx1001_v6hc_block_subtractor SShape form accepts an optional second argument for bevel size
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -379,11 +381,16 @@ module tgx9_do_sshape(shape) {
 	} else if( type == "tgx9_usermod_2" ) {
 		tgx9_usermod_2(len(shape) > 1 ? shape[1] : undef, len(shape) > 2 ? shape[2] : undef);
 	} else if( type == "tgx1001_v6hc_block_subtractor" ) {
+		// ["tgx1001_v6hc_block_subtractor", block_size_ca, bevel_size=1.707*u]
+		// For historical reasons, default bevel size matches the v6.0 foot shape.
+		// For new designs you probably want to use the value for v6.1, 1.414*u.
 		assert(len(shape) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
 		assert(len(shape[1]) >= 2, "tgx1001_v6hc_block_subtractor requires block_size_ca parameter");
+		bevel_size = len(shape) >= 3 ? shape[2] : (1+sqrt(2)/2)*togridlib3_decode([1,"u"]);
 		render(10) tgx1001_v6hc_block_subtractor(
 			block_size_ca = shape[1],
 			unit_table    = togridlib3_get_unit_table(),
+			$tgx1001_bevel_size = bevel_size,
 			offset        = margin
 		);
 	} else {

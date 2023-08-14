@@ -1,4 +1,4 @@
-// TGx9.5.9 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.13 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -130,6 +130,9 @@
 // - Remove special "all" case for chunk-based top magnet holes; 'twas more trouble than it was worth!
 // v9.5.9:
 // - Allow you to make cup holders by setting cup_holder_radii, cup_holder_depths
+// v9.5.13:
+// - Deprecate v6hc_subtraction_enabled in favor of v6hc_subtraction_style,
+//   which allows v6.1-compatible subtractions.
 
 /* [Atom/chunk/block size] */
 
@@ -152,8 +155,10 @@ lip_segmentation = "block"; // ["atom","chatom","chunk","block"]
 // 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm
 bevel_size_u = 2;
 
-// Subtract from lip such that blocks with horizontal v6 (or v8) columns can fit
+// Deprecated; use v6hc_subtraction_style, instead
 v6hc_subtraction_enabled = false;
+// Subtract from lip such that blocks with horizontal v6 (or v8) columns can fit?  Recommended value: v6.1
+v6hc_subtraction_style = "legacy"; // ["legacy","none","v6.0","v6.1"]
 
 // Squash too-sharp rounded corners to fit in 1/8" bevels
 $tgx9_force_bevel_rounded_corners = true;
@@ -331,8 +336,16 @@ module tgx9_usermod_1(what, arg0) {
 	}
 }
 
-if( v6hc_subtraction_enabled && lip_height <= u-margin ) {
-	echo("v6hc_subtraction_enabled enabled but not needed due to low lip (assuming column inset=1u, which is standard), so I won't bother to actually subtract it");
+effective_v6hc_subtraction_style =
+	v6hc_subtraction_style == "legacy" ? (v6hc_subtraction_enabled ? "v6.0" : "none") :
+	v6hc_subtraction_style;
+
+if( effective_v6hc_subtraction_style != "none" && lip_height <= u-margin ) {
+	echo(str(
+		"effective_v6hc_subtraction_style = \"",effective_v6hc_subtraction_style, "\", ",
+		"but not needed due to low lip (assuming column inset=1u, ",
+		"which is standard), so I won't bother to actually subtract it"
+	));
 }
 
 tograck_lower_cavity_depth = min(block_size[2]-floor_thickness-3.175, 19.05);
@@ -406,6 +419,13 @@ chunk_magnet_hole_positions = [
 ];
 
 magnet_hole_sshape = ["cylinder", magnet_hole_diameter, magnet_hole_depth*2];
+// Based on 2u outer bevels and 1u foot offset:
+v6_0_foot_bevel_size = u * (sqrt(2)/2+1); // The funky one
+v6_1_foot_bevel_size = u * sqrt(2); // The normal one
+v6hc_foot_bevel_size =
+	effective_v6hc_subtraction_style == "v6.0" ? v6_0_foot_bevel_size :
+	effective_v6hc_subtraction_style == "v6.1" ? v6_1_foot_bevel_size :
+	0.12345; // Not applicable
 
 //// Main
 
@@ -420,7 +440,8 @@ tgx9_cup(
 		each cavity_ops,
 		if( is_list(top_magnet_hole_positions) ) ["subtract", ["union", for(pos=top_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
 		// TODO (maybe, if it increases performance): If lip segmentation = "chunk", do this in lip_chunk_ops instead of for the whole block
-		if( v6hc_subtraction_enabled && lip_height > u-margin ) ["subtract", ["tgx1001_v6hc_block_subtractor", block_size_ca]],
+		if( effective_v6hc_subtraction_style != "none" && lip_height > u-margin ) ["subtract",
+			["tgx1001_v6hc_block_subtractor", block_size_ca, v6hc_foot_bevel_size]],
 		if( cavity_style == "tograck" && x_tograck_conduit_diameter > 0 ) ["subtract", ["union",
 			for( z=[atom_pitch : atom_pitch : block_size[2]-atom_pitch/2] )
 			for( ym=[-1, 1] ) ["translate", [0, ym * (block_size[1]/2-atom_pitch*2/3), z-block_size[2]],

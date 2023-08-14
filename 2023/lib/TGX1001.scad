@@ -2,7 +2,7 @@
 // to accommodate horizontal v6 columns
 
 $tgx1001_column_diameter = 9.525; // 3/8"
-$tgx1001_bevel_size = 2.71; // (1/16") * (sqrt(2)/2+1)
+$tgx1001_bevel_size = 2.71; // (1/16") * (sqrt(2)/2+1); The v6.0 shape.  For v6.1, se 1/16"*sqrt(2) = 2.24mm
 
 function tgx1001_v6c_points(
 	column_diameter = $tgx1001_column_diameter,
