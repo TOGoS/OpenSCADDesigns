@@ -69,7 +69,8 @@
 			"bottom_magnet_holes_enabled": "true",
 			"cavity_bulkhead_axis": "x",
 			"cavity_bulkhead_positions": "[]",
-			"chatomic_foot_column_style": "v6.2",
+			"cavity_style": "cup",
+			"chatomic_foot_column_style": "v6.1",
 			"chunk_pitch_atoms": "3",
 			"fingerslide_radius": "12.5",
 			"floor_thickness": "6.35",
@@ -89,6 +90,7 @@
 			"trim_front_sublip": "false",
 			"u": "1.5875",
 			"v6hc_subtraction_enabled": "true",
+			"v6hc_subtraction_style": "v6.1",
 			"wall_thickness": "2"
 		},
 		"p1125 - 3x2x1 v6-compatible bin with label": {
