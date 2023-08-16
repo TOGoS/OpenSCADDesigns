@@ -30,6 +30,8 @@
 // - [tgx9_]beveled_cylinder
 // v1.13:
 // - tgx1001_v6hc_block_subtractor SShape form accepts an optional second argument for bevel size
+// v1.14:
+// - Make subtractive bottom chunk ops work when bottom segmentation is 'block' or 'none'
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -412,6 +414,7 @@ function tgx9_decode_corner_radius(spec) =
 	spec == "m" ? togridlib3_decode([1, "m-outer-corner-radius"]) :
 	togridlib3_decode(spec);
 
+/** Do the additive (ignore 'subtract') ops for each chunk of the block */
 module tgx9_block_chunk_ops(
 	block_size_ca,
 	chunk_ops=[]
@@ -445,14 +448,15 @@ module tgx9_block_foot(
 	block_size_chunks = togridlib3_decode_vector(block_size_ca, unit=[1, "chunk"]);
 	block_size        = tgx9_map(block_size_ca, function(ca) togridlib3_decode(ca));
 	dh_block_size = [block_size[0], block_size[1], block_size[2]*2];
-
-	if( foot_segmentation == "none" ) {
-		translate([0, 0, block_size[2]]) cube([block_size[0]*2, block_size[1]*2, block_size[2]*2], center=true);
-		tgx9_block_chunk_ops(block_size_ca, chunk_ops);
-	} else if( foot_segmentation == "block" ) {
-		tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
-		tgx9_block_chunk_ops(block_size_ca, chunk_ops);
-	} else {
+	
+	// This might be overly complex, but the reason for this
+	// is that for chunk-based feet, for theoretical performance reasons,
+	// the chunk_ops get combined with the standard chunk foot...stuff,
+	// but for larger (block/none segmentation) segmentation,
+	// the chunk ops need to be handled separately.
+	is_chunk_based = foot_segmentation != "block" && foot_segmentation != "none";
+	
+	if( is_chunk_based ) {
 		// Underside cleavage comes up much higher than necessary
 		// in between chunks/atoms; put a cube there to fill it in.
 		difference() {
@@ -481,6 +485,20 @@ module tgx9_block_foot(
 				}
 			}
 		}
+	} else {
+		difference() {
+			if( foot_segmentation == "none" ) {
+				translate([0, 0, block_size[2]]) cube([block_size[0]*2, block_size[1]*2, block_size[2]*2], center=true);
+			} else if( foot_segmentation == "block" ) {
+				tgx9_smooth_foot(dh_block_size, corner_radius=corner_radius, offset=offset);
+			} else {
+				assert(false, str("Bad non-chunk foot segmentation: '", foot_segmentation, "'"));
+			}
+			
+			tgx9_block_chunk_ops(block_size_ca, tgx9_invert_ops(chunk_ops));
+		}
+		
+		tgx9_block_chunk_ops(block_size_ca, chunk_ops);
 	}
 }
 
