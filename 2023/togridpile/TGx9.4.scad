@@ -1,4 +1,4 @@
-// TGx9.5.13 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.14 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -133,6 +133,8 @@
 // v9.5.13:
 // - Deprecate v6hc_subtraction_enabled in favor of v6hc_subtraction_style,
 //   which allows v6.1-compatible subtractions.
+// v9.5.14:
+// - Allow foot_segmentation = "none", which may be useful for making base plates
 
 /* [Atom/chunk/block size] */
 
@@ -146,7 +148,7 @@ block_size_chunks = [1, 1];
 block_height_u    = 24;
 // Height that lip extends beyond top; 0 for no lip, -1 for an inverted lip
 lip_height = 2.54;
-foot_segmentation = "chunk"; // ["atom","chatom","chunk","block"]
+foot_segmentation = "chunk"; // ["atom","chatom","chunk","block","none"]
 // Foot column shape; only applicable when foot_segmentation = "chunk"
 chatomic_foot_column_style = "v8.0"; // ["v6.0", "v6.1", "v6.2", "v8.0", "v8.4"]
 // Segmentation for lip; 'atom' and 'chatom' not advised unless lip is inverted
