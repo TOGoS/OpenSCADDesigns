@@ -2,6 +2,8 @@
 //
 // v1.1:
 // - `bowtie_positions` can take an `edges` parameter to include points only along certain [N,E,S,W] edges
+// v1.2:
+// - Add `edge_bowties` module
 
 inch = 25.4;
 
@@ -177,12 +179,28 @@ function bowtie_positions(panel_size, unit_size, offset_from_ends, edges=[true,t
 		[x,y,90],
 ];
 
+/**
+ * Bowties along the edge of a rectangle.
+ * Offset should probably be positive if using to make cutouts.
+ */
+module edge_bowties(
+	panel_size,
+	bowtie_style="semi-maximal",
+	bowtie_length=19.05,
+	bowtie_position_offset=1,
+	bowtie_edges=[1,1,1,1],
+	offset=0
+) {
+	for( pos=bowtie_positions(panel_size, [bowtie_length, bowtie_length], bowtie_position_offset*bowtie_length, edges=bowtie_edges ) ) {
+		translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_style, bowtie_length, offset);
+	}
+}
+
 module bowtie_test_plate_2d(panel_size, bowtie_length, offset, corner_radius=3.175, bowtie_position_offset=1, bowtie_style="semi-maximal") {
 	difference() {
 		beveled_square([panel_size[0]+offset*2, panel_size[1]+offset*2], corner_radius);
-		for( pos=bowtie_positions(panel_size, [bowtie_length, bowtie_length], bowtie_position_offset*bowtie_length ) ) {
-			translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_style, bowtie_length, -offset);
-		}
+
+		edge_bowties(panel_size, bowtie_style, bowtie_length, bowtie_position_offset, offset=-offset);
 		if( bowtie_position_offset == 0.5 ) {
 			// Chop off corners
 			for( r=[0:90:270] ) rotate([0,0,r]) {

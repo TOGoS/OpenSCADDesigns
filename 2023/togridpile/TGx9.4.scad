@@ -1,4 +1,4 @@
-// TGx9.5.14 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.15 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -135,6 +135,8 @@
 //   which allows v6.1-compatible subtractions.
 // v9.5.14:
 // - Allow foot_segmentation = "none", which may be useful for making base plates
+// v9.5.15:
+// - Now you can make bowtie edges!
 
 /* [Atom/chunk/block size] */
 
@@ -174,6 +176,7 @@ bottom_magnet_holes_enabled = false;
 label_magnet_holes_enabled = false;
 top_magnet_holes_enabled = false;
 screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
+bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
 
@@ -210,7 +213,10 @@ x_tograck_conduit_diameter = 0;
 
 /* [Detail] */
 
+// Margin for TOGridPile mating surfaces
 margin = 0.075; // 0.001
+// Margin for bowtie cutouts; Since they are supposed to be tight, I usually leave this zero and rely on Slic3r X/Y compenation.
+bowtie_margin = 0.000; // 0.001
 
 preview_fn = 12;
 render_fn = 36;
@@ -431,7 +437,7 @@ v6hc_foot_bevel_size =
 
 //// Main
 
-tgx9_cup(
+module tgx9_main_cup() tgx9_cup(
 	block_size_ca = block_size_ca,
 	foot_segmentation = foot_segmentation,
 	lip_height    = lip_height,
@@ -466,3 +472,13 @@ tgx9_cup(
 		if( bottom_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
 	]
 );
+
+include <../lib/BowtieLib-v0.scad>
+
+difference() {
+	tgx9_main_cup();
+
+	linear_extrude(100, center=true) {
+		edge_bowties(block_size, bowtie_edges=bowtie_edges, offset=bowtie_margin);
+	}
+}
