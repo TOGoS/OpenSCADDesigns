@@ -1,4 +1,4 @@
-// TGx9.5.15 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.16 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -137,6 +137,9 @@
 // - Allow foot_segmentation = "none", which may be useful for making base plates
 // v9.5.15:
 // - Now you can make bowtie edges!
+// v9.5.16:
+// - Allow chunk center and edge holes to be configured separately
+// - For hole purposes, clamp floor thickness to block height
 
 /* [Atom/chunk/block size] */
 
@@ -175,7 +178,10 @@ bottom_magnet_holes_enabled = false;
 // Deprecated; just use top_magnet_holes_enabled
 label_magnet_holes_enabled = false;
 top_magnet_holes_enabled = false;
+// Style for both center and edge screws; leave this "none" to configure them separately
 screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
+chunk_center_screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
+chunk_edge_screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
@@ -339,6 +345,14 @@ module tgx9_usermod_1(what, arg0) {
 		for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
 			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
 		}
+	} else if( what == "chunk-center-screw-hole" ) {
+		for( pos=[[0,0]] ) {
+			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
+		}
+	} else if( what == "chunk-edge-screw-holes" ) {
+		for( pos=[[0,-1],[-1,0],[0,1],[1,0]] ) {
+			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
+		}
 	} else {
 		assert(false, str("Unrecognized user module argument: '", what, "'"));
 	}
@@ -468,7 +482,9 @@ module tgx9_main_cup() tgx9_cup(
 		// if( top_magnet_hole_positions == "all" ) ["subtract", ["union", for(pos=chunk_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
 	],
 	bottom_chunk_ops = [
-		["subtract",["translate", [0, 0, floor_thickness], ["tgx9_usermod_1", "chunk-screw-holes"]]],
+		["subtract",["translate", [0, 0, min(floor_thickness,block_size[2])], ["tgx9_usermod_1", "chunk-screw-holes", screw_hole_style]]],
+		["subtract",["translate", [0, 0, min(floor_thickness,block_size[2])], ["tgx9_usermod_1", "chunk-center-screw-hole", chunk_center_screw_hole_style]]],
+		["subtract",["translate", [0, 0, min(floor_thickness,block_size[2])], ["tgx9_usermod_1", "chunk-edge-screw-holes", chunk_edge_screw_hole_style]]],
 		if( bottom_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
 	]
 );
