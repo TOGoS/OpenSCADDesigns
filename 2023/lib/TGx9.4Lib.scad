@@ -531,8 +531,8 @@ module tgx9_cup_top(
 	block_size_ca,
 	foot_segmentation,
 	lip_height,
-	wall_thickness,
-	floor_thickness,
+	wall_thickness,  // TODO: Remove; no longer used!
+	floor_thickness, // TODO: Remove; no longer used!
 	lip_chunk_ops = [],
 	block_top_ops = [],
 ) {
@@ -596,8 +596,8 @@ module tgx9_cup_top(
 module tgx9_cup(
 	block_size_ca,
 	foot_segmentation = "chunk",
-	wall_thickness,
-	floor_thickness,
+	wall_thickness,  // TODO: Remove; no longer used!
+	floor_thickness, // TODO: Remove; no longer used!
 	lip_height        = 2.54,
 	bottom_chunk_ops          = [],
 	lip_chunk_ops = [],
