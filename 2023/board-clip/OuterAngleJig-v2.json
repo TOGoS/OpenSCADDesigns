@@ -3,11 +3,20 @@
 		"p1162": {
 			"arm_length_atoms": "6",
 			"atom_pitch": "12.7",
+			"divot_diameter": "0",
 			"hole_diameter": "4"
 		},
 		"p1164": {
 			"arm_length_atoms": "6",
 			"atom_pitch": "12.7",
+			"divot_diameter": "0",
+			"hole_diameter": "4.2"
+		},
+		"p1165": {
+			"arm_length_atoms": "7",
+			"atom_pitch": "19.05",
+			"divot_diameter": "2",
+			"divot_positions": "[[9.525, 19.05]]",
 			"hole_diameter": "4.2"
 		}
 	},
