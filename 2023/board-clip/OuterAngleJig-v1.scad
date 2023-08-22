@@ -1,7 +1,7 @@
 // OuterAngleJig-v1.0
 
 thickness = 3.175;
-atom_pitch = 12.7;
+atom_pitch = 19.05; // 0.01
 arm_length_atoms = 9;
 arm_width_atoms = 3;
 hole_diameter = 4;
