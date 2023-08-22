@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p1162": {
+			"arm_length_atoms": "6",
+			"atom_pitch": "12.7",
+			"hole_diameter": "4"
+		},
+		"p1164": {
+			"arm_length_atoms": "6",
+			"atom_pitch": "12.7",
+			"hole_diameter": "4.2"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
