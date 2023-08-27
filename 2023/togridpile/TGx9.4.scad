@@ -1,4 +1,4 @@
-// TGx9.5.17 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.18 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -142,6 +142,8 @@
 // - For hole purposes, clamp floor thickness to block height
 // v9.5.17:
 // - "none" is a valid foot column style
+// v9.5.18:
+// - s/cup_holder_radii/cup_holder_diameters/ - they were never radius!
 
 /* [Atom/chunk/block size] */
 
@@ -206,8 +208,8 @@ cavity_bulkhead_axis = "x"; // ["x", "y"]
 // Bulkhead thickness; -1 means default based on min(wall_thickness, 1.2mm)
 bulkhead_thickness = -1; // [-1 : 0.1 : 4]
 
-// Radiuses (in mm) of cup holder cutouts, from innermost to outermost
-cup_holder_radii = [];
+// Diameters (in mm) of cup holder cutouts, from innermost to outermost
+cup_holder_diameters = [];
 // Depths of cup holder cutouts, from innermost to outermost
 cup_holder_depths = [];
 
@@ -233,7 +235,7 @@ $fn = $preview ? preview_fn : render_fn;
 
 module tgx9__end_params() { }
 
-assert( len(cup_holder_radii) == len(cup_holder_depths), "Cup holder radius and depth lists should be the same length");
+assert( len(cup_holder_diameters) == len(cup_holder_depths), "Cup holder radius and depth lists should be the same length");
 
 effective_bulkhead_thickness = bulkhead_thickness > 0 ? bulkhead_thickness : min(1.2, wall_thickness);
 top_magnet_holes_enabled2 = top_magnet_holes_enabled || label_magnet_holes_enabled;
@@ -401,9 +403,9 @@ function tograck_cavity_sshape() = ["union",
 
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
-	if( cavity_style == "cup" ) for(i=[0 : 1 : len(cup_holder_radii)-1])
-		if(cup_holder_radii[i] > 0 && cup_holder_depths[i] > 0)
-			["subtract",["beveled_cylinder",cup_holder_radii[i],cup_holder_depths[i]*2,u]],
+	if( cavity_style == "cup" ) for(i=[0 : 1 : len(cup_holder_diameters)-1])
+		if(cup_holder_diameters[i] > 0 && cup_holder_depths[i] > 0)
+			["subtract",["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]],
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()]
 ];
 
