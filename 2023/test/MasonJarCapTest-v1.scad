@@ -1,8 +1,10 @@
-// MasonJarCapTest-v1.1
+// MasonJarCapTest-v1.2
 //
 // Changes:
 // v1.1:
-// - prefix functions in preparation of librarification
+// - Prefix functions in preparation of librarification
+// v1.2:
+// - Explicitly pass thread_pitch to tog_jtl1_thread_profile_function
 
 inch = 25.4;
 
@@ -33,7 +35,7 @@ function tog_jtl1_tog_jtl1_thread_profile_function_2(
 		tog_jtl1_lerp(thread_outer_radius, thread_inner_radius, t * 2 - 1)
 	));
 
-function tog_jtl1_thread_profile_function(inner_radius, outer_radius, angle_from_vertical, thread_radius_bias) =
+function tog_jtl1_thread_profile_function(inner_radius, outer_radius, angle_from_vertical, thread_pitch, thread_radius_bias) =
 	let(thread_slope = sin(angle_from_vertical)/cos(angle_from_vertical))
 	let(thread_mid_radius = (outer_radius+inner_radius)/2 + thread_radius_bias)
 	tog_jtl1_tog_jtl1_thread_profile_function_2(
@@ -62,6 +64,7 @@ difference() {
 		 inner_diameter / 2,
 		 outer_diameter / 2,
 		 angle_from_vertical = thread_angle_from_vertical,
+		 thread_pitch = thread_pitch,
 		 thread_radius_bias = (outer_diameter - inner_diameter) / 4
 	);
 
