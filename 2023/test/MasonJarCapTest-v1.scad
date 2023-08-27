@@ -1,10 +1,12 @@
-// MasonJarCapTest-v1.2
+// MasonJarCapTest-v1.3
 //
 // Changes:
 // v1.1:
 // - Prefix functions in preparation of librarification
 // v1.2:
 // - Explicitly pass thread_pitch to tog_jtl1_thread_profile_function
+// v1.3:
+// - Show cross section and inner cylinder in preview
 
 inch = 25.4;
 
@@ -55,6 +57,8 @@ module tog_jtl1_threaded_cylinder(thread_radius_function, pitch, bottom_z, top_z
 	) polygon([for (t = [0:1/60:1]) tog_jtl1_polar_to_xy(t * 360, thread_radius_function(t)) ]);
 }
 
+if( $preview ) # cylinder(d=inner_diameter, h=hull_height*1.25);
+
 difference() {
 	cylinder(d=3.5*inch, h=hull_height);
 
@@ -74,5 +78,5 @@ difference() {
 	tog_jtl1_threaded_cylinder(tpf, thread_pitch, threaded_start_height, taper_start_height + epsilon, 1, 1);
 	tog_jtl1_threaded_cylinder(tpf, thread_pitch, taper_start_height, hull_height+epsilon, 1, 1.01);
 
-	// translate([0,-50,0]) cube([100,100,100], center=true);
+	if( $preview ) translate([0,-50,0]) cube([100,100,100], center=true);
 }
