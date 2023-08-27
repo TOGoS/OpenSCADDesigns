@@ -1,4 +1,4 @@
-// MasonJarCapTest-v1.3
+// MasonJarCapTest-v1.4
 //
 // Changes:
 // v1.1:
@@ -7,6 +7,8 @@
 // - Explicitly pass thread_pitch to tog_jtl1_thread_profile_function
 // v1.3:
 // - Show cross section and inner cylinder in preview
+// v1.4:
+// - thread_angle_from_vertical = 45
 
 inch = 25.4;
 
@@ -20,7 +22,7 @@ thread_pitch = 1/5*inch;
 
 inner_diameter = 82; // 0.01
 outer_diameter = 86.5; // 0.01
-thread_angle_from_vertical = 35;
+thread_angle_from_vertical = 45;
 thread_taper_distance = 5;
 
 function tog_jtl1_lerp(a, b, ratio) = a * (1-ratio) + b * ratio;
