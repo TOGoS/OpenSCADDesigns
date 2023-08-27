@@ -1,4 +1,4 @@
-// MasonJarCapTest-v1.4
+// MasonJarCapTest-v1.5
 //
 // Changes:
 // v1.1:
@@ -9,6 +9,8 @@
 // - Show cross section and inner cylinder in preview
 // v1.4:
 // - thread_angle_from_vertical = 45
+// v1.5:
+// - Improve cross-section display
 
 inch = 25.4;
 
@@ -59,10 +61,24 @@ module tog_jtl1_threaded_cylinder(thread_radius_function, pitch, bottom_z, top_z
 	) polygon([for (t = [0:1/60:1]) tog_jtl1_polar_to_xy(t * 360, thread_radius_function(t)) ]);
 }
 
-if( $preview ) # cylinder(d=inner_diameter, h=hull_height*1.25);
+module the_cross_section_cube() translate([0,50,0]) cube([100,100,100], center=true);
 
-difference() {
-	cylinder(d=3.5*inch, h=hull_height);
+module the_cap() difference() {
+	epsilon = 0.1;
+	
+	union() {
+		intersection() {
+			cylinder(d=3.5*inch, h=hull_height);
+			if( $preview ) the_cross_section_cube();
+		}
+
+		if( $preview ) {
+			# intersection() {
+				translate([0,0,threaded_start_height+epsilon]) cylinder(d=inner_diameter, h=hull_height);
+				the_cross_section_cube();
+			}
+		}
+	}
 
 	cylinder(d=bottom_hole_diameter, h=hull_height*3, center=true);
 
@@ -75,10 +91,9 @@ difference() {
 	);
 
 	threaded_start_height = hull_height - threaded_length;
-	epsilon = 0.1;
  	taper_start_height = threaded_start_height + threaded_length - thread_taper_distance;
 	tog_jtl1_threaded_cylinder(tpf, thread_pitch, threaded_start_height, taper_start_height + epsilon, 1, 1);
 	tog_jtl1_threaded_cylinder(tpf, thread_pitch, taper_start_height, hull_height+epsilon, 1, 1.01);
-
-	if( $preview ) translate([0,-50,0]) cube([100,100,100], center=true);
 }
+
+the_cap();
