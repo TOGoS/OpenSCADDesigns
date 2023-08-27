@@ -1,0 +1,34 @@
+{
+	"parameterSets": {
+		"p1171 - v1.6 - male": {
+			"bottom_hole_diameter": "60",
+			"diametrical_margin": "0.25",
+			"exterior_thread_radius_bias": "-0.5",
+			"hull_height": "19.05",
+			"inch": "25.4",
+			"inner_diameter": "81.75",
+			"interior_thread_radius_bias": "0.5",
+			"mode": "male",
+			"outer_diameter": "86.25",
+			"thread_angle_from_vertical": "45",
+			"thread_taper_distance": "5"
+		},
+		"p1171 - v1.6 - female": {
+			"bottom_hole_diameter": "60",
+			"diametrical_margin": "0.25",
+			"exterior_thread_radius_bias": "-0.5",
+			"hull_height": "19.05",
+			"inch": "25.4",
+			"inner_diameter": "81.75",
+			"interior_thread_radius_bias": "0.5",
+			"mode": "female",
+			"outer_diameter": "86.25",
+			"thread_angle_from_vertical": "45",
+			"thread_taper_distance": "5"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1",
+	"parameterSets": "",
+	"parameterSets": ""
+}
