@@ -1,4 +1,4 @@
-// MasonJarCapTest-v1.6
+// MasonJarCapTest-v1.7
 //
 // Changes:
 // v1.1:
@@ -13,6 +13,8 @@
 // - Improve cross-section display
 // v1.6:
 // - male, female, both modes
+// v1.7:
+// - Increase default diameter, decrease margin
 
 inch = 25.4;
 
@@ -24,18 +26,18 @@ $fn = $preview ? 32 : 64;
 threaded_length = 11/16*inch;
 thread_pitch = 1/5*inch;
 
-inner_diameter = 81.75; // 0.1
-outer_diameter = 86.25; // 0.1
+inner_diameter = 82.0; // 0.1
+outer_diameter = 86.5; // 0.1
 
 // Added to diameter for female threads, subtracted for male threads
-diametrical_margin = 0.25;
+diametrical_margin = 0.1;
 
 thread_angle_from_vertical = 45;
 thread_taper_distance = 5;
 
 mode = "female"; // ["female","male","both"]
 interior_thread_radius_bias =  0.5; // 0.1
-exterior_thread_radius_bias = -0.5; // 0.1
+exterior_thread_radius_bias = -0.2; // 0.1
 
 function tog_jtl1_lerp(a, b, ratio) = a * (1-ratio) + b * ratio;
 function tog_jtl1_polar_to_xy(angle, dist) = [cos(angle) * dist, sin(angle) * dist];
