@@ -9,6 +9,15 @@ function toslisp_reduce(start, items, offset, func) =
 	len(items) == offset ? start :
    toslisp_reduce(func(start, items[offset]), items, offset+1, func);
 
+function toslisp_format_list_content_as_sexps(list, index=0, first=true) =
+	index >= len(list) ? "" :
+	str(first ? "" : " ", toslisp_format_as_sexp(list[index]), toslisp_format_list_content_as_sexps(list, index+1, false));
+
+function toslisp_format_as_sexp(sexp) =
+	is_list(sexp) && len(sexp) == 2 && sexp[0] == "quote" ? str("\"", sexp[1], "\"") :
+	is_list(sexp) ? str("(", toslisp_format_list_content_as_sexps(sexp), ")") :
+	str(sexp);
+
 // Note: Currently strings are treated as literals *unless* they
 // are the first item in an expression.
 // It might be more consistent to always treat them as symbols
