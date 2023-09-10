@@ -7,7 +7,9 @@
 // screws can be used to fasten these to the rails,
 // and what shape hole to make for them.
 //
-// TODO: Round the corners
+// Versions:
+// 0.1: Initial attempt
+// 0.2: Round the corners
 
 size = [76.2, 40];
 
@@ -23,9 +25,20 @@ use <../lib/TOGHoleLib-v1.scad>
 
 chunk_magnet_hole_positions = [for(xm=[-1,1]) for(ym=[-1,1]) [xm*12.7,ym*12.7]];
 
+function rounded_square_points(size, r) = [
+	for( i=[  0 : 15 :  90] ) [ size[0]/2 - r + r*cos(i),  size[1]/2 - r + r*sin(i)],
+	for( i=[ 90 : 15 : 180] ) [-size[0]/2 + r + r*cos(i),  size[1]/2 - r + r*sin(i)],
+	for( i=[180 : 15 : 270] ) [-size[0]/2 + r + r*cos(i), -size[1]/2 + r + r*sin(i)],
+	for( i=[270 : 15 : 360] ) [ size[0]/2 - r + r*cos(i), -size[1]/2 + r + r*sin(i)],
+];
+
+module rounded_square(size, r) {
+	polygon(rounded_square_points(size, r));
+}
+
 difference() {
-	translate([0,0,(floor_thickness+lip_height)/2]) {
-		cube([size[0], size[1], floor_thickness+lip_height], center=true);
+	linear_extrude(floor_thickness+lip_height) {
+		rounded_square([size[0], size[1]], 3.175);
 	}
 
 	corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
