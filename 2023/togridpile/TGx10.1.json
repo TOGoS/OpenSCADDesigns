@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p1182": {
+			"$tgx9_mating_offset": "-0.075",
+			"block_size_chunks": "[4, 4, 4]",
+			"chunk_pitch_atoms": "1",
+			"foot_column_style": "v6.0"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
