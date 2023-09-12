@@ -36,6 +36,8 @@
 // - Fix that tgx9_atom_foot used 'u', which is undefined if this library is 'use'd
 // - Fix tgx9_extrude_along_loop to behave when there are duplicate points,
 //   by de-duplicating them
+// v1.16:
+// - Take atoms/chunk into account when making atomic chunk feet
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -250,7 +252,8 @@ module tgx9_atomic_chunk_foot(
 ) {
 	u          = togridlib3_decode([1,    "u"]);
 	atom_pitch = togridlib3_decode([1, "atom"]);
-	for( xm=[-1,0,1] ) for( ym=[-1,0,1] ) {
+	chunk_pitch_atoms = togridlib3_decode([1, "chunk"], unit=[1, "atom"]);
+	for( xm=[-chunk_pitch_atoms/2+0.5:1:chunk_pitch_atoms/2] ) for( ym=[-chunk_pitch_atoms/2+0.5:1:chunk_pitch_atoms/2] ) {
 		translate([xm*atom_pitch, ym*atom_pitch, 0]) tgx9_atom_foot(height=height, offset=offset, radius=atom_pitch/2);
 	}
 }
