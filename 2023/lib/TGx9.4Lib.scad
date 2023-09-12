@@ -38,6 +38,9 @@
 //   by de-duplicating them
 // v1.16:
 // - Take atoms/chunk into account when making atomic chunk feet
+// v1.17:
+// - 'atom' feet will be 'beveled' instead of 'footed' if $tgx9_chatomic_foot_column_style == "none",
+//   somewhat matching the behavior of 'chatomic' feet
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -248,13 +251,14 @@ module tgx9_smooth_chunk_foot(
 
 module tgx9_atomic_chunk_foot(
 	height = 100,
-	offset = 0
+	offset = 0,
+	bottom_shape="footed",
 ) {
 	u          = togridlib3_decode([1,    "u"]);
 	atom_pitch = togridlib3_decode([1, "atom"]);
 	chunk_pitch_atoms = togridlib3_decode([1, "chunk"], unit=[1, "atom"]);
 	for( xm=[-chunk_pitch_atoms/2+0.5:1:chunk_pitch_atoms/2] ) for( ym=[-chunk_pitch_atoms/2+0.5:1:chunk_pitch_atoms/2] ) {
-		translate([xm*atom_pitch, ym*atom_pitch, 0]) tgx9_atom_foot(height=height, offset=offset, radius=atom_pitch/2);
+		translate([xm*atom_pitch, ym*atom_pitch, 0]) tgx9_atom_foot(height=height, offset=offset, radius=atom_pitch/2, bottom_shape=bottom_shape);
 	}
 }
 
@@ -264,13 +268,15 @@ module tgx9_chunk_foot(
 	height = 100,
 	offset = 0
 ) {
+	column_style = !is_undef($tgx9_chatomic_foot_column_style) ? $tgx9_chatomic_foot_column_style : "v8";
 	if( segmentation == "chatom" ) {
-		tgx9_chatomic_chunk_foot(height=height, corner_radius=corner_radius, offset=offset);
+		tgx9_chatomic_chunk_foot(height=height, corner_radius=corner_radius, offset=offset, column_style=column_style);
 	} else if( segmentation == "chunk" ) {
 		tgx9_smooth_chunk_foot(height=height, corner_radius=corner_radius, offset=offset);
 	} else if( segmentation == "atom" ) {
 		assert(corner_radius == togridlib3_decode([1/2, "atom"]));
-		tgx9_atomic_chunk_foot(height=height, offset=offset);
+		chatomic_foot_style = !is_undef($tgx9_chatomic_foot_column_style) ? $tgx9_chatomic_foot_column_style : "v8";
+		tgx9_atomic_chunk_foot(height=height, offset=offset, bottom_shape=(column_style == "none" ? "beveled" : "footed"));
 	} else {
 		assert(false, str("Unrecognized chunk foot segmentation: '", segmentation, "'"));
 	}
