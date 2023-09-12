@@ -1,4 +1,4 @@
-// TGx9.5.18 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.19 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -144,6 +144,8 @@
 // - "none" is a valid foot column style
 // v9.5.18:
 // - s/cup_holder_radii/cup_holder_diameters/ - they were never radius!
+// v9.5.19:
+// - Actually use u, atom_pitch_u, and chunk_pitch_atoms to construct unit table!
 
 /* [Atom/chunk/block size] */
 
@@ -258,6 +260,13 @@ if( false ) undefined_module(); // Doesn't crash OpenSCAD
 $tgx9_mating_offset = -margin;
 
 // effective_floor_thickness = min(floor_thickness, block_size[2]);
+
+$togridlib3_unit_table = [
+	["u"    , [                u,   "mm"],     "u"],
+	["atom" , [     atom_pitch_u,    "u"],  "atom"],
+	["chunk", [chunk_pitch_atoms, "atom"], "chunk"],
+	each togridlib3_get_unit_table(),
+];
 
 atom_pitch  = togridlib3_decode([1, "atom"]);
 chunk_pitch = togridlib3_decode([1, "chunk"]);
