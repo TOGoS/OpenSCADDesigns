@@ -32,6 +32,10 @@
 // - tgx1001_v6hc_block_subtractor SShape form accepts an optional second argument for bevel size
 // v1.14:
 // - Make subtractive bottom chunk ops work when bottom segmentation is 'block' or 'none'
+// v1.15:
+// - Fix that tgx9_atom_foot used 'u', which is undefined if this library is 'use'd
+// - Fix tgx9_extrude_along_loop to behave when there are duplicate points,
+//   by de-duplicating them
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -129,6 +133,8 @@ function tgx9_block_hull_extrusion_path_info(
 		[rounding_radius, tgx9_rounded_rectangle_inner_path_points( size, rounding_radius )];
 
 module tgx9_atom_foot(height=100, offset=0, radius, bottom_shape="footed") {
+	assert( !is_undef(radius) );
+	u = togridlib3_decode([1, "u"]);
 	rotate_extrude() {
 		polygon(tgx9_offset_points(tgx9_bottom_points(u, height, radius, bottom_shape=bottom_shape), offset));
 	}
@@ -268,13 +274,23 @@ module tgx9_chunk_foot(
 }
 
 function tgx9_vector_angle(normalized_vector) =
+	assert( !is_undef(normalized_vector) )
 	let( cos = acos(normalized_vector[0]) )
 		normalized_vector[1] > 0 ? cos : 360-cos;
 
 function tgx9_angle_difference(angle1, angle0) =
 	angle1 < angle0 ? tgx9_angle_difference(angle1+360, angle0) : angle1-angle0;
 
+// Return a new list with consecutive identical items deduplicated
+function tgx9_uniq(path, offset=0, skipme=undef) =
+	len(path) == offset ? [] :
+	path[offset] == skipme ? tgx9_uniq(path, offset+1, skipme) :
+	[path[offset], each tgx9_uniq(path, offset+1, path[offset])];
+
+assert([[0,0],[1,1],[2,2]] == tgx9_uniq([[0,0],[0,0],[1,1],[1,1],[2,2],[2,2]]));
+
 module tgx9_extrude_along_loop(path, rot_epsilon=0) {
+	path = tgx9_uniq(path);
 	if( len(path) == 1 ) {
 		translate(path[0]) rotate_extrude(angle=360) children();
 	} else for( i=[0:1:len(path)-1] ) {
@@ -285,6 +301,7 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 		dx = point_b[0] - point_a[0];
 		dy = point_b[1] - point_a[1];
 		distance = sqrt(dx*dx + dy*dy);
+		assert( distance > 0 );
 		normalized_vector = [dx/distance, dy/distance];
 		a2b_angle = tgx9_vector_angle(normalized_vector);
 		
