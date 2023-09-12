@@ -1,4 +1,4 @@
-// TGx9.5.19 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.19.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -146,6 +146,10 @@
 // - s/cup_holder_radii/cup_holder_diameters/ - they were never radius!
 // v9.5.19:
 // - Actually use u, atom_pitch_u, and chunk_pitch_atoms to construct unit table!
+// v9.5.19.1:
+// - Explicitly pass cavity_corner_radius to tgx9_cavity_cube,
+//   since it's no longer magically derived from global variables
+//   in TGx9.4Lib-v1.18
 
 /* [Atom/chunk/block size] */
 
@@ -385,14 +389,18 @@ if( effective_v6hc_subtraction_style != "none" && lip_height <= u-margin ) {
 
 tograck_lower_cavity_depth = min(block_size[2]-floor_thickness-3.175, 19.05);
 tograck_upper_cavity_depth = max(3.175, block_size[2]-tograck_lower_cavity_depth-floor_thickness);
+cavity_corner_radius    = max(
+	togridlib3_decode([1, "u"]),
+	togridlib3_decode([1, "f-outer-corner-radius"]) - wall_thickness
+);
 
-function rimless_cavity_sshape(size)   = ["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8]]];
+function rimless_cavity_sshape(size)   = ["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8], cavity_corner_radius]];
 function y_rimless_cavity_sshape(size) = ["intersection",
-	["translate", [0,0,0], ["tgx9_cavity_cube", [size[0], size[1]*2, size[2]]]],
-	["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8]]] // z+8 to clear sublip
+	["translate", [0,0,0], ["tgx9_cavity_cube", [size[0], size[1]*2, size[2]], cavity_corner_radius]],
+	["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8], cavity_corner_radius]] // z+8 to clear sublip
 ];
 function modified_cavity_sshape(size, rim_mode="full") =
-	rim_mode == "full" ? ["tgx9_cavity_cube", size] :
+	rim_mode == "full" ? ["tgx9_cavity_cube", size, cavity_corner_radius] :
 	rim_mode == "x"    ? y_rimless_cavity_sshape(size) :
 	rim_mode == "none" ? rimless_cavity_sshape(size) :
 	assert(false, str("Bad rim_mode to `modified_cavity_sshape`: '", rim_mode, "'"));

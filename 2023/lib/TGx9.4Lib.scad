@@ -41,12 +41,27 @@
 // v1.17:
 // - 'atom' feet will be 'beveled' instead of 'footed' if $tgx9_chatomic_foot_column_style == "none",
 //   somewhat matching the behavior of 'chatomic' feet
+// v1.18:
+// - Call tgx9_uniq before returning paths instead of when using them
+// - tgx9_cavity_cube:
+//   - doesn't max() anything to do with wall_thickness to determine corner radius
+//   - does take cavity_corner_radius, top_bevel_width, top_bevel_height,
+//     and sublip_slope (for compatibility) parameters
+//   - sshape's optional second parameter is corner radius
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGHoleLib-v1.scad>
 
 function tgx9_map(arr, fn) = [ for(item=arr) fn(item) ];
+
+// Return a new list with consecutive identical items deduplicated
+function tgx9_uniq(path, offset=0, skipme=undef) =
+	len(path) == offset ? [] :
+	path[offset] == skipme ? tgx9_uniq(path, offset+1, skipme) :
+	[path[offset], each tgx9_uniq(path, offset+1, path[offset])];
+
+assert([[0,0],[1,1],[2,2]] == tgx9_uniq([[0,0],[0,0],[1,1],[1,1],[2,2],[2,2]]));
 
 // [x, y, offset_factor_x, offset_factor_y]
 function tgx9_bottom_points(u, height, radius, bottom_shape="footed") =
@@ -81,25 +96,30 @@ function tgx9_offset_points(points, offset=0) = [
 ];
 
 function tgx9_rounded_rectangle_inner_path_points(size, rounding_radius) =
+	assert(size[0]/2 >= rounding_radius)
+	assert(size[1]/2 >= rounding_radius)
 	let( adjusted_size = [
 		size[0] - rounding_radius*2,
 		size[1] - rounding_radius*2,
 	] )
-	[
+	tgx9_uniq([
 		[-adjusted_size[0]/2, -adjusted_size[1]/2],
 		[ adjusted_size[0]/2, -adjusted_size[1]/2],
 		[ adjusted_size[0]/2,  adjusted_size[1]/2],
 		[-adjusted_size[0]/2,  adjusted_size[1]/2]
-	];
+	]);
 
 function tgx9_rounded_beveled_rectangle_inner_path_points(size, bevel_size, rounding_radius) =
+	assert( bevel_size <= rounding_radius ) // ish
+	assert( bevel_size + 0.414*rounding_radius <= size[0]/2 )
+	assert( bevel_size + 0.414*rounding_radius <= size[1]/2 )
 	// 'X' and 'Y' below make sense when you're thinking of the two bottommost points.
 	// Arc center Y inset is just the rounding radius
 	// such that the circle is tangent to the edge of the rectangle.
 	// Arc center X inset is such that the circle is tangent
 	// to the bevel, which turns out to be bevel_size + (sqrt(2)-1)*rounding_radius:
 	let( acy = rounding_radius, acx = bevel_size + 0.414*rounding_radius )
-	[
+	tgx9_uniq([
 		[-size[0]/2+acx, -size[1]/2+acy],
 		[ size[0]/2-acx, -size[1]/2+acy],
 		[ size[0]/2-acy, -size[1]/2+acx],
@@ -108,7 +128,7 @@ function tgx9_rounded_beveled_rectangle_inner_path_points(size, bevel_size, roun
 		[-size[0]/2+acx,  size[1]/2-acy],
 		[-size[0]/2+acy,  size[1]/2-acx],
 		[-size[0]/2+acy, -size[1]/2+acx],
-	 ];
+	]);
 
 function tgx9_minimum_rounding_radius_fitting_inside_bevel(bevel_size) =
 	bevel_size / (2 - sqrt(2));
@@ -290,16 +310,8 @@ function tgx9_vector_angle(normalized_vector) =
 function tgx9_angle_difference(angle1, angle0) =
 	angle1 < angle0 ? tgx9_angle_difference(angle1+360, angle0) : angle1-angle0;
 
-// Return a new list with consecutive identical items deduplicated
-function tgx9_uniq(path, offset=0, skipme=undef) =
-	len(path) == offset ? [] :
-	path[offset] == skipme ? tgx9_uniq(path, offset+1, skipme) :
-	[path[offset], each tgx9_uniq(path, offset+1, path[offset])];
-
-assert([[0,0],[1,1],[2,2]] == tgx9_uniq([[0,0],[0,0],[1,1],[1,1],[2,2],[2,2]]));
-
 module tgx9_extrude_along_loop(path, rot_epsilon=0) {
-	path = tgx9_uniq(path);
+	// Path points should be unique!
 	if( len(path) == 1 ) {
 		translate(path[0]) rotate_extrude(angle=360) children();
 	} else for( i=[0:1:len(path)-1] ) {
@@ -346,15 +358,19 @@ module tgx9_beveled_cylinder(d, h, bevel_size) {
 use <../lib/TGX1001.scad>
 
 // Standard cavity with no frills; z=0 is at the top
-module tgx9_cavity_cube(size) if(size[2] > 0) {
+module tgx9_cavity_cube(
+	size,
+	cavity_corner_radius = togridlib3_decode([1, "u"]),
+	top_bevel_width = 3,
+	top_bevel_height = undef,
+	sublip_slope = is_undef(sublip_slope) ? 2 : sublip_slope
+) if(size[2] > 0) {
 	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
-	cavity_corner_radius    = max(togridlib3_decode([1, "u"]), outer_corner_radius - wall_thickness);
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_size = [size[0], size[1], size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_size, corner_radius=cavity_corner_radius);
 
-	top_bevel_width = 3;
-	top_bevel_height = top_bevel_width*sublip_slope;
+	top_bevel_height = is_undef(top_bevel_height) ? top_bevel_width*sublip_slope : top_bevel_height;
 	
 	profile_points = tgx9_offset_points(tgx9_cavity_side_profile_points(
 		size[2], cavity_corner_radius,
@@ -401,7 +417,8 @@ module tgx9_do_sshape(shape) {
 		tog_holelib_hole(type, depth=shape[1], overhead_bore_height=shape[2]);
 	} else if( type == "tgx9_cavity_cube" ) {
 		size = shape[1];
-		tgx9_cavity_cube(size);
+		corner_radius = len(shape) >= 3 ? shape[2] : 1.6;
+		tgx9_cavity_cube(size, corner_radius);
 	} else if( type == "the_cup_cavity" ) {
 		the_cup_cavity();
 	} else if( type == "tgx9_usermod_1" ) {
