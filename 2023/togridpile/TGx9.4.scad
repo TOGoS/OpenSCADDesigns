@@ -1,4 +1,4 @@
-// TGx9.5.19.1 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.20 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
 //
 // Version numbering:
 // M.I.C.R
@@ -150,6 +150,8 @@
 // - Explicitly pass cavity_corner_radius to tgx9_cavity_cube,
 //   since it's no longer magically derived from global variables
 //   in TGx9.4Lib-v1.18
+// v9.5.20:
+// - 'v6hc_style' option to add 'v6 horizontal columns' across the bottom
 
 /* [Atom/chunk/block size] */
 
@@ -171,6 +173,8 @@ lip_segmentation = "block"; // ["atom","chatom","chunk","block"]
 
 // 'standard bevel size', in 'u'; usually the standard bevel size is 2u = 1/8" = 3.175mm
 bevel_size_u = 2;
+
+v6hc_style = "none"; // ["none","v6.0","v6.1","v6.2"]
 
 // Deprecated; use v6hc_subtraction_style, instead
 v6hc_subtraction_enabled = false;
@@ -478,6 +482,7 @@ module tgx9_main_cup() tgx9_cup(
 	lip_height    = lip_height,
 	floor_thickness = floor_thickness,
 	wall_thickness = wall_thickness,
+	v6hc_style = v6hc_style,
 	$tgx9_chatomic_foot_column_style = chatomic_foot_column_style,
 	block_top_ops = [
 		each cavity_ops,

@@ -48,6 +48,9 @@
 //   - does take cavity_corner_radius, top_bevel_width, top_bevel_height,
 //     and sublip_slope (for compatibility) parameters
 //   - sshape's optional second parameter is corner radius
+// v1.20:
+// - tgx9_block_foot takes optional v6hc_style parameter, to add columns across the bottom
+//   (for stregnth?)
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -355,6 +358,17 @@ module tgx9_beveled_cylinder(d, h, bevel_size) {
 	]);
 }
 
+module tgx9_linear_extrude_x_nicked(h, d, bevel_size=3.175) {
+	if( bevel_size <= 0 ) {
+		rotate([0,90,0]) linear_extrude(h, center=true) children();
+	} else difference() {
+		nickube_size = bevel_size*1.415;
+		rotate([0,90,0]) linear_extrude(h, center=true) children();
+		
+		for(x=[-h/2,h/2]) translate([x,0,-d/2]) rotate([0,45,0]) cube([nickube_size, d*2, nickube_size], center=true);		
+	}
+}
+
 use <../lib/TGX1001.scad>
 
 // Standard cavity with no frills; z=0 is at the top
@@ -472,10 +486,41 @@ module tgx9_block_chunk_ops(
 	}
 }
 
+module tgx9_block_foot_v6hc(
+	block_size_ca,
+	v6hc_style = "none",
+	offset=0,
+) {
+	if( v6hc_style != "none" ) {
+		u           = togridlib3_decode([1, "u"]);
+		atom_pitch  = togridlib3_decode([1, "atom"]);
+		block_size_atoms  = togridlib3_decode_vector(block_size_ca, unit=[1, "atom"]);
+		
+		// Translations, rotations, length, so I don't have to duplicate the module call
+		trls = [
+			for( xa=[-block_size_atoms[0]/2+0.5 : 1 : block_size_atoms[0]/2] )
+				[[xa*atom_pitch, 0, atom_pitch/2], [0,0, 90], block_size[1]],
+			for( ya=[-block_size_atoms[1]/2+0.5 : 1 : block_size_atoms[1]/2] )
+				[[0, ya*atom_pitch, atom_pitch/2], [0,0,360], block_size[0]],
+		];
+		column_diameter = atom_pitch - 2*u;
+		for( trl=trls ) {
+			translate(trl[0]) rotate(trl[1]) tgx9_linear_extrude_x_nicked(trl[2], column_diameter, bevel_size=u) togridpile2_atom_column_footprint(
+				column_style = v6hc_style,
+				atom_pitch = atom_pitch,
+				column_diameter = column_diameter,
+				min_corner_radius = u,
+				offset = offset
+			);
+		}		
+	}
+}
+
 module tgx9_block_foot(
 	block_size_ca,
 	foot_segmentation,
 	corner_radius,
+	v6hc_style = "none",
 	offset=0,
 	chunk_ops=[]
 ) {
@@ -489,7 +534,7 @@ module tgx9_block_foot(
 	chunk_pitch = togridlib3_decode([1, "chunk"]);
 
 	block_size_chunks = togridlib3_decode_vector(block_size_ca, unit=[1, "chunk"]);
-	block_size        = tgx9_map(block_size_ca, function(ca) togridlib3_decode(ca));
+	block_size        = togridlib3_decode_vector(block_size_ca);
 	dh_block_size = [block_size[0], block_size[1], block_size[2]*2];
 	
 	// This might be overly complex, but the reason for this
@@ -504,6 +549,8 @@ module tgx9_block_foot(
 		// in between chunks/atoms; put a cube there to fill it in.
 		difference() {
 			union() {
+				tgx9_block_foot_v6hc(block_size_ca, v6hc_style=v6hc_style, offset=offset);
+				
 				body_inset = togridlib3_decode([2, "u"]);
 				underside_filler_thickness = togridlib3_decode([4, "u"]); // shrug
 				translate([0,0,body_inset+underside_filler_thickness/2-offset]) cube([
@@ -530,6 +577,8 @@ module tgx9_block_foot(
 		}
 	} else {
 		difference() {
+			// For these, the v6hc probably makes no sense, so skip it
+			// tgx9_block_foot_v6hc(block_size_ca, v6hc_style=v6hc_style, offset=offset);
 			if( foot_segmentation == "none" ) {
 				translate([0, 0, block_size[2]]) cube([block_size[0]*2, block_size[1]*2, block_size[2]*2], center=true);
 			} else if( foot_segmentation == "block" ) {
@@ -646,6 +695,7 @@ module tgx9_cup(
 	lip_chunk_ops = [],
 	// floor_chunk_ops = []
 	block_top_ops = [],
+	v6hc_style = "none",
 ) intersection() {
 	block_size = togridlib3_decode_vector(block_size_ca);
 
@@ -654,8 +704,9 @@ module tgx9_cup(
 		block_size_ca     = block_size_ca,
 		foot_segmentation = foot_segmentation,
 		corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
-		offset            = $tgx9_mating_offset,
-		chunk_ops         = bottom_chunk_ops
+		chunk_ops         = bottom_chunk_ops,
+		v6hc_style        = v6hc_style,
+		offset            = $tgx9_mating_offset
 	) children();
 
 	// 'cup top' is *everything else*
