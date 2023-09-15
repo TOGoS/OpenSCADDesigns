@@ -13,11 +13,15 @@
 // - Make 'v6.1' the default column style
 // - Make 'chunk' the default segmentation
 // - More clearly separate parameters relating to interior and exteriod
+// v2.1:
+// - Add 'extra_padding' option, to extend the thing a little bit to the +X and +Y
 
 use <../lib/TOGridPileLib-v2.scad>
 use <../lib/TOGShapeLib-v1.scad>
 
 size_chunks = [8,8];
+// Additional padding to add to +X and +Y sides, in mm
+extra_padding = [0.00, 0.00]; // 0.01
 thickness = 1.5875;
 
 chunk_pitch_atoms = 3;
@@ -53,10 +57,12 @@ function column_positions(size_atoms, atom_pitch) = [
 ];
 
 linear_extrude(thickness) difference() {
-	tog_shapelib_rounded_beveled_square(size_chunks*chunk_pitch_atoms*atom_pitch, outer_bevel_size, outer_corner_radius, offset=-outer_margin);
+	outer_size = size_chunks*chunk_pitch_atoms*atom_pitch + extra_padding;
+	echo(str("Outer size, including extra padding, but not margin: ", outer_size, ", or, in inches: ", outer_size/25.4));
+	tog_shapelib_rounded_beveled_square(outer_size, outer_bevel_size, outer_corner_radius, offset=-outer_margin);
 	// togridpile2_atom_column_footprint(column_style, atom_pitch, 
 
 	for( pos=column_positions(size_chonks, chonk_pitch_atoms*atom_pitch) ) {
-		translate(pos) togridpile2_atom_column_footprint(effective_column_style, chonk_pitch, effective_column_diameter, inner_corner_radius, offset=inner_margin);
+		translate(pos - extra_padding/2) togridpile2_atom_column_footprint(effective_column_style, chonk_pitch, effective_column_diameter, inner_corner_radius, offset=inner_margin);
 	}
 }
