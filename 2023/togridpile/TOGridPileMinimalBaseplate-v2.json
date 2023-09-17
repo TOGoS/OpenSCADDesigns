@@ -1,5 +1,19 @@
 {
 	"parameterSets": {
+		"TGPA660": {
+			"atom_pitch": "12.7",
+			"chunk_pitch_atoms": "3",
+			"column_diameter": "9.525",
+			"column_style": "v6.1",
+			"inner_corner_radius": "1.5875",
+			"inner_margin": "0.1",
+			"outer_bevel_size": "3.175",
+			"outer_corner_radius": "3.175",
+			"outer_margin": "0.05",
+			"segmentation": "chunk",
+			"size_chunks": "[6, 6]",
+			"thickness": "1.5875"
+		},
 		"TGPA440e - 4x4 Minimal Baseplate": {
 			"atom_pitch": "12.7",
 			"chunk_pitch_atoms": "3",
