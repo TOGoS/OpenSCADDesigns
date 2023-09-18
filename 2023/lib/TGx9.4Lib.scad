@@ -51,6 +51,8 @@
 // v1.20:
 // - tgx9_block_foot takes optional v6hc_style parameter, to add columns across the bottom
 //   (for stregnth?)
+// v1.20.1:
+// - Fix missing definition of 'block_size' in tgx9_block_foot_v6hc v6hc case
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -495,6 +497,7 @@ module tgx9_block_foot_v6hc(
 		u           = togridlib3_decode([1, "u"]);
 		atom_pitch  = togridlib3_decode([1, "atom"]);
 		block_size_atoms  = togridlib3_decode_vector(block_size_ca, unit=[1, "atom"]);
+		block_size  = togridlib3_decode_vector(block_size_ca);
 		
 		// Translations, rotations, length, so I don't have to duplicate the module call
 		trls = [
