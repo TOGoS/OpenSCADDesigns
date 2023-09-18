@@ -1,4 +1,7 @@
-// DoorHungeRouterJig-v1.2
+// DoorHungeRouterJig-v1.3
+//
+// v1.3:
+// - Thicker detached lip, hexagonal counterbores for hex nuts
 
 // Distance from lip to outer edge of jig (not including lip)
 width2 = 35;
@@ -37,6 +40,10 @@ module __no_more_params() { }
 
 inch = 25.4;
 
+module hexagon(side_to_side) {
+	intersection_for( r=[0, 60, 120] ) rotate([0,0,r]) square([side_to_side*2, side_to_side], center=true);
+}
+
 if( mode == "jig" ) difference() {
 	translate([0,0,(panel_size[2]+lip_height)/2]) linear_extrude(panel_size[2]+lip_height, center=true) {
 		difference() {
@@ -64,7 +71,7 @@ if( mode == "jig" ) difference() {
 		}
 	}
 } else if( mode == "detached-lip" ) difference() {
-	thickness = 1/8*inch;
+	thickness = 1/4*inch;
 	
 	linear_extrude(thickness) difference() {
 		tog_shapelib_rounded_beveled_square([1/2*inch, panel_height]);
@@ -75,7 +82,10 @@ if( mode == "jig" ) difference() {
 	}
 	
 	for( y=[-panel_height/2 + 1/4*inch : 1/2*inch : panel_height/2] ) {
-		translate([0, y, thickness]) tog_holelib_hole("THL-1001");
+		translate([0, y, thickness]) { // tog_holelib_hole("THL-1001");
+			cylinder(h=thickness*3, d=4, center=true);
+			linear_extrude(6.35, center=true) hexagon(5/16*inch);
+		}
 	}
 } else {
 	assert(false, str("Bad mode: ", mode));
