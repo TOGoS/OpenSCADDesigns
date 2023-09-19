@@ -1,4 +1,4 @@
-// TOGLEGO-v0.2
+// TOGLEGO-v0.3
 // 
 // Experiment to see if I can print LEGO bricks
 // precisely enough with a simple SCAD design.
@@ -9,18 +9,23 @@
 // Versions:
 // v0.1:
 // - Basic plate with nubbins
+// - Note that outer_margin is currently ignored; set it to 0.0 for forward compatibility
 // v0.2:
 // - Option to have a TOGridPile foot,
 //   change default size to 8x8
+// - outer_margin still ignored
+// v0.3
+// - Fix parameter precision
 
 block_size_nubs = [8, 8];
 // 8 = LEGO standard; 7.9375 = 5/16", a close approximation 1.0078740157480315
-nub_pitch = 8;
-outer_margin = 0.1;
-nubbin_height = 1.8;
+nub_pitch = 8; // 0.0001
+outer_margin = 0.0; // 0.01
+nubbin_height = 1.8; // 0.01
 // 4.8 = ideal diameter according to https://i.stack.imgur.com/OjziU.png
 nubbin_diameter = 4.8;
-plate_thickness = 6.35;
+// 1.5875 = 1/16", 6.35 = 1/4", good for TOGridPile adapters
+plate_thickness = 6.35; // 0.0001
 
 base_style = "flat"; // ["flat", "tgx9-atomic"]
 $tgx9_mating_offset = -0.1;
