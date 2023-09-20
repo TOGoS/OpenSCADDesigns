@@ -18,6 +18,14 @@
 			"divot_diameter": "2",
 			"divot_positions": "[[9.525, 19.05]]",
 			"hole_diameter": "4.2"
+		},
+		"p1210 - thicc boi": {
+			"arm_length_atoms": "7",
+			"atom_pitch": "12.7",
+			"divot_diameter": "2",
+			"divot_positions": "[[9.525, 19.05]]",
+			"hole_diameter": "4",
+			"thickness_atoms": "6"
 		}
 	},
 	"parameterSets": "",
