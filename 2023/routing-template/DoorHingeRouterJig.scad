@@ -1,12 +1,18 @@
-// DoorHungeRouterJig-v1.4
+// DoorHungeRouterJig-v1.5
 //
 // v1.3:
 // - Thicker detached lip, hexagonal counterbores for hex nuts
 // v1.4:
 // - Abolish non-detachable lip
+// v1.5:
+// - Change defaults to better suit Renee's door frame
+
+mode = "jig"; // ["jig", "detached-lip"]
+
+/* [Jig] */
 
 // Distance from lip to outer edge of jig (not including lip)
-width2 = 35;
+width2 = 31;
 lip_width  = 19.05;
 // 27 = just over 1+1/16"
 hinge_width  = 27;
@@ -18,11 +24,17 @@ corner_radius = 15.875;
 
 // 5+1/2" = 139.7mm
 panel_height = 139.7;
-panel_thickness = 9.525;
+panel_thickness = 12.7;
 
 screw_hole_distances = [127, 101.6];
 // Inset from 'outer edge' to the screw holes
 screw_hole_inset = 12.07; // 19.05;
+
+/* [Detachable Lip] */
+
+detachable_lip_thickness = 1.5875;
+
+/* [Detail] */
 
 preview_fn = 24;
 render_fn = 64;
@@ -34,8 +46,6 @@ include <../lib/TOGHoleLib-v1.scad>
 
 panel_size = [width2 + lip_width, panel_height, panel_thickness];
 edge_x = panel_size[0]/2 - lip_width;
-
-mode = "jig"; // ["jig", "detached-lip"]
 
 module __no_more_params() { }
 
@@ -70,20 +80,14 @@ if( mode == "jig" ) difference() {
 		}
 	}
 } else if( mode == "detached-lip" ) difference() {
-	thickness = 1/4*inch;
-	
-	linear_extrude(thickness) difference() {
+	linear_extrude(detachable_lip_thickness) {
 		tog_shapelib_rounded_beveled_square([1/2*inch, panel_height]);
-
-		/*for( y=[-panel_height/2 + 1/4*inch : 1/2*inch : panel_height/2] ) {
-			translate([0, y]) circle(d=5);
-			}*/
 	}
-	
+
 	for( y=[-panel_height/2 + 1/4*inch : 1/2*inch : panel_height/2] ) {
-		translate([0, y, thickness]) { // tog_holelib_hole("THL-1001");
-			cylinder(h=thickness*3, d=4, center=true);
-			linear_extrude(6.35, center=true) hexagon(5/16*inch);
+		translate([0, y, detachable_lip_thickness]) { // tog_holelib_hole("THL-1001");
+			cylinder(h=detachable_lip_thickness*3, d=4, center=true);
+			if( detachable_lip_thickness >= 6.35 ) linear_extrude(6.35, center=true) hexagon(5/16*inch);
 		}
 	}
 } else {
