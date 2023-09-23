@@ -26,6 +26,14 @@
 			"divot_positions": "[[9.525, 19.05]]",
 			"hole_diameter": "4",
 			"thickness_atoms": "6"
+		},
+		"p1211 - mini thicc boi": {
+			"arm_length_atoms": "3",
+			"atom_pitch": "12.7",
+			"divot_diameter": "2",
+			"divot_positions": "[[9.525, 19.05]]",
+			"hole_diameter": "4",
+			"thickness_atoms": "3"
 		}
 	},
 	"parameterSets": "",
