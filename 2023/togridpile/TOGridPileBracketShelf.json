@@ -24,6 +24,16 @@
 			"preview_fn": "12",
 			"render_fn": "48",
 			"wall_thickness": "6.35"
+		},
+		"p1224 - 7x1, 1mm inner margins": {
+			"capacity_chunks": "[7, 1]",
+			"front_top_bevel_size": "38.1",
+			"inner_margin": "[1, 1]",
+			"lip_segmentation": "none",
+			"margin": "0.075",
+			"preview_fn": "12",
+			"render_fn": "48",
+			"wall_thickness": "6.35"
 		}
 	},
 	"fileFormatVersion": "1"
