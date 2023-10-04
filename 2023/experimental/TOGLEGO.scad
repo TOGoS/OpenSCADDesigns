@@ -1,4 +1,4 @@
-// TOGLEGO-v0.4
+// TOGLEGO-v0.5
 // 
 // Experiment to see if I can print LEGO bricks
 // precisely enough with a simple SCAD design.
@@ -19,6 +19,8 @@
 // v0.4:
 // - Rename 'plate_thickness' to 'block_height'
 // - Add option for LEGO bottom
+// v0.5:
+// - Make circle_id, circle_od configurable
 
 block_size_nubs = [8, 8];
 // 8 = LEGO standard; 7.9375 = 5/16", a close approximation 1.0078740157480315
@@ -27,6 +29,10 @@ outer_margin = 0.0; // 0.01
 nubbin_height = 1.8; // 0.01
 // 4.8 = ideal diameter according to https://i.stack.imgur.com/OjziU.png
 nubbin_diameter = 4.8;
+
+circle_od = 6.51; // 0.01
+circle_id = 4.80;  // 0.01
+
 // 1.5875 = 1/16", 6.35 = 1/4", good for TOGridPile adapters, 3.2 = LEGO plate, 9.6 = regular LEGO brick
 block_height = 6.35; // 0.0001
 
@@ -88,8 +94,6 @@ intersection() {
 		wall_thickness = 1.2 + 0.1;
 		top_thickness = 1;
 		reinforcement_thickness = 0.8;
-		circle_od = 6.51;
-		circle_id = 4.8;
 		
 		difference() {
 			linear_extrude(block_size[2]) tog_shapelib_rounded_square([

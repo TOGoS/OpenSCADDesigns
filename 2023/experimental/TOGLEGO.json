@@ -76,6 +76,19 @@
 			"nubbin_diameter": "4.9",
 			"nubbin_height": "1.8",
 			"outer_margin": "0"
+		},
+		"p1233 - 3x3, 6.6\/5.0 circles": {
+			"$tgx9_chatomic_foot_column_style": "v6.2",
+			"$tgx9_mating_offset": "-0.1",
+			"base_style": "lego",
+			"block_height": "9.6",
+			"block_size_nubs": "[4, 3]",
+			"circle_id": "5",
+			"circle_od": "6.6",
+			"nub_pitch": "8",
+			"nubbin_diameter": "5",
+			"nubbin_height": "1.8",
+			"outer_margin": "0"
 		}
 	},
 	"parameterSets": "",
