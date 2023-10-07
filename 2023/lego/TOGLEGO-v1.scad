@@ -1,4 +1,4 @@
-// TOGLEGO-v1.0
+// TOGLEGO-v1.1
 //
 // Versions:
 // v1.0:
@@ -7,6 +7,8 @@
 // - Block size unit is configurable;
 //   LEGO studs and/or TGX9 atoms will be placed symmetrically
 //   regardless of block size unit.
+// v1.1:
+// - Add 'lego-v1.1' bottom style, which spaces out the reinforcements
 
 block_size_bsu = [4, 3];
 block_size_unit = "stud"; // ["stud", "atom", "mm"]
@@ -33,7 +35,7 @@ lego_circle_id = 4.80;  // 0.01
 // 1.5875 = 1/16", 6.35 = 1/4", good for TOGridPile adapters, 3.2 = LEGO plate, 9.6 = regular LEGO brick
 block_height = 9.6; // 0.0001
 
-bottom_style = "lego"; // ["flat", "tgx9-atomic", "lego"]
+bottom_style = "lego"; // ["flat", "tgx9-atomic", "lego", "lego-v1.1"]
 $tgx9_mating_offset = -0.1;
 $tgx9_chatomic_foot_column_style = "v6.2";
 $fn = $preview ? 24 : 64;
@@ -69,7 +71,7 @@ lego_outer_corner_radius = lego_inner_corner_radius + (block_size[0] - lego_inne
 module toglego_xy_hull() {
 	linear_extrude(block_size[2]*4, center=true) {
 		// Assumes LEGO top and bottom, for now
-		if( bottom_style == "lego" ) {
+		if( bottom_style == "lego" || bottom_style == "lego-v1.1" ) {
 			tog_shapelib_rounded_square(lego_outer_size, lego_outer_corner_radius);
 		} else {
 			tog_shapelib_rounded_beveled_square(block_size, 3.175, 3.175);
@@ -90,9 +92,11 @@ module toglego_bottom() {
 			corner_radius = 6.35,
 			offset = $tgx9_mating_offset
 		);
-	} else if( bottom_style == "lego" ) {
+	} else if( bottom_style == "lego" || bottom_style == "lego-v1.1" ) {
 		top_thickness = 1;
 		reinforcement_thickness = 0.8;
+
+		reinforcement_skip = bottom_style == "lego" ? 1 : 2;
 		
 		difference() {
 			translate([0,0,500]) cube([1000,1000,1000], center=true);
@@ -103,14 +107,14 @@ module toglego_bottom() {
 				difference() {
 					union() {
 						// Y-axis reinforcements
-						for( xn=[-block_size_studs[0]/2+1 : 1 : block_size_studs[0]/2-1] ) {
+						for( xn=[-block_size_studs[0]/2+reinforcement_skip : reinforcement_skip : block_size_studs[0]/2-1] ) {
 							translate([xn * lego_stud_pitch, 0]) square([
 								reinforcement_thickness,
 								lego_inner_size[0] + 0.2
 							], center=true);
 						}
 						// X-axix reinforcements
-						for( yn=[-block_size_studs[1]/2+1 : 1 : block_size_studs[1]/2-1] ) {
+						for( yn=[-block_size_studs[1]/2+reinforcement_skip : reinforcement_skip : block_size_studs[1]/2-1] ) {
 							translate([0, yn * lego_stud_pitch]) square([
 								lego_inner_size[0] + 0.2,
 								reinforcement_thickness
