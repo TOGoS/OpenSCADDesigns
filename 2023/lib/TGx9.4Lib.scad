@@ -53,6 +53,9 @@
 //   (for stregnth?)
 // v1.20.1:
 // - Fix missing definition of 'block_size' in tgx9_block_foot_v6hc v6hc case
+// v1.21:
+// - Fix 'tgx1001_v6hc_block_subtractor' sshape to reference
+//   `-$tgx9_mating_offset` instead of `margin`
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -452,7 +455,7 @@ module tgx9_do_sshape(shape) {
 			block_size_ca = shape[1],
 			unit_table    = togridlib3_get_unit_table(),
 			$tgx1001_bevel_size = bevel_size,
-			offset        = margin
+			offset        = -$tgx9_mating_offset
 		);
 	} else {
 		assert(false, str("Unrecognized S-shape type: '", type, "'"));
