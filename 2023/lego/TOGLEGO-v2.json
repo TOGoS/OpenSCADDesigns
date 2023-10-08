@@ -1,0 +1,24 @@
+{
+	"parameterSets": {
+		"p1240": {
+			"$tgx9_chatomic_foot_column_style": "v6.2",
+			"$tgx9_mating_offset": "-0.1",
+			"block_height": "6.35",
+			"block_size_bsu": "[8, 8]",
+			"block_size_unit": "stud",
+			"bottom_style": "lego-v1.1",
+			"lego_circle_id": "5.15",
+			"lego_circle_od": "6.6",
+			"lego_inner_corner_radius": "2",
+			"lego_inner_width": "5",
+			"lego_outer_width": "7.8",
+			"lego_stud_diameter": "4.9",
+			"lego_stud_height": "1.8",
+			"lego_stud_pitch": "8",
+			"tg_lip_height": "2.54",
+			"top_style": "tgx9-atomic"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
