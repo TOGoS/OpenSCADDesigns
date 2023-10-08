@@ -1,4 +1,4 @@
-// TOGLEGO-v2.1
+// TOGLEGO-v2.1.1
 //
 // Versions:
 // v1.0:
@@ -11,6 +11,8 @@
 // - Add 'lego-v1.1' bottom style, which spaces out the reinforcements
 // v2.1 (based on v1.1):
 // - Experimental 'TOGridPile on top' options
+// v2.1.1:
+// - Fix placement of v6hc subtraction when top_style = "tgx9-chunk"
 
 block_size_bsu = [4, 3];
 block_size_unit = "stud"; // ["stud", "atom", "chunk", "mm"]
@@ -179,8 +181,8 @@ module toglego_top() {
 			for(i=[0,1]) [round(togridlib3_decode(block_size_ca[i], unit=[1, top_unit])), top_unit],
 			[1, "chunk"]
 		];
-		foot_v6hcs_block_size = [
-			for(i=[0,1]) [round(togridlib3_decode(block_size_ca[i], unit=[1, "atom"]))+2, "atom"],
+		foot_v6hcs_size = [
+			for(i=[0,1]) [round(togridlib3_decode(foot_block_size[i], unit=[1, "atom"]))+2, "atom"],
 			[1, "chunk"]
 		];
 		
@@ -199,7 +201,7 @@ module toglego_top() {
 				offset = -$tgx9_mating_offset
 			);
 
-			tgx9_do_sshape(["tgx1001_v6hc_block_subtractor", foot_v6hcs_block_size]);
+			tgx9_do_sshape(["tgx1001_v6hc_block_subtractor", foot_v6hcs_size]);
 		}
 	}
 }
