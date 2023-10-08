@@ -1,4 +1,4 @@
-// TOGLEGO-v2.1.1
+// TOGLEGO-v2.1.2
 //
 // Versions:
 // v1.0:
@@ -13,6 +13,9 @@
 // - Experimental 'TOGridPile on top' options
 // v2.1.1:
 // - Fix placement of v6hc subtraction when top_style = "tgx9-chunk"
+// v2.1.2:
+// - Fix calculation of bottom size when bottom_style = "tgx9-atomic"
+// - Add top_style = "flat" option
 
 block_size_bsu = [4, 3];
 block_size_unit = "stud"; // ["stud", "atom", "chunk", "mm"]
@@ -41,7 +44,7 @@ block_height = 9.6; // 0.0001
 
 /* [Top] */
 
-top_style = "lego"; // ["lego", "tgx9-atomic", "tgx9-chunk"]
+top_style = "lego"; // ["flat", "lego", "tgx9-atomic", "tgx9-chunk"]
 
 /* [TOGridPile top] */
 
@@ -78,6 +81,7 @@ block_size_ca = [
 	[block_height, "mm"]
 ];
 block_size = togridlib3_decode_vector(block_size_ca);
+echo(block_size_ca=block_size_ca, block_size=block_size);
 block_size_studs = [for(d=block_size_ca) round(togridlib3_decode(d, unit=[1, "stud"]))];
 lego_outer_size = [
 	block_size[0] - (lego_stud_pitch - lego_outer_width),
@@ -106,8 +110,10 @@ module toglego_bottom() {
 	} else if( bottom_style == "tgx9-atomic" ) {
 		echo(block_size=block_size);
 		
+		bottom_size_ca = [for(d=block_size_ca) [round(togridlib3_decode(d, unit=[1, "atom"])), "atom"]];
+		
 		tgx9_block_foot(
-			[for(d=block_size_ca) [round(togridlib3_decode(d, unit=[1, "atom"])), "atom"]],
+			bottom_size_ca,
 			foot_segmentation = "chatom",
 			v6hc_style = "v6.0",
 			corner_radius = 6.35,
@@ -163,7 +169,9 @@ module toglego_bottom() {
 }
 
 module toglego_top() {
-	if( top_style == "lego" ) {
+	if( top_style == "flat" ) {
+		cube([block_size[0]*2, block_size[1]*2, block_size[2]*2], center=true);
+	} else if( top_style == "lego" ) {
 		cube([block_size[0]*2, block_size[1]*2, block_size[2]*2], center=true);
 		
 		translate([0,0,block_height-0.1]) linear_extrude(lego_stud_height + 0.1) {
