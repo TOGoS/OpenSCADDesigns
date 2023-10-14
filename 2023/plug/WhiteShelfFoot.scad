@@ -3,6 +3,10 @@
 // Replacement feet for the white shelves Sara
 // dragged home from Rich Bitch Land
 // 
+// v1.0:
+// - Original design which became p1242, which FIT JUST FINE
+//   after removing the broken piece of the old feet
+//   that were in the holes that were missing feet
 // v1.1:
 // - Define 'stem margin' with default 0.2
 // v1.2:
