@@ -17,16 +17,19 @@
 
 function polygen_cap_faces( layers, layerspan, li ) = [
 	[for( vi=[0 : 1 : layerspan-1] ) vi+layerspan*li]
-]; // TODO
+];
 
-function polygen_layer_faces( layers, layerspan, i ) = [
-	for( vi=[0 : 1 : len(layers[i])-1] ) [vi, (vi+1) % layerspan, (vi+1)%layerspan + layerspan, vi+layerspan] // TODO: Triangles
+function polygen_layer_faces( layers, layerspan, i ) =
+let( l0 = i*layerspan )
+let( l1 = (i+1)*layerspan )
+[
+	for( vi=[0 : 1 : len(layers[i])-1] ) [l0 + vi, l0 + (vi+1) % layerspan, l1 + (vi+1)%layerspan, l1 + vi] // TODO: Triangles
 ];
 
 function reverse_list( list ) = [for(i=[len(list)-1 : -1 : 0]) list[i]];
 
 function polygen_faces( layers, layerspan ) = [
-	each reverse_list(polygen_cap_faces( layers, layerspan, 0 )), // TODO: Reverse this one
+	each reverse_list(polygen_cap_faces( layers, layerspan, 0 )),
 	// For now, assume convex end caps
 	for( li=[0 : 1 : len(layers)-2] ) each polygen_layer_faces(layers, layerspan, li),
 	each polygen_cap_faces( layers, layerspan, len(layers)-1 )
@@ -36,11 +39,24 @@ function polygen_points(layers, layerspan) = [
 	for( layer=layers ) for( point=layer ) point
 ];
 
+polytest_layer_count = 10;
+polytest_vertexes_per_layer = 8;
+
 polytest_layers = [
-	[[-1, 1,-1], [-1, -1, -1], [ 1,  0, -1]],
-	[[-1, 1, 1], [-1, -1,  1], [ 1,  0,  1]],
+	for( t=[0 : 1 : polytest_layer_count] ) [
+		for( vi=[0 : 1 : polytest_vertexes_per_layer] ) [
+			(2+sin(t*360/10))*cos(vi * 360 / polytest_vertexes_per_layer),
+			(2+cos(t*360/10))*sin(vi * 360 / polytest_vertexes_per_layer),
+			t
+		]
+	]
 ];
-polytest_layerspan = len(polytest_layers[0]);
+
+function tlpoly_make_from_layers(layers) = [
+	"tlpoly-ls", // layers, span
+	layers,
+	len(layers[0])
+];
 
 // TODO: Maybe define a togmod-like structure, like
 // ["polygen" (or whatever), layers, vertexes per layer]
@@ -49,7 +65,7 @@ polytest_layerspan = len(polytest_layers[0]);
 function tlpoly_eval(mod) = assert(mod[0] == "tlpoly-ls") assert(len(mod) == 3)
 	["polyhedron-vf", polygen_points(mod[1], mod[2]), polygen_faces(mod[1], mod[2])];
 
-poly_tm = ["polyhedron-vf", polygen_points(polytest_layers, polytest_layerspan), polygen_faces(polytest_layers, polytest_layerspan)];
+poly_tm = tlpoly_eval(tlpoly_make_from_layers(polytest_layers));
 
 use <../lib/TOGMod1.scad>
 
