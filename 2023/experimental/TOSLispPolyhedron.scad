@@ -58,10 +58,6 @@ function tlpoly_make_from_layers(layers) = [
 	len(layers[0])
 ];
 
-// TODO: Maybe define a togmod-like structure, like
-// ["polygen" (or whatever), layers, vertexes per layer]
-// Then we could iteratively transform that
-
 function tlpoly_eval(mod) = assert(mod[0] == "tlpoly-ls") assert(len(mod) == 3)
 	["polyhedron-vf", polygen_points(mod[1], mod[2]), polygen_faces(mod[1], mod[2])];
 
