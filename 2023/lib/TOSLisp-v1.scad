@@ -72,4 +72,19 @@ toslisp__test_varlookup = function(name)
 assert("foo" == toslisp_expression_value_to_string(["quote", "foo"], toslisp__test_varlookup));
 assert("foo" == toslisp_expression_value_to_string(["concat", ["quote", "f"], ["quote", "oo"]], toslisp__test_varlookup));
 assert("foo" == toslisp_expression_value_to_string([["lambda", [], ["quote", "foo"]]], toslisp__test_varlookup));
-assert("foo" == toslisp_expression_value_to_string([["lambda", ["suffix"], ["concat", ["quote", "f"], "suffix"]], ["quote", "oo"]], toslisp__test_varlookup));
+assert("foo" == toslisp_expression_value_to_string(
+	[
+		["lambda", ["suffix"], ["concat", ["quote", "f"], "suffix"]],
+		["quote", "oo"]
+	], toslisp__test_varlookup
+));
+/* Ruh roh: ERROR: Recursion detected calling function 'prev' in file TOSLisp-v1.scad, line 40
+assert("foo" == toslisp_expression_value_to_string([
+		[
+			["lambda", ["suffix"], ["lambda", ["prefix"], ["concat", "prefix", ["quote", "o"], "suffix"]]],
+			["quote", "oo"]
+		],
+		["quote", "f"]
+	], toslisp__test_varlookup
+));
+*/
