@@ -6,8 +6,9 @@
 module togmod1_domodule(mod) {
 	assert(is_list(mod));
 	assert(len(mod) > 0);
-	if( mod[0] == "polygon-vl" ) {
-		polygon(mod[1], mod[2]);
+	if( mod[0] == "polygon-vp" ) {
+		// ["polygon-vp", vertexes, paths]
+		polygon(points=mod[1], paths=mod[2]);
 	} else if( mod[0] == "polyhedron-vf" ) {
 		polyhedron(mod[1], faces=mod[2]);
 	} else if( mod[0] == "scale" ) {
@@ -25,12 +26,14 @@ module togmod1_domodule(mod) {
 		}
 	} else if( mod[0] == "union" ) {
 		for( i=[1:1:len(mod)-1] ) togmod1_domodule(mod[i]);
+	} else if( mod[0] == "hull" ) {
+		hull() for( i=[1:1:len(mod)-1] ) togmod1_domodule(mod[i]);
 	} else {
 		assert(false, str("Unrecognized shape: ", mod[0]));
 	}
 }
 
-// togmod1_domodule(["polygon-vl", [[1,1],[1,-1],[-1,-1],[-1,1]], [[0,1,2,3]]]);
+// togmod1_domodule(["polygon-vp", [[1,1],[1,-1],[-1,-1],[-1,1]], [[0,1,2,3]]]);
 
 function togmod1_make_cuboid(size) =
 	["polyhedron-vf", [
