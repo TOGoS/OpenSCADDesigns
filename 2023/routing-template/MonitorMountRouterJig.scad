@@ -1,4 +1,8 @@
+// MonitorMountRouterJig-v0.1
+
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back"]
+
+module __end_params() { }
 
 inch = 25.4;
 

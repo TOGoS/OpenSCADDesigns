@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"front-template": {
+			"mode": "front-template"
+		},
+		"back-template": {
+			"mode": "back-template"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
