@@ -38,21 +38,3 @@ module togmod1_domodule(mod) {
 		assert(false, str("Unrecognized shape: ", mod[0]));
 	}
 }
-
-// togmod1_domodule(["polygon-vp", [[1,1],[1,-1],[-1,-1],[-1,1]], [[0,1,2,3]]]);
-
-function togmod1_make_cuboid(size) =
-	["polyhedron-vf", [
-		[-size[0]/2, -size[1]/2, -size[2]/2],
-		[+size[0]/2, -size[1]/2, -size[2]/2],
-		[-size[0]/2, +size[1]/2, -size[2]/2],
-		[+size[0]/2, +size[1]/2, -size[2]/2],
-		[-size[0]/2, -size[1]/2, +size[2]/2],
-		[+size[0]/2, -size[1]/2, +size[2]/2],
-		[-size[0]/2, +size[1]/2, +size[2]/2],
-		[+size[0]/2, +size[1]/2, +size[2]/2]
-	], [
-		[0,1,3,2],[0,4,5,1],[4,6,7,5],[3,7,6,2],[1,5,7,3],[6,4,0,2]
-	]];
-
-// togmod1_domodule( togmod1_make_cuboid([10,10,10]) );

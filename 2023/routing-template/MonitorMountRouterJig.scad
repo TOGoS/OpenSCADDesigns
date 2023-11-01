@@ -4,8 +4,14 @@
 // v0.2:
 // - Renamed decode_for_x to decode_cut_for_x, since these
 //   functions specifically deal with 'cuts'
+// v0.3:
+// - Can generate panel...almost.
+//   Alignment holes should be countersunk on front, but are not yet.
 
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back"]
+
+panel_thickness = 19.05;    // 0.01
+counterbore_depth = 4.7625; // 0.01
 
 module __end_params() { }
 
@@ -33,11 +39,14 @@ cuts = [
 ];
 
 use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGHoleLib-v1.scad>
 
 $fn = $preview ? 24 : 72;
 
 module fat_polyline(diameter, points) {
+	assert(is_list(points))
+	assert(len(points) == 0 || is_list(points[1]))
 	if( len(points) == 0 ) {
 	} else if( len(points) == 1 ) {
 		translate(points[0]) circle(d=diameter);
@@ -49,45 +58,73 @@ module fat_polyline(diameter, points) {
 	}
 }
 
-function mkpoly(verts) = ["polygon-vp", verts, [[for( i=[0:1:len(verts)-1] ) i%len(verts)]]];
-
-function make_rounded_rect(size, rad) =
+function make_rounded_rect(size, r) =
 	let(quarterfn=max($fn/4, 1))
-	mkpoly([
-		for(a=[0 : 1 : quarterfn]) let(ang=      a*90/quarterfn) [ size[0]/2-rad + rad*cos(ang),  size[1]/2-rad + rad*sin(ang)],
-		for(a=[0 : 1 : quarterfn]) let(ang= 90 + a*90/quarterfn) [-size[0]/2+rad + rad*cos(ang),  size[1]/2-rad + rad*sin(ang)],
-		for(a=[0 : 1 : quarterfn]) let(ang=180 + a*90/quarterfn) [-size[0]/2+rad + rad*cos(ang), -size[1]/2+rad + rad*sin(ang)],
-		for(a=[0 : 1 : quarterfn]) let(ang=270 + a*90/quarterfn) [ size[0]/2-rad + rad*cos(ang), -size[1]/2+rad + rad*sin(ang)],
+	togmod1_make_polygon([
+		for(a=[0 : 1 : quarterfn]) let(ang=      a*90/quarterfn) [ size[0]/2-r + r*cos(ang),  size[1]/2-r + r*sin(ang)],
+		for(a=[0 : 1 : quarterfn]) let(ang= 90 + a*90/quarterfn) [-size[0]/2+r + r*cos(ang),  size[1]/2-r + r*sin(ang)],
+		for(a=[0 : 1 : quarterfn]) let(ang=180 + a*90/quarterfn) [-size[0]/2+r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
+		for(a=[0 : 1 : quarterfn]) let(ang=270 + a*90/quarterfn) [ size[0]/2-r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
 	]);
 
-function make_circle(rad, pos=[0,0]) =
-	let(fn = max($fn, 6))
-	mkpoly([ for(i=[0 : 1 : fn-1]) [pos[0]+rad*cos(i*360/fn), pos[1]+rad*sin(i*360/fn)]]);
-
-function make_x_axis_oval(rad, x0, x1) =
-	x0 == x1 ? make_circle(rad, [x0, 0]) :
+function make_x_axis_oval(r, x0, x1) =
+	x0 == x1 ? togmod1_make_circle(r, [x0, 0]) :
 	let(fn = max(6, $fn))
 	let(halffn = ceil(fn/2))
-	mkpoly([
-		for(i=[0 : 1 : halffn]) let(ang=-90 + i*180/halffn) [x1+rad*cos(ang), rad*sin(ang)],
-		for(i=[0 : 1 : halffn]) let(ang= 90 + i*180/halffn) [x0+rad*cos(ang), rad*sin(ang)]
+	togmod1_make_polygon([
+		for(i=[0 : 1 : halffn]) let(ang=-90 + i*180/halffn) [x1+r*cos(ang), r*sin(ang)],
+		for(i=[0 : 1 : halffn]) let(ang= 90 + i*180/halffn) [x0+r*cos(ang), r*sin(ang)]
 	]);
 
 // TODO: Do it without hull
-function make_oval(rad, p0, p1) = ["hull", make_circle(rad, p0), make_circle(rad, p1)];
+function make_oval(r, p0, p1) = ["hull", togmod1_make_circle(r, p0), togmod1_make_circle(r, p1)];
 
 // function oval(diameter, p0, p1) = ["hull", ["circle", 
 
-function fat_polyline_to_togmod(rad, points) =
+function jj_is_pointlist(points, dims=2, offset=0) =
+	is_list(points) && (
+		len(points) - offset == 0 || (
+			is_list(points[offset]) &&
+			len(points[offset]) >= dims &&
+			jj_is_pointlist(points, dims, offset+1)
+		)
+	);
+
+function fat_polyline_to_togmod(r, points) =
+	assert(jj_is_pointlist(points, 2), str("Expected point list, but got: ", points))
 	len(points) == 0 ? ["union"] :
-	len(points) == 1 ? make_circle(rad, points[0]) :
+	len(points) == 1 ? togmod1_make_circle(r, points[0]) :
 	["union",
-		for( i=[0 : 1 : len(points)-2] ) make_oval(rad, points[i], points[i+1])];
+		for( i=[0 : 1 : len(points)-2] ) make_oval(r, points[i], points[i+1])];
 
 // fat_polyline(20, [[0,0], [100,100], [0,200]], $fn = 60);
 
-function decode_cut_for_panel(moddesc, z1) =
-	assert(false, "not yet lol");
+function decode_cut_for_panel(
+	cutdesc, panel_thickness, hole_diameter, counterbore_diameter, counterbore_depth
+) =
+	// echo("decode_cut_for_panel", cutdesc=cutdesc)
+	let( make_counterbored_slot = function(points, cb_pos)
+		// echo("make_counterbored_slot", points=points)
+		["union",
+			each is_undef(cb_pos) ? [] : [
+				["linear-extrude-zs", [cb_pos*panel_thickness - counterbore_depth, cb_pos*panel_thickness + counterbore_depth],
+					fat_polyline_to_togmod(r=counterbore_diameter/2, points=points)],
+			],
+			["linear-extrude-zs", [-2, panel_thickness+2],
+				fat_polyline_to_togmod(r=hole_diameter/2, points=points)]
+		]
+	)
+	let( make_alignment_hole = function(pos)
+		// TODO: Countersink!
+		// Here's where THL-1001 needs to be a TOGMod shape!
+		// For now, cylinder:
+		["translate", pos, togmod1_make_cylinder(d=5, zrange=[-1, panel_thickness+1])]
+	)
+	cutdesc[0] == "front-counterbored-slot" ?	make_counterbored_slot(cutdesc[1], 1) :
+	cutdesc[0] == "back-counterbored-slot"  ?	make_counterbored_slot(cutdesc[1], 0) :
+	cutdesc[0] == "normal-slot"             ? make_counterbored_slot(cutdesc[1]) :
+	cutdesc[0] == "alignment-hole"          ? make_alignment_hole(cutdesc[1]) :
+	assert(false, str("Unsupported panel cut: '", cutdesc[0], "'"));
 	
 function decode_cut_for_front_template(moddesc) =
 	moddesc[0] == "front-counterbored-slot" ? ["fat-polyline-rp", counterbore_template_diameter/2, moddesc[1]] :
@@ -107,8 +144,8 @@ function decode2(moddesc) =
 
 // togmod1_domodule(fat_polyline_to_togmod(20, [[-10, -20], [10, 0], [10,20]]));
 
-echo(cuts);
-echo(decode_cut_for_front_template(cuts[0]));
+// echo(cuts);
+// echo(decode_cut_for_front_template(cuts[0]));
 
 function decode_template_2d_cuts(scale, block, cuts, cut_decoder) = ["scale", scale, ["difference",
 	block,
@@ -135,8 +172,13 @@ if( mode == "front-template" || mode == "back-template" ) {
 	}
 } else if( mode == "panel" ) {
 	togmod1_domodule(["difference",
-		["linear-extrude-zs", [0, 3/4*inch], hull_2d],
-		for( cut=cuts ) decode2(decode_cut_for_panel(cut))
+		["linear-extrude-zs", [0, panel_thickness], hull_2d],
+		for( cut=cuts ) decode_cut_for_panel(cut,
+			panel_thickness      = panel_thickness,
+			hole_diameter        = hole_diameter,
+			counterbore_diameter = counterbore_diameter,
+			counterbore_depth    = counterbore_depth
+		)
 	]);
 } else {
 	assert(false, str("Unknown mode: '", mode, "'"));
