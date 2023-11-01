@@ -1,4 +1,9 @@
-// MonitorMountRouterJig-v0.1
+// MonitorMountRouterJig-v0.2
+// 
+// Versions:
+// v0.2:
+// - Renamed decode_for_x to decode_cut_for_x, since these
+//   functions specifically deal with 'cuts'
 
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back"]
 
@@ -81,16 +86,16 @@ function fat_polyline_to_togmod(rad, points) =
 
 // fat_polyline(20, [[0,0], [100,100], [0,200]], $fn = 60);
 
-function decode_for_panel(moddesc, z1) =
+function decode_cut_for_panel(moddesc, z1) =
 	assert(false, "not yet lol");
 	
-function decode_for_front_template(moddesc) =
+function decode_cut_for_front_template(moddesc) =
 	moddesc[0] == "front-counterbored-slot" ? ["fat-polyline-rp", counterbore_template_diameter/2, moddesc[1]] :
 	moddesc[0] == "back-counterbored-slot" ? ["fat-polyline-rp", hole_template_diameter/2, moddesc[1]] :
 	moddesc[0] == "normal-slot" ? ["fat-polyline-rp", hole_template_diameter/2, moddesc[1]] :
 	assert(false, str("Unsupported front template shape: '", moddesc[0], "'"));
 
-function decode_for_back_template(moddesc) =
+function decode_cut_for_back_template(moddesc) =
 	moddesc[0] == "back-counterbored-slot" ? ["fat-polyline-rp", counterbore_template_diameter/2, moddesc[1]] :
 	moddesc[0] == "front-counterbored-slot" ? ["fat-polyline-rp", hole_template_diameter/2, moddesc[1]] :
 	moddesc[0] == "normal-slot" ? ["fat-polyline-rp", hole_template_diameter/2, moddesc[1]] :
@@ -103,7 +108,7 @@ function decode2(moddesc) =
 // togmod1_domodule(fat_polyline_to_togmod(20, [[-10, -20], [10, 0], [10,20]]));
 
 echo(cuts);
-echo(decode_for_front_template(cuts[0]));
+echo(decode_cut_for_front_template(cuts[0]));
 
 function decode_template_2d_cuts(scale, block, cuts, cut_decoder) = ["scale", scale, ["difference",
 	block,
@@ -111,8 +116,8 @@ function decode_template_2d_cuts(scale, block, cuts, cut_decoder) = ["scale", sc
 ]];
 
 function make_the_template(hull_shape, cuts, mode) =
-	mode == "front-template" ? decode_template_2d_cuts([ 1,1,1], hull_2d, cuts, function (c) decode_for_front_template(c)) :
-	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_2d, cuts, function (c) decode_for_back_template(c) ) :
+	mode == "front-template" ? decode_template_2d_cuts([ 1,1,1], hull_2d, cuts, function (c) decode_cut_for_front_template(c)) :
+	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_2d, cuts, function (c) decode_cut_for_back_template(c) ) :
 	assert(str("Don't know how to make template in mode '", mode, "'"));
 
 hull_2d = make_rounded_rect([6*inch, 9*inch], 3/4*inch);
@@ -131,7 +136,7 @@ if( mode == "front-template" || mode == "back-template" ) {
 } else if( mode == "panel" ) {
 	togmod1_domodule(["difference",
 		["linear-extrude-zs", [0, 3/4*inch], hull_2d],
-		for( cut=cuts ) decode2(decode_for_panel(cut))
+		for( cut=cuts ) decode2(decode_cut_for_panel(cut))
 	]);
 } else {
 	assert(false, str("Unknown mode: '", mode, "'"));
