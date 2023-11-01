@@ -7,6 +7,8 @@
 // v0.3:
 // - Can generate panel...almost.
 //   Alignment holes should be countersunk on front, but are not yet.
+// v0.4:
+// - panel-front, panel-back [almost] work
 
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back"]
 
@@ -21,6 +23,8 @@ height = 9*inch;
 top_y = height/2;
 top_gb_hole_y = top_y - 3/4*inch;
 top_monmount_hole_y = top_y - 9/4*inch;
+
+panel_size = [6*inch, height, panel_thickness];
 
 counterbore_diameter = 7/8*inch;
 counterbore_template_diameter = counterbore_diameter;
@@ -159,6 +163,20 @@ function make_the_template(hull_shape, cuts, mode) =
 
 hull_2d = make_rounded_rect([6*inch, 9*inch], 3/4*inch);
 
+panel = ["difference",
+	["linear-extrude-zs", [0, panel_thickness], hull_2d],
+	for( cut=cuts ) decode_cut_for_panel(cut,
+		panel_thickness      = panel_thickness,
+		hole_diameter        = hole_diameter,
+		counterbore_diameter = counterbore_diameter,
+		counterbore_depth    = counterbore_depth
+	)
+];
+
+panel_half_intersector = ["translate", [0,0, panel_thickness/4], togmod1_make_cuboid([panel_size[0]*2, panel_size[1]*2, panel_thickness/2])];
+
+function jj_flip(mod, around_z) = ["translate", [0,0,around_z], ["scale", [1,1,-1], mod]];
+
 if( mode == "front-template" || mode == "back-template" ) {
 	// TODO: Translate THL-1001 to TOGMod1 so you can do the whole thing in TOGMod1
 	difference() {
@@ -171,14 +189,16 @@ if( mode == "front-template" || mode == "back-template" ) {
 		}
 	}
 } else if( mode == "panel" ) {
-	togmod1_domodule(["difference",
-		["linear-extrude-zs", [0, panel_thickness], hull_2d],
-		for( cut=cuts ) decode_cut_for_panel(cut,
-			panel_thickness      = panel_thickness,
-			hole_diameter        = hole_diameter,
-			counterbore_diameter = counterbore_diameter,
-			counterbore_depth    = counterbore_depth
-		)
+	togmod1_domodule(panel);
+} else if( mode == "panel-front" ) {
+	togmod1_domodule(["intersection",
+		panel_half_intersector,
+		["translate", [0,0,-panel_thickness/2], panel]
+	]);
+} else if( mode == "panel-back" ) {
+	togmod1_domodule(["intersection",
+		panel_half_intersector,
+		jj_flip(panel, panel_thickness/2)
 	]);
 } else {
 	assert(false, str("Unknown mode: '", mode, "'"));
