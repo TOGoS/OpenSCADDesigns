@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v0.2
+// MonitorMountRouterJig-v0.5
 // 
 // Versions:
 // v0.2:
@@ -9,13 +9,65 @@
 //   Alignment holes should be countersunk on front, but are not yet.
 // v0.4:
 // - panel-front, panel-back [almost] work
+// v0.5:
+// - Counterbored panel assembly holes using polygen
 
-mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back"]
+mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
-panel_thickness = 19.05;    // 0.01
-counterbore_depth = 4.7625; // 0.01
+panel_corner_radius = 19.05  ; // 0.01
+panel_thickness     = 19.05  ; // 0.01
+counterbore_depth   =  4.7625; // 0.01
+
+alignment_hole_countersink_inset = 1;
+
+/* [Detail] */
+
+preview_fn = 9;
+render_fn = 72;
 
 module __end_params() { }
+
+//// Inlined polyhedron generation library
+
+function polygen_cap_faces( layers, layerspan, li, reverse=false ) = [
+	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
+];
+
+function polygen_layer_faces( layers, layerspan, i ) =
+let( l0 = i*layerspan )
+let( l1 = (i+1)*layerspan )
+[
+	for( vi=[0 : 1 : len(layers[i])-1] ) each [
+		// By making triangles instead of quads,
+		// we can avoid some avoidable 'non-planar face' warnings.
+		[
+			l0 + vi,
+			l0 + (vi+1) % layerspan,
+			l1 + (vi+1)%layerspan,
+		],
+		[
+			l0 + vi,
+			l1 + (vi+1)%layerspan,
+			l1 + vi
+		],
+	]
+];
+
+function polygen_faces( layers, layerspan ) = [
+	each polygen_cap_faces( layers, layerspan, 0, reverse=true ),
+	// For now, assume convex end caps
+	for( li=[0 : 1 : len(layers)-2] ) each polygen_layer_faces(layers, layerspan, li),
+	each polygen_cap_faces( layers, layerspan, len(layers)-1, reverse=false )
+];
+
+function polygen_points(layers, layerspan) = [
+	for( layer=layers ) for( point=layer ) point
+];
+
+function tlpoly_make_polyhedron(layers) =
+	["polyhedron-vf", polygen_points(layers, len(layers[0])), polygen_faces(layers, len(layers[0]))];
+
+////
 
 inch = 25.4;
 
@@ -46,7 +98,33 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGHoleLib-v1.scad>
 
-$fn = $preview ? 24 : 72;
+$fn = $preview ? preview_fn : render_fn;
+
+function circle_points_with_z(r, pos=[0,0,0]) =
+	let(fn = max($fn, 6)) [
+		for(i=[0 : 1 : fn-1]) [
+			pos[0]+r*cos(i*360/fn),
+			pos[1]+r*sin(i*360/fn),
+			pos[2]
+		]
+	];
+
+function make_thl_1001(pos=[0,0,0]) = tlpoly_make_polyhedron([
+	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]- 100  ]),
+	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]-   1.7]),
+	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+   0  ]),
+	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+  10  ])
+]);
+
+// Countersunk on top,
+// widened on bottom for heat-set insert
+function make_panel_assembly_hole(pos=[0,0,0]) = tlpoly_make_polyhedron([
+	circle_points_with_z(5  /2, [pos[0], pos[1],      0- 100  ]),
+	circle_points_with_z(5  /2, [pos[0], pos[1],      0+  15  ]),
+	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]-   1.7]),
+	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+   0  ]),
+	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+  10  ])
+]);
 
 module fat_polyline(diameter, points) {
 	assert(is_list(points))
@@ -119,10 +197,7 @@ function decode_cut_for_panel(
 		]
 	)
 	let( make_alignment_hole = function(pos)
-		// TODO: Countersink!
-		// Here's where THL-1001 needs to be a TOGMod shape!
-		// For now, cylinder:
-		["translate", pos, togmod1_make_cylinder(d=5, zrange=[-1, panel_thickness+1])]
+		make_panel_assembly_hole([pos[0],pos[1],panel_thickness-alignment_hole_countersink_inset])
 	)
 	cutdesc[0] == "front-counterbored-slot" ?	make_counterbored_slot(cutdesc[1], 1) :
 	cutdesc[0] == "back-counterbored-slot"  ?	make_counterbored_slot(cutdesc[1], 0) :
@@ -161,10 +236,9 @@ function make_the_template(hull_shape, cuts, mode) =
 	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_2d, cuts, function (c) decode_cut_for_back_template(c) ) :
 	assert(str("Don't know how to make template in mode '", mode, "'"));
 
-hull_2d = make_rounded_rect([6*inch, 9*inch], 3/4*inch);
+hull_2d = make_rounded_rect([6*inch, 9*inch], panel_corner_radius);
 
-panel = ["difference",
-	["linear-extrude-zs", [0, panel_thickness], hull_2d],
+panel_cuts = [
 	for( cut=cuts ) decode_cut_for_panel(cut,
 		panel_thickness      = panel_thickness,
 		hole_diameter        = hole_diameter,
@@ -173,10 +247,16 @@ panel = ["difference",
 	)
 ];
 
+panel = ["difference",
+	["linear-extrude-zs", [0, panel_thickness], hull_2d],
+	each panel_cuts
+];
+
 panel_half_intersector = ["translate", [0,0, panel_thickness/4], togmod1_make_cuboid([panel_size[0]*2, panel_size[1]*2, panel_thickness/2])];
 
 function jj_flip(mod, around_z) = ["translate", [0,0,around_z], ["scale", [1,1,-1], mod]];
 
+// TODO: togmod1_domodule(final shape)
 if( mode == "front-template" || mode == "back-template" ) {
 	// TODO: Translate THL-1001 to TOGMod1 so you can do the whole thing in TOGMod1
 	difference() {
@@ -190,6 +270,8 @@ if( mode == "front-template" || mode == "back-template" ) {
 	}
 } else if( mode == "panel" ) {
 	togmod1_domodule(panel);
+} else if( mode == "panel-cuts" ) {
+	togmod1_domodule(["union", each panel_cuts]);
 } else if( mode == "panel-front" ) {
 	togmod1_domodule(["intersection",
 		panel_half_intersector,
@@ -200,6 +282,8 @@ if( mode == "front-template" || mode == "back-template" ) {
 		panel_half_intersector,
 		jj_flip(panel, panel_thickness/2)
 	]);
+} else if( mode == "thl-1001" ) {
+	togmod1_domodule(make_thl_1001([20,20,20]));
 } else {
 	assert(false, str("Unknown mode: '", mode, "'"));
 }
