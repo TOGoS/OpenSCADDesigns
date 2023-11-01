@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v0.5
+// MonitorMountRouterJig-v0.5.1
 // 
 // Versions:
 // v0.2:
@@ -11,6 +11,8 @@
 // - panel-front, panel-back [almost] work
 // v0.5:
 // - Counterbored panel assembly holes using polygen
+// v0.5.1:
+// - alignment_hole_countersink_inset configurable in 0.01mm increments
 
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
@@ -18,7 +20,7 @@ panel_corner_radius = 19.05  ; // 0.01
 panel_thickness     = 19.05  ; // 0.01
 counterbore_depth   =  4.7625; // 0.01
 
-alignment_hole_countersink_inset = 1;
+alignment_hole_countersink_inset = 1; // 0.01
 
 /* [Detail] */
 

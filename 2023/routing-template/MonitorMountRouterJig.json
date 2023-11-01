@@ -5,6 +5,24 @@
 		},
 		"back-template": {
 			"mode": "back-template"
+		},
+		"p1250 - panel-front": {
+			"alignment_hole_countersink_inset": "1.00",
+			"counterbore_depth": "4.75",
+			"mode": "panel-front",
+			"panel_corner_radius": "19.05",
+			"panel_thickness": "19.05",
+			"preview_fn": "8",
+			"render_fn": "72"
+		},
+		"p1251 - panel-back": {
+			"alignment_hole_countersink_inset": "1",
+			"counterbore_depth": "4.75",
+			"mode": "panel-back",
+			"panel_corner_radius": "19.05",
+			"panel_thickness": "19.05",
+			"preview_fn": "8",
+			"render_fn": "72"
 		}
 	},
 	"parameterSets": "",
