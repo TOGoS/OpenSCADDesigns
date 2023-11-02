@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v0.5.1
+// MonitorMountRouterJig-v0.6
 // 
 // Versions:
 // v0.2:
@@ -13,8 +13,11 @@
 // - Counterbored panel assembly holes using polygen
 // v0.5.1:
 // - alignment_hole_countersink_inset configurable in 0.01mm increments
+// v01.6:
+// - 'panel-printable' mode with THL-1002 front gridbeam holes,
+//   which print facing down.
 
-mode = "front-template"; // ["front-template", "back-template", "panel", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
+mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 panel_corner_radius = 19.05  ; // 0.01
 panel_thickness     = 19.05  ; // 0.01
@@ -82,7 +85,7 @@ panel_size = [6*inch, height, panel_thickness];
 
 counterbore_diameter = 7/8*inch;
 counterbore_template_diameter = counterbore_diameter;
-hole_diameter = 5/16*inch;
+hole_diameter = 8; // Slightly over 5/16*inch; need those weld nuts to fit!
 // 12mm fits my 7/16" router bushing
 hole_template_diameter = 12;
 
@@ -126,6 +129,13 @@ function make_panel_assembly_hole(pos=[0,0,0]) = tlpoly_make_polyhedron([
 	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]-   1.7]),
 	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+   0  ]),
 	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+  10  ])
+]);
+
+function make_thl_1002_hole(pos=[0,0,0]) = tlpoly_make_polyhedron([
+	circle_points_with_z( 7/2, [pos[0], pos[1],      0- 100  ]),
+	circle_points_with_z( 7/2, [pos[0], pos[1], pos[2]- 3.175]),
+	circle_points_with_z(13/2, [pos[0], pos[1], pos[2]+   0  ]),
+	circle_points_with_z(13/2, [pos[0], pos[1], pos[2]+  10  ])
 ]);
 
 module fat_polyline(diameter, points) {
@@ -184,7 +194,7 @@ function fat_polyline_to_togmod(r, points) =
 // fat_polyline(20, [[0,0], [100,100], [0,200]], $fn = 60);
 
 function decode_cut_for_panel(
-	cutdesc, panel_thickness, hole_diameter, counterbore_diameter, counterbore_depth
+	cutdesc, panel_thickness, hole_diameter, counterbore_diameter, counterbore_depth, front_gridbeam_hole_style="counterbored"
 ) =
 	// echo("decode_cut_for_panel", cutdesc=cutdesc)
 	let( make_counterbored_slot = function(points, cb_pos)
@@ -201,7 +211,15 @@ function decode_cut_for_panel(
 	let( make_alignment_hole = function(pos)
 		make_panel_assembly_hole([pos[0],pos[1],panel_thickness-alignment_hole_countersink_inset])
 	)
-	cutdesc[0] == "front-counterbored-slot" ?	make_counterbored_slot(cutdesc[1], 1) :
+	let( make_thl_1002_slot = function(points)
+		assert(is_list(points) && len(points) == 1)
+		make_thl_1002_hole([points[0][0], points[0][1], panel_thickness-alignment_hole_countersink_inset])
+	)
+	cutdesc[0] == "front-counterbored-slot" ? (
+		front_gridbeam_hole_style == "counterbored" ?
+			make_counterbored_slot(cutdesc[1], 1) :
+			make_thl_1002_slot(cutdesc[1])
+	) :
 	cutdesc[0] == "back-counterbored-slot"  ?	make_counterbored_slot(cutdesc[1], 0) :
 	cutdesc[0] == "normal-slot"             ? make_counterbored_slot(cutdesc[1]) :
 	cutdesc[0] == "alignment-hole"          ? make_alignment_hole(cutdesc[1]) :
@@ -245,7 +263,8 @@ panel_cuts = [
 		panel_thickness      = panel_thickness,
 		hole_diameter        = hole_diameter,
 		counterbore_diameter = counterbore_diameter,
-		counterbore_depth    = counterbore_depth
+		counterbore_depth    = counterbore_depth,
+		front_gridbeam_hole_style = mode == "panel-printable" ? "THL-1002" : "counterbored"
 	)
 ];
 
@@ -271,7 +290,11 @@ if( mode == "front-template" || mode == "back-template" ) {
 		}
 	}
 } else if( mode == "panel" ) {
+	// Upside-down for easier printing
 	togmod1_domodule(panel);
+} else if( mode == "panel-printable" ) {
+	// Upside-down for easier printing
+	togmod1_domodule(jj_flip(panel, panel_thickness/2));
 } else if( mode == "panel-cuts" ) {
 	togmod1_domodule(["union", each panel_cuts]);
 } else if( mode == "panel-front" ) {
