@@ -152,15 +152,6 @@ module fat_polyline(diameter, points) {
 	}
 }
 
-function make_rounded_rect(size, r) =
-	let(quarterfn=max($fn/4, 1))
-	togmod1_make_polygon([
-		for(a=[0 : 1 : quarterfn]) let(ang=      a*90/quarterfn) [ size[0]/2-r + r*cos(ang),  size[1]/2-r + r*sin(ang)],
-		for(a=[0 : 1 : quarterfn]) let(ang= 90 + a*90/quarterfn) [-size[0]/2+r + r*cos(ang),  size[1]/2-r + r*sin(ang)],
-		for(a=[0 : 1 : quarterfn]) let(ang=180 + a*90/quarterfn) [-size[0]/2+r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
-		for(a=[0 : 1 : quarterfn]) let(ang=270 + a*90/quarterfn) [ size[0]/2-r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
-	]);
-
 function make_x_axis_oval(r, x0, x1) =
 	x0 == x1 ? togmod1_make_circle(r, [x0, 0]) :
 	let(fn = max(6, $fn))
@@ -256,7 +247,7 @@ function make_the_template(hull_shape, cuts, mode) =
 	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_2d, cuts, function (c) decode_cut_for_back_template(c) ) :
 	assert(str("Don't know how to make template in mode '", mode, "'"));
 
-hull_2d = make_rounded_rect([6*inch, 9*inch], panel_corner_radius);
+hull_2d = togmod1_make_rounded_rect([6*inch, 9*inch], panel_corner_radius);
 
 panel_cuts = [
 	for( cut=cuts ) decode_cut_for_panel(cut,
