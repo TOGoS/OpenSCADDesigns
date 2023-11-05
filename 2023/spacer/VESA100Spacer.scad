@@ -1,4 +1,4 @@
-// VESA100Spaver-v1.1
+// VESA100Spacer-v1.1
 // 
 // When you want to attach a mounting plate to the back of
 // a monitor whose mounting screws are inset.
