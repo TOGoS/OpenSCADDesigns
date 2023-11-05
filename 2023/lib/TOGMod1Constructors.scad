@@ -37,12 +37,13 @@ function togmod1_make_rounded_rect(size, r) =
 		for(a=[0 : 1 : qfny]) let(ang=270 + a*90/quarterfn) [ size[0]/2-r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
 	]);
 
-function togmod1_make_circle(r, pos=[0,0]) =
-	assert(!is_undef(r))
+function togmod1_make_circle(r, pos=[0,0], d=undef) =
+	assert( !is_undef(r) || !is_undef(d) )
 	assert(!is_undef(pos[0]))
 	assert(!is_undef(pos[1]))
+	let(r_ = !is_undef(r) ? r : d/2)
 	let(fn = max($fn, 6))
-	togmod1_make_polygon([ for(i=[0 : 1 : fn-1]) [pos[0]+r*cos(i*360/fn), pos[1]+r*sin(i*360/fn)]]);
+	togmod1_make_polygon([ for(i=[0 : 1 : fn-1]) [pos[0]+r_*cos(i*360/fn), pos[1]+r_*sin(i*360/fn)]]);
 
 function togmod1_make_cylinder(d, zrange=[0,1], r=undef) =
 	assert( !is_undef(r) || !is_undef(d) )
