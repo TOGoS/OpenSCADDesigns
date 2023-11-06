@@ -1,10 +1,15 @@
-// TOGArrayLib1.0
+// TOGArrayLib1.1
 // 
 // Functions for working with arrays.
+// 
+// v1.1:
+// - tal1_reduce assert(is_list(items)) to prevent infinite recursion
+//   when given undefined or other non-list values
 
 function tal1_reduce(start, items, func, offset=0) =
+	assert(is_list(items))
 	len(items) == offset ? start :
-   tal1_reduce(func(start, items[offset]), items, func, offset+1);
+	tal1_reduce(func(start, items[offset]), items, func, offset+1);
 
 function tal1_consecutive_duplicate_count(items) = tal1_reduce(
 	[0, undef],
