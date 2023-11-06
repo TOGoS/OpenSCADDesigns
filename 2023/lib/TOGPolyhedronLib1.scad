@@ -1,3 +1,9 @@
+// TOGPolyhedronLib1.1
+// 
+// v1.1:
+// - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
+//   to the layer function as first argument as alternative to 'layer_count'
+
 function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
 ];
@@ -60,6 +66,7 @@ function tphl1_make_polyhedron_from_layers(layers, cap_bottom=true, cap_top=true
 	let(faces2 = tphl1__remap_face_vertexes(faces1, vertex_remap_result[2]))
 	["polyhedron-vf", points2, faces2];
 
-function tphl1_make_polyhedron_from_layer_function(layer_count, layer_points_function, cap_bottom=true, cap_top=true) =
-	let(layers = [for(li=[0:1:layer_count-1]) layer_points_function(li)])
+function tphl1_make_polyhedron_from_layer_function(layer_keys, layer_points_function, cap_bottom=true, cap_top=true) =
+	let(indexes = is_num(layer_keys) ? [0:1:layer_keys-1] : is_list(layer_keys) ? layer_keys : assert(false, "Layer list must be number or list"))
+	let(layers = [for(li=indexes) layer_points_function(li)])
 	tphl1_make_polyhedron_from_layers(layers, cap_bottom=cap_bottom, cap_top=cap_top);
