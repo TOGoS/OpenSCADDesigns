@@ -1,4 +1,4 @@
-// FrenchCleatRipJig-v1.0
+// FrenchCleatRipJig-v1.1
 // 
 // Goal is to allow:
 // 1. Fence to be set at the proper distance from the angled blade
@@ -11,8 +11,16 @@
 // which maybe is not ideal.
 // 
 // v1.0 only accomplishes (2).
+//
+// v1.1:
+// - Add 'panel' mode, to make a simple panel that can be bolted
+//   to the wedge to hold boards in place.
+// 
+// TODO: Panel should have more holes, and they should be THL-1001;
+// they could be used to screw the jig to the workpiece, if needed
 
 length_ca = [6, "inch"];
+mode = "wedge"; // ["wedge", "panel"]
 
 use <../lib/TOGridLib3.scad>
 
@@ -43,10 +51,20 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
-togmod1_domodule(["difference",
-	tphl1_make_polyhedron_from_layer_function([-length/2, length/2], function(x) [
-		for( p=wedge_points_u ) [x, p[0]*u+p[2]*b, p[1]*u+p[3]*b]
-	]),
-	for( xm=[-length_atoms/2 + 0.5 : 1 : length/2] )
-		["translate", [xm*atom, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1*u,13*u])]
-]);
+tmod =
+	mode == "wedge" ? ["difference",
+		tphl1_make_polyhedron_from_layer_function([-length/2, length/2], function(x) [
+			for( p=wedge_points_u ) [x, p[0]*u+p[2]*b, p[1]*u+p[3]*b]
+		]),
+		for( xm=[-length_atoms/2 + 0.5 : 1 : length/2] )
+			["translate", [xm*atom, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1*u,13*u])]
+	] :
+	mode == "panel" ? ["linear-extrude-zs", [0, 3.175], ["difference",
+		togmod1_make_rounded_rect([length, 3*atom], 3.175),
+		
+		for( xm=[-length_atoms/2 + 0.5 : 1 : length/2] )
+			["translate", [xm*atom, 1*atom, 0], togmod1_make_circle(d=5)]
+	]] :
+	assert(false);
+
+togmod1_domodule(tmod);
