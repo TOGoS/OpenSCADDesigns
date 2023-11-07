@@ -9,6 +9,9 @@ function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 ];
 
 function tphl1_layer_faces( layers, layerspan, i ) =
+assert(is_list(layers))
+assert(is_num(layerspan))
+assert(is_num(i))
 let( l0 = i*layerspan )
 let( l1 = (i+1)*layerspan )
 [
