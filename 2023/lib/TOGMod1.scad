@@ -34,6 +34,8 @@ module togmod1_domodule(mod) {
 		let( zrange = is_list(mod[1]) ? mod[1] : [-mod[1]/2, mod[1]/2] ) {
 			translate([0,0,zrange[0]]) linear_extrude(zrange[1]-zrange[0]) togmod1_domodule(mod[2]);
 		}
+	} else if( mod[0] == "render" ) {
+		render() togmod1_domodule(mod[1]);
 	} else if( mod[0] == "x-debug" ) {
 		# togmod1_domodule(mod[1]);
 	} else {
