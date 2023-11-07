@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.3
+// TOGMod1Constructors-v1.3.1
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -10,8 +10,15 @@
 // - togmod1_circle_points, to just get the points of a circle
 // - if pos parameter to circle function has a third element,
 //   returned vertexes will include it as the z component;
+// v1.3.1
+// - Some assertions
 
 function togmod1_make_cuboid(size) =
+	assert(is_list(size))
+	assert(len(size) >= 3)
+	assert(is_num(size[0]))
+	assert(is_num(size[1]))
+	assert(is_num(size[2]))
 	["polyhedron-vf", [
 		[-size[0]/2, -size[1]/2, -size[2]/2],
 		[+size[0]/2, -size[1]/2, -size[2]/2],
@@ -29,6 +36,9 @@ function togmod1_make_polygon(verts) =
 	["polygon-vp", verts, [[for( i=[0:1:len(verts)-1] ) i%len(verts)]]];
 
 function togmod1_make_rounded_rect(size, r) =
+	assert(is_list(size))
+	assert(len(size) >= 2)
+	assert(is_num(r))
 	assert(size[0] >= 2*r)
 	assert(size[1] >= 2*r)
 	let(quarterfn=max($fn/4, 1))
