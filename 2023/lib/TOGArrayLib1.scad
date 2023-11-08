@@ -1,4 +1,4 @@
-// TOGArrayLib1.3
+// TOGArrayLib1.4
 // 
 // Functions for working with arrays.
 // 
@@ -12,6 +12,9 @@
 // - Add tal1_replace_at function
 // v1.3:
 // - tal1_is_vec_of, tal1_is_vec_of_num
+// v1.4:
+// - tal1_assert_for_each, for when you want to assert something
+//   about each of a list of items and get nice failure messages
 
 /**
  * Make a list with the contents of list `a`,
@@ -142,3 +145,26 @@ assert(false == tal1_is_vec_of_num([1,2,"spoon"], 3));
 // so let's error on the side of saying 'no, it's not a list of numbers';
 // i.e. the item check and the min_len are independent.
 assert(false == tal1_is_vec_of_num([1,2,3,"artichoke"], 3));
+
+
+/**
+ * Asserts that item_checker(each item in list, index of item)[0] is true.
+ * Second element of item_checker return value is assertion message.
+ * Returns the original list, in case that's useful to you.
+ */
+function tal1_assert_for_each(list, item_checker) =
+	let( _ignored = [ for(i=[0:1:len(list)-1])
+		let(q=item_checker(list[i],i))
+		let(passed=is_bool(q) ? q : is_list(q) ? q[0] : assert(false, str(
+			"tal1_assert_for_each: item_checker should return Bool|[Bool,String], but returned ",
+			q, " for item at index ", i)))
+		let(message=is_list(q) ? q[1] : undef)
+		assert(passed, message)
+		q
+	])
+	list;
+
+// Callback can return a boolean...
+assert([1,2,3] == tal1_assert_for_each([1,2,3], function(v,i) is_num(v)));
+// ...or a [boolean, string]
+assert([1,2,3] == tal1_assert_for_each([1,2,3], function(v,i) [is_num(v), "element be a num"]));
