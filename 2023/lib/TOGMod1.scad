@@ -17,6 +17,9 @@ module togmod1_domodule(mod) {
 	} else if( mod[0] == "translate" ) {
 		assert(len(mod) == 3);
 		translate(mod[1]) togmod1_domodule(mod[2]);
+	} else if( mod[0] == "rotate" ) {
+		assert(len(mod) == 3);
+		rotate(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "intersection" ) {
 		intersection_for( i=[1:1:len(mod)-1] ) togmod1_domodule(mod[i]);
 	} else if( mod[0] == "difference" ) {
