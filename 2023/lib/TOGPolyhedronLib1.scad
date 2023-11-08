@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.1.2
+// TOGPolyhedronLib1.2
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -7,6 +7,8 @@
 // - Some assertions
 // v1.1.2:
 // - tphl1_make_polyhedron_from_layers: assert that all layers are the same length
+// v1.2:
+// - tphl1_make_rounded_cuboid, which can also make spheres
 
 function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
@@ -83,3 +85,37 @@ function tphl1_make_polyhedron_from_layer_function(layer_keys, layer_points_func
 	let(indexes = is_num(layer_keys) ? [0:1:layer_keys-1] : is_list(layer_keys) ? layer_keys : assert(false, "Layer list must be number or list"))
 	let(layers = [for(li=indexes) layer_points_function(li)])
 	tphl1_make_polyhedron_from_layers(layers, cap_bottom=cap_bottom, cap_top=cap_top);
+
+use <./TOGMod1Constructors.scad>
+
+function tphl1_make_rounded_cuboid(size, r) =
+	let(radii = is_list(r) ? r : is_num(r) ? [r, r, r] : assert(false, "r(adius) should be list<num> or num"))
+	assert(len(radii) == 3)
+	assert(size[0] >= radii[0]*2, str("size[0] must be >= 2*r[0]; size[0] = ",size[0],", 2*r[0] = ", 2*r[0]))
+	assert(size[1] >= radii[1]*2)
+	assert(size[2] >= radii[2]*2)
+	// Need to be consistent when asking for rounded rect points,
+	// lest rounding errors give different results for different layers
+	let(is_semicircle_x = size[0] == radii[0]*2)
+	let(is_semicircle_y = size[1] == radii[1]*2)
+	let(quarterfn = max(ceil($fn/4), 1))
+	tphl1_make_polyhedron_from_layer_function(
+		[
+			for( zai=[0 : 1 : quarterfn] ) let(ang= 0 + zai*90/quarterfn) [-size[2]/2 + radii[2] - radii[2] * cos(ang), ang],
+			for( zai=[0 : 1 : quarterfn] ) let(ang=90 + zai*90/quarterfn) [ size[2]/2 - radii[2] - radii[2] * cos(ang), ang]
+		],
+		function( z_za )
+			let( z=z_za[0] )
+			let( zang=z_za[1] )
+			let( sinzang=sin(zang) )
+			let( lrx=radii[0]*sinzang )
+			let( lry=radii[1]*sinzang )
+			togmod1_rounded_rect_points([
+				// max() to avoid failure due to rounding error
+				is_semicircle_x ? 2*lrx : size[0]+radii[0]*2*(sinzang-1),
+				is_semicircle_y ? 2*lry : size[1]+radii[1]*2*(sinzang-1),
+			], r=[
+				lrx,
+				lry,
+			], pos=[0,0,z_za[0]])
+	);
