@@ -1,10 +1,13 @@
-// TOGArrayLib1.1
+// TOGArrayLib1.1.1
 // 
 // Functions for working with arrays.
 // 
 // v1.1:
 // - tal1_reduce assert(is_list(items)) to prevent infinite recursion
 //   when given undefined or other non-list values
+// v1.1.1:
+// - Fix tal1_uniq_remap_v2 to return "list-remap-result" as the
+//   first element of the returned list
 
 function tal1_reduce(start, items, func, offset=0) =
 	assert(is_list(items))
@@ -74,7 +77,7 @@ assert([1,2,3] == [1,2,3]);
  */
 function tal1_uniq_remap_v2(items, map=[]) =
 	let(index = len(map))
-	len(items) == index ? ["list-remapping", items, map] :
+	len(items) == index ? ["list-remap-result", items, map] :
 	index == 0 ? tal1_uniq_remap_v2(items, [0]) :
 	items[index] == items[map[index-1]] ? tal1_uniq_remap_v2(items, [for(vi=map) vi, map[index-1]]) :
 	tal1_uniq_remap_v2(items, [for(vi=map) vi, index]);
