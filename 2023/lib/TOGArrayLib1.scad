@@ -1,4 +1,4 @@
-// TOGArrayLib1.1.1
+// TOGArrayLib1.2
 // 
 // Functions for working with arrays.
 // 
@@ -8,6 +8,39 @@
 // v1.1.1:
 // - Fix tal1_uniq_remap_v2 to return "list-remap-result" as the
 //   first element of the returned list
+// v1.2:
+// - Add tal1_replace_at function
+
+/**
+ * Make a list with the contents of list `a`,
+ * but starting at offset `off`, replaced by the contents of list `b`.
+ * len(result) = max(len(a), off+len(b))
+ */
+function tal1_replace_at(a, off, b, default_value=undef, default_value_function=undef) =
+	assert(is_list(a))
+	assert(is_list(b))
+	let( _dvf = !is_undef(default_value_function) ? default_value_function : function(i) default_value )
+[
+	for( i=[0:1:min(off,len(a))-1] ) a[i],
+	for( i=[len(a):1:off-1] ) _dvf(i),
+	for( i=[off:1:off+len(b)-1] ) b[i-off],
+	for( i=[off+len(b):1:len(a)-1] ) a[i],
+];
+
+// Simplest case
+assert([] == tal1_replace_at([], 0, []));
+// Second simplest cases
+assert(["foo"] == tal1_replace_at(["foo"], 0, []));
+assert(["foo"] == tal1_replace_at([], 0, ["foo"]));
+// Replace one item
+assert(["foo","quux","baz"] == tal1_replace_at(["foo","bar","baz"], 1, ["quux"]));
+// Replace and extend
+assert(["foo","quux","tuna","tina"] == tal1_replace_at(["foo","bar","baz"], 1, ["quux", "tuna", "tina"]));
+// Add beyond end of `a`
+assert(["foo","zzz","quux"] == tal1_replace_at(["foo"], 2, ["quux"], default_value="zzz"));
+// Adding 'nothing' should still fill to that point with defaults
+assert(["foo","zzz","zzz"] == tal1_replace_at(["foo"], 3, [], default_value="zzz"));
+
 
 function tal1_reduce(start, items, func, offset=0) =
 	assert(is_list(items))
