@@ -1,4 +1,4 @@
-// TOGArrayLib1.2
+// TOGArrayLib1.3
 // 
 // Functions for working with arrays.
 // 
@@ -10,6 +10,8 @@
 //   first element of the returned list
 // v1.2:
 // - Add tal1_replace_at function
+// v1.3:
+// - tal1_is_vec_of, tal1_is_vec_of_num
 
 /**
  * Make a list with the contents of list `a`,
@@ -116,3 +118,27 @@ function tal1_uniq_remap_v2(items, map=[]) =
 	tal1_uniq_remap_v2(items, [for(vi=map) vi, index]);
 
 assert(tal1_uniq_remap_v2([1,1,2,2,3,4]) == ["list-remap-result", [1,1,2,2,3,4], [0,0,2,2,4,5]]);
+
+
+/**
+ * Returns true if `vec` is a list of at least min_len items
+ * and component_check(each item, even those beyond min_len) is true.
+ */
+function tal1_is_vec_of(vec, min_len=0, component_check=function(x) true) =
+	assert(is_num(min_len) && min_len >= 0)
+	assert(is_function(component_check))
+	is_list(vec) && len(vec) >= min_len &&
+	tal1_reduce(true, vec, function(prev,item) prev && component_check(item));
+
+function tal1_is_vec_of_num(vec, min_len=0) = tal1_is_vec_of(vec, min_len, function(i) is_num(i));
+
+assert( true == tal1_is_vec_of_num([1,2,3]));
+assert( true == tal1_is_vec_of_num([]));
+assert( true == tal1_is_vec_of_num([1,2,3], 3));
+assert(false == tal1_is_vec_of_num([1,2], 3));
+assert(false == tal1_is_vec_of_num([1,2,"spoon"], 3));
+// Requirements are ambiguous when
+// first min_len items are numbers, but there are non-numeric items afterwards,
+// so let's error on the side of saying 'no, it's not a list of numbers';
+// i.e. the item check and the min_len are independent.
+assert(false == tal1_is_vec_of_num([1,2,3,"artichoke"], 3));
