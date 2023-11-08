@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.3.1
+// TOGMod1Constructors-v1.4
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -12,6 +12,24 @@
 //   returned vertexes will include it as the z component;
 // v1.3.1
 // - Some assertions
+// v1.4:
+// - Refactor togmod1_rounded_rect_points and togmod1_circle_points
+//   to use togmod1__make_nd_vector_adder for adapting to whatever
+//   `pos` parameter is.
+
+use <./TOGArrayLib1.scad>
+
+function togmod1__make_nd_vector_adder(origin=[0,0]) =
+	let(origin_is_zero = tal1_reduce(true, origin, function(prev,item) prev && item == 0))
+	origin_is_zero ? (function(vec) len(vec) >= len(origin) ? vec : tal1_replace_at(origin, 0, vec)) :
+	function(vec) [
+		for(i=[0:1:max(len(origin),len(vec))-1]) (len(vec) > i ? vec[i] : 0) + (len(origin) > i ? origin[i] : 0),
+	];
+
+assert([1,2,3] == togmod1__make_nd_vector_adder()([1,2,3]));
+echo(togmod1__make_nd_vector_adder([0,0,3])([1,2]));
+assert([1,2,3] == togmod1__make_nd_vector_adder([0,0,3])([1,2]));
+
 
 function togmod1_make_cuboid(size) =
 	assert(is_list(size))
@@ -35,30 +53,38 @@ function togmod1_make_cuboid(size) =
 function togmod1_make_polygon(verts) =
 	["polygon-vp", verts, [[for( i=[0:1:len(verts)-1] ) i%len(verts)]]];
 
-function togmod1_make_rounded_rect(size, r) =
+function togmod1_rounded_rect_points(size, r, pos=[0,0]) =
 	assert(is_list(size))
 	assert(len(size) >= 2)
-	assert(is_num(r))
-	assert(size[0] >= 2*r)
-	assert(size[1] >= 2*r)
+	let(radii = is_list(r) ? r : is_num(r) ? [r,r] : assert(false, "rounded_rect r(adius) should be list<num> or num"))
+	let(rx = radii[0])
+	let(ry = radii[1])
+	assert(is_num(rx))
+	assert(is_num(ry))
+	assert(size[0] >= 2*rx, str("size[0] must be >= 2*r[0]; size[0] = ",size[0],", 2*r[0] = ",2*rx))
+	assert(size[1] >= 2*ry, str("size[1] must be >= 2*r[1]; size[1] = ",size[1],", 2*r[1] = ",2*ry))
 	let(quarterfn=max($fn/4, 1))
-	let(qfnx = size[0] == 2*r ? quarterfn-1 : quarterfn)
-	let(qfny = size[1] == 2*r ? quarterfn-1 : quarterfn)
-	togmod1_make_polygon([
-		for(a=[0 : 1 : qfnx]) let(ang=      a*90/quarterfn) [ size[0]/2-r + r*cos(ang),  size[1]/2-r + r*sin(ang)],
-		for(a=[0 : 1 : qfny]) let(ang= 90 + a*90/quarterfn) [-size[0]/2+r + r*cos(ang),  size[1]/2-r + r*sin(ang)],
-		for(a=[0 : 1 : qfnx]) let(ang=180 + a*90/quarterfn) [-size[0]/2+r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
-		for(a=[0 : 1 : qfny]) let(ang=270 + a*90/quarterfn) [ size[0]/2-r + r*cos(ang), -size[1]/2+r + r*sin(ang)],
-	]);
+	let(qfnx = size[0] == 2*rx ? quarterfn-1 : quarterfn)
+	let(qfny = size[1] == 2*ry ? quarterfn-1 : quarterfn)
+	let(finalizepos = togmod1__make_nd_vector_adder(pos))
+[
+	for(a=[0 : 1 : qfnx]) let(ang=      a*90/quarterfn) finalizepos([ size[0]/2-rx + rx*cos(ang),  size[1]/2-ry + ry*sin(ang)]),
+	for(a=[0 : 1 : qfny]) let(ang= 90 + a*90/quarterfn) finalizepos([-size[0]/2+rx + rx*cos(ang),  size[1]/2-ry + ry*sin(ang)]),
+	for(a=[0 : 1 : qfnx]) let(ang=180 + a*90/quarterfn) finalizepos([-size[0]/2+rx + rx*cos(ang), -size[1]/2+ry + ry*sin(ang)]),
+	for(a=[0 : 1 : qfny]) let(ang=270 + a*90/quarterfn) finalizepos([ size[0]/2-rx + rx*cos(ang), -size[1]/2+ry + ry*sin(ang)]),
+];
+
+function togmod1_make_rounded_rect(size, r) =
+	togmod1_make_polygon(togmod1_rounded_rect_points(size,r));
 
 function togmod1_circle_points(r, pos=[0,0], d=undef) =
 	assert( !is_undef(r) || !is_undef(d) )
 	assert(!is_undef(pos[0]))
 	assert(!is_undef(pos[1]))
-	let(mkvec = len(pos) >= 3 ? function(p) [p[0], p[1], pos[2]] : function(p) p)
+	let(finalizepos = togmod1__make_nd_vector_adder(pos))
 	let(r_ = !is_undef(r) ? r : d/2)
 	let(fn = max($fn, 6))
-	[for(i=[0 : 1 : fn-1]) mkvec([pos[0]+r_*cos(i*360/fn), pos[1]+r_*sin(i*360/fn)])];
+	[for(i=[0 : 1 : fn-1]) finalizepos([pos[0]+r_*cos(i*360/fn), pos[1]+r_*sin(i*360/fn)])];
 
 function togmod1_make_circle(r, pos=[0,0], d=undef) =
 	togmod1_make_polygon(togmod1_circle_points(r=r, pos=pos, d=d));
