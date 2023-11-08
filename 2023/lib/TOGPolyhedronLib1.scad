@@ -1,10 +1,12 @@
-// TOGPolyhedronLib1.1.1
+// TOGPolyhedronLib1.1.2
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
 //   to the layer function as first argument as alternative to 'layer_count'
 // v1.1.1:
 // - Some assertions
+// v1.1.2:
+// - tphl1_make_polyhedron_from_layers: assert that all layers are the same length
 
 function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
@@ -67,6 +69,9 @@ function tphl1_make_polyhedron_from_layers(layers, cap_bottom=true, cap_top=true
 	assert(is_list(layers))
 	assert(len(layers) >= 2)
 	assert(is_list(layers[0]))
+	let(minmax_layer_count = tal1_reduce([-9999999,9999999], layers, function(prev,layer) [max(prev[0],len(layer)), min(prev[1],len(layer))]))
+	assert(minmax_layer_count[0] == minmax_layer_count[1],
+		str("Layers differ in point count, from ", minmax_layer_count[0], " to ", minmax_layer_count[1]))
 	let(points1 = tphl1_points(layers, len(layers[0])))
 	let(faces1  = tphl1_faces(layers, len(layers[0]), cap_bottom=cap_bottom, cap_top=cap_top))
 	let(vertex_remap_result = tal1_uniq_remap_v2(points1))
