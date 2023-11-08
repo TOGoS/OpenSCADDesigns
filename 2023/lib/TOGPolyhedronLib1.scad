@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.2
+// TOGPolyhedronLib1.2.1
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -9,6 +9,8 @@
 // - tphl1_make_polyhedron_from_layers: assert that all layers are the same length
 // v1.2:
 // - tphl1_make_rounded_cuboid, which can also make spheres
+// v1.2.1:
+// - Refactor some assertions to use tal1_assert_for_each
 
 function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
@@ -89,11 +91,14 @@ function tphl1_make_polyhedron_from_layer_function(layer_keys, layer_points_func
 use <./TOGMod1Constructors.scad>
 
 function tphl1_make_rounded_cuboid(size, r) =
-	let(radii = is_list(r) ? r : is_num(r) ? [r, r, r] : assert(false, "r(adius) should be list<num> or num"))
-	assert(len(radii) == 3)
-	assert(size[0] >= radii[0]*2, str("size[0] must be >= 2*r[0]; size[0] = ",size[0],", 2*r[0] = ", 2*r[0]))
-	assert(size[1] >= radii[1]*2)
-	assert(size[2] >= radii[2]*2)
+	assert(tal1_is_vec_of_num(size, 3), "tphl1_make_rounded_cuboid: size should be a Vec3<Num>")
+	let(radii = tal1_assert_for_each(
+		is_list(r) ? r : is_num(r) ? [r, r, r] : assert(false, "r(adius) should be list<num> or num"),
+		function(r,i) [
+			is_num(r) && size[i] >= r*2,
+			str("size[",i,"] must be >= 2*r[",i,"]; size[0] = ",size[i],", 2*r[",i,"] = ", 2*r)
+		]
+	))
 	// Need to be consistent when asking for rounded rect points,
 	// lest rounding errors give different results for different layers
 	let(is_semicircle_x = size[0] == radii[0]*2)
