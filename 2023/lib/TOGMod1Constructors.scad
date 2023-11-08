@@ -68,3 +68,15 @@ function togmod1_make_cylinder(d, zrange=[0,1], r=undef, pos=[0,0]) =
 	let( r_ = !is_undef(r) ? r : d/2 )
 	// TODO: Make polyhedron directly
 	["linear-extrude-zs", zrange, togmod1_make_circle(r=r_, pos=pos)];
+
+function togmod1__is_range1d(range) = is_list(range) && len(range) == 2 && is_num(range[0]) && is_num(range[1]);
+
+function togmod1_linear_extrude_z(range, shape) =
+	assert(togmod1__is_range1d(range))
+	["linear-extrude-zs", range, shape];
+function togmod1_linear_extrude_x(range, shape) =
+	assert(togmod1__is_range1d(range))
+	["rotate", [90, 0, 90], togmod1_linear_extrude_z(range, shape)];
+function togmod1_linear_extrude_y(range, shape) =
+	assert(togmod1__is_range1d(range))
+	["rotate", [90, 0, 180], togmod1_linear_extrude_z(range, shape)];
