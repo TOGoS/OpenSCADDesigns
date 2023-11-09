@@ -16,6 +16,8 @@ module togmod1_domodule(mod) {
 		scale(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "translate" ) {
 		assert(len(mod) == 3);
+		assert(is_list(mod[1]));
+		for(c=mod[1]) assert(is_num(c), "translate component should be numeric");
 		translate(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "rotate" ) {
 		assert(len(mod) == 3);
