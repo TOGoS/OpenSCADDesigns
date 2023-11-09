@@ -1,10 +1,14 @@
-// PhoneHolder-v2.1
+// PhoneHolder-v2.3
 // 
 // Minimal outer box, designed to hold 
 // 
 // Changes:
 // v2.1:
 // - Margins
+// v2.2:
+// - Put a TGx9.4 chatomic foot on it because why not
+// v2.3:
+// - Option of foot_v6hc_style = "v6.2" for slight reinforcement
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -13,6 +17,8 @@ use <../lib/TOGHoleLib2.scad>
 
 outer_margin = 0.1;
 inner_margin = 0.2;
+foot_segmentation = "chatom"; // ["chatom", "chunk", "block", "none"]
+foot_v6hc_style = "none"; // ["none","v6.2"]
 
 module __asd123sudifn_end_params() { }
 
@@ -29,7 +35,7 @@ $fn = $preview ? 8 : 24;
 
 bottom_hole_size = [3.75*inch, 1*inch];
 
-render() togmod1_domodule(["difference",
+module phv2_main() render() togmod1_domodule(["difference",
 	["translate", [0,0,size[2]/2], tphl1_make_rounded_cuboid([
 	   size[0]-outer_margin*2,
 	   size[1]-outer_margin*2,
@@ -51,3 +57,18 @@ render() togmod1_domodule(["difference",
 		["rotate", [-90,0,0], tog_holelib2_hole("THL-1002", overhead_bore_height=size[1])]
 	]
 ]);
+
+use <../lib/TGx9.4Lib.scad>
+use <../lib/TOGridLib3.scad>
+
+intersection() {
+	phv2_main();
+
+	tgx9_block_foot(
+		block_size_ca = [[3, "chunk"], [1, "chunk"], [5, "chunk"]],
+		foot_segmentation = foot_segmentation,
+		corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
+		v6hc_style        = foot_v6hc_style,
+		$tgx9_mating_offset = -outer_margin
+	);
+}
