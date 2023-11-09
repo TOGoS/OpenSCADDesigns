@@ -1,4 +1,4 @@
-// PhoneHolder-v2.6
+// PhoneHolder-v2.7
 // 
 // Minimal outer box, designed to hold 
 // 
@@ -19,6 +19,8 @@
 // - Flip around so front is at -Y
 // v2.6:
 // - Fix passing of togridpile_margin into tgx9_block_foot
+// v2.7:
+// - Add bottom TOGridPile magnet holes
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGArrayLib1.scad>
@@ -43,6 +45,8 @@ togridpile_margin = 0.2;
 
 foot_segmentation = "chatom"; // ["chatom", "chunk", "block", "none"]
 foot_v6hc_style = "v6.2"; // ["none","v6.2"]
+bottom_magnet_hole_diameter = 6.4; // 0.1
+bottom_magnet_hole_depth    = 2.4; // 0.1
 
 /* [Detail] */
 
@@ -67,6 +71,7 @@ assert(front_height_chunks <= back_height_chunks, "front height must be <= back 
 block_height_chunks = max(front_height_chunks, back_height_chunks);
 block_size_ca = [[block_width_chunks, "chunk"], [block_depth_chunks, "chunk"], [block_height_chunks, "chunk"]];
 
+atom_pitch   = togridlib3_decode([1, "atom"]);
 chunk_pitch  = togridlib3_decode([1, "chunk"]);
 block_width  = togridlib3_decode([block_width_chunks       , "chunk"]);
 block_depth  = togridlib3_decode([block_depth_chunks , "chunk"]);
@@ -135,7 +140,14 @@ module phv2_main() render() togmod1_domodule(["difference",
 	for( ym=[0.5 : 1 : back_height_chunks] )
 	["translate", [xm*chunk_pitch, -block_size[1]/2 + panel_thickness, ym*chunk_pitch],
 		["rotate", [-90,0,0], tog_holelib2_hole("THL-1002", overhead_bore_height=block_size[1])]
-	]
+	],
+	
+	// Magnet holes
+	if( bottom_magnet_hole_diameter > 0 && bottom_magnet_hole_depth > 0 )
+	for( xm=[-1, 1] )
+	for( ym=[-1, 1] )
+	["translate", [xm*(block_size[0]-atom_pitch)/2, ym*(block_size[1]-atom_pitch)/2, 0],
+		togmod1_make_cylinder(d=bottom_magnet_hole_diameter, zrange=[-1, bottom_magnet_hole_depth])],
 ]);
 
 use <../lib/TGx9.4Lib.scad>
