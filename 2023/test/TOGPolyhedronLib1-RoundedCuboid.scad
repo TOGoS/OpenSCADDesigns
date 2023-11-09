@@ -7,8 +7,11 @@ $fn = 24;
 spacing = 110;
 
 togmod1_domodule(["union",
-	["translate", [-2*spacing, 0,0], tphl1_make_rounded_cuboid([100,100,100], r=[20,25,25])],
-	["translate", [-1*spacing,10,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,25,25])],
-	["translate", [ 0*spacing,20,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,50,25])],
-	["translate", [ 1*spacing,30,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,50,50])],
+	["translate", [-3*spacing,30,0], tphl1_make_rounded_cuboid([100,100,100], r=[50, 0,25])],
+	["translate", [-2*spacing,30,0], tphl1_make_rounded_cuboid([100,100,100], r=[50, 0, 0])],
+	["translate", [-1*spacing,30,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,25, 0])],
+	["translate", [ 0*spacing, 0,0], tphl1_make_rounded_cuboid([100,100,100], r=[20,25,25])],
+	["translate", [ 1*spacing,10,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,25,25])],
+	["translate", [ 2*spacing,20,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,50,25])],
+	["translate", [ 3*spacing,30,0], tphl1_make_rounded_cuboid([100,100,100], r=[50,50,50])],
 ]);

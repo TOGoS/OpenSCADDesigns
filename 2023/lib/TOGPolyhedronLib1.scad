@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.2.1
+// TOGPolyhedronLib1.3
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -11,6 +11,9 @@
 // - tphl1_make_rounded_cuboid, which can also make spheres
 // v1.2.1:
 // - Refactor some assertions to use tal1_assert_for_each
+// v1.3:
+// - tphl1_make_rounded_cuboid: Special case to avoid extra triangles
+//   when radii[2] == 0 (i.e. top and bottom are flat)
 
 function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
@@ -105,7 +108,10 @@ function tphl1_make_rounded_cuboid(size, r) =
 	let(is_semicircle_y = size[1] == radii[1]*2)
 	let(quarterfn = max(ceil($fn/4), 1))
 	tphl1_make_polyhedron_from_layer_function(
-		[
+		radii[2] == 0 ? [
+			[-size[2]/2, 90],
+			[ size[2]/2, 90],
+		] : [
 			for( zai=[0 : 1 : quarterfn] ) let(ang= 0 + zai*90/quarterfn) [-size[2]/2 + radii[2] - radii[2] * cos(ang), ang],
 			for( zai=[0 : 1 : quarterfn] ) let(ang=90 + zai*90/quarterfn) [ size[2]/2 - radii[2] - radii[2] * cos(ang), ang]
 		],
