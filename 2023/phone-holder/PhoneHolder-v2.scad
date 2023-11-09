@@ -1,4 +1,4 @@
-// PhoneHolder-v2.5
+// PhoneHolder-v2.6
 // 
 // Minimal outer box, designed to hold 
 // 
@@ -17,6 +17,8 @@
 // v2.5:
 // - Round around the slot
 // - Flip around so front is at -Y
+// v2.6:
+// - Fix passing of togridpile_margin into tgx9_block_foot
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGArrayLib1.scad>
@@ -35,7 +37,7 @@ block_width_chunks  = 3;
 
 outer_margin = 0.2;
 inner_margin = 0.6;
-togridpile_margin = 0.4;
+togridpile_margin = 0.2;
 
 /* [Bottom] */
 
@@ -149,6 +151,6 @@ rotate([0,0,180]) intersection() {
 		foot_segmentation = foot_segmentation,
 		corner_radius     = togridlib3_decode([1, "m-outer-corner-radius"]),
 		v6hc_style        = foot_v6hc_style,
-		$tgx9_mating_offset = -togridpile_margin
+		offset            = -togridpile_margin
 	);
 }
