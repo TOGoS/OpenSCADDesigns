@@ -1,15 +1,20 @@
-// PhoneHolderInsert-v2.2
+// PhoneHolderInsert-v2.3
 // 
 // Inserts for PhoneHolder-v2
 // 
 // TODO: Standardize the insert shape;
 // maybe "4-inch x 1+!/4-inch square" is good enough.
+// But it may be useful to specify min. corner radius
+// or bevel or something.
 // 
 // v2.1:
 // - PHI-1002
 // v2.2:
 // - Default outer_margin = 0.6
 // - Fix rounded slot depth calculations to take outer_margin into account
+// v2.3:
+// - PHI-1003, which is just PHI-1002 but 2" tall
+//   and with a horizontal hole for the side plug/button
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -17,7 +22,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-style = "PHI-1001"; // ["PHI-1001","PHI-1002"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003"]
 
 outer_margin = 0.6;
 
@@ -41,6 +46,7 @@ inch = 25.4;
 height =
 	style == "PHI-1001" ? 1/4 * inch :
 	style == "PHI-1002" ? 3/4 * inch :
+	style == "PHI-1003" ? 2   * inch :
 	1/4 * inch;
 
 size = [4*inch, 1.25*inch, height];
@@ -60,13 +66,14 @@ block =
 	["translate", [0,0,size[2]/2], tphl1_make_rounded_cuboid([size[0]-outer_margin*2, size[1]-outer_margin*2, size[2]], r=[6,6,0])];
 
 cutout =
-	style == "PHI-1002" ? ["union",
+	style == "PHI-1002" || style == "PHI-1003" ? ["union",
 		["translate", [0, 0, size[2]/4],
 			tphl1_make_rounded_cuboid([60, 12, size[2]*2], r=[3,3,0])],
 		["translate", [0, 0, 1/8*inch + size[2]],
 			tphl1_make_rounded_cuboid([74, 30, size[2]*2], r=12)],
 		for( xm=[-1, 1] ) for( d=[1.625] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, size[2]+1])],
 		make_slot_cut((size[1]-12)/2-outer_margin),
+		if( style == "PHI-1003" ) ["translate", [0, 0, 1/8*inch + 20], tphl1_make_rounded_cuboid([size[0]*2, 12, 24], 6)]
 	] :
 	["union",
 		["translate", [0,0,size[2]/4],
