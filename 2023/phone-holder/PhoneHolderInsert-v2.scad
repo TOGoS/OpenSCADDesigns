@@ -1,9 +1,15 @@
-// PhoneHolderInsert-v2.1
+// PhoneHolderInsert-v2.2
 // 
 // Inserts for PhoneHolder-v2
 // 
 // TODO: Standardize the insert shape;
 // maybe "4-inch x 1+!/4-inch square" is good enough.
+// 
+// v2.1:
+// - PHI-1002
+// v2.2:
+// - Default outer_margin = 0.6
+// - Fix rounded slot depth calculations to take outer_margin into account
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -13,7 +19,7 @@ use <../lib/TOGHoleLib2.scad>
 
 style = "PHI-1001"; // ["PHI-1001","PHI-1002"]
 
-outer_margin = 0.1;
+outer_margin = 0.6;
 
 render_fn = 48;
 
@@ -46,7 +52,7 @@ slot_width = 1/2*inch;
 $fn = $preview ? 12 : render_fn;
 
 function make_slot_cut(depth) =
-	["translate", [0, -size[1]/2 + depth/2, 0],
+	["translate", [0, -size[1]/2 + depth/2 + outer_margin, 0],
 		togmod1_linear_extrude_z([-1, height+1],
 			make_rounded_gap_cutter([slot_width, depth], r=min(depth/2, 3.175)))];
 
@@ -60,12 +66,12 @@ cutout =
 		["translate", [0, 0, 1/8*inch + size[2]],
 			tphl1_make_rounded_cuboid([74, 30, size[2]*2], r=12)],
 		for( xm=[-1, 1] ) for( d=[1.625] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, size[2]+1])],
-		make_slot_cut((size[1]-12)/2),
+		make_slot_cut((size[1]-12)/2-outer_margin),
 	] :
 	["union",
 		["translate", [0,0,size[2]/4],
 			tphl1_make_rounded_cuboid([3.5*inch, 0.75*inch, size[2]*2], r=[1.6,1.6,0])],
-		make_slot_cut((size[1]-0.75*inch)/2)];
+		make_slot_cut((size[1]-0.75*inch)/2-outer_margin)];
 
 togmod1_domodule(["difference",
 	block,
