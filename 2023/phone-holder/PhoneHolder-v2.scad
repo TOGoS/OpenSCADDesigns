@@ -1,4 +1,4 @@
-// PhoneHolder-v2.7
+// PhoneHolder-v2.9
 // 
 // Minimal outer box, designed to hold 
 // 
@@ -21,6 +21,12 @@
 // - Fix passing of togridpile_margin into tgx9_block_foot
 // v2.7:
 // - Add bottom TOGridPile magnet holes
+// v2.8:
+// - Add side holes for cables or whatever
+// v2.9:
+// - Round front to match fillet in back
+// - Bevel, for lack of time to do something nicer at the moment,
+//   the top corners of the front slot
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGArrayLib1.scad>
@@ -63,6 +69,11 @@ assert(is_num(r), "r(adius) must be anumber")
 	
 	for( xm=[-1, 1] ) ["translate", [xm * (size[0]/2 + r*2), 0],
 		togmod1_make_rounded_rect([4*r, size[1]], r=r)]
+];
+
+function make_corner_rounding_cutter(r, corner=[-1,-1]) = ["difference",
+	togmod1_make_rounded_rect([r*2, r*2], 0),
+	["translate", [corner[0]*r, corner[1]*r], togmod1_make_rounded_rect([r*2, r*2], r)]
 ];
 
 
@@ -121,9 +132,13 @@ module phv2_main() render() togmod1_domodule(["difference",
 		cavity_size[2]
 	])],
 	// Top/front cutout
-	if( front_cutout_height > 0 )
-	["translate", [0, panel_thickness+block_size[1], back_height], togmod1_linear_extrude_x([-block_size[0], block_size[0]],
-		togmod1_make_rounded_rect([block_size[1]*3, front_cutout_height], r=6.35))],
+	if( front_cutout_height > 0 ) ["union",
+		["translate", [0, panel_thickness+block_size[1], back_height], togmod1_linear_extrude_x([-block_size[0], block_size[0]],
+			togmod1_make_rounded_rect([block_size[1]*3, front_cutout_height], r=6.35))],
+		["translate", [0, block_size[1]/2 - outer_margin, front_height],
+			togmod1_linear_extrude_x([-block_size[0], block_size[0]],
+				make_corner_rounding_cutter(6.35, [-1,-1]))],
+	],
 	// Front slot (panel section)
 	["translate", [0, (front_panel_y1 + front_panel_y0)/2, 0],
 		togmod1_linear_extrude_z([bottom_thickness, block_size[2]+1], make_rounded_gap_cutter([front_slot_width, front_panel_y1 - front_panel_y0], slot_rounding_r))
@@ -132,8 +147,20 @@ module phv2_main() render() togmod1_domodule(["difference",
 	["translate", [0, (front_panel_y1 + bottom_hole_y0)/2, 0],
 		togmod1_linear_extrude_z([-1, bottom_thickness+1], make_rounded_gap_cutter([front_slot_width, front_panel_y1 - bottom_hole_y0], slot_rounding_r))
 	],
+	// Use a blunt tool to make top of front slot less sharp
+	["translate", [0, block_size[1]/2 - outer_margin - panel_thickness/2, front_height],
+		let( bevel_size = chunk_pitch/2 )
+		// Abuse rounded cuboid to make a diamond, lmao
+		tphl1_make_rounded_cuboid([bevel_size * 2, panel_thickness*2, bevel_size * 2], [bevel_size, 0, bevel_size], $fn=4)
+	],
+
 	// Bottom hole
 	togmod1_linear_extrude_z([-1, bottom_thickness+1], togmod1_make_rounded_rect(bottom_hole_size, r=0.125*inch)),
+
+	// Side holes
+	["translate", [0, 0, front_height/2],
+		tphl1_make_rounded_cuboid([block_size[0]+2, chunk_pitch/2, front_height-chunk_pitch/2], [0, chunk_pitch/4, chunk_pitch/4])
+	],
 
 	// Mounting holes
 	for( xm=[-block_width_chunks/2+0.5 : 1 : block_width_chunks/2] )
