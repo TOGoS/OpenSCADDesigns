@@ -1,0 +1,18 @@
+{
+	"parameterSets": {
+		"p1270": {
+			"direction": "X",
+			"length_ca": "[4.5, \"inch\"]",
+			"mating_edge_style": "S",
+			"opposite_edge_style": "FFS"
+		},
+		"p1271": {
+			"direction": "Z",
+			"length_ca": "[0.75, \"inch\"]",
+			"mating_edge_style": "S",
+			"opposite_edge_style": "FFS"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
