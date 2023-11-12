@@ -1,16 +1,22 @@
 {
 	"parameterSets": {
 		"p1270": {
-			"direction": "X",
+			"mode": "X",
 			"length_ca": "[4.5, \"inch\"]",
-			"mating_edge_style": "S",
-			"opposite_edge_style": "FFS"
+			"mating_edge_style": "S-trimmed",
+			"opposite_edge_style": "FFS-trimmed"
 		},
 		"p1271": {
-			"direction": "Z",
+			"mode": "Z",
+			"length_ca": "[0.75, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1272": {
 			"length_ca": "[0.75, \"inch\"]",
 			"mating_edge_style": "S",
-			"opposite_edge_style": "FFS"
+			"mode": "tester",
+			"opposite_edge_style": "FS"
 		}
 	},
 	"parameterSets": "",
