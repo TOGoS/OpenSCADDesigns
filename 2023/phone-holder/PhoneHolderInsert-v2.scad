@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.3
+// PhoneHolderInsert-v2.4
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -15,6 +15,8 @@
 // v2.3:
 // - PHI-1003, which is just PHI-1002 but 2" tall
 //   and with a horizontal hole for the side plug/button
+// v2.4:
+// - PHI-1004, which is to hold a 3"x0.75" block
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -22,7 +24,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004"]
 
 outer_margin = 0.6;
 
@@ -47,6 +49,7 @@ height =
 	style == "PHI-1001" ? 1/4 * inch :
 	style == "PHI-1002" ? 3/4 * inch :
 	style == "PHI-1003" ? 2   * inch :
+	style == "PHI-1004" ? 2   * inch :
 	1/4 * inch;
 
 size = [4*inch, 1.25*inch, height];
@@ -65,6 +68,22 @@ function make_slot_cut(depth) =
 block =
 	["translate", [0,0,size[2]/2], tphl1_make_rounded_cuboid([size[0]-outer_margin*2, size[1]-outer_margin*2, size[2]], r=[6,6,0])];
 
+phi_1004_main_cavity_size = [3*inch + 3, 0.75*inch + 2, height-1/4*inch];
+
+function phi_1004_cutout() = ["union",
+	["translate", [0, 0, size[2]], togmod1_make_cuboid([
+		phi_1004_main_cavity_size[0],
+		phi_1004_main_cavity_size[1],
+		phi_1004_main_cavity_size[2]*2,
+	])],
+	["translate", [0, 0, 0], togmod1_make_cuboid([
+		phi_1004_main_cavity_size[0] - 1/4*inch,
+		phi_1004_main_cavity_size[1],
+		phi_1004_main_cavity_size[2]*2,
+	])],
+	for( xm=[-1, 1] ) for( d=[1.75] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, size[2]+1])],
+];
+
 cutout =
 	style == "PHI-1002" || style == "PHI-1003" ? ["union",
 		["translate", [0, 0, size[2]/4],
@@ -75,6 +94,7 @@ cutout =
 		make_slot_cut((size[1]-12)/2-outer_margin),
 		if( style == "PHI-1003" ) ["translate", [0, 0, 1/8*inch + 20], tphl1_make_rounded_cuboid([size[0]*2, 12, 24], 6)]
 	] :
+	style == "PHI-1004" ? phi_1004_cutout() :
 	["union",
 		["translate", [0,0,size[2]/4],
 			tphl1_make_rounded_cuboid([3.5*inch, 0.75*inch, size[2]*2], r=[1.6,1.6,0])],
