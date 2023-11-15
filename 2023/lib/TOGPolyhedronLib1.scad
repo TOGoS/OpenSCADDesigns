@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.3
+// TOGPolyhedronLib1.4
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -14,9 +14,26 @@
 // v1.3:
 // - tphl1_make_rounded_cuboid: Special case to avoid extra triangles
 //   when radii[2] == 0 (i.e. top and bottom are flat)
+// v1.4:
+// - Document correct winding order
+// - Fix tphl1_make_rounded_cuboid to use correct winding order
+
+// Winding order:
+// 
+// tphl1_make_polyhedron_from_layers expects layers to be specified
+// bottom-to-top, with points for each counter-clockwise when viewed
+// from the top.  i.e. the first layer appears clockwise from outside,
+// and the last layer counter-clockwise from outside.
+// 
+// OpenSCAD wants polyhedron faces to be defined in clockwise-when-seen-from-outside order,
+// which is opposite the order that STL files expect.
+// 
+// If you make your faces counter-clockwise, your shape might
+// be invisible in preview and need to be rendered to become visible.
+// Use View > Thrown Together to show wrongly-oriented faces as purple.
 
 function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
-	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
+	[for( vi=reverse ? [0 : 1 : layerspan-1] : [layerspan-1 : -1 : 0] ) (vi%layerspan)+layerspan*li]
 ];
 
 function tphl1_layer_faces( layers, layerspan, i ) =
@@ -31,13 +48,13 @@ let( l1 = (i+1)*layerspan )
 		// we can avoid some avoidable 'non-planar face' warnings.
 		[
 			l0 + vi,
-			l0 + (vi+1) % layerspan,
 			l1 + (vi+1)%layerspan,
+			l0 + (vi+1) % layerspan,
 		],
 		[
 			l0 + vi,
+			l1 + vi,
 			l1 + (vi+1)%layerspan,
-			l1 + vi
 		],
 	]
 ];
