@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.5
+// PhoneHolderInsert-v2.5.1
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -20,6 +20,9 @@
 // v2.5:
 // - Refactor to use separate function for each style,
 //   make_phi(style) function to make entire piece
+// v2.5.1:
+// - Refactor to use $hull_size[1] instead of $block_size[1] for
+//   calculating slot depth.
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -60,14 +63,14 @@ function make_phi_hull() =
 slot_width = 1/2*inch;
 
 function make_slot_cut(depth) = ["translate",
-	[0, -$block_size[1]/2 + depth/2 + outer_margin, 0],
+	[0, -$hull_size[1]/2 + depth/2, 0],
 	togmod1_linear_extrude_z([-1, $block_size[2]+1],
 		make_rounded_gap_cutter([slot_width, depth], r=min(depth/2, 3.175)))];
 
 make_phi_1001_cut = function() ["union",
 	["translate", [0,0,$block_size[2]/4],
 		tphl1_make_rounded_cuboid([3.5*inch, 0.75*inch, $block_size[2]*2], r=[1.6,1.6,0])],
-	make_slot_cut(($block_size[1]-0.75*inch)/2-outer_margin)
+	make_slot_cut(($hull_size[1]-0.75*inch)/2)
 ];
 
 function make_phi_1002_or_1003_cut(style) = ["union",
@@ -76,7 +79,7 @@ function make_phi_1002_or_1003_cut(style) = ["union",
 	["translate", [0, 0, 1/8*inch + $block_size[2]],
 		tphl1_make_rounded_cuboid([74, 30, $block_size[2]*2], r=12)],
 	for( xm=[-1, 1] ) for( d=[1.625] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, $block_size[2]+1])],
-	make_slot_cut(($block_size[1]-12)/2-outer_margin),
+	make_slot_cut(($hull_size[1]-12)/2),
 	if( style == "PHI-1003" ) ["translate", [0, 0, 1/8*inch + 20], tphl1_make_rounded_cuboid([$block_size[0]*2, 12, 24], 6)]
 ];
 
