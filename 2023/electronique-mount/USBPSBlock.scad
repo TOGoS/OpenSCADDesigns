@@ -1,9 +1,16 @@
-// USBPSBlock-v1.0
+// USBPSBlock-v1.1
 // Block to hold three of these 5-35V-to-USB-PD adapters:
 // 
 // https://smile.amazon.com/dp/B08P3ZZFWM
 // Probably the same as https://www.amazon.com/DWEII-Charge-Step-Down-Module-Adapter/dp/B0C5J847VG
 // 49.3mm x 18.2mm x about 1/2" high
+//
+// Changes:
+// v1.1:
+// - Remove x-debugs, now that winding order's been fixed
+//   and things show up in preview.
+// - overhead_bore_height = 2 on screw holes
+// - $tgx9_chatomic_foot_column_style = "v6.2" (the default was "v8.4")
 
 /* [Bottom] */
 
@@ -68,6 +75,7 @@ intersection() {
 		block_size_ca     = block_size_ca,
 		foot_segmentation = foot_segmentation,
 		corner_radius     = corner_radius,
+		$tgx9_chatomic_foot_column_style = "v6.2",
 		v6hc_style        = foot_v6hc_style,
 		offset            = -togridpile_margin
 	);
