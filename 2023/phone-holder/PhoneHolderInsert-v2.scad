@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.5.1
+// PhoneHolderInsert-v2.6
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -23,6 +23,8 @@
 // v2.5.1:
 // - Refactor to use $hull_size[1] instead of $block_size[1] for
 //   calculating slot depth.
+// v2.6:
+// - Add PHI-1005, an insert for holding an actual phone!
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -30,7 +32,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","block"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","block"]
 
 outer_margin = 0.6;
 
@@ -104,11 +106,20 @@ let(cavsize = get_phi_1004_main_cavity_size())
 	for( xm=[-1, 1] ) for( d=[1.75] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, $block_size[2]+1])],
 ];
 
+// Good for my phone
+make_phi_1005_cut = function()
+["union",
+	["translate", [0, 0, 1/16*inch], tphl1_make_rounded_cuboid([60, 13, 1/4*inch], r=[1.6, 1.6, 0])],
+	["translate", [0, 0, 1/4*inch], tphl1_make_rounded_cuboid([92, 20, 1/4*inch], r=[2, 2, 1.6])],
+	make_slot_cut(($hull_size[1]-13)/2),
+];
+
 function get_shape_info(style) =
 	style == "PHI-1001" ? [1/4 * inch, make_phi_1001_cut] :
 	style == "PHI-1002" ? [3/4 * inch, make_phi_1002_cut] :
 	style == "PHI-1003" ? [2   * inch, make_phi_1003_cut] :
 	style == "PHI-1004" ? [2   * inch, make_phi_1004_cut] :
+	style == "PHI-1005" ? [1/4 * inch, make_phi_1005_cut] :
 	[1/4 * inch, function() ["union"]];
 
 function make_phi(style) =
