@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.6
+// PhoneHolderInsert-v2.7
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -25,6 +25,8 @@
 //   calculating slot depth.
 // v2.6:
 // - Add PHI-1005, an insert for holding an actual phone!
+// v2.7:
+// - Add PHI-1006, an updated insert for the 3"x3"x0.75" USB charger block
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -32,7 +34,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","block"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1006","block"]
 
 outer_margin = 0.6;
 
@@ -62,9 +64,7 @@ function make_phi_hull() =
 	["translate", [0,0,$hull_size[2]/2],
 		tphl1_make_rounded_cuboid($hull_size, r=[6,6,0])];
 
-slot_width = 1/2*inch;
-
-function make_slot_cut(depth) = ["translate",
+function make_slot_cut(depth, slot_width=1/2*inch) = ["translate",
 	[0, -$hull_size[1]/2 + depth/2, 0],
 	togmod1_linear_extrude_z([-1, $block_size[2]+1],
 		make_rounded_gap_cutter([slot_width, depth], r=min(depth/2, 3.175)))];
@@ -90,6 +90,7 @@ make_phi_1003_cut = function() make_phi_1002_or_1003_cut("PHI-1003");
 
 function get_phi_1004_main_cavity_size() = [3*inch + 3, 0.75*inch + 2, $block_size[2]-1/4*inch];
 
+// USB charger block holder, take 1
 make_phi_1004_cut = function()
 let(cavsize = get_phi_1004_main_cavity_size())
 ["union",
@@ -106,6 +107,25 @@ let(cavsize = get_phi_1004_main_cavity_size())
 	for( xm=[-1, 1] ) for( d=[1.75] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, $block_size[2]+1])],
 ];
 
+// USB charger block holder, take 2
+// Main cavity is rounded, and there's a big slot in front fir viewing
+make_phi_1006_cut = function()
+let(cavsize = get_phi_1004_main_cavity_size())
+["union",
+	["translate", [0, 0, $block_size[2]], tphl1_make_rounded_cuboid([
+		cavsize[0],
+		cavsize[1],
+		cavsize[2]*2,
+	], r=[1/4*inch, 0, 1/4*inch])],
+	["translate", [0, 0, 0], togmod1_make_cuboid([
+		cavsize[0] - 1/4*inch,
+		cavsize[1],
+		cavsize[2]*2,
+	])],
+	for( xm=[-1, 1] ) for( d=[1.75] ) ["translate", [xm*d*inch, 0, 0], togmod1_make_cylinder(d=5, zrange=[-1, $block_size[2]+1])],
+	make_slot_cut(($hull_size[1]-cavsize[1])/2, slot_width=2*inch),
+];
+
 // Good for my phone
 make_phi_1005_cut = function()
 ["union",
@@ -120,6 +140,7 @@ function get_shape_info(style) =
 	style == "PHI-1003" ? [2   * inch, make_phi_1003_cut] :
 	style == "PHI-1004" ? [2   * inch, make_phi_1004_cut] :
 	style == "PHI-1005" ? [1/4 * inch, make_phi_1005_cut] :
+	style == "PHI-1006" ? [2   * inch, make_phi_1006_cut] :
 	[1/4 * inch, function() ["union"]];
 
 function make_phi(style) =

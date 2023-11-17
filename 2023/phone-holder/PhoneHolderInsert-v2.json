@@ -14,6 +14,11 @@
 			"outer_margin": "0.6",
 			"render_fn": "48",
 			"style": "PHI-1005"
+		},
+		"p1278": {
+			"outer_margin": "0.6",
+			"render_fn": "48",
+			"style": "PHI-1006"
 		}
 	},
 	"parameterSets": "",
