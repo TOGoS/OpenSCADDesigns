@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.3
+// MonitorMountRouterJig-v1.4
 // 
 // Versions:
 // v1.0:
@@ -18,6 +18,10 @@
 // - template_counterbore_bit_diameter = 8
 // v1.3:
 // - Define MMP-2314
+// v1.4:
+// - counterbore_diameter default = 7/8", not 5/8"
+// - template_thickness default = 1/8" instead of 1/4"
+// - Alignment holes every 3/4" along X except at X=0
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314"]
@@ -28,7 +32,7 @@ mode = "front-template"; // ["front-template", "back-template", "panel", "panel-
 panel_corner_radius = 19.05  ; // 0.01
 panel_thickness     = 19.05  ; // 0.01
 counterbore_depth   =  4.7625; // 0.01
-counterbore_diameter = 15.875;
+counterbore_diameter = 22.225;
 // 8mm being a close approximation of 5/16"
 slot_diameter       = 8;
 
@@ -36,7 +40,7 @@ alignment_hole_countersink_inset = 1; // 0.01
 
 /* [Router Template] */
 
-template_thickness = 6.35;
+template_thickness = 3.175;
 // Diameter of router bit that will be used to carve counterbores (mm)
 template_counterbore_bit_diameter = 8;
 // Diameter of router bushing that will be used to trace counterbore pattern (mm)
@@ -84,8 +88,8 @@ let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
 	for( ym=[-size_chunks[1]/2+0.5, size_chunks[1]/2-0.5] ) for( xm=[-size_chunks[0]/2+1.5, size_chunks[0]/2-1.5] )
 		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
 	
-	for( xm=[-size_chunks[0]/2+1 : 1 : size_chunks[0]/2-1] ) for( ym=[-size_chunks[1]/2+1 : 1 : size_chunks[1]/2-1] )
-		["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
+	for( xm=[-size_chunks[0]/2+1 : 0.5 : size_chunks[0]/2-1] ) for( ym=[-size_chunks[1]/2+1 : 1 : size_chunks[1]/2-1] )
+		if( xm != 0 ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
 ]];
 
 // style name -> [size, cuts]
