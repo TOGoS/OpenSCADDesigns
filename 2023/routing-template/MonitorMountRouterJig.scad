@@ -13,7 +13,7 @@
 // - Counterbored panel assembly holes using polygen
 // v0.5.1:
 // - alignment_hole_countersink_inset configurable in 0.01mm increments
-// v01.6:
+// v0.6:
 // - 'panel-printable' mode with THL-1002 front gridbeam holes,
 //   which print facing down.
 
