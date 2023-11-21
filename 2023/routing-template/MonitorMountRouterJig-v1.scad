@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.1
+// MonitorMountRouterJig-v1.1.1
 // 
 // Versions:
 // v1.0:
@@ -10,7 +10,11 @@
 //   can be defined and chosen from
 // v1.1:
 // - Define MMP-2312, which is long and narrow
-// TODO: Replace custom polygen functions with TOGPolyhedronLib1
+// v1.1.1:
+// - Use polyhedrons for template alignment holes
+//   instead of cutting them outside of the togmod
+//
+// TOGO: Use TOGHoleLib2 instead of recreating hole shapes
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312"]
@@ -45,48 +49,6 @@ preview_fn = 9;
 render_fn = 72;
 
 module __end_params() { }
-
-//// Inlined polyhedron generation library
-
-function polygen_cap_faces( layers, layerspan, li, reverse=false ) = [
-	[for( vi=reverse ? [layerspan-1 : -1 : 0] : [0 : 1 : layerspan-1] ) (vi%layerspan)+layerspan*li]
-];
-
-function polygen_layer_faces( layers, layerspan, i ) =
-let( l0 = i*layerspan )
-let( l1 = (i+1)*layerspan )
-[
-	for( vi=[0 : 1 : len(layers[i])-1] ) each [
-		// By making triangles instead of quads,
-		// we can avoid some avoidable 'non-planar face' warnings.
-		[
-			l0 + vi,
-			l0 + (vi+1) % layerspan,
-			l1 + (vi+1)%layerspan,
-		],
-		[
-			l0 + vi,
-			l1 + (vi+1)%layerspan,
-			l1 + vi
-		],
-	]
-];
-
-function polygen_faces( layers, layerspan ) = [
-	each polygen_cap_faces( layers, layerspan, 0, reverse=true ),
-	// For now, assume convex end caps
-	for( li=[0 : 1 : len(layers)-2] ) each polygen_layer_faces(layers, layerspan, li),
-	each polygen_cap_faces( layers, layerspan, len(layers)-1, reverse=false )
-];
-
-function polygen_points(layers, layerspan) = [
-	for( layer=layers ) for( point=layer ) point
-];
-
-function tlpoly_make_polyhedron(layers) =
-	["polyhedron-vf", polygen_points(layers, len(layers[0])), polygen_faces(layers, len(layers[0]))];
-
-////
 
 inch = 25.4;
 
@@ -129,7 +91,7 @@ function get_panel_info(style) =
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
-use <../lib/TOGHoleLib-v1.scad>
+use <../lib/TOGPolyhedronLib1.scad>
 
 $fn = $preview ? preview_fn : render_fn;
 
@@ -142,7 +104,7 @@ function circle_points_with_z(r, pos=[0,0,0]) =
 		]
 	];
 
-function make_thl_1001(pos=[0,0,0]) = tlpoly_make_polyhedron([
+function make_thl_1001(pos=[0,0,0]) = tphl1_make_polyhedron_from_layers([
 	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]- 100  ]),
 	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]-   1.7]),
 	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+   0  ]),
@@ -151,7 +113,7 @@ function make_thl_1001(pos=[0,0,0]) = tlpoly_make_polyhedron([
 
 // Countersunk on top,
 // widened on bottom for heat-set insert
-function make_panel_assembly_hole(pos=[0,0,0]) = tlpoly_make_polyhedron([
+function make_panel_assembly_hole(pos=[0,0,0]) = tphl1_make_polyhedron_from_layers([
 	circle_points_with_z(5  /2, [pos[0], pos[1],      0- 100  ]),
 	circle_points_with_z(5  /2, [pos[0], pos[1],      0+  15  ]),
 	circle_points_with_z(3.5/2, [pos[0], pos[1], pos[2]-   1.7]),
@@ -159,7 +121,7 @@ function make_panel_assembly_hole(pos=[0,0,0]) = tlpoly_make_polyhedron([
 	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+  10  ])
 ]);
 
-function make_thl_1002_hole(pos=[0,0,0]) = tlpoly_make_polyhedron([
+function make_thl_1002_hole(pos=[0,0,0]) = tphl1_make_polyhedron_from_layers([
 	circle_points_with_z( 7/2, [pos[0], pos[1],      0- 100  ]),
 	circle_points_with_z( 7/2, [pos[0], pos[1], pos[2]- 3.175]),
 	circle_points_with_z(13/2, [pos[0], pos[1], pos[2]+   0  ]),
@@ -270,10 +232,16 @@ function decode_template_2d_cuts(scale, block, cuts, cut_decoder) = ["scale", sc
 	for(cut=cuts) each cut[0] == "alignment-hole" ? [] : [decode2(cut_decoder(cut))]
 ]];
 
-function make_the_template(hull_shape, cuts, mode) =
-	mode == "front-template" ? decode_template_2d_cuts([ 1,1,1], hull_2d, cuts, function (c) decode_cut_for_front_template(c)) :
-	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_2d, cuts, function (c) decode_cut_for_back_template(c) ) :
+function make_the_template_2d(hull_shape_2d, cuts, mode) =
+	mode == "front-template" ? decode_template_2d_cuts([ 1,1,1], hull_shape_2d, cuts, function (c) decode_cut_for_front_template(c)) :
+	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_shape_2d, cuts, function (c) decode_cut_for_back_template(c) ) :
 	assert(str("Don't know how to make template in mode '", mode, "'"));
+
+function make_the_template(hull_shape_2d, cuts, mode, thickness) = ["difference",
+	["linear-extrude-zs", [0, thickness], make_the_template_2d(hull_shape_2d, cuts, mode)],
+	
+	for(cut=cuts) if(cut[0] == "alignment-hole") make_thl_1001([cut[1][0], cut[1][1], thickness-alignment_hole_countersink_inset]),
+];
 
 
 panel_info = get_panel_info(style);
@@ -304,15 +272,7 @@ function jj_flip(mod, around_z) = ["translate", [0,0,around_z], ["scale", [1,1,-
 // TODO: togmod1_domodule(final shape)
 if( mode == "front-template" || mode == "back-template" ) {
 	// TODO: Translate THL-1001 to TOGMod1 so you can do the whole thing in TOGMod1
-	difference() {
-		togmod1_domodule(["linear-extrude-zs", [0, template_thickness], make_the_template(hull_2d, cuts, mode)]);
-		
-		for( cut=cuts ) {
-			if( cut[0] == "alignment-hole" ) {
-				translate([cut[1][0], cut[1][1], template_thickness]) tog_holelib_hole("THL-1001");
-			}
-		}
-	}
+	togmod1_domodule(make_the_template(hull_2d, cuts, mode, template_thickness));
 } else if( mode == "panel" ) {
 	// Upside-down for easier printing
 	togmod1_domodule(panel);
