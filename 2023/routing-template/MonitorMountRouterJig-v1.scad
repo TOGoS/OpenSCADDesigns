@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.0
+// MonitorMountRouterJig-v1.1
 // 
 // Versions:
 // v1.0:
@@ -8,11 +8,12 @@
 //   (affects the template, but not the panel itself)
 // - Add 'style' parameter so that different configurations
 //   can be defined and chosen from
+// v1.1:
+// - Define MMP-2312, which is long and narrow
 // TODO: Replace custom polygen functions with TOGPolyhedronLib1
-// TODO: Narrower style for when you only need a template for the slots
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] **/
@@ -105,6 +106,7 @@ template_slot_radius        = slot_diameter/2 + template_slot_r_offset;
 function get_alignment_hole_positions(style) =
 	style == "MMP-2310" ? [ for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) [xm*1.5*inch, ym*1.5*inch] ] :
 	style == "MMP-2311" ? [ for( xm=[-1 : 1 : 1] ) for( ym=[-2 : 1 : 2] ) [xm*1.5*inch, ym*1.5*inch] ] :
+	style == "MMP-2312" ? [ for( xm=[-0.5 : 1 : 0.5] ) for( ym=[-5 : 1 : 5] ) [xm*1.5*inch, ym*1.5*inch] ] :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 // style name -> [size, cuts]
@@ -116,7 +118,14 @@ function get_panel_info(style) =
 		["back-counterbored-slot", [[0, top_monmount_hole_y-3*inch], [0, top_monmount_hole_y-4.5*inch]]],
 		for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
 		//for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
-	]] : assert(false, str("Unrecognized style: '", style, "'"));
+	]] :
+	style == "MMP-2312" ? [[4.5*inch,18*inch], [
+		for( ym=[-6 : 3 : 6] ) ["back-counterbored-slot", [[0, (ym-0.75)*inch], [0, (ym+0.75)*inch]]],
+		for( ym=[-5.5 : 1 : 5.5] ) for( xm=[-1, 1] ) ["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
+		for( ym=[-5.5, 5.5] ) for( xm=[0] ) ["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
+		for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
+	]]
+	: assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
