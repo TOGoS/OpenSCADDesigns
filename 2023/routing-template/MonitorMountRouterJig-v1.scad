@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.1.1
+// MonitorMountRouterJig-v1.2
 // 
 // Versions:
 // v1.0:
@@ -13,11 +13,12 @@
 // v1.1.1:
 // - Use polyhedrons for template alignment holes
 //   instead of cutting them outside of the togmod
-//
-// TOGO: Use TOGHoleLib2 instead of recreating hole shapes
+// v1.2:
+// - Define MMP-2313, which is MMP-2312 but shorter
+// - template_counterbore_bit_diameter = 8
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] **/
@@ -35,7 +36,7 @@ alignment_hole_countersink_inset = 1; // 0.01
 
 template_thickness = 6.35;
 // Diameter of router bit that will be used to carve counterbores (mm)
-template_counterbore_bit_diameter = 12;
+template_counterbore_bit_diameter = 8;
 // Diameter of router bushing that will be used to trace counterbore pattern (mm)
 template_counterbore_bushing_diameter = 12;
 // Diameter of router bit that will be used to carve slots (mm)
@@ -68,8 +69,22 @@ template_slot_radius        = slot_diameter/2 + template_slot_r_offset;
 function get_alignment_hole_positions(style) =
 	style == "MMP-2310" ? [ for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) [xm*1.5*inch, ym*1.5*inch] ] :
 	style == "MMP-2311" ? [ for( xm=[-1 : 1 : 1] ) for( ym=[-2 : 1 : 2] ) [xm*1.5*inch, ym*1.5*inch] ] :
-	style == "MMP-2312" ? [ for( xm=[-0.5 : 1 : 0.5] ) for( ym=[-5 : 1 : 5] ) [xm*1.5*inch, ym*1.5*inch] ] :
 	assert(false, str("Unrecognized style: '", style, "'"));
+
+function make_2312ish(size) =
+let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
+[size, [
+	for( ym=[-size_chunks[1]/2+2 : 2 : size_chunks[1]/2-2] )
+		["back-counterbored-slot", [[0, (ym-0.5)*1.5*inch], [0, (ym+0.5)*1.5*inch]]],
+	
+	for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] ) for( xm=[-1, 1] )
+		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
+	for( ym=[-size_chunks[1]/2+0.5, size_chunks[1]/2-0.5] ) for( xm=[0] )
+		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
+	
+	for( xm=[-size_chunks[0]/2+1 : 1 : size_chunks[0]/2-1] ) for( ym=[-size_chunks[1]/2+1 : 1 : size_chunks[1]/2-1] )
+		["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
+]];
 
 // style name -> [size, cuts]
 function get_panel_info(style) =
@@ -81,13 +96,9 @@ function get_panel_info(style) =
 		for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
 		//for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
 	]] :
-	style == "MMP-2312" ? [[4.5*inch,18*inch], [
-		for( ym=[-6 : 3 : 6] ) ["back-counterbored-slot", [[0, (ym-0.75)*inch], [0, (ym+0.75)*inch]]],
-		for( ym=[-5.5 : 1 : 5.5] ) for( xm=[-1, 1] ) ["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
-		for( ym=[-5.5, 5.5] ) for( xm=[0] ) ["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
-		for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
-	]]
-	: assert(false, str("Unrecognized style: '", style, "'"));
+	style == "MMP-2312" ? make_2312ish([4.5*inch, 18*inch]) :
+	style == "MMP-2313" ? make_2312ish([4.5*inch, 12*inch]) :
+	assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
