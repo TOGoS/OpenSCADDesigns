@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.2
+// MonitorMountRouterJig-v1.3
 // 
 // Versions:
 // v1.0:
@@ -16,9 +16,11 @@
 // v1.2:
 // - Define MMP-2313, which is MMP-2312 but shorter
 // - template_counterbore_bit_diameter = 8
+// v1.3:
+// - Define MMP-2314
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] **/
@@ -77,9 +79,9 @@ let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
 	for( ym=[-size_chunks[1]/2+2 : 2 : size_chunks[1]/2-2] )
 		["back-counterbored-slot", [[0, (ym-0.5)*1.5*inch], [0, (ym+0.5)*1.5*inch]]],
 	
-	for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] ) for( xm=[-1, 1] )
+	for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] ) for( xm=[-size_chunks[0]/2+0.5, size_chunks[0]/2-0.5] )
 		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
-	for( ym=[-size_chunks[1]/2+0.5, size_chunks[1]/2-0.5] ) for( xm=[0] )
+	for( ym=[-size_chunks[1]/2+0.5, size_chunks[1]/2-0.5] ) for( xm=[-size_chunks[0]/2+1.5, size_chunks[0]/2-1.5] )
 		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
 	
 	for( xm=[-size_chunks[0]/2+1 : 1 : size_chunks[0]/2-1] ) for( ym=[-size_chunks[1]/2+1 : 1 : size_chunks[1]/2-1] )
@@ -98,6 +100,7 @@ function get_panel_info(style) =
 	]] :
 	style == "MMP-2312" ? make_2312ish([4.5*inch, 18*inch]) :
 	style == "MMP-2313" ? make_2312ish([4.5*inch, 12*inch]) :
+	style == "MMP-2314" ? make_2312ish([6.0*inch, 12*inch]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGMod1.scad>
