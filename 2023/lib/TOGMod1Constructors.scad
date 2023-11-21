@@ -84,7 +84,7 @@ function togmod1_circle_points(r, pos=[0,0], d=undef) =
 	let(finalizepos = togmod1__make_nd_vector_adder(pos))
 	let(r_ = !is_undef(r) ? r : d/2)
 	let(fn = max($fn, 6))
-	[for(i=[0 : 1 : fn-1]) finalizepos([pos[0]+r_*cos(i*360/fn), pos[1]+r_*sin(i*360/fn)])];
+	[for(i=[0 : 1 : fn-1]) finalizepos([r_*cos(i*360/fn), r_*sin(i*360/fn)])];
 
 function togmod1_make_circle(r, pos=[0,0], d=undef) =
 	togmod1_make_polygon(togmod1_circle_points(r=r, pos=pos, d=d));
