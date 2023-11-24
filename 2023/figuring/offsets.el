@@ -41,11 +41,14 @@
 ; ...at least not if our first line is along the X axis.
 
 (defun calc-big-R (vec2) (sqrt (+ (square (/ (sin (car vec2)) (cos (cadr vec2)))) 1)))
+(calc-big-R (list 1 1))
+; = 1.85.  Well that's wrong.
 
 ; Dad says i should be able to do all of this without resorting
 ; to any trigonometry functions.
 ; In analytic geometry they just use a lot of X and Ys and maybe some sqrts
 ; Maybe try googling "circle tangent to two lines"
-
-(calc-big-R (list 1 1))
-; = 1.85.  Well that's wrong.
+; 
+; https://math.stackexchange.com/questions/797828/calculate-center-of-circle-tangent-to-two-lines-in-space
+; This one calculates an angle using a cross product and dot product,
+; then some otheahsdiua 3rbijkfbrekjb
