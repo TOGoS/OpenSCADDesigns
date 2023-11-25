@@ -1,4 +1,4 @@
-// TGx9.5.20 - experimental simplified (for OpenSCAD rendering purposes) TOGridPile shape
+// TGx9.5.21 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -152,6 +152,9 @@
 //   in TGx9.4Lib-v1.18
 // v9.5.20:
 // - 'v6hc_style' option to add 'v6 horizontal columns' across the bottom
+// v9.5.21:
+// - cavity_corner_radius is now configurable
+// - sublip_width is now configurable
 
 /* [Atom/chunk/block size] */
 
@@ -204,9 +207,13 @@ cavity_style = "cup"; // ["none","cup","tograck"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
-sublip_slope       = 2;
 
 /* [Cavity (Cup)] */
+
+// Rim width
+sublip_width       = 3;
+// Inverse slope (Y/X) of underside of rim
+sublip_slope       = 2;
 
 // How far label platform sticks out from the inside of the cup
 label_width        = 10.0 ; // 0.1
@@ -217,6 +224,8 @@ cavity_bulkhead_positions = [];
 cavity_bulkhead_axis = "x"; // ["x", "y"]
 // Bulkhead thickness; -1 means default based on min(wall_thickness, 1.2mm)
 bulkhead_thickness = -1; // [-1 : 0.1 : 4]
+// Radius of cavity corners; -1 defaults to calculation based on outer radius and wall thickness
+cavity_corner_radius = -1;
 
 // Diameters (in mm) of cup holder cutouts, from innermost to outermost
 cup_holder_diameters = [];
@@ -320,14 +329,20 @@ function kasjhd_swapxy(vec, swap=true) = [
 	for( i=[2:1:len(vec)-1] ) vec[i]
 ];
 
+function get_cavity_corner_radius() =
+	!is_undef(cavity_corner_radius) && cavity_corner_radius >= 0 ? cavity_corner_radius :
+	max(
+		togridlib3_decode([1, "u"]),
+		togridlib3_decode([1, "f-outer-corner-radius"]) - wall_thickness
+	);
+
 module the_cup_cavity() if(cavity_size[0] > 0 && cavity_size[1] > 0 && cavity_size[2] > 0) difference() {
-	outer_corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
-	cavity_corner_radius    = max(togridlib3_decode([1, "u"]), outer_corner_radius - wall_thickness);
+	cavity_corner_radius    = get_cavity_corner_radius();
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
 	//tog_shapelib_xy_rounded_cube(dh_cavity_size, corner_radius=cavity_corner_radius);
 
-	top_bevel_width = 3;
+	top_bevel_width = sublip_width;
 	top_bevel_height = top_bevel_width*sublip_slope;
 	
 	union() {
@@ -393,18 +408,15 @@ if( effective_v6hc_subtraction_style != "none" && lip_height <= u-margin ) {
 
 tograck_lower_cavity_depth = min(block_size[2]-floor_thickness-3.175, 19.05);
 tograck_upper_cavity_depth = max(3.175, block_size[2]-tograck_lower_cavity_depth-floor_thickness);
-cavity_corner_radius    = max(
-	togridlib3_decode([1, "u"]),
-	togridlib3_decode([1, "f-outer-corner-radius"]) - wall_thickness
-);
+effective_cavity_corner_radius = get_cavity_corner_radius();
 
-function rimless_cavity_sshape(size)   = ["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8], cavity_corner_radius]];
+function rimless_cavity_sshape(size)   = ["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8], effective_cavity_corner_radius]];
 function y_rimless_cavity_sshape(size) = ["intersection",
-	["translate", [0,0,0], ["tgx9_cavity_cube", [size[0], size[1]*2, size[2]], cavity_corner_radius]],
-	["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8], cavity_corner_radius]] // z+8 to clear sublip
+	["translate", [0,0,0], ["tgx9_cavity_cube", [size[0], size[1]*2, size[2]], effective_cavity_corner_radius]],
+	["translate", [0,0,8], ["tgx9_cavity_cube", [size[0], size[1], size[2]+8], effective_cavity_corner_radius]] // z+8 to clear sublip
 ];
 function modified_cavity_sshape(size, rim_mode="full") =
-	rim_mode == "full" ? ["tgx9_cavity_cube", size, cavity_corner_radius] :
+	rim_mode == "full" ? ["tgx9_cavity_cube", size, effective_cavity_corner_radius] :
 	rim_mode == "x"    ? y_rimless_cavity_sshape(size) :
 	rim_mode == "none" ? rimless_cavity_sshape(size) :
 	assert(false, str("Bad rim_mode to `modified_cavity_sshape`: '", rim_mode, "'"));

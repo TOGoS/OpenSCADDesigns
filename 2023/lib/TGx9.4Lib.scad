@@ -439,6 +439,9 @@ module tgx9_do_sshape(shape) {
 		corner_radius = len(shape) >= 3 ? shape[2] : 1.6;
 		tgx9_cavity_cube(size, corner_radius);
 	} else if( type == "the_cup_cavity" ) {
+		// For compatibility with TGx9.4, which, although
+		// tgx9_cavity_cube is now a thing, still uses the_cup_cavity
+		// in at least one place:
 		the_cup_cavity();
 	} else if( type == "tgx9_usermod_1" ) {
 		tgx9_usermod_1(len(shape) > 1 ? shape[1] : undef, len(shape) > 2 ? shape[2] : undef);
