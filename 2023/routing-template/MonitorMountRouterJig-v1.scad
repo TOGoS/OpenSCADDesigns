@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.4
+// MonitorMountRouterJig-v1.4.1
 // 
 // Versions:
 // v1.0:
@@ -22,6 +22,8 @@
 // - counterbore_diameter default = 7/8", not 5/8"
 // - template_thickness default = 1/8" instead of 1/4"
 // - Alignment holes every 3/4" along X except at X=0
+// v1.4.1:
+// - Refactor to only domoduile on the last line
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314"]
@@ -287,30 +289,23 @@ panel_half_intersector = ["translate", [0,0, panel_thickness/4], togmod1_make_cu
 
 function jj_flip(mod, around_z) = ["translate", [0,0,around_z], ["scale", [1,1,-1], mod]];
 
-// TODO: togmod1_domodule(final shape)
-if( mode == "front-template" || mode == "back-template" ) {
-	// TODO: Translate THL-1001 to TOGMod1 so you can do the whole thing in TOGMod1
-	togmod1_domodule(make_the_template(hull_2d, cuts, mode, template_thickness));
-} else if( mode == "panel" ) {
-	// Upside-down for easier printing
-	togmod1_domodule(panel);
-} else if( mode == "panel-printable" ) {
-	// Upside-down for easier printing
-	togmod1_domodule(jj_flip(panel, panel_thickness/2));
-} else if( mode == "panel-cuts" ) {
-	togmod1_domodule(["union", each panel_cuts]);
-} else if( mode == "panel-front" ) {
-	togmod1_domodule(["intersection",
+the_shape =
+	mode == "front-template" || mode == "back-template" ?
+		make_the_template(hull_2d, cuts, mode, template_thickness) :
+	mode == "panel" ? panel :
+	mode == "panel-printable" ?
+		// Upside-down for easier printing
+		jj_flip(panel, panel_thickness/2) :
+	mode == "panel-cuts" ? ["union", each panel_cuts] :
+	mode == "panel-front" ? ["intersection",
 		panel_half_intersector,
 		["translate", [0,0,-panel_thickness/2], panel]
-	]);
-} else if( mode == "panel-back" ) {
-	togmod1_domodule(["intersection",
+	] :
+	mode == "panel-back" ? ["intersection",
 		panel_half_intersector,
 		jj_flip(panel, panel_thickness/2)
-	]);
-} else if( mode == "thl-1001" ) {
-	togmod1_domodule(make_thl_1001([20,20,20]));
-} else {
+	] :
+	mode == "thl-1001" ? make_thl_1001([20,20,20]) :
 	assert(false, str("Unknown mode: '", mode, "'"));
-}
+
+togmod1_domodule(the_shape);
