@@ -18,8 +18,70 @@
 
 preview_fn = 12;
 offset = 0;
+radius = 4;
 
 $fn = $preview ? preview_fn : 72;
+
+//// Vector/angle functions
+
+function tgx11__vec_length_squared(vec,i=0,acc=0) =
+	i == len(vec) ? acc :
+	tgx11__vec_length_squared(vec, i+1, acc + vec[i]*vec[i]);
+
+function tgx11__vec_length(vec) =
+	sqrt(tgx11__vec_length_squared(vec));
+
+function tgx11__normalize_vec(vec) =
+	let(vlen = tgx11__vec_length(vec))
+	vlen == 0 ? vec : vec / vlen;
+
+assert([0,0,0,0] == tgx11__normalize_vec([0,0,0,0]));
+assert([0,0,0,1] == tgx11__normalize_vec([0,0,0,1]));
+assert([0,1,0,0] == tgx11__normalize_vec([0,1,0,0]));
+assert([0,0,0,1] == tgx11__normalize_vec([0,0,0,2]));
+assert([0,1,0,0] == tgx11__normalize_vec([0,2,0,0]));
+
+function tgx11__nvec_angle(nv) = atan2(nv[1], nv[0]);
+
+tgx11__nvec_angle_test_cases = [
+	[   0, tgx11__nvec_angle([ 0, 0])],
+	[  90, tgx11__nvec_angle([ 0, 1])],
+	[ 135, tgx11__nvec_angle([-1, 1])],
+	[ 180, tgx11__nvec_angle([-1, 0])],
+	[-135, tgx11__nvec_angle([-1,-1])],
+	[ -90, tgx11__nvec_angle([ 0,-1])],
+];
+for( tc=tgx11__nvec_angle_test_cases ) {
+	expected = tc[0];
+	actual   = tc[1];
+	assert(expected == actual, str("expected ", expected, " but got ", actual));
+}
+
+
+function tgx11__line_angle(v0, v1) =
+	tgx11__nvec_angle(tgx11__normalize_vec(v1-v0));
+
+assert( 90 == tgx11__line_angle([0,0], [0, 1]));
+assert(  0 == tgx11__line_angle([0,0], [1, 0]));
+assert(-90 == tgx11__line_angle([0,0], [0,-1]));
+assert( 45 == tgx11__line_angle([0,0], [1, 1]));
+
+
+function tgx11__pointlist_relative_edge_vectors(points) =
+[
+	for( i=[0:1:len(points)-1] )
+	let( p0 = points[i] )
+	let( p1 = points[(i+1)%len(points)] )
+	p1 - p0
+];
+
+function tgx11__pointlist_normalized_relative_edge_vectors(points) =
+[
+	for( v = tgx11__pointlist_relative_edge_vectors(points) ) tgx11__normalize_vec(v)
+];
+
+
+//// Qath - Path defined by center and radius of each corner arc
 
 function tgx11_merge_qath_info(i0, i1) =
 	let(type = i0[0] == "tgx11-qath-info" && i1[0] == "tgx11-qath-info" ? "tgx11-qath-info" : "invalid")
@@ -92,7 +154,7 @@ function tgx11_qathseg_points(seg) =
 	assert( rad >= 0 )
 	assert( a1 - a0 > 0 || rad == 0 ) // For now, only allow left turns!
 	let( vcount = ceil((a1 - a0) * max($fn,1) / 360) )
-	echo(a1=a1, a0=a0, diff=(a1-a0), fn=$fn, vcount=vcount) 
+	//echo(a1=a1, a0=a0, diff=(a1-a0), fn=$fn, vcount=vcount) 
 	assert( vcount >= 1 )
 [
 	for( vi = [0:1:vcount] )
@@ -110,9 +172,77 @@ assert(qathinfo[1] >= 0, str("Can't turn qath into points because minimum radius
 	each tgx11_qathseg_points(qath[si])
 ];
 
+//// Zath - points with offset vector
+
+function tgx11_offset_zathnode(zathnode, off) = [
+	zathnode[0] + off*zathnode[1],
+	zathnode[1]
+];;
+
+function tgx11_offset_zath(zath, off) =
+assert(zath[0] == "tgx11-zath")
+[
+	for( i=[1:1:len(zath)-1] ) tgx11_offset_zathnode(zath[i], off)
+];
+
+function tgx11_zath_points_nocheck(zath, off=0) = 
+assert(zath[0] == "tgx11-zath")
+[
+	for( i=[1:1:len(zath)-1] ) zath[i][0] + off*zath[i][1]
+];
+
+function tgx11__compare_edge_nvecs(points_a, points_b) =
+assert(len(points_a) == len(points_b))
+let(vecs_a = tgx11__pointlist_normalized_relative_edge_vectors(points_a))
+let(vecs_b = tgx11__pointlist_normalized_relative_edge_vectors(points_b))
+[
+	for( i=[0:1:len(vecs_a)-1] )
+	tgx11__vec_length(vecs_b[i] - vecs_a[i])
+];
+
+function tgx11__max_of(list, i=0, acc=0) =
+	i == len(list) ? acc :
+	tgx11__max_of(list, i+1, max(acc, list[i]));
+
+
+
+function tgx11_zath_points(zath, off=0) =
+let(points     = tgx11_zath_points_nocheck(zath,0  ))
+let(new_points = tgx11_zath_points_nocheck(zath,off))
+let(edgecomp   = tgx11__compare_edge_nvecs(points, new_points))
+assert(tgx11__max_of(edgecomp) < 0.1)
+new_points;
+
+
+function tgx11_zath_to_qath(zath, radius=0, offset=0) =
+assert(zath[0] == "tgx11-zath")
+let(points = tgx11_zath_points(zath, offset-radius))
+[
+	"tgx11-qath",
+	
+	for( i=[0:1:len(points)-1] )
+	let( va = points[(i-1+len(points))%len(points)] )
+	let( vb = points[(i              )            ] )
+	let( vc = points[(i+1            )%len(points)] )
+	let( aab = tgx11__line_angle(va, vb)-90 )
+	let( abc = tgx11__line_angle(vb, vc)-90 )
+	// TODO: Don't assume left turn
+	let( abc_fixed = abc > aab ? abc : abc+360 )
+	assert(abc_fixed > aab)
+	["tgx11-qathseg", points[i], aab, abc_fixed, radius]
+];
+
+
+//// Demo
+
+use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
+use <../lib/TOGPolyhedronLib1.scad>
+
+/*
 a_path = tgx11_offset_qath(["tgx11-qath",
-	["tgx11-qathseg", [ 10, 5],    0,  45, 5],
-	["tgx11-qathseg", [ 5, 10],   45,  90, 5],
+	["tgx11-qathseg", [ 10,  5],   0,  45, 5],
+	["tgx11-qathseg", [  5, 10],  45,  90, 5],
 	["tgx11-qathseg", [-10, 10],  90, 180, 5],
 	["tgx11-qathseg", [-10,-10], 180, 270, 5],
 	["tgx11-qathseg", [ 10,-10], 270, 360, 5],
@@ -120,10 +250,36 @@ a_path = tgx11_offset_qath(["tgx11-qath",
 
 a_path_points = tgx11_qath_points(a_path);
 
-echo(a_path_points);
-
-use <../lib/TOGMod1.scad>
-use <../lib/TOGMod1Constructors.scad>
-use <../lib/TOGPolyhedronLib1.scad>
-
 togmod1_domodule(togmod1_make_polygon(a_path_points));
+*/
+
+// List of vertex positions and offset vectors
+z41 = sqrt(2)-1;
+a_zath = ["tgx11-zath",
+  [[-10,-10], [ -1,  -1]],
+  [[  5,-10], [z41,  -1]],
+  [[ 10, -5], [  1,-z41]],
+  [[ 10, 10], [  1,   1]],
+  [[-10, 10], [ -1,   1]],
+];
+
+togmod1_domodule(["x-debug", togmod1_make_polygon(tgx11_zath_points(a_zath, 0))]);
+//togmod1_domodule(togmod1_make_polygon(tgx11_zath_points(a_zath, offset)));
+togmod1_domodule(togmod1_make_polygon(tgx11_qath_points(tgx11_zath_to_qath(a_zath, radius=radius, offset=offset))));
+
+
+/*
+function function abc_to_qathseg(a, b, c) = undef;
+
+function tgx11_zath_to_qath(zath, radius) = [
+	for( i = [0:1:len(zath)-1 )
+	let( po = po_path[i] )
+	let( pos=po[0]) let(ovec=po[1])
+	let( a0 = po_path[
+	[
+		"tgx11-qathseg",
+		[pos[0] - ovec[0]*radius, pos[1] - ovec[1]*radius],
+		a0, a1, radius
+	]
+];
+*/
