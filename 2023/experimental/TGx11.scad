@@ -18,7 +18,7 @@
 
 preview_fn = 12;
 offset = -0.1; // 0.1
-item = "chunk-foot"; // ["chunk-foot"]
+item = "chunk-foot"; // ["chunk-foot", "v6hc-xc"]
 // radius = 4;
 
 $fn = $preview ? preview_fn : 72;
@@ -217,13 +217,13 @@ let(edgecomp   = tgx11__compare_edge_nvecs(points, new_points))
 assert(tgx11__max_of(edgecomp) < 0.1, str("Max edge direction difference=", tgx11__max_of(edgecomp)))
 new_points;
 
-function tgx11_zath_to_qath(zath, radius=0, offset=0) =
+function tgx11_zath_to_qath(zath, radius=0, offset=0, closed=true) =
 assert(zath[0] == "tgx11-zath")
 let(points = tgx11_zath_points(zath, offset-radius))
 [
 	"tgx11-qath",
 	
-	for( i=[0:1:len(points)-1] )
+	for( i=closed ? [0:1:len(points)-1] : [1:1:len(points)-2])
 	let( va = points[(i-1+len(points))%len(points)] )
 	let( vb = points[(i              )            ] )
 	let( vc = points[(i+1            )%len(points)] )
@@ -266,11 +266,12 @@ let(z41 = sqrt(2)-1) [
 ];
 
 
-function tgx11_beveled_rect_zath(size, bevel_size, data=tgx11__gnerate_beveled_rect_data()) =
+function tgx11_beveled_rect_zath(size, bevel_size, bevels=[true,true,true,true]) =
 assert(is_list(size))
 assert(is_num(size[0]))
 assert(is_num(size[1]))
 assert(is_num(bevel_size))
+let( data = tgx11__gnerate_beveled_rect_data(bevels) )
 [
 	"tgx11-zath",
 	
@@ -290,8 +291,8 @@ function tgx11_qath_to_polygon(qath) = togmod1_make_polygon(tgx11_qath_points(qa
 $tgx11_u = 1.5875;
 $tgx11_min_radius = 1.5875;
 
-function tgx11_chunk_xs_zath(size) =
-	tgx11_beveled_rect_zath(size, bevel_size=2*$tgx11_u);
+function tgx11_chunk_xs_zath(size, bevels=[true,true,true,true]) =
+	tgx11_beveled_rect_zath(size, bevel_size=2*$tgx11_u, bevels=bevels);
 
 function tgx11_zq_radius(offset, gender="m") =
 	max($tgx11_min_radius, (gender == "m" ? 2 : 1)*$tgx11_u+offset);
@@ -300,6 +301,13 @@ function tgx11_chunk_xs_qath(size, offset=0, gender="m") = tgx11_zath_to_qath(
 	tgx11_chunk_xs_zath(size),
 	offset = offset,
 	radius = tgx11_zq_radius(offset=offset, gender=gender)
+);
+
+function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = tgx11_zath_to_qath(
+	tgx11_chunk_xs_zath(size, bevels=[false,true,true,false]),
+	offset = offset,
+	radius = tgx11_zq_radius(offset=offset, gender=gender),
+	closed=false
 );
 
 /**
@@ -313,8 +321,18 @@ function tgx11_chunk_xs_points(size, gender="m", offset=0) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
 	tgx11_qath_points(tgx11_chunk_xs_qath(size, gender=gender, offset=offset));
 
-function tgx11_atom_foot_polygon(atom_size, gender="m", offset=0) = // tgx11_qath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
+// v6 atom foot cross-section
+function tgx11_v6c_polygon(atom_size, gender="m", offset=0) = // tgx11_qath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
 	togmod1_make_polygon(tgx11_chunk_xs_points(atom_size, gender=gender, offset=offset-$tgx11_u));
+
+// v6 atom foot, but right side is flat instead of beveled and rounded
+function tgx11_v6c_flatright_polygon(atom_size, gender="m", offset=0) =
+	let(offset = offset-$tgx11_u)
+	togmod1_make_polygon([
+		[atom_size[0]/2+offset,  atom_size[1]/2+offset],
+		each tgx11_qath_points(tgx11_chunk_xs_half_qath(atom_size, gender=gender, offset=offset)),
+		[atom_size[0]/2+offset, -atom_size[1]/2-offset],
+	]);
 
 /**
  * Generate a polyhedron with TOGridPile rounded beveled rectangle cross-sections
@@ -352,12 +370,12 @@ use <../lib/TOGMod1.scad>
 
 function test_plate(size) =
 	["linear-extrude-zs", [0, $tgx11_u], ["difference",
-		tgx11_atom_foot_polygon(size, gender="m", offset=5+offset),
-		tgx11_atom_foot_polygon(size, gender="f", offset=0-offset),
+		tgx11_v6c_polygon(size, gender="m", offset=5+offset),
+		tgx11_v6c_polygon(size, gender="f", offset=0-offset),
 	]];
 
 foot_column_demo = ["union",
-	tgx11_atom_foot_polygon([12.7,12.7], gender="m", offset=offset),
+	tgx11_v6c_polygon([12.7,12.7], gender="m", offset=offset),
 	test_plate([12.7,12.7])
 ];
 
@@ -385,6 +403,7 @@ function make_chunk_foot() = ["intersection",
 
 whats = ["union",
 	item == "chunk-foot" ? make_chunk_foot() :
+	item == "v6hc-xc" ? tgx11_v6c_flatright_polygon([12.7,12.7]) :
 	assert(false, str("Unrecognized mode: '", mode, "'"))
 ];
 
