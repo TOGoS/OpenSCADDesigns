@@ -18,6 +18,7 @@
 
 preview_fn = 12;
 offset = -0.1; // 0.1
+item = "chunk-foot"; // ["chunk-foot"]
 // radius = 4;
 
 $fn = $preview ? preview_fn : 72;
@@ -236,25 +237,44 @@ let(points = tgx11_zath_points(zath, offset-radius))
 
 //// 
 
-function tgx11_beveled_rect_zath(size, bevel_size) =
+function tgx11__gnerate_beveled_rect_data(bevels=[true,true,true,true]) =
+let(z41 = sqrt(2)-1) [
+	each bevels[0] ? [
+		[[ 1, 1], [ 0,-1], [   1,  z41]],
+		[[ 1, 1], [-1, 0], [ z41,    1]],
+	] : [
+		[[ 1, 1], [ 0, 0], [   1,    1]],
+	],
+	each bevels[1] ? [
+		[[-1, 1], [ 1, 0], [-z41,    1]],
+		[[-1, 1], [ 0,-1], [-  1,  z41]],
+	] : [
+		[[-1, 1], [ 0, 0], [-  1,    1]],
+	],
+	each bevels[2] ? [
+		[[-1,-1], [ 0, 1], [-  1, -z41]],
+		[[-1,-1], [ 1, 0], [-z41, -  1]],
+	] : [
+		[[-1,-1], [ 0, 0], [-  1, -  1]],
+	],
+	each bevels[3] ? [
+		[[ 1,-1], [-1, 0], [ z41, -  1]],
+		[[ 1,-1], [ 0, 1], [   1, -z41]],
+	] : [
+		[[ 1,-1], [ 0, 0], [   1, -  1]],
+	]
+];
+
+
+function tgx11_beveled_rect_zath(size, bevel_size, data=tgx11__gnerate_beveled_rect_data()) =
 assert(is_list(size))
 assert(is_num(size[0]))
 assert(is_num(size[1]))
 assert(is_num(bevel_size))
-let(z41 = sqrt(2)-1)
 [
 	"tgx11-zath",
 	
-	for( d = [
-		[[ 1, 1], [ 0,-1], [   1,  z41]],
-		[[ 1, 1], [-1, 0], [ z41,    1]],
-		[[-1, 1], [ 1, 0], [-z41,    1]],
-		[[-1, 1], [ 0,-1], [-  1,  z41]],
-		[[-1,-1], [ 0, 1], [-  1, -z41]],
-		[[-1,-1], [ 1, 0], [-z41, -  1]],
-		[[ 1,-1], [-1, 0], [ z41, -  1]],
-		[[ 1,-1], [ 0, 1], [   1, -z41]],
-	] ) [
+	for( d=data ) [
 		[
 			d[0][0]*size[0]/2 + d[1][0] * bevel_size,
 			d[0][1]*size[1]/2 + d[1][1] * bevel_size
@@ -270,6 +290,18 @@ function tgx11_qath_to_polygon(qath) = togmod1_make_polygon(tgx11_qath_points(qa
 $tgx11_u = 1.5875;
 $tgx11_min_radius = 1.5875;
 
+function tgx11_chunk_xs_zath(size) =
+	tgx11_beveled_rect_zath(size, bevel_size=2*$tgx11_u);
+
+function tgx11_zq_radius(offset, gender="m") =
+	max($tgx11_min_radius, (gender == "m" ? 2 : 1)*$tgx11_u+offset);
+
+function tgx11_chunk_xs_qath(size, offset=0, gender="m") = tgx11_zath_to_qath(
+	tgx11_chunk_xs_zath(size),
+	offset = offset,
+	radius = tgx11_zq_radius(offset=offset, gender=gender)
+);
+
 /**
  * 'chunk cross-section points'
  *
@@ -279,15 +311,15 @@ $tgx11_min_radius = 1.5875;
  */
 function tgx11_chunk_xs_points(size, gender="m", offset=0) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
-	tgx11_qath_points(tgx11_zath_to_qath(
-		tgx11_beveled_rect_zath(size, 2*$tgx11_u),
-		offset = offset,
-		radius = max($tgx11_min_radius, (gender == "m" ? 2 : 1)*$tgx11_u+offset)
-	));
+	tgx11_qath_points(tgx11_chunk_xs_qath(size, gender=gender, offset=offset));
 
 function tgx11_atom_foot_polygon(atom_size, gender="m", offset=0) = // tgx11_qath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
 	togmod1_make_polygon(tgx11_chunk_xs_points(atom_size, gender=gender, offset=offset-$tgx11_u));
 
+/**
+ * Generate a polyhedron with TOGridPile rounded beveled rectangle cross-sections
+ * for each [z, offset] in layer_keys.
+ */
 function tgx11__chunk_footlike(layer_keys, size, gender="m", offset=0) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
 	let( u=$tgx11_u )
@@ -339,7 +371,7 @@ function extrude_polypoints(zrange, points) =
 		for( z=zrange ) [ for(p=points) [p[0],p[1],z] ]
 	]);
 
-togmod1_domodule(["intersection",
+function make_chunk_foot() = ["intersection",
 	extrude_polypoints([-1,100], tgx11_chunk_xs_points(
 		size = [38.1, 38.1],
 		gender = "m",
@@ -349,4 +381,11 @@ togmod1_domodule(["intersection",
 		for(xm=[-1,0,1]) for(ym=[-1,0,1]) ["translate", [xm*12.7, ym*12.7, 0], atom_unifoot],
 		["translate", [0,0,2*$tgx11_u-offset], tgx11_chunk_foot([38.1, 38.1, 12.7-2*$tgx11_u+2*offset], gender="m", offset=offset)]
 	]
-]);
+];
+
+whats = ["union",
+	item == "chunk-foot" ? make_chunk_foot() :
+	assert(false, str("Unrecognized mode: '", mode, "'"))
+];
+
+togmod1_domodule(whats);
