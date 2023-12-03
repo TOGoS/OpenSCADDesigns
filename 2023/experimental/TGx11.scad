@@ -349,19 +349,21 @@ function tgx11__chunk_footlike(layer_keys, size, gender="m", offset=0) =
 
 function tgx11_chunk_foot(size, gender="m", offset=0) =
 	let( u = $tgx11_u )
+	let( z41 = sqrt(2) - 1 )
 	tgx11__chunk_footlike([
-		[0, -2],
-		[4,  2],
-		[size[2]/u, 2]
+		[0-offset    , -2],
+		[4-offset-z41,  2],
+		[   size[2]/u,  2]
 	], size=size, gender=gender, offset=offset);
 
 function tgx11_chunk_unifoot(size, gender="m", offset=0) =
 	let( u = $tgx11_u )
+	let( z41 = sqrt(2) - 1 )
 	tgx11__chunk_footlike([
-		[0, -1],
-		[1, -1],
-		[4,  2],
-		[size[2]/u, 2]
+		[0-offset    , -1],
+		[1-offset*z41, -1],
+		[4-offset*z41,  2],
+		[   size[2]/u,  2]
 	], size=size, gender=gender, offset=offset);
 
 //// Demo
@@ -389,15 +391,21 @@ function extrude_polypoints(zrange, points) =
 		for( z=zrange ) [ for(p=points) [p[0],p[1],z] ]
 	]);
 
-function make_chunk_foot() = ["intersection",
+function make_chunk_foot() =
+// This is an 'atomic' chunk foot
+let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], offset=offset)])
+["intersection",
 	extrude_polypoints([-1,100], tgx11_chunk_xs_points(
 		size = [38.1, 38.1],
 		gender = "m",
 		offset = offset
 	)),
+	tgx11_chunk_unifoot([38.1, 38.1, 12.7], gender="m", offset=offset),
 	["union",
 		for(xm=[-1,0,1]) for(ym=[-1,0,1]) ["translate", [xm*12.7, ym*12.7, 0], atom_unifoot],
-		["translate", [0,0,2*$tgx11_u-offset], tgx11_chunk_foot([38.1, 38.1, 12.7-2*$tgx11_u+2*offset], gender="m", offset=offset)]
+		for(xm=[-1,0,1]) ["translate", [xm*12.7,0,12.7/2], togmod1_linear_extrude_y([-19.05,19.05], v6hc)],
+		for(ym=[-1,0,1]) ["translate", [0,ym*12.7,12.7/2], togmod1_linear_extrude_x([-19.05,19.05], v6hc)],
+		["translate", [0,0,2*$tgx11_u], tgx11_chunk_foot([38.1, 38.1, 12.7-2*$tgx11_u], gender="m", offset=offset)]
 	]
 ];
 
