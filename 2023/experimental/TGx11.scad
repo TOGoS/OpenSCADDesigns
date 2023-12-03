@@ -17,7 +17,7 @@
 // TGx11QathInfo = ["tgx11-qath-info"|"invalid", min_radius|undef, ["error message", "error message", ...]]
 
 preview_fn = 12;
-offset = 0;
+offset = 0; // 0.1
 radius = 4;
 
 $fn = $preview ? preview_fn : 72;
@@ -210,9 +210,8 @@ function tgx11_zath_points(zath, off=0) =
 let(points     = tgx11_zath_points_nocheck(zath,0  ))
 let(new_points = tgx11_zath_points_nocheck(zath,off))
 let(edgecomp   = tgx11__compare_edge_nvecs(points, new_points))
-assert(tgx11__max_of(edgecomp) < 0.1)
+assert(tgx11__max_of(edgecomp) < 0.1, str("Max edge direction difference=", tgx11__max_of(edgecomp)))
 new_points;
-
 
 function tgx11_zath_to_qath(zath, radius=0, offset=0) =
 assert(zath[0] == "tgx11-zath")
@@ -232,6 +231,35 @@ let(points = tgx11_zath_points(zath, offset-radius))
 	["tgx11-qathseg", points[i], aab, abc_fixed, radius]
 ];
 
+function tgx11_beveled_rect_zath(size, bevel_size) =
+let(z41 = sqrt(2)-1)
+[
+	"tgx11-zath",
+	
+	for( d = [
+		[[ 1, 1], [ 0,-1], [   1,  z41]],
+		[[ 1, 1], [-1, 0], [ z41,    1]],
+		[[-1, 1], [ 1, 0], [-z41,    1]],
+		[[-1, 1], [ 0,-1], [-  1,  z41]],
+		[[-1,-1], [ 0, 1], [-  1, -z41]],
+		[[-1,-1], [ 1, 0], [-z41, -  1]],
+		[[ 1,-1], [-1, 0], [ z41, -  1]],
+		[[ 1,-1], [ 0, 1], [   1, -z41]],
+	] ) [
+		[
+			d[0][0]*size[0]/2 + d[1][0] * bevel_size,
+			d[0][1]*size[1]/2 + d[1][1] * bevel_size
+		],
+		d[2]
+	]
+];
+
+function tgx11_atom_outline_zath() = tgx11_beveled_rect_zath([12.7, 12.7], 3.175);
+
+function tgx11_atom_foot_qath(type="m", offset=0) =
+	tgx11_zath_to_qath(tgx11_atom_outline_zath(), offset=offset-1.5875, radius=(type == "m" ? 3.175 : 1.5875)+offset);
+function tgx11_qath_to_polygon(qath) = togmod1_make_polygon(tgx11_qath_points(qath));
+function tgx11_atom_foot_polygon(type="m", offset=0) = tgx11_qath_to_polygon(tgx11_atom_foot_qath(type=type, offset=offset));
 
 //// Demo
 
@@ -253,6 +281,7 @@ a_path_points = tgx11_qath_points(a_path);
 togmod1_domodule(togmod1_make_polygon(a_path_points));
 */
 
+/*
 // List of vertex positions and offset vectors
 z41 = sqrt(2)-1;
 a_zath = ["tgx11-zath",
@@ -266,20 +295,14 @@ a_zath = ["tgx11-zath",
 togmod1_domodule(["x-debug", togmod1_make_polygon(tgx11_zath_points(a_zath, 0))]);
 //togmod1_domodule(togmod1_make_polygon(tgx11_zath_points(a_zath, offset)));
 togmod1_domodule(togmod1_make_polygon(tgx11_qath_points(tgx11_zath_to_qath(a_zath, radius=radius, offset=offset))));
+*/
 
-
-/*
-function function abc_to_qathseg(a, b, c) = undef;
-
-function tgx11_zath_to_qath(zath, radius) = [
-	for( i = [0:1:len(zath)-1 )
-	let( po = po_path[i] )
-	let( pos=po[0]) let(ovec=po[1])
-	let( a0 = po_path[
-	[
-		"tgx11-qathseg",
-		[pos[0] - ovec[0]*radius, pos[1] - ovec[1]*radius],
-		a0, a1, radius
+foot_column_demo = ["union",
+	tgx11_atom_foot_polygon(type="m", offset=offset),
+	["difference",
+		tgx11_atom_foot_polygon(type="m", offset=5+offset),
+		tgx11_atom_foot_polygon(type="f", offset=0-offset),
 	]
 ];
-*/
+
+togmod1_domodule(foot_column_demo);
