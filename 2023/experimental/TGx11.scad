@@ -22,6 +22,9 @@ radius = 4;
 
 $fn = $preview ? preview_fn : 72;
 
+use <../lib/TOGMod1Constructors.scad>
+use <../lib/TOGPolyhedronLib1.scad>
+
 //// Vector/angle functions
 
 function tgx11__vec_length_squared(vec,i=0,acc=0) =
@@ -254,18 +257,47 @@ let(z41 = sqrt(2)-1)
 	]
 ];
 
-function tgx11_atom_outline_zath() = tgx11_beveled_rect_zath([12.7, 12.7], 3.175);
-
-function tgx11_atom_foot_qath(type="m", offset=0) =
-	tgx11_zath_to_qath(tgx11_atom_outline_zath(), offset=offset-1.5875, radius=(type == "m" ? 3.175 : 1.5875)+offset);
 function tgx11_qath_to_polygon(qath) = togmod1_make_polygon(tgx11_qath_points(qath));
-function tgx11_atom_foot_polygon(type="m", offset=0) = tgx11_qath_to_polygon(tgx11_atom_foot_qath(type=type, offset=offset));
+
+
+$tgx11_u = 1.5875;
+
+function tgx11_atom_outline_zath(atom_size) = tgx11_beveled_rect_zath(atom_size, 3.175);
+
+function tgx11_atom_foot_qath(atom_size, gender="m", offset=0, u=$tgx11_u) =
+	let(offset = offset-u)
+	tgx11_zath_to_qath(tgx11_atom_outline_zath(atom_size), offset=offset, radius=max(u, (gender == "m" ? 2*u : u)+offset));
+function tgx11_atom_foot_polygon(atom_size, gender="m", offset=0) = tgx11_qath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
+
+function tgx11__chunk_footlike(layer_keys, size, gender="m", u=$tgx11_u, offset=0) =
+	tphl1_make_polyhedron_from_layer_function(layer_keys, function(zo)
+		let( z=u*zo[0] )
+		let( offset=offset+u*zo[1] )
+		[for (p=tgx11_qath_points(tgx11_zath_to_qath(
+			tgx11_beveled_rect_zath(size, 2*u),
+			offset = offset,
+			radius = max(u, (gender == "m" ? 3.175 : 1.5875)+offset)
+		))) [p[0], p[1], z]]
+	);
+
+function tgx11_chunk_foot(size, gender="m", u=$tgx11_u, offset=0) =
+	tgx11__chunk_footlike([
+		[0, -2],
+		[4,  2],
+		[size[2]/u, 2]
+	], size=size, gender=gender, u=u, offset=offset);
+
+function tgx11_chunk_unifoot(size, gender="m", u=$tgx11_u, offset=0) =
+	tgx11__chunk_footlike([
+		[0, -1],
+		[1, -1],
+		[4,  2],
+		[size[2]/u, 2]
+	], size=size, gender=gender, u=u, offset=offset);
 
 //// Demo
 
 use <../lib/TOGMod1.scad>
-use <../lib/TOGMod1Constructors.scad>
-use <../lib/TOGPolyhedronLib1.scad>
 
 /*
 a_path = tgx11_offset_qath(["tgx11-qath",
@@ -297,12 +329,32 @@ togmod1_domodule(["x-debug", togmod1_make_polygon(tgx11_zath_points(a_zath, 0))]
 togmod1_domodule(togmod1_make_polygon(tgx11_qath_points(tgx11_zath_to_qath(a_zath, radius=radius, offset=offset))));
 */
 
+function test_plate(size) =
+	["linear-extrude-zs", [0, $tgx11_u], ["difference",
+		tgx11_atom_foot_polygon(size, gender="m", offset=5+offset),
+		tgx11_atom_foot_polygon(size, gender="f", offset=0-offset),
+	]];
+
 foot_column_demo = ["union",
-	tgx11_atom_foot_polygon(type="m", offset=offset),
-	["difference",
-		tgx11_atom_foot_polygon(type="m", offset=5+offset),
-		tgx11_atom_foot_polygon(type="f", offset=0-offset),
-	]
+	tgx11_atom_foot_polygon([12.7,12.7], gender="m", offset=offset),
+	test_plate([12.7,12.7])
 ];
 
-togmod1_domodule(foot_column_demo);
+// togmod1_domodule(["x-debug", foot_column_demo]);
+togmod1_domodule(["x-debug", test_plate([38.1,38.1])]);
+
+atom_unifoot = tgx11_chunk_unifoot([12.7,12.7,12.7], gender="m", offset=offset);
+
+togmod1_domodule(["intersection",
+	["linear-extrude-zs", [-1, 100], togmod1_make_polygon(
+		tgx11_qath_points(tgx11_zath_to_qath(
+			tgx11_beveled_rect_zath([38.1,38.1], 2*$tgx11_u),
+			offset = offset,
+			radius = 3.175+offset)
+		)
+	)],
+	["union",
+		for(xm=[-1,0,1]) for(ym=[-1,0,1]) ["translate", [xm*12.7, ym*12.7, 0], atom_unifoot],
+		["translate", [0,0,2*$tgx11_u], tgx11_chunk_foot([38.1,38.1,12.7-2*$tgx11_u], gender="m", offset=offset)]
+	]
+]);
