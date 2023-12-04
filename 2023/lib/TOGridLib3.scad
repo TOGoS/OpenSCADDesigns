@@ -42,9 +42,9 @@ togridlib3_default_unit_table = [
 function togridlib3_get_default_unit_table() = togridlib3_default_unit_table;
 function togridlib3_get_unit_table() = is_undef($togridlib3_unit_table) ? togridlib3_default_unit_table : $togridlib3_unit_table;
 
-function togridlib3_decode(dim, unit_table=togridlib3_get_unit_table(), unit=[1, "mm"]) =
+function togridlib3_decode(dim, unit=[1, "mm"], unit_table=togridlib3_get_unit_table()) =
 	is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit);
-function togridlib3_decode_vector(size, unit_table=togridlib3_get_unit_table(), unit=[1, "mm"]) =
+function togridlib3_decode_vector(size, unit=[1, "mm"], unit_table=togridlib3_get_unit_table()) =
 	togridlib3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit));
 
 module togridlib3_cube(size, offset=0) {
