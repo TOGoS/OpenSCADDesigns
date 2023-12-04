@@ -16,7 +16,7 @@
 
 // TGx11QathInfo = ["tgx11-qath-info"|"invalid", min_radius|undef, ["error message", "error message", ...]]
 
-item = "block"; // ["block", "foot-column", "v6hc-xc"]
+item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo"]
 // radius = 4;
 block_size_chunks = [2,2];
 block_height_u = 12;
@@ -155,29 +155,29 @@ assert(tgx11_qath_info(qath)[0] == "tgx11-qath-info")
 	[seg[0], seg[1], seg[2], seg[3], seg[4] + off]
 ];
 
-function tgx11_qathseg_points(seg) =
+function tgx11_qathseg_points(seg, offset=0) =
 	let( a0 = seg[2] )
 	let( a1 = seg[3] )
 	let( rad = seg[4] )
+	let( rad1 = rad + (a1>a0?1:-1)*offset )
 	assert( rad >= 0 )
-	assert( a1 - a0 > 0 || rad == 0 ) // For now, only allow left turns!
-	let( vcount = ceil((a1 - a0) * max($fn,1) / 360) )
-	//echo(a1=a1, a0=a0, diff=(a1-a0), fn=$fn, vcount=vcount) 
+	let( vcount = ceil(abs(a1 - a0) * max($fn,1) / 360) )
 	assert( vcount >= 1 )
 [
 	for( vi = [0:1:vcount] )
 	// Calculate angles in such a way that first and last are exact
 	let( a = a0 * (vcount-vi)/vcount + a1 * vi/vcount )
-	[seg[1][0] + cos(a) * rad, seg[1][1] + sin(a) * rad]
+	[seg[1][0] + cos(a) * rad1, seg[1][1] + sin(a) * rad1]
 ];
 
-function tgx11_qath_points(qath) =
+function tgx11_qath_points(qath, offset=0) =
 let(qathinfo = tgx11_qath_info(qath))
+assert(qathinfo[0] != "invalid", qathinfo[2])
 assert(qathinfo[0] == "tgx11-qath-info")
 assert(qathinfo[1] >= 0, str("Can't turn qath into points because minimum radius is < 0: ", qathinfo[1]))
 [
 	for( si = [1:1:len(qath)-1] )
-	each tgx11_qathseg_points(qath[si])
+	each tgx11_qathseg_points(qath[si],offset=offset)
 ];
 
 //// Zath - points with offset vector
@@ -288,7 +288,7 @@ let( data = tgx11__gnerate_beveled_rect_data(bevels) )
 	]
 ];
 
-function tgx11_qath_to_polygon(qath) = togmod1_make_polygon(tgx11_qath_points(qath));
+function tgx11_qath_to_polygon(qath,offset=0) = togmod1_make_polygon(tgx11_qath_points(qath,offset=offset));
 
 //// TOGridPile-specific stuff
 
@@ -467,11 +467,19 @@ module tgmain() {
 	foot_column_demo = ["union",
 		["linear-extrude-zs", [0,tgx11__bare_column_height()], tgx11_v6c_polygon(block_size, gender="m", offset=$tgx11_offset)],
 	];
+	
+	demo_concave_qath = ["tgx11-qath",
+		["tgx11-qathseg", [-5, 5],   90,  270,  5],
+		["tgx11-qathseg", [ 5,-5],   90,    0,  5],
+		["tgx11-qathseg", [15,-5], -180,    0,  5],
+		["tgx11-qathseg", [10, 0],    0,   90, 10],
+	];
 
 	what = ["union",
 		item == "block" ? tgx11_block(block_size_ca) :
 		item == "v6hc-xc" ? tgx11_v6c_flatright_polygon([12.7,12.7]) :
 		item == "foot-column" ? foot_column_demo :
+		item == "concave-qath-demo" ? tgx11_qath_to_polygon(demo_concave_qath, offset=offset) :
 		assert(false, str("Unrecognized item: '", item, "'"))
 	];
 	
