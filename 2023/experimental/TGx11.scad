@@ -403,12 +403,13 @@ let(yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(atom = togridlib3_decode([1,"atom"]))
 let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,atom]))
 ["intersection",
-	tgx11_chunk_unifoot(block_size),
+	// tgx11_chunk_unifoot(block_size),
 	["union",
 		for(xm=xms) for(ym=yms) ["translate", [xm*12.7, ym*12.7, 0], atom_unifoot],
 		for(xm=xms) ["translate", [xm*atom,0,atom/2], togmod1_linear_extrude_y([-block_size[1]/2+6, block_size[1]/2-6], v6hc)],
 		for(ym=yms) ["translate", [0,ym*atom,atom/2], togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v6hc)],
-		["translate", [0,0,2*$tgx11_u], tgx11_chunk_foot([block_size[0], block_size[1], block_size[2]-2*$tgx11_u])]
+		//["translate", [0,0,2*$tgx11_u+0.1], tgx11_chunk_foot([block_size[0]-0.2, block_size[1]-0.2, block_size[2]-2*$tgx11_u-0.2])]
+		["translate", [0,0,2*$tgx11_u+50], togmod1_make_cuboid([block_size[0]-12, block_size[1]-12, 100])]
 	]
 ];
 
@@ -417,7 +418,7 @@ let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 // This is an 'atomic' chunk foot
 ["intersection",
-	extrude_polypoints([-1,100], tgx11_chunk_xs_points(
+	extrude_polypoints([-1,block_size[2]], tgx11_chunk_xs_points(
 		size = block_size
 	)),
 	tgx11__atomic_block_bottom(block_size_ca)
@@ -425,7 +426,7 @@ let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 
 // $togridlib3_unit_table = togridlib3_get_default_unit_table();
 
-module main() {
+module tgmain() {
 	block_size_ca = [
 		[block_size_chunks[0], "chunk"],
 		[block_size_chunks[1], "chunk"],
@@ -445,10 +446,8 @@ module main() {
 	];
 	
 	togmod1_domodule(what);
+	
 	if( $preview ) togmod1_domodule(["x-debug", test_plate(block_size)]);
 }
 
-// togmod1_domodule(["x-debug", foot_column_demo]);
-//togmod1_domodule(["x-debug", test_plate([38.1,38.1])]);
-
-main($tgx11_offset=offset);
+tgmain($tgx11_offset=offset);
