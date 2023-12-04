@@ -16,19 +16,42 @@
 
 // TGx11QathInfo = ["tgx11-qath-info"|"invalid", min_radius|undef, ["error message", "error message", ...]]
 
-item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo"]
+item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 // radius = 4;
 block_size_chunks = [2,2];
 block_height_u = 12;
 
 offset = -0.1; // 0.1
-
+include_test_plate = true;
 preview_fn = 12;
 
 $fn = $preview ? preview_fn : 72;
 
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGComplexLib1.scad>
+
+//// Assertion helpers
+
+/**
+ * Are a and b identical in structure with corresponding numeric
+ * components being 'approximately equal'?
+ */
+function tgx11__approximate_equal(a, b, offset=0) =
+	is_list(a) && is_list(b) && len(a) == len(b) ? (
+		len(a) == offset ? true :
+		tgx11__approximate_equal(a[offset], b[offset]) && tgx11__approximate_equal(a, b, offset+1)
+	) :
+	is_num(a) && is_num(b) ? abs(a-b) < 0.0001 :
+	a == b;
+
+function tgx11__assert_equals(expected, actual, eqfunc=function(a,b) tgx11__approximate_equal(a,b)) =
+	assert(eqfunc(expected, actual), str("\nExpected=", expected, ";\nActual  =", actual))
+	true;
+module tgx11__assert_equals(expected, actual) {
+	_ignored = tgx11__assert_equals(expected, actual);
+}
+
 
 //// Vector/angle functions
 
@@ -182,6 +205,9 @@ assert(qathinfo[1] >= 0, str("Can't turn qath into points because minimum radius
 
 //// Zath - points with offset vector
 
+// Zath = ["tgx11-zath", ZathPoint...]
+// ZathPoint = [[x, y], [ox, oy]] ; where ox,oy is the outward-pointing offset vector
+
 function tgx11_offset_zathnode(zathnode, off) = [
 	zathnode[0] + off*zathnode[1],
 	zathnode[1]
@@ -214,12 +240,15 @@ function tgx11__max_of(list, i=0, acc=0) =
 
 
 
-function tgx11_zath_points(zath, off=0) =
-let(points     = tgx11_zath_points_nocheck(zath,0  ))
-let(new_points = tgx11_zath_points_nocheck(zath,off))
+function tgx11_zath_points(zath, offset=0) =
+let(points     = tgx11_zath_points_nocheck(zath,0    ))
+let(new_points = tgx11_zath_points_nocheck(zath,offset))
 let(edgecomp   = tgx11__compare_edge_nvecs(points, new_points))
 assert(tgx11__max_of(edgecomp) < 0.1, str("Max edge direction difference=", tgx11__max_of(edgecomp)))
 new_points;
+
+function tgx11_zath_to_polygon(zath, offset=0) =
+	togmod1_make_polygon(tgx11_zath_points(zath, offset=offset));
 
 function tgx11_zath_to_qath(zath, radius=0, offset=0, closed=true) =
 assert(zath[0] == "tgx11-zath")
@@ -231,13 +260,49 @@ let(points = tgx11_zath_points(zath, offset-radius))
 	let( va = points[(i-1+len(points))%len(points)] )
 	let( vb = points[(i              )            ] )
 	let( vc = points[(i+1            )%len(points)] )
+	// Note that Qaths can handle turns > 180 degrees,
+	// which is why they need to use a1-a0 <> 0 to determine turn direction.
+	// Angles > 180 or <-180 makes no sense for a Zath,
+	// so we can assume that 'turn' has the correct sign
+	// and abc = aab+turn will give it the proper relationship to abc:
 	let( aab = tgx11__line_angle(va, vb)-90 )
-	let( abc = tgx11__line_angle(vb, vc)-90 )
-	// TODO: Don't assume left turn
-	let( abc_fixed = abc > aab ? abc : abc+360 )
-	assert(abc_fixed > aab)
-	["tgx11-qathseg", points[i], aab, abc_fixed, radius]
+	let( turn = tcplx1_relative_angle_abc(va, vb, vc) )
+	let( abc = aab+turn )
+	["tgx11-qathseg", points[i], aab, abc, radius]
 ];
+
+function tgx11_polypoint_offset_vectors(points) = [
+	for( i = [0:1:len(points)-1] )
+	let( pa = points[ (i-1+len(points))%len(points) ] )
+	let( pb = points[ (i              )           ] )
+	let( pc = points[ (i+1            )%len(points) ] )
+	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
+	let( ab_normalized = tcplx1_normalize(pb-pa) )
+	let( ov_forward = tan(turn/2) ) // 2023-12-04 Eureka
+	tcplx1_multiply(ab_normalized, [0,-1]) + tcplx1_multiply(ab_normalized, [ov_forward,0])
+];
+
+
+// Simplest case: a square
+tgx11__assert_equals([[1,1], [-1,1], [-1,-1], [1,-1]], tgx11_polypoint_offset_vectors([[2,2], [-2,2], [-2,-2], [2,-2]]));
+// A rectangle
+tgx11__assert_equals([[1,1], [-1,1], [-1,-1], [1,-1]], tgx11_polypoint_offset_vectors([[3,2], [-4,2], [-4,-1], [3,-1]]));
+// A diamond
+let(s2 = sqrt(2))
+tgx11__assert_equals([[s2,0], [0,s2], [-s2,0], [0,-s2]], tgx11_polypoint_offset_vectors([[3,0], [0,3], [-3,0], [0,-3]]));
+// Something with a 45-degree turn
+let(z41 = sqrt(2)-1)
+tgx11__assert_equals([
+	[-1,-1], [1,-1], [1,z41], [z41, 1], [-1,1]
+], tgx11_polypoint_offset_vectors([[0,0], [5,0], [5,3], [3,5], [0,5]]));
+
+
+function tgx11_points_to_zath(points) =
+let(ovecs = tgx11_polypoint_offset_vectors(points))
+["tgx11-zath",
+	for( i = [0:1:len(points)-1] ) [ points[i], ovecs[i] ]
+];
+
 
 //// 
 
@@ -464,7 +529,7 @@ module tgmain() {
 	block_size = togridlib3_decode_vector(block_size_ca);
 	u = togridlib3_decode([1,"u"]);
 	
-	foot_column_demo = ["union",
+	function foot_column_demo() = ["union",
 		["linear-extrude-zs", [0,tgx11__bare_column_height()], tgx11_v6c_polygon(block_size, gender="m", offset=$tgx11_offset)],
 	];
 	
@@ -475,17 +540,46 @@ module tgmain() {
 		["tgx11-qathseg", [10, 0],    0,   90, 10],
 	];
 
-	what = ["union",
-		item == "block" ? tgx11_block(block_size_ca) :
-		item == "v6hc-xc" ? tgx11_v6c_flatright_polygon([12.7,12.7]) :
-		item == "foot-column" ? foot_column_demo :
-		item == "concave-qath-demo" ? tgx11_qath_to_polygon(demo_concave_qath, offset=offset) :
-		assert(false, str("Unrecognized item: '", item, "'"))
+	some_polypoints = [
+		[-10,-10],
+		[  5,-10],
+		[ 10,- 5],
+		[ 10, 10],
+		[  5, 10],
+		[  5,  5],
+		[  0, 10],
+		[-10, 10],
 	];
 	
-	togmod1_domodule(what);
+	function polyhagl(plate_size, generator) =
+	let(u = togridlib3_decode([1,"u"]))
+	["hand+glove",
+		["linear-extrude-zs", [0, u], generator($tgx11_offset)],
+		["linear-extrude-zs", [0, u], ["difference",
+			tgx11_v6c_polygon(plate_size),
+			generator(-$tgx11_offset)
+		]]
+	];
+
+
+	what =
+		item == "block" ? ["hand+glove",
+			tgx11_block(block_size_ca),
+			test_plate(block_size)
+		] :
+		item == "v6hc-xc" ? polyhagl([20,20], function(offset) tgx11_v6c_flatright_polygon([12.7,12.7], offset=offset)) :
+		item == "foot-column" ? foot_column_demo() :
+		item == "concave-qath-demo" ? polyhagl([60,30], function(offset) tgx11_qath_to_polygon(demo_concave_qath, offset=offset)) :
+		item == "autozath-demo" ? polyhagl([30,30], function(offset) tgx11_zath_to_polygon(tgx11_points_to_zath(some_polypoints), offset=offset)) :
+		assert(false, str("Unrecognized item: '", item, "'"));
 	
-	if( $preview ) togmod1_domodule(["x-debug", test_plate(block_size)]);
+	hand  = (what[0] == "hand+glove") ? what[1] : what;
+	glove = (what[0] == "hand+glove") ? what[2] : ["union"];
+	echo(hand=hand);
+	assert(hand[0] != "hand+glove");
+	togmod1_domodule(hand);
+	
+	if( $preview && include_test_plate ) togmod1_domodule(["x-debug", glove]);
 }
 
 tgmain($tgx11_offset=offset);
