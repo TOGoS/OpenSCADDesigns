@@ -292,28 +292,43 @@ function tgx11_qath_to_polygon(qath) = togmod1_make_polygon(tgx11_qath_points(qa
 
 //// TOGridPile-specific stuff
 
-$tgx11_u = 1.5875;
-$tgx11_min_radius = 1.5875;
-
 //// Low-level operations requiring explicit offset and gender
-// TODO: For the low-level functions, instead of 'gender', pass corner radius, make it non-optional
+//// (but still reading from $togridlib3_unit_table)
+
+// Height of the straight part at the bottom of blocks,
+// or thickness of 'column-only' plates/lips:
+function tgx11__bare_column_height() =
+	togridlib3_decode([1, "tgp-standard-bevel"]) - 
+	togridlib3_decode([1, "tgp-column-inset"]);
+
+/**
+ * Returns radius for corners for the given gender
+ * at the given offset from the 'ideal' chunk hull
+ */
+function tgx11__corner_radius(offset, gender) =
+	assert(is_num(offset))
+	assert(is_string(gender))
+	max(
+		togridlib3_decode([1, "tgp-min-corner-radius"]),
+		
+		gender == "m" ? togridlib3_decode([1, "tgp-m-outer-corner-radius"]) :
+		gender == "f" ? togridlib3_decode([1, "tgp-f-outer-corner-radius"]) :
+		assert(false, str("Unknown gender for corner radius purposes: '", gender, "'"))
+	);
 
 function tgx11_chunk_xs_zath(size, bevels=[true,true,true,true]) =
-	tgx11_beveled_rect_zath(size, bevel_size=2*$tgx11_u, bevels=bevels);
-
-function tgx11_zq_radius(offset, gender="m") =
-	max($tgx11_min_radius, (gender == "m" ? 2 : 1)*$tgx11_u+offset);
+	tgx11_beveled_rect_zath(size, bevel_size=togridlib3_decode([1,"tgp-standard-bevel"]), bevels=bevels);
 
 function tgx11_chunk_xs_qath(size, offset=0, gender="m") = tgx11_zath_to_qath(
 	tgx11_chunk_xs_zath(size),
 	offset = offset,
-	radius = tgx11_zq_radius(offset=offset, gender=gender)
+	radius = tgx11__corner_radius(offset=offset, gender=gender)
 );
 
 function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = tgx11_zath_to_qath(
 	tgx11_chunk_xs_zath(size, bevels=[false,true,true,false]),
 	offset = offset,
-	radius = tgx11_zq_radius(offset=offset, gender=gender),
+	radius = tgx11__corner_radius(offset=offset, gender=gender),
 	closed=false
 );
 
@@ -330,11 +345,13 @@ function tgx11_chunk_xs_points(size, gender="m", offset=0) =
 
 // v6 atom foot cross-section
 function tgx11_v6c_polygon(atom_size, gender="m", offset=0) = // tgx11_qath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
-	togmod1_make_polygon(tgx11_chunk_xs_points(atom_size, gender=gender, offset=offset-$tgx11_u));
+	let( column_inset = togridlib3_decode([1,"tgp-column-inset"]) )
+	togmod1_make_polygon(tgx11_chunk_xs_points(atom_size, gender=gender, offset=offset-column_inset));
 
 // v6 atom foot, but right side is flat instead of beveled and rounded
 function tgx11_v6c_flatright_polygon(atom_size, gender="m", offset=0) =
-	let(offset = offset-$tgx11_u)
+	let( column_inset = togridlib3_decode([1,"tgp-column-inset"]) )
+	let( offset = offset-column_inset )
 	togmod1_make_polygon([
 		[atom_size[0]/2+offset,  atom_size[1]/2+offset],
 		each tgx11_qath_points(tgx11_chunk_xs_half_qath(atom_size, gender=gender, offset=offset)),
@@ -353,14 +370,14 @@ $tgx11_gender = "m";
  */
 function tgx11__chunk_footlike(layer_keys, size) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
-	let( u=$tgx11_u )
+	let( u = togridlib3_decode([1,"u"]) )
 	tphl1_make_polyhedron_from_layer_function(layer_keys, function(zo)
 		let( z=u*zo[0] )
 		[for (p=tgx11_chunk_xs_points(size, gender=$tgx11_gender, offset=$tgx11_offset+u*zo[1])) [p[0], p[1], z]]
 	);
 
 function tgx11_chunk_foot(size) =
-	let( u = $tgx11_u )
+	let( u = togridlib3_decode([1,"u"]) )
 	let( z41 = sqrt(2) - 1 )
 	tgx11__chunk_footlike([
 		[0-offset    , -2],
@@ -369,7 +386,7 @@ function tgx11_chunk_foot(size) =
 	], size=size);
 
 function tgx11_chunk_unifoot(size) =
-	let( u = $tgx11_u )
+	let( u = togridlib3_decode([1,"u"]) )
 	let( z41 = sqrt(2) - 1 )
 	tgx11__chunk_footlike([
 		[0-offset    , -1],
@@ -384,7 +401,8 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGridLib3.scad>
 
 function test_plate(size) =
-	["linear-extrude-zs", [0, $tgx11_u], ["difference",
+	let(u = togridlib3_decode([1,"u"]))
+	["linear-extrude-zs", [0, tgx11__bare_column_height()], ["difference",
 		tgx11_v6c_polygon(size, gender="m", offset=5+offset),
 		tgx11_v6c_polygon(size, gender="f", offset=0-offset),
 	]];
@@ -400,6 +418,8 @@ let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], offset=$tgx11_offset)])
 let(xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
+let(u = togridlib3_decode([1,"u"]))
+let(bevel_size = togridlib3_decode([1,"tgp-standard-bevel"]))
 let(atom = togridlib3_decode([1,"atom"]))
 let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,block_size[2]]))
 ["intersection",
@@ -409,7 +429,7 @@ let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,block_size[2]]))
 		for(xm=xms) ["translate", [xm*atom,0,atom/2], togmod1_linear_extrude_y([-block_size[1]/2+6, block_size[1]/2-6], v6hc)],
 		for(ym=yms) ["translate", [0,ym*atom,atom/2], togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v6hc)],
 		//["translate", [0,0,2*$tgx11_u+0.1], tgx11_chunk_foot([block_size[0]-0.2, block_size[1]-0.2, block_size[2]-2*$tgx11_u-0.2])]
-		["translate", [0,0,2*$tgx11_u+block_size[2]/2], togmod1_make_cuboid([block_size[0]-12, block_size[1]-12, block_size[2]])]
+		["translate", [0,0,bevel_size+block_size[2]/2], togmod1_make_cuboid([block_size[0]-12, block_size[1]-12, block_size[2]])]
 	]
 ];
 
@@ -424,7 +444,16 @@ let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 	tgx11__atomic_block_bottom(block_size_ca)
 ];
 
-// $togridlib3_unit_table = togridlib3_get_default_unit_table();
+$togridlib3_unit_table = [
+	// The defaults in TOGridLib3 were chosen for v8-style things;
+	// for our v6-inspired designs with beveled corners,
+	// and also 'tgp-' -prefix them while we're at it.
+	["tgp-m-outer-corner-radius", [2, "u"]],
+	["tgp-f-outer-corner-radius", [1, "u"]],
+	["tgp-column-inset", [1, "u"]],
+	["tgp-min-corner-radius", [1, "u"]],
+	each togridlib3_get_default_unit_table()
+];
 
 module tgmain() {
 	block_size_ca = [
@@ -433,9 +462,10 @@ module tgmain() {
 		[block_height_u, "u"],
 	];
 	block_size = togridlib3_decode_vector(block_size_ca);
+	u = togridlib3_decode([1,"u"]);
 	
 	foot_column_demo = ["union",
-		["linear-extrude-zs", [0,$tgx11_u], tgx11_v6c_polygon(block_size, gender="m", offset=$tgx11_offset)],
+		["linear-extrude-zs", [0,tgx11__bare_column_height()], tgx11_v6c_polygon(block_size, gender="m", offset=$tgx11_offset)],
 	];
 
 	what = ["union",
