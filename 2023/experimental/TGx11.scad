@@ -401,7 +401,7 @@ let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], offset=
 let(xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(atom = togridlib3_decode([1,"atom"]))
-let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,atom]))
+let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,block_size[2]]))
 ["intersection",
 	// tgx11_chunk_unifoot(block_size),
 	["union",
@@ -409,7 +409,7 @@ let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,atom]))
 		for(xm=xms) ["translate", [xm*atom,0,atom/2], togmod1_linear_extrude_y([-block_size[1]/2+6, block_size[1]/2-6], v6hc)],
 		for(ym=yms) ["translate", [0,ym*atom,atom/2], togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v6hc)],
 		//["translate", [0,0,2*$tgx11_u+0.1], tgx11_chunk_foot([block_size[0]-0.2, block_size[1]-0.2, block_size[2]-2*$tgx11_u-0.2])]
-		["translate", [0,0,2*$tgx11_u+50], togmod1_make_cuboid([block_size[0]-12, block_size[1]-12, 100])]
+		["translate", [0,0,2*$tgx11_u+block_size[2]/2], togmod1_make_cuboid([block_size[0]-12, block_size[1]-12, block_size[2]])]
 	]
 ];
 
