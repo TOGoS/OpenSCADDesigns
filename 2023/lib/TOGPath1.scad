@@ -290,12 +290,13 @@ function togpath1__offset(pa, pb, pc, dist) =
 function togpath1__round(pa, pb, pc, radius) =
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
+	let( turndir = turn > 0 ? 1 : -1 ) // +1=left, -1=right
 	let( ov_forward = tan(turn/2) )
 	let( ovec = tcplx1_multiply(ab_normalized, [0,-1]) + tcplx1_multiply(ab_normalized, [ov_forward,0]) )
-	let( fulc = pb - ovec*radius )
-	let( a0 = togpath1__line_angle(pa, pb)-90 )
+	let( fulc = pb - turndir * ovec*radius )
+	let( a0 = togpath1__line_angle(pa, pb) - turndir * 90 )
 	let( a1 = a0+turn )
-	let( vcount = ceil(abs(a1 - a0) * max($fn,1) / 360) )
+	let( vcount = ceil(abs(turn) * max($fn,1) / 360) )
 	assert( vcount >= 1 )
 	[
 		for( vi = [0:1:vcount] )
