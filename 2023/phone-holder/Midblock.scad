@@ -1,12 +1,14 @@
-height = 25.4;
+height = 25.4; // 0.01
 z_bevel_size = 1.5875; // 0.001
-hole_diameter = 4;
 
-block_shape = "stubby-l-6"; // ["stubby-l-6", "straight-3"]
+hole_style = "straight-4mm"; // ["straight-4mm", "THL-1001"]
+
+block_shape = "stubby-l-6"; // ["stubby-l-6", "straight-3", "rect-2x2"]
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
 
 module __end_params() { }
@@ -48,6 +50,19 @@ straight3_midblock_spec = ["midblock-sh", [
 	[ 0,16],
 ]];
 
+function make_rect_blockspec(size_u) = ["midblock-sh", [
+	"shapespec",
+	[[-size_u[0]/2, -size_u[1]/2], 2, [-1,-1]],
+	[[ size_u[0]/2, -size_u[1]/2], 2, [ 1,-1]],
+	[[ size_u[0]/2,  size_u[1]/2], 2, [ 1, 1]],
+	[[-size_u[0]/2,  size_u[1]/2], 2, [-1, 1]],
+], [
+	for( xm=[-size_u[0]/2 + 4 : 8 : size_u[0]/2-2] )
+	for( ym=[-size_u[1]/2 + 4 : 8 : size_u[1]/2-2] )
+	[xm, ym]
+]];
+
+
 function shapespec_to_rath(shapespec, xy_bevel_size, z_bevel_offset) =
 assert(shapespec[0] == "shapespec")
 ["togpath1-rath",
@@ -57,7 +72,7 @@ assert(shapespec[0] == "shapespec")
 	["togpath1-rathnode", cpos*u + czbevoff*z_bevel_offset, each ops]
 ];
 
-function blockspec_to_tmod(blockspec) =
+function blockspec_to_tmod(blockspec, height, hole) =
 	let( block_hull = tphl1_make_polyhedron_from_layer_function(
 		[[0, -z_bevel_size], [z_bevel_size,0], [height-z_bevel_size,0], [height,-z_bevel_size]],
 		function(zo)
@@ -66,7 +81,6 @@ function blockspec_to_tmod(blockspec) =
 				for(p=togpath1_rath_to_points(rath)) [p[0], p[1], zo[0]]
 			])
 	)
-	let( hole = tphl1_make_z_cylinder(hole_diameter, [-1,height+1]) )
 	["difference",
 		block_hull,
 		for( hp=blockspec[2] ) ["translate", hp*u, hole]
@@ -74,9 +88,15 @@ function blockspec_to_tmod(blockspec) =
 
 $fn = 24;
 
+hole =
+	hole_style == "straight-4mm" ?  tphl1_make_z_cylinder(4, [-1,height+1]) :
+	["translate", [0,0,height-0.3], tog_holelib2_hole(hole_style, depth=height+1, overhead_bore_height=1)];
+
 spec =
 	block_shape == "stubby-l-6" ? l_midblock_spec :
 	block_shape == "straight-3" ? straight3_midblock_spec :
+	// TODO: Parse so that any size is possible
+	block_shape == "rect-2x2" ? make_rect_blockspec([16,16]) :
 	assert(false, str("Unknown block style: '", block_shape, "'"));
 
-togmod1_domodule(blockspec_to_tmod(spec));
+togmod1_domodule(blockspec_to_tmod(spec, height, hole));

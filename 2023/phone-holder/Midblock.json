@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p1291": {
+			"block_shape": "rect-2x2",
+			"height": "6.35",
+			"hole_style": "THL-1001",
+			"z_bevel_size": "0.3"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
