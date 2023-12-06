@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.4
+// TOGPolyhedronLib1.5
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -17,6 +17,8 @@
 // v1.4:
 // - Document correct winding order
 // - Fix tphl1_make_rounded_cuboid to use correct winding order
+// v1.5:
+// - Add tphl1_make_z_cylinder
 
 // Winding order:
 // 
@@ -147,3 +149,12 @@ function tphl1_make_rounded_cuboid(size, r) =
 				lry,
 			], pos=[0,0,z_za[0]])
 	);
+
+function tphl1_make_z_cylinder(d=undef, zrange=undef, zds=undef) =
+	let( _zds = !is_undef(zds) ? zds :
+		assert(!is_undef(d))
+		assert(!is_undef(zrange))
+		[ for( z=zrange ) [z, d] ]
+	)
+	assert(!is_undef(_zds))
+	tphl1_make_polyhedron_from_layer_function(_zds, function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]));
