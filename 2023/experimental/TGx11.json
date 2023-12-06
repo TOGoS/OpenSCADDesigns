@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p1288": {
+			"atom_hole_style": "THL-1001-bottom",
+			"block_height_u": "4",
+			"block_size_chunks": "[5, 2]",
+			"include_test_plate": "false",
+			"item": "block",
+			"offset": "-0.1",
+			"preview_fn": "24",
+			"render_fn": "24"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
