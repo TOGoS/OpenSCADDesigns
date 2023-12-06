@@ -272,7 +272,7 @@ let(ovecs = togpath1_polypoint_offset_vectors(points))
 
 
 // Rath = ["togpath1-rath", RathNode...]
-// RathNode = ["togpath1-rathpoint",[x,y], RathOp...]
+// RathNode = ["togpath1-rathnode",[x,y], RathOp...]
 // RathOp = ["bevel", size] | ["round", radius] | ["offset", distance]
 
 function togpath1__bevel(pa, pb, pc, bevel_size) =
