@@ -275,6 +275,10 @@ let(ovecs = togpath1_polypoint_offset_vectors(points))
 // RathNode = ["togpath1-rathnode",[x,y], RathOp...]
 // RathOp = ["bevel", size] | ["round", radius] | ["offset", distance]
 
+function togpath1_is_rath(rath) =
+	is_list(rath) && len(rath) >= 1 &&
+	rath[0] == "togpath1-rath";
+
 function togpath1__bevel(pa, pb, pc, bevel_size) =
 	let( ba_normalized = tcplx1_normalize(pa-pb) )
 	let( bc_normalized = tcplx1_normalize(pc-pb) )
@@ -331,3 +335,14 @@ function togpath1_rath_to_points(rath) =
 	let( pc = points[ (i+1            )%len(points) ] )
 	each togpath1__rathnode_to_points(pa, pb, pc, rath[i+1], 2)
 ];
+
+function togpath1_map_rath_nodes(rath, func) = [
+	rath[0],
+	for( i=[1:1:len(rath)-1] ) func(rath[i])
+];
+
+function togpath1_offset_rath(rath,offset) =
+	assert(togpath1_is_rath(rath))
+	assert(is_num(offset))
+	offset == 0 ? rath :
+	togpath1_map_rath_nodes(rath, function(rn) [each rn, ["offset", offset]]);
