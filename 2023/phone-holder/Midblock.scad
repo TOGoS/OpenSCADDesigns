@@ -1,7 +1,7 @@
 height = 25.4; // 0.01
 z_bevel_size = 1.5875; // 0.001
 
-hole_style = "straight-4mm"; // ["straight-4mm", "THL-1001", "coutnersnuk","counterbored-for-hex-nut"]
+hole_style = "straight-4mm"; // ["straight-4mm", "THL-1001", "coutnersnuk","THL-1003"]
 
 block_shape = "stubby-l-48"; // ["stubby-l-48", "straight-24", "rect-16x16", "rect-48x10", "rect-48x12"]
 
@@ -90,9 +90,9 @@ $fn = 24;
 
 hole =
 	hole_style == "straight-4mm" ? tphl1_make_z_cylinder(4, [-1,height+1]) :
-	hole_style == "coutnersnuk"  ? ["translate", [0,0,height-3], tog_holelib2_countersunk_hole(8, 4, 2, height+1, overhead_bore_height=4)] :
-	hole_style == "counterbored-for-hex-nut"  ? ["translate", [0,0,max(height/2, height-3.175)], tog_holelib2_countersunk_hole(9.5, 4, 0, height+1, overhead_bore_height=4, $fn=6)] :
-	["translate", [0,0,height-1], tog_holelib2_hole(hole_style, depth=height+1, overhead_bore_height=2)];
+	hole_style == "THL-1001"     ? ["translate", [0,0,height], tog_holelib2_hole(hole_style, depth=height+1, overhead_bore_height=2, inset=1)] :
+	hole_style == "coutnersnuk"  ? ["translate", [0,0,height], tog_holelib2_countersunk_hole(8, 4, 2, height+1, inset=3)] :
+	                               ["translate", [0,0,height], tog_holelib2_hole(hole_style, depth=height+1, overhead_bore_height=2)];
 
 spec =
 	block_shape == "stubby-l-48" ? l_midblock_spec :

@@ -1,4 +1,4 @@
-// TOGHoleLib2.0
+// TOGHoleLib2.1
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -7,34 +7,51 @@
 // v2.0:
 // - Based on v1.5.1, but generate TOGMod1 shapes
 // - Drops support for THL-1013 and THL-1021
+// v2.1:
+// - Add "THL-1003" type, which is counterbored  for #6 hex nuts
+// - Allow `inset` to be specified for all hole types,
+//   while defaulting to type-specific values (usually 0.01)
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
 
 function tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
+	// TODO: Fix to actually use bore_d!
 	tphl1_make_polyhedron_from_layer_function([
-		[-depth , neck_d],
-		[-head_h, neck_d],
-		[ -inset, surface_d],
-		[   0.01, overhead_bore_d],
+		[-depth       , neck_d],
+		[-head_h-inset, neck_d],
+		[       -inset, surface_d],
+		[   0.01      , surface_d],
+		// Taper up to overhead_bore_d
 		[overhead_bore_height, overhead_bore_d]
 	], function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]));
 
-function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=-1, overhead_bore_d=0, overhead_bore_height=1) =
-	tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d == -1 ? neck_d : bore_d, max(surface_d, overhead_bore_d), overhead_bore_height);
+function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=-1, overhead_bore_d=0, overhead_bore_height=1, inset=0.01) =
+	tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d == -1 ? neck_d : bore_d, max(surface_d, overhead_bore_d), overhead_bore_height, inset);
+
+function tog_holelib2__coalesce(v, default_v) = is_undef(v) ? default_v : v;
 
 // Suitable for #6 flatheads
-function tog_holelib2_hole1001(depth, overhead_bore_height=1) =
-	tog_holelib2_countersunk_hole(7.5, 3.5, 1.7, depth, 4.5, 0, overhead_bore_height);
+function tog_holelib2_hole1001(depth, overhead_bore_height=1, inset=undef) =
+	let(_inset = tog_holelib2__coalesce(inset, 0.1))
+	tog_holelib2_countersunk_hole(7.5, 3.5, 1.7, depth, 4.5, 0, overhead_bore_height, inset=_inset);
 
 // Suitable for 1/4" flatheads
-function tog_holelib2_hole1002(depth, overhead_bore_height=1) =
+function tog_holelib2_hole1002(depth, overhead_bore_height=1, inset=undef) =
 	let(inch = 25.4)
-	tog_holelib2_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, 5/16*inch, 0, overhead_bore_height);
+	let(_inset = tog_holelib2__coalesce(inset, 0.1))
+	tog_holelib2_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, 5/16*inch, 0, overhead_bore_height, inset=_inset);
+
+function tog_holelib2_hole1003(depth, overhead_bore_height=1, inset=undef) =
+	let(_inset = tog_holelib2__coalesce(inset, 3.175))
+	tog_holelib2_countersunk_hole(9.5, 4.5, 0, depth, 4.5, overhead_bore_height=overhead_bore_height, inset=_inset, $fn=6);
 
 tog_holelib2_hole_types = [
 	["THL-1001", "Suitable for #6 flathead"],
 	["THL-1002", "Suitable for 1/4\" flathead"],
+	["THL-1003", "Suitable for #6 hex nuts or pan heads"],
+	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
+	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 ];
 
 function tog_holelib2_get_hole_types() = tog_holelib2_hole_types;
@@ -44,8 +61,9 @@ function tog_holelib2_is_hole_type(type_name, idx=0) =
 	tog_holelib2_hole_types[idx][0] == type_name ? true :
 	tog_holelib2_is_hole_type(type_name, idx=idx + 1);
 
-function tog_holelib2_hole(type_name, depth=1000, overhead_bore_height=1) =
+function tog_holelib2_hole(type_name, depth=1000, overhead_bore_height=1, inset=undef) =
 	type_name == "none" ? ["union"] :
-	type_name == "THL-1001" ? tog_holelib2_hole1001(depth, overhead_bore_height) :
-	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height) :
+	type_name == "THL-1001" ? tog_holelib2_hole1001(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));

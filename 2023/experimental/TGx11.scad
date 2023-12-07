@@ -7,7 +7,7 @@ item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","auto
 block_size_chunks = [2,2];
 block_height_u = 12;
 
-atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom"]
+atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
 
 offset = -0.1; // 0.1
 include_test_plate = true;
@@ -303,6 +303,7 @@ module tgmain() {
 	atom_bottom_subtractions = [
 		if( atom_hole_style == "straight-5mm" ) tgx11_make_cylinder(d=5, zrange=[-20, block_size[2]+20]),
 		if( atom_hole_style == "THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20)],
+		if( atom_hole_style == "deep-THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20, inset=3)],
 	];
 	
 	what =
