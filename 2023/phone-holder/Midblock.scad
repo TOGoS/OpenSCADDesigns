@@ -1,9 +1,9 @@
 height = 25.4; // 0.01
 z_bevel_size = 1.5875; // 0.001
 
-hole_style = "straight-4mm"; // ["straight-4mm", "THL-1001"]
+hole_style = "straight-4mm"; // ["straight-4mm", "THL-1001", "coutnersnuk","counterbored-for-hex-nut"]
 
-block_shape = "stubby-l-6"; // ["stubby-l-6", "straight-3", "rect-2x2"]
+block_shape = "stubby-l-48"; // ["stubby-l-48", "straight-24", "rect-16x16", "rect-48x10", "rect-48x12"]
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -89,14 +89,18 @@ function blockspec_to_tmod(blockspec, height, hole) =
 $fn = 24;
 
 hole =
-	hole_style == "straight-4mm" ?  tphl1_make_z_cylinder(4, [-1,height+1]) :
-	["translate", [0,0,height-0.3], tog_holelib2_hole(hole_style, depth=height+1, overhead_bore_height=1)];
+	hole_style == "straight-4mm" ? tphl1_make_z_cylinder(4, [-1,height+1]) :
+	hole_style == "coutnersnuk"  ? ["translate", [0,0,height-3], tog_holelib2_countersunk_hole(8, 4, 2, height+1, overhead_bore_height=4)] :
+	hole_style == "counterbored-for-hex-nut"  ? ["translate", [0,0,max(height/2, height-3.175)], tog_holelib2_countersunk_hole(9.5, 4, 0, height+1, overhead_bore_height=4, $fn=6)] :
+	["translate", [0,0,height-1], tog_holelib2_hole(hole_style, depth=height+1, overhead_bore_height=2)];
 
 spec =
-	block_shape == "stubby-l-6" ? l_midblock_spec :
-	block_shape == "straight-3" ? straight3_midblock_spec :
-	// TODO: Parse so that any size is possible
-	block_shape == "rect-2x2" ? make_rect_blockspec([16,16]) :
+	block_shape == "stubby-l-48" ? l_midblock_spec :
+	block_shape == "straight-24" ? straight3_midblock_spec :
+	// TODO: Parse so that any size is block
+	block_shape == "rect-16x16" ? make_rect_blockspec([16,16]) :
+	block_shape == "rect-48x10" ? make_rect_blockspec([48,10]) :
+	block_shape == "rect-48x12" ? make_rect_blockspec([48,12]) :
 	assert(false, str("Unknown block style: '", block_shape, "'"));
 
 togmod1_domodule(blockspec_to_tmod(spec, height, hole));
