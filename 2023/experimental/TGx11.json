@@ -9,6 +9,18 @@
 			"offset": "-0.1",
 			"preview_fn": "24",
 			"render_fn": "24"
+		},
+		"p1294": {
+			"$tgx11_gender": "m",
+			"$tgx11_offset": "0",
+			"atom_hole_style": "deep-THL-1001-bottom",
+			"block_height_u": "4",
+			"block_size_chunks": "[5, 2]",
+			"include_test_plate": "false",
+			"item": "block",
+			"offset": "-0.1",
+			"preview_fn": "24",
+			"render_fn": "24"
 		}
 	},
 	"parameterSets": "",
