@@ -1,4 +1,4 @@
-// FrenchCleat-v1.3
+// FrenchCleat-v1.4
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -11,6 +11,8 @@
 // - Add 'tester' mode
 // v1.3:
 // - Add option for 'coutnersnuk' holes
+// v1.4:
+// - Round the ends
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -27,6 +29,7 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
+use <../lib/TOGPath1.scad>
 
 $fn = $preview ? 12 : 72;
 
@@ -107,8 +110,22 @@ fc_points = make_fc_profile_points(-12, 12,
 	profile_points_for_style(opposite_edge_style),
 	togridlib3_decode([1,"u"]));
 
-function make_fc_hull(direction, length) = tphl1_make_polyhedron_from_layer_function([-length/2, length/2], function(x) [
-	for(point=fc_points)
+function roundeprof(x0, x1, round) = let(vcount=max(1,ceil($fn/4))) [
+	for( angoff=[
+		for( am=[0:1:vcount] ) [180 - am*90/vcount, x0+round],
+		for( am=[0:1:vcount] ) [ 90 - am*90/vcount, x1-round],
+	] ) [ angoff[1] + cos(angoff[0]) * round, (sin(angoff[0])-1) * round ]
+];
+
+function offset_points(points, offset) =
+	togpath1_rath_to_points(["togpath1-rath", for(p=points) ["togpath1-rathnode", p, ["offset", offset]]]);
+
+function make_fc_hull(direction, length) = tphl1_make_polyhedron_from_layer_function(
+	roundeprof(-length/2, length/2, 1.5)
+	// [-length/2, -1], [-length/2+1, 0], [length/2-1, 0], [length/2, -1]
+, function(xo) [
+	let(x=xo[0])
+	for(point=offset_points(fc_points,xo[1]))
 	direction == "X" ? [x, point[0], point[1]] : [point[0], point[1], x]
 ]);
 
