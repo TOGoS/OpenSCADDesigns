@@ -1,7 +1,7 @@
 {
 	"parameterSets": {
 		"p1291": {
-			"block_shape": "rect-2x2",
+			"block_shape": "rect-16x16",
 			"height": "6.35",
 			"hole_style": "THL-1001",
 			"z_bevel_size": "0.3"
@@ -17,6 +17,12 @@
 			"height": "6.35",
 			"hole_style": "counterbored-for-hex-nut",
 			"z_bevel_size": "0.7"
+		},
+		"p1295": {
+			"block_shape": "rect-16x16",
+			"height": "6.35",
+			"hole_style": "THL-1003",
+			"z_bevel_size": "0.3"
 		}
 	},
 	"parameterSets": "",
