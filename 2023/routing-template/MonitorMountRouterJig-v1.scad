@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.4.1
+// MonitorMountRouterJig-v1.4.2
 // 
 // Versions:
 // v1.0:
@@ -24,6 +24,8 @@
 // - Alignment holes every 3/4" along X except at X=0
 // v1.4.1:
 // - Refactor to only domoduile on the last line
+// v1.4.2:
+// - Use TOGPath1 to make ovals
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314"]
@@ -112,6 +114,7 @@ function get_panel_info(style) =
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGPath1.scad>
 
 $fn = $preview ? preview_fn : render_fn;
 
@@ -162,19 +165,13 @@ module fat_polyline(diameter, points) {
 	}
 }
 
-function make_x_axis_oval(r, x0, x1) =
-	x0 == x1 ? togmod1_make_circle(r, [x0, 0]) :
-	let(fn = max(6, $fn))
-	let(halffn = ceil(fn/2))
-	togmod1_make_polygon([
-		for(i=[0 : 1 : halffn]) let(ang=-90 + i*180/halffn) [x1+r*cos(ang), r*sin(ang)],
-		for(i=[0 : 1 : halffn]) let(ang= 90 + i*180/halffn) [x0+r*cos(ang), r*sin(ang)]
-	]);
-
-// TODO: Do it without hull
-function make_oval(r, p0, p1) = ["hull", togmod1_make_circle(r, p0), togmod1_make_circle(r, p1)];
-
-// function oval(diameter, p0, p1) = ["hull", ["circle", 
+function make_oval(r, p0, p1) =
+let(diff = p1-p0)
+let(ang = atan2(diff[1], diff[0]))
+togmod1_make_polygon(togpath1_qath_points(["togpath1-qath",
+	["togpath1-qathseg", p0, ang-270, ang-90, r],
+	["togpath1-qathseg", p1, ang-90, ang+90, r]
+]));
 
 function jj_is_pointlist(points, dims=2, offset=0) =
 	is_list(points) && (
