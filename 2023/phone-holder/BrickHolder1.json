@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p1297": {
+			"$fn": "24",
+			"atom": "12.7",
+			"bottom_hole_size": "[19.05, 19.05]",
+			"brick_size": "[47.1, 30, 108.3]",
+			"floor_thickness": "6.35",
+			"margin": "1",
+			"min_wall_thickness": "4"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
