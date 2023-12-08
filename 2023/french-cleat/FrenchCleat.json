@@ -17,6 +17,13 @@
 			"mating_edge_style": "S",
 			"mode": "tester",
 			"opposite_edge_style": "FS"
+		},
+		"p1296": {
+			"hole_style": "coutnersnuk",
+			"length_ca": "[3, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
 		}
 	},
 	"parameterSets": "",

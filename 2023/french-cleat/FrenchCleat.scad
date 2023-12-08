@@ -1,4 +1,4 @@
-// FrenchCleat-v1.2
+// FrenchCleat-v1.3
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -9,6 +9,8 @@
 // - Rename 'direction' parameter to 'tester'
 // - Trimmed style names now end with "-trimmed"
 // - Add 'tester' mode
+// v1.3:
+// - Add option for 'coutnersnuk' holes
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -16,6 +18,7 @@ length_ca = [6, "inch"];
 
 mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "FS", "FFS"]
 opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed"]
+hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk"]
 
 mode = "X"; // ["X", "Z", "tester"]
 
@@ -23,6 +26,7 @@ use <../lib/TOGridLib3.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGHoleLib2.scad>
 
 $fn = $preview ? 12 : 72;
 
@@ -115,6 +119,18 @@ counterbored_hole = tphl1_make_polyhedron_from_layer_function([
 	[zp+1                , counterbore_diameter]
 ], function(params) togmod1_circle_points(d=params[1], pos=[0,0,params[0]]));
 
+hole =
+	hole_style == "GB-counterbored" ? counterbored_hole :
+	hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
+	assert(false, str("Invalid hole style: '", hole_style, "'"));
+
+hole_spacing =
+	hole_style == "GB-counterbored" ? 38.1 :
+	hole_style == "coutnersnuk"     ? 12.7 :
+	assert(false, str("Invalid hole style: '", hole_style, "'"));
+
+hole_rows = [0];
+
 inch = togridlib3_decode([1,"inch"]);
 tester_hull = tphl1_make_rounded_cuboid([3*inch, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
 
@@ -122,7 +138,8 @@ fc_main =
 	mode == "X" ? ["difference",
 		make_fc_hull("X", length),
 		
-		for( xm=[-length_gb/2 + 0.5 : 1 : length_gb/2] ) ["x-debug", ["translate", [xm*38.1, 0], counterbored_hole]]
+		for( y=hole_rows )
+		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, y], hole]]
 	] :
 	mode == "Z" ? make_fc_hull("Z", length) :
 	mode == "tester" ? ["difference",
