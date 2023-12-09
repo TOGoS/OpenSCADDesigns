@@ -8,6 +8,13 @@
 			"floor_thickness": "6.35",
 			"margin": "1",
 			"min_wall_thickness": "4"
+		},
+		"p1299 - spacer for p1297": {
+			"bottom_hole_size": "[19.05, 19.05]",
+			"brick_size": "[47.1, 30, 108.3]",
+			"margin": "1",
+			"mode": "spacer",
+			"spacer_thickness": "6.35"
 		}
 	},
 	"parameterSets": "",

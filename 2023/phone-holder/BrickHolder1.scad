@@ -1,4 +1,4 @@
-// BrickHolder1.0
+// BrickHolder1.1
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -6,6 +6,8 @@
 // v1.0:
 // - Basic rounded cuboid - no TOGridPile nubs for now
 // - For ThinkPad power brick holder
+// v1.1:
+// - Add 'spacer' mode
 
 // width, depth, height (in mm) of object to be held
 brick_size = [47.1, 30.0, 108.3];
@@ -15,6 +17,12 @@ margin = 1;
 
 // Size of hole in bottom centered under brick for cords or whatever
 bottom_hole_size = [19.05, 19.05];
+
+mode = "holder"; // ["holder", "spacer"]
+
+spacer_thickness = 12.7; // 0.01
+
+module __brickholder_end_params() { }
 
 cavity_size = [
 	brick_size[0] + margin*2,
@@ -66,6 +74,18 @@ mounting_holes = ["union",
 
 use <../lib/TOGMod1.scad>
 
-togmod1_domodule(["difference",
+brick_holder = ["difference",
 	block_hull, cavity, ["x-debug", slot], mounting_holes
-]);
+];
+
+spacer = ["difference",
+			 tphl1_make_rounded_cuboid([cavity_size[0]-1, cavity_size[1]-1, spacer_thickness], [3,3,min(spacer_thickness/2,3)]),
+	["x-debug", slot]
+];
+
+thing =
+	mode == "holder" ? brick_holder :
+	mode == "spacer" ? spacer :
+	assert(false, str("Invalid mode: '", mode, "'"));
+
+togmod1_domodule(thing);
