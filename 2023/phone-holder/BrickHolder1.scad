@@ -1,4 +1,4 @@
-// BrickHolder1.1
+// BrickHolder1.2
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -8,6 +8,10 @@
 // - For ThinkPad power brick holder
 // v1.1:
 // - Add 'spacer' mode
+// v1.2:
+// - Optional 'top cord slot'
+
+/* [General] */
 
 // width, depth, height (in mm) of object to be held
 brick_size = [47.1, 30.0, 108.3];
@@ -19,6 +23,13 @@ margin = 1;
 bottom_hole_size = [19.05, 19.05];
 
 mode = "holder"; // ["holder", "spacer"]
+
+/* [Holder] */
+
+top_cord_slot_depth    = 0; // 0.01
+top_cord_slot_diameter = 0; // 0.01
+
+/* [Spacer] */
 
 spacer_thickness = 12.7; // 0.01
 
@@ -48,6 +59,7 @@ block_size = [
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
+use <../lib/TOGPath1.scad>
 
 $fn = 24;
 
@@ -63,19 +75,51 @@ slot = tphl1_make_polyhedron_from_layer_function([
 	togmod1_rounded_rect_points(zs[1], r=2, pos=[0,-block_size[1]/2, zs[0]])
 );
 
-mounting_hole = ["x-debug", ["rotate", [90,0,0], tog_holelib2_hole("THL-1003", depth=20)]];
+mounting_hole = ["x-debug", ["rotate", [90,0,0], tog_holelib2_hole("THL-1003", depth=block_size[1]-cavity_size[1])]];
 mounting_holes = ["union",
 	for( xm=[round(-block_size[0]/atom)/2 + 0.5 : 1 : round(block_size[0]/atom)/2] )
 	let( x = xm*atom )
-	if( x-6 >= -cavity_size[0]/2 && x+6 <= cavity_size[0]/2 )
+	if( x-4 >= -cavity_size[0]/2 && x+4 <= cavity_size[0]/2 )
 	for( zm=[1.5 : 1 : round(block_size[2]/atom)] )
 	["translate", [xm*atom, cavity_size[1]/2, zm*atom], mounting_hole]
 ];
 
+function make_oval(r, p0, p1) =
+let(diff = p1-p0)
+let(ang = atan2(diff[1], diff[0]))
+togmod1_make_polygon(togpath1_qath_points(["togpath1-qath",
+	["togpath1-qathseg", p0, ang-270, ang-90, r],
+	["togpath1-qathseg", p1, ang-90, ang+90, r]
+]));
+
+// TODO for fanciness: Round around the hole!
+top_cord_slot =
+	(top_cord_slot_depth <= 0 || top_cord_slot_diameter <= 0) ? ["union"] :
+	togmod1_linear_extrude_x(
+		[-block_size[0], block_size[0]],
+		let(sr = top_cord_slot_diameter/2)
+		let(sd = top_cord_slot_depth)
+		let(bt = block_size[2]+0.01)
+		let(sb = bt - sd)
+		let(st = bt + sr*4) // a point well above the top
+		let(tr = 2) // Smaller radius for rounding at the top
+		togmod1_make_polygon(togpath1_rath_to_points(["togpath1-rath",
+			["togmod1-rathnode", [-sr-sr, st]],
+			["togmod1-rathnode", [-sr-sr, bt]],
+			["togmod1-rathnode", [-sr   , bt], ["round", tr]],
+			["togmod1-rathnode", [-sr   , sb], ["round", sr]],
+			["togmod1-rathnode", [ sr   , sb], ["round", sr]],
+			["togmod1-rathnode", [ sr   , bt], ["round", tr]],
+			["togmod1-rathnode", [ sr+sr, bt]],
+			["togmod1-rathnode", [ sr+sr, st]],
+			["togmod1-rathnode", [-sr-sr, st]],
+		]))
+);
+
 use <../lib/TOGMod1.scad>
 
 brick_holder = ["difference",
-	block_hull, cavity, ["x-debug", slot], mounting_holes
+	block_hull, cavity, ["x-debug", slot], mounting_holes, top_cord_slot
 ];
 
 spacer = ["difference",
