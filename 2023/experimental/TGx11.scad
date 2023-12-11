@@ -359,6 +359,9 @@ module tgmain() {
 		assert(false, str("Unrecognized mode '", mode, "'"));
 	
 	togmod1_domodule(subject);
+	
+	if( $preview && include_test_plate ) togmod1_domodule(["x-debug", glove]);
+	if( $preview && include_unoffset_ghost ) togmod1_domodule(["x-debug", unoffset_hand]);
 }
 
 tgmain(
