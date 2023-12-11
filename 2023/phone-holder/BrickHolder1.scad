@@ -1,4 +1,4 @@
-// BrickHolder1.4
+// BrickHolder1.5
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -15,6 +15,8 @@
 // v1.4:
 // - Explicitly pass $tgx11_offset and $tgx11_gender because we must
 //   (update to TGx11.scad should fix that $tgx11_offset was ignored).
+// v1.5:
+// - Report block size in millimeters and inches
 
 /* [General] */
 
@@ -66,6 +68,13 @@ min_side_thickness = [min_wall_thickness, min_wall_thickness, floor_thickness];
 block_size = [
 	for( d=[0,1,2] ) block_size_unit[d] * ceil((cavity_size[d]+min_side_thickness[d]*2)/block_size_unit[d])
 ];
+
+function dimstr(dims, suffix, i=0) =
+	len(dims) == i ? "" :
+	str(i > 0 ? " x " : "", dims[i], suffix, dimstr(dims, suffix, i+1));
+
+
+echo(str("Block size = ", dimstr(block_size, "mm"), ", or ", dimstr(block_size/25.4, "in")));
 
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
