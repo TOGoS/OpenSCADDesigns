@@ -15,6 +15,20 @@
 			"margin": "1",
 			"mode": "spacer",
 			"spacer_thickness": "6.35"
+		},
+		"p1300": {
+			"$tgx11_offset": "-0.1",
+			"back_segmentation": "atom",
+			"bottom_hole_size": "[19.05, 19.05]",
+			"bottom_segmentation": "atom",
+			"brick_size": "[47.1, 30, 108.3]",
+			"front_segmentation": "atom",
+			"margin": "1",
+			"mode": "holder",
+			"spacer_thickness": "12.7",
+			"top_cord_slot_depth": "19",
+			"top_cord_slot_diameter": "12.7",
+			"top_segmentation": "none"
 		}
 	},
 	"parameterSets": "",
