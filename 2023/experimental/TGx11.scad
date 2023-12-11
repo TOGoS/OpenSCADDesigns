@@ -8,11 +8,26 @@ block_size_chunks = [2,2];
 block_height_u = 12;
 
 atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
+bottom_shape = "footed"; // ["footed","beveled"]
+
+// 'shell-xs' makes a cross section of the 'shell' between the ideal shape and the offset one
+mode = "normal"; // ["normal", "shell-xs"]
+shell_xs_angle = 0;
+shell_xs_offset = 10;
 
 offset = -0.1; // 0.1
+
+/* [Preview Options] */
+
 include_test_plate = true;
+include_unoffset_ghost = true;
 preview_fn = 12;
+
+/* [Render] */
+
 render_fn = 24;
+
+module __tgx11_end_params() { }
 
 use <../lib/TOGPath1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -95,8 +110,8 @@ function tgx11__corner_radius(offset, gender) =
 	max(
 		togridlib3_decode([1, "tgp-min-corner-radius"]),
 		
-		gender == "m" ? togridlib3_decode([1, "tgp-m-outer-corner-radius"]) :
-		gender == "f" ? togridlib3_decode([1, "tgp-f-outer-corner-radius"]) :
+		gender == "m" ? togridlib3_decode([1, "tgp-m-outer-corner-radius"]) + offset :
+		gender == "f" ? togridlib3_decode([1, "tgp-f-outer-corner-radius"]) + offset :
 		assert(false, str("Unknown gender for corner radius purposes: '", gender, "'"))
 	);
 
@@ -145,6 +160,7 @@ function tgx11_v6c_flatright_polygon(atom_size, gender="m", offset=0) =
 //// Higher-level TOGridPile shapes; offset, gender passed implicitly
 // Maybe I should differentiate by making these tgx12, tgx13 ha ha lmao
 
+// Declare defaults:
 $tgx11_offset = 0;
 $tgx11_gender = "m";
 
@@ -154,29 +170,29 @@ $tgx11_gender = "m";
  */
 function tgx11__chunk_footlike(layer_keys, size) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
-	let( u = togridlib3_decode([1,"u"]) )
 	tphl1_make_polyhedron_from_layer_function(layer_keys, function(zo)
-		let( z=u*zo[0] )
-		[for (p=tgx11_chunk_xs_points(size, gender=$tgx11_gender, offset=$tgx11_offset+u*zo[1])) [p[0], p[1], z]]
+		[for (p=tgx11_chunk_xs_points(size, gender=$tgx11_gender, offset=zo[1])) [p[0], p[1], zo[0]]]
 	);
 
 function tgx11_chunk_foot(size) =
 	let( u = togridlib3_decode([1,"u"]) )
+	let( offset=$tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
 	tgx11__chunk_footlike([
-		[0-offset    , -2],
-		[4-offset-z41,  2],
-		[   size[2]/u,  2]
+		[0*u - offset    , -2*u + offset*z41],
+		[4*u - offset*z41,  2*u + offset],
+		[size[2]         ,  2*u + offset]
 	], size=size);
 
 function tgx11_chunk_unifoot(size) =
 	let( u = togridlib3_decode([1,"u"]) )
+	let( offset=$tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
 	tgx11__chunk_footlike([
-		[0-offset    , -1],
-		[1-offset*z41, -1],
-		[4-offset*z41,  2],
-		[   size[2]/u,  2]
+		[0*u - offset    , -1*u + offset],
+		[1*u - offset*z41, -1*u + offset],
+		[4*u - offset*z41,  2*u + offset],
+		[size[2]         ,  2*u + offset]
 	], size=size);
 
 //// Demo
@@ -204,7 +220,7 @@ function tgx11_make_cylinder(d, zrange) =
  * 'atomic' foot shape + enough solid stuff above to fully fill the rest of the block and goa bit beyond.
  * Intended to be intersected with a block hull that is no larger than block_size
  */
-function tgx11__atomic_block_bottom(block_size_ca) =
+function tgx11__atomic_block_bottom(block_size_ca, bottom_shape="footed") =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], offset=$tgx11_offset)])
@@ -213,22 +229,28 @@ let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(u = togridlib3_decode([1,"u"]))
 let(bevel_size = togridlib3_decode([1,"tgp-standard-bevel"]))
 let(atom = togridlib3_decode([1,"atom"]))
-let(atom_unifoot = tgx11_chunk_unifoot([atom,atom,block_size[2]+3/32]))
+let(atom_foot =
+	bottom_shape == "footed" ? tgx11_chunk_unifoot([atom,atom,block_size[2]+3/32]) :
+	bottom_shape == "beveled" ? tgx11_chunk_foot([atom,atom,block_size[2]+3/32]) :
+	assert(false, str("Unrecognized bottom_shape '", bottom_shape, "' (expected 'footed' or 'beveled')"))
+)
 let(v6hc_y = togmod1_linear_extrude_y([-block_size[1]/2+6, block_size[1]/2-6], v6hc))
 let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v6hc))
 // tgx11_chunk_unifoot(block_size),
 ["union",
 	// Atom feet
-	for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*atom, ym*atom, 0], atom_unifoot],
+	for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*atom, ym*atom, 0], atom_foot],
 	// Y-axis v6hcs
 	for(xm=atom_xms) ["translate", [xm*atom,0,atom/2], v6hc_y],
 	// X-axis v6hcs
 	for(ym=atom_yms) ["translate", [0,ym*atom,atom/2], v6hc_x],
 	// Chunk body
-	["translate", [0,0,bevel_size+block_size[2]/2], togmod1_make_cuboid([block_size[0]-12, block_size[1]-12, block_size[2]-bevel_size+1+1/32])]
+	["translate", [0,0,bevel_size+block_size[2]/2], togmod1_make_cuboid([
+		block_size[0]-12, block_size[1]-12,
+		block_size[2]+$tgx11_offset*2-bevel_size+1+1/32])]
 ];
 
-function tgx11_block(block_size_ca, atom_bottom_subtractions=[]) =
+function tgx11_block(block_size_ca, bottom_shape="footed", atom_bottom_subtractions=[]) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
@@ -238,9 +260,10 @@ let(atom = togridlib3_decode([1,"atom"]))
 ["difference",
 	["intersection",
 		extrude_polypoints([-1,block_size[2]], tgx11_chunk_xs_points(
-			size = block_size
+			size = block_size,
+			offset = $tgx11_offset
 		)),
-		tgx11__atomic_block_bottom(block_size_ca)
+		tgx11__atomic_block_bottom(block_size_ca, bottom_shape=bottom_shape),
 	],
 	
 	if( len(atom_bottom_subtractions) > 0 )
@@ -256,6 +279,7 @@ $togridlib3_unit_table = [
 	["tgp-f-outer-corner-radius", [1, "u"]],
 	["tgp-column-inset", [1, "u"]],
 	["tgp-min-corner-radius", [1, "u"]],
+	["tgp-standard-bevel", [2, "u"]],
 	each togridlib3_get_default_unit_table()
 ];
 
@@ -308,8 +332,9 @@ module tgmain() {
 	
 	what =
 		item == "block" ? ["hand+glove",
-			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions),
-			test_plate(block_size)
+			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape),
+			test_plate(block_size),
+			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape, $tgx11_offset=0),
 		] :
 		item == "v6hc-xc" ? polyhagl([20,20], function(offset) tgx11_v6c_flatright_polygon([12.7,12.7], offset=offset)) :
 		item == "foot-column" ? foot_column_demo() :
@@ -319,10 +344,21 @@ module tgmain() {
 	
 	hand  = (what[0] == "hand+glove") ? what[1] : what;
 	glove = (what[0] == "hand+glove") ? what[2] : ["union"];
+	unoffset_hand = (what[0] == "hand+glove" && len(what) >= 4) ? what[3] : ["union"];
 	assert(hand[0] != "hand+glove");
-	togmod1_domodule(hand);
+
+	shell = ["difference", unoffset_hand, hand];
+	shell_xs = ["intersection",
+	   shell,
+		["rotate", [0,0,shell_xs_angle], ["translate", [block_size[0]/2+shell_xs_offset, 0, 0], togmod1_make_cuboid([block_size[0], block_size[1]*2, block_size[2]*2])]]
+	];
 	
-	if( $preview && include_test_plate ) togmod1_domodule(["x-debug", glove]);
+	subject =
+		mode == "normal" ? hand :
+		mode == "shell-xs" ? shell_xs :
+		assert(false, str("Unrecognized mode '", mode, "'"));
+	
+	togmod1_domodule(subject);
 }
 
 tgmain(
