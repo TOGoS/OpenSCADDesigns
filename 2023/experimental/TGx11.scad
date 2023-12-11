@@ -220,7 +220,7 @@ function tgx11_make_cylinder(d, zrange) =
  * 'atomic' foot shape + enough solid stuff above to fully fill the rest of the block and goa bit beyond.
  * Intended to be intersected with a block hull that is no larger than block_size
  */
-function tgx11__atomic_block_bottom(block_size_ca, bottom_shape="footed") =
+function tgx11_atomic_block_bottom(block_size_ca, bottom_shape="footed") =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], offset=$tgx11_offset)])
@@ -263,7 +263,7 @@ let(atom = togridlib3_decode([1,"atom"]))
 			size = block_size,
 			offset = $tgx11_offset
 		)),
-		tgx11__atomic_block_bottom(block_size_ca, bottom_shape=bottom_shape),
+		tgx11_atomic_block_bottom(block_size_ca, bottom_shape=bottom_shape),
 	],
 	
 	if( len(atom_bottom_subtractions) > 0 )
