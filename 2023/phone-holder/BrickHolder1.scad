@@ -1,4 +1,4 @@
-// BrickHolder1.2
+// BrickHolder1.3
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -10,6 +10,8 @@
 // - Add 'spacer' mode
 // v1.2:
 // - Optional 'top cord slot'
+// v1.3:
+// - Options for TOGridPile atomic bottom on front/back/bottom
 
 /* [General] */
 
@@ -28,6 +30,12 @@ mode = "holder"; // ["holder", "spacer"]
 
 top_cord_slot_depth    = 0; // 0.01
 top_cord_slot_diameter = 0; // 0.01
+
+bottom_segmentation = "none"; // ["none","atom"]
+top_segmentation = "none"; // ["none","atom"]
+back_segmentation = "none"; // ["none","atom"]
+front_segmentation = "none"; // ["none","atom"]
+$tgx11_offset = -0.1;
 
 /* [Spacer] */
 
@@ -60,6 +68,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
+use <../experimental/TGx11.scad>
 
 $fn = 24;
 
@@ -118,8 +127,26 @@ top_cord_slot =
 
 use <../lib/TOGMod1.scad>
 
-brick_holder = ["difference",
+brick_holder_ = ["difference",
 	block_hull, cavity, ["x-debug", slot], mounting_holes, top_cord_slot
+];
+brick_holder = ["intersection",
+	brick_holder_,
+	if( back_segmentation == "atom" ) ["translate", [0, block_size[1]/2, block_size[2]/2], ["rotate", [90,0,0],
+		["render", tgx11_atomic_block_bottom(
+			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
+			bottom_shape="beveled"// No overhangs allowed
+		)]
+	]],
+	if( front_segmentation == "atom" ) ["translate", [0, -block_size[1]/2, block_size[2]/2], ["rotate", [-90,0,0],
+		["render", tgx11_atomic_block_bottom(
+			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
+			bottom_shape="beveled"// No overhangs allowed
+		)]
+	]],
+	if( bottom_segmentation == "atom" ) ["render", tgx11_atomic_block_bottom(
+		[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2], "mm"]]
+	)],
 ];
 
 spacer = ["difference",
