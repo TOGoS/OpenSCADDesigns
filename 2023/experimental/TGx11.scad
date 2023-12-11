@@ -161,8 +161,11 @@ function tgx11_v6c_flatright_polygon(atom_size, gender="m", offset=0) =
 // Maybe I should differentiate by making these tgx12, tgx13 ha ha lmao
 
 // Declare defaults:
-$tgx11_offset = 0;
-$tgx11_gender = "m";
+// Actually lol don't because if these are specified here,
+// they override those passed directly to modules, which defetats the purpose.
+// If we want defaults, need to make a function like tgx11__get_offset() = is_undef($tgx11_offset) ? ....
+//$tgx11_offset = 0;
+//$tgx11_gender = "m";
 
 /**
  * Generate a polyhedron with TOGridPile rounded beveled rectangle cross-sections
@@ -332,9 +335,9 @@ module tgmain() {
 	
 	what =
 		item == "block" ? ["hand+glove",
-			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape),
+			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape, $tgx11_gender="m"),
 			test_plate(block_size),
-			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape, $tgx11_offset=0),
+			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape, $tgx11_gender="m", $tgx11_offset=0),
 		] :
 		item == "v6hc-xc" ? polyhagl([20,20], function(offset) tgx11_v6c_flatright_polygon([12.7,12.7], offset=offset)) :
 		item == "foot-column" ? foot_column_demo() :
@@ -365,6 +368,6 @@ module tgmain() {
 }
 
 tgmain(
-	$tgx11_offset=offset,
+	$tgx11_offset = offset,
 	$fn = $preview ? preview_fn : render_fn
 );

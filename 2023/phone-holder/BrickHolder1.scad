@@ -1,4 +1,4 @@
-// BrickHolder1.3
+// BrickHolder1.4
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -12,6 +12,9 @@
 // - Optional 'top cord slot'
 // v1.3:
 // - Options for TOGridPile atomic bottom on front/back/bottom
+// v1.4:
+// - Explicitly pass $tgx11_offset and $tgx11_gender because we must
+//   (update to TGx11.scad should fix that $tgx11_offset was ignored).
 
 /* [General] */
 
@@ -135,17 +138,20 @@ brick_holder = ["intersection",
 	if( back_segmentation == "atom" ) ["translate", [0, block_size[1]/2, block_size[2]/2], ["rotate", [90,0,0],
 		["render", tgx11_atomic_block_bottom(
 			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
-			bottom_shape="beveled"// No overhangs allowed
+			bottom_shape = "beveled", // No overhangs allowed
+			$tgx11_gender = "m"
 		)]
 	]],
 	if( front_segmentation == "atom" ) ["translate", [0, -block_size[1]/2, block_size[2]/2], ["rotate", [-90,0,0],
 		["render", tgx11_atomic_block_bottom(
 			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
-			bottom_shape="beveled"// No overhangs allowed
+			bottom_shape = "beveled", // No overhangs allowed
+			$tgx11_gender = "m"
 		)]
 	]],
 	if( bottom_segmentation == "atom" ) ["render", tgx11_atomic_block_bottom(
-		[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2], "mm"]]
+		[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2], "mm"]],
+		$tgx11_gender = "m"
 	)],
 ];
 
