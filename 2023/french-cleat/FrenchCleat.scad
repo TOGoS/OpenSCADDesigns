@@ -1,4 +1,4 @@
-// FrenchCleat-v1.4
+// FrenchCleat-v1.5
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -13,16 +13,26 @@
 // - Add option for 'coutnersnuk' holes
 // v1.4:
 // - Round the ends
+// v1.5:
+// - Hacked-in support to make TGx11-atom-female textured back
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
 //corner_bevel_size = 1;
 
-mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "FS", "FFS"]
-opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed"]
+mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
+opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
 hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk"]
 
 mode = "X"; // ["X", "Z", "tester"]
+
+/* [Experimental] */
+
+// Can use tgx11-atom-f only when -C/-B edge styles are selected and mode = "X"
+backside_texture = "flat"; // ["flat", "tgx11-atom-f"]
+$tgx11_offset = -0.1;
+
+assert(backside_texture == "flat" || (mating_edge_style == "S-trimmed-C" && opposite_edge_style == "FFS-trimmed-B" && mode == "X"));
 
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGMod1.scad>
@@ -30,6 +40,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
+use <../experimental/TGx11.scad>
 
 $fn = $preview ? 12 : 72;
 
@@ -64,6 +75,13 @@ edge_profile_s_trimmed_points = [
 	[-4, +4],
 	[+6, -6],
 ];
+edge_profile_s_trimmed_points_c = [
+	[-3, +6],
+	[-4, +5],
+	[-4, +4],
+	[+6, -6],
+	[+6, -8],
+];
 edge_profile_f_points = [
 	[ 0, +6],
 	[ 0, -6],
@@ -77,6 +95,14 @@ edge_profile_fs_points = [
 edge_profile_ffs_trimmed_points = [
 	[ 1  , +6],
 	[ 0  , +5],
+	[ 0  ,  2],
+	[ 0.5,  1],
+	[ 7  , -5.5],
+	[ +8 , -6],
+];
+edge_profile_ffs_trimmed_points_b = [
+	//[ 1  , +6],
+	[ 0  , +8],
 	[ 0  ,  2],
 	[ 0.5,  1],
 	[ 7  , -5.5],
@@ -101,8 +127,10 @@ function profile_points_for_style(style) =
 	style == "F" ? edge_profile_f_points :
 	style == "S" ? edge_profile_s_points :
 	style == "S-trimmed" ? edge_profile_s_trimmed_points :
+	style == "S-trimmed-C" ? edge_profile_s_trimmed_points_c :
 	style == "FS" ? edge_profile_fs_points :
 	style == "FFS-trimmed" ? edge_profile_ffs_trimmed_points :
+	style == "FFS-trimmed-B" ? edge_profile_ffs_trimmed_points_b :
 	assert(false, str("Unknown edge style '", style, "'"));
 
 fc_points = make_fc_profile_points(-12, 12,
@@ -151,9 +179,24 @@ hole_rows = [0];
 inch = togridlib3_decode([1,"inch"]);
 tester_hull = tphl1_make_rounded_cuboid([3*inch, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
 
+function make_textured_fc_hull(direction, length, backside_texture) =
+	let(h = make_fc_hull(direction, length))
+	backside_texture == "tgx11-atom-f" ? ["difference", h,
+		["translate", [0,0,zn], ["rotate", [180,0,0],
+			// Extend pattern one atom beyond actual extent of cleat
+			tgx11_atomic_block_bottom(
+				[[length + 25.4, "mm"],[5,"atom"],[20,"mm"]],
+				bottom_shape="footed",
+				$tgx11_offset = -$tgx11_offset,
+				$tgx11_gender = "f"
+			)
+		]]
+	] :
+	h;
+
 fc_main =
 	mode == "X" ? ["difference",
-		make_fc_hull("X", length),
+		make_textured_fc_hull("X", length, backside_texture),
 		
 		for( y=hole_rows )
 		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, y], hole]]
