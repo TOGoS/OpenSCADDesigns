@@ -2,6 +2,16 @@
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
+// 
+// TODO: v6gc should be:
+// - For the male case: narrower; find out what the equivalent outer bevel
+//   of 'v6.0' style is and use that
+// - For the female case: have infinitely sharp corners
+//   (may need to abolish tgp-min-corner-radius)
+// 
+// TODO: 'chunk' bottom style
+// 
+// TODO: 'atomic' bottom style
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
