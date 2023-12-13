@@ -118,11 +118,8 @@ function tgx11__corner_radius(offset, gender) =
 	assert(is_num(offset))
 	assert(is_string(gender))
 	max(
-		togridlib3_decode([1, "tgp-min-corner-radius"]),
-		
-		gender == "m" ? togridlib3_decode([1, "tgp-m-outer-corner-radius"]) + offset :
-		gender == "f" ? togridlib3_decode([1, "tgp-f-outer-corner-radius"]) + offset :
-		assert(false, str("Unknown gender for corner radius purposes: '", gender, "'"))
+		togridlib3_decode([1, gender == "m" ? "tgp-min-m-corner-radius" : "tgp-min-f-corner-radius"]),
+		togridlib3_decode([1, gender == "m" ? "tgp-m-outer-corner-radius" : "tgp-f-outer-corner-radius"]) + offset
 	);
 
 function tgx11_chunk_xs_zath(size, bevels=[true,true,true,true]) =
@@ -236,7 +233,7 @@ function tgx11_make_cylinder(d, zrange) =
 function tgx11_atomic_block_bottom(block_size_ca, bottom_shape="footed") =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
-let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], offset=$tgx11_offset)])
+let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], gender=$tgx11_gender, offset=$tgx11_offset)])
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(u = togridlib3_decode([1,"u"]))
@@ -269,19 +266,28 @@ let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(atom = togridlib3_decode([1,"atom"]))
+let(lip_height = 2.54)
 // TODO: Taper top and bottom all cool?
 ["difference",
 	["intersection",
-		extrude_polypoints([-1,block_size[2]], tgx11_chunk_xs_points(
+		extrude_polypoints([-1,block_size[2]+lip_height], tgx11_chunk_xs_points(
 			size = block_size,
 			offset = $tgx11_offset
 		)),
-		tgx11_atomic_block_bottom(block_size_ca, bottom_shape=bottom_shape),
+		tgx11_atomic_block_bottom([
+			block_size_ca[0],
+			block_size_ca[1],
+			[togridlib3_decode(block_size_ca[2], [1, "mm"]) + lip_height, "mm"]
+		], bottom_shape=bottom_shape, $tgx11_gender="m"),
 	],
 	
 	if( len(atom_bottom_subtractions) > 0 )
 	let( atom_bottom_subtraction = ["union", each atom_bottom_subtractions] )
 	for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*atom, ym*atom, 0], atom_bottom_subtraction],
+	
+	["translate", [0,0,block_size[2]], tgx11_atomic_block_bottom(
+		block_size_ca, bottom_shape=bottom_shape,
+		$tgx11_offset=-$tgx11_offset, $tgx11_gender="f")],
 ];
 
 $togridlib3_unit_table = [
@@ -291,7 +297,8 @@ $togridlib3_unit_table = [
 	["tgp-m-outer-corner-radius", [2, "u"]],
 	["tgp-f-outer-corner-radius", [1, "u"]],
 	["tgp-column-inset", [1, "u"]],
-	["tgp-min-corner-radius", [1, "u"]],
+	["tgp-min-m-corner-radius", [1, "u"]],
+	["tgp-min-f-corner-radius", [0, "u"]],
 	["tgp-standard-bevel", [2, "u"]],
 	each togridlib3_get_default_unit_table()
 ];
