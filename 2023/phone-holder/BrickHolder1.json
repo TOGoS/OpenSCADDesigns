@@ -43,6 +43,20 @@
 			"top_cord_slot_depth": "25.4",
 			"top_cord_slot_diameter": "12.7",
 			"top_segmentation": "none"
+		},
+		"p1304": {
+			"$tgx11_offset": "-0.1",
+			"back_segmentation": "none",
+			"bottom_hole_size": "[159, 31]",
+			"bottom_segmentation": "none",
+			"brick_size": "[171.4, 35, 90]",
+			"front_segmentation": "none",
+			"margin": "1",
+			"mode": "holder",
+			"spacer_thickness": "12.7",
+			"top_cord_slot_depth": "0",
+			"top_cord_slot_diameter": "0",
+			"top_segmentation": "none"
 		}
 	},
 	"parameterSets": "",
