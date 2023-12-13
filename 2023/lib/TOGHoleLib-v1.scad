@@ -154,6 +154,7 @@ tog_holelib_hole_types = [
 	["THL-1001", "Suitable for #6 flathead"],
 	["THL-1002", "Suitable for 1/4\" flathead"],
 	// ["THL-1003", "Suitable for #6 hex nuts or pan heads"],
+	// ["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
 	["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 ];

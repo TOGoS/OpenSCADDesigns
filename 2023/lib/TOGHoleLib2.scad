@@ -1,4 +1,4 @@
-// TOGHoleLib2.1
+// TOGHoleLib2.2
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -11,6 +11,8 @@
 // - Add "THL-1003" type, which is counterbored  for #6 hex nuts
 // - Allow `inset` to be specified for all hole types,
 //   while defaulting to type-specific values (usually 0.01)
+// v2.2:
+// - Add "THL-1004", which is really just THL-1001 but sloppier.
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -27,7 +29,14 @@ function tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_
 	], function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]));
 
 function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=-1, overhead_bore_d=0, overhead_bore_height=1, inset=0.01) =
-	tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d == -1 ? neck_d : bore_d, max(surface_d, overhead_bore_d), overhead_bore_height, inset);
+	let(_inset = tog_holelib2__coalesce(inset, 0.01))
+	tog_holelib2_countersunk_hole_2(
+		surface_d, neck_d, head_h, depth,
+		bore_d == -1 ? neck_d : bore_d,
+		max(surface_d, overhead_bore_d),
+		overhead_bore_height,
+		inset=_inset
+	);
 
 function tog_holelib2__coalesce(v, default_v) = is_undef(v) ? default_v : v;
 
@@ -50,6 +59,11 @@ tog_holelib2_hole_types = [
 	["THL-1001", "Suitable for #6 flathead"],
 	["THL-1002", "Suitable for 1/4\" flathead"],
 	["THL-1003", "Suitable for #6 hex nuts or pan heads"],
+	// THL-1004 is what was called 'coutnersnuk', but without the automatic extra inset;
+	// it exists mostly to work around the current implementation
+	// of THL-1001 having a bug where bore_d is ignored.
+	// THL-1004 is less precise, but good enough for most cases
+	["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 ];
@@ -66,4 +80,5 @@ function tog_holelib2_hole(type_name, depth=1000, overhead_bore_height=1, inset=
 	type_name == "THL-1001" ? tog_holelib2_hole1001(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
