@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p1306": {
+			"$fn": "32",
+			"center_hole_diameter": "8",
+			"corner_radius": "4.7625",
+			"gridfinity_compat": "false",
+			"hole_diameter": "0",
+			"thickness": "6.35",
+			"togridpile_compat": "false"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
