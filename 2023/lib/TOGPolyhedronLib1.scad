@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.5
+// TOGPolyhedronLib1.6
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -19,6 +19,9 @@
 // - Fix tphl1_make_rounded_cuboid to use correct winding order
 // v1.5:
 // - Add tphl1_make_z_cylinder
+// v1.6:
+// - Add tphl1_extrude_polypoints, which is basically a shorthand
+//   for tphl1_make_polyhedron_from_layers
 
 // Winding order:
 // 
@@ -109,6 +112,33 @@ function tphl1_make_polyhedron_from_layer_function(layer_keys, layer_points_func
 	let(indexes = is_num(layer_keys) ? [0:1:layer_keys-1] : is_list(layer_keys) ? layer_keys : assert(false, "Layer list must be number or list"))
 	let(layers = [for(li=indexes) layer_points_function(li)])
 	tphl1_make_polyhedron_from_layers(layers, cap_bottom=cap_bottom, cap_top=cap_top);
+
+function tphl1__tovec3(vec, fromnum=[0,0,1]) =
+	let( cev = is_list(vec) ? vec : is_num(vec) ? fromnum * vec : assert(false, str("Can't turn ", vec, " into vec3")) )
+	len(cev) >= 3 ? cev :
+	len(cev) == 2 ? [cev[0],cev[1],0] :
+	len(cev) == 1 ? [cev[0],0,0] :
+	[0,0,0];
+
+function tphl1__add_z_or_vec(vec, z) =
+	tphl1__tovec3(vec) + tphl1__tovec3(z);
+
+assert([1,2,3] == tphl1__add_z_or_vec([1,2], 3));
+assert([1,2,6] == tphl1__add_z_or_vec([1,2,3], 3));
+assert([2,4,0] == tphl1__add_z_or_vec([1,2], [1,2]));
+assert([2,4,3] == tphl1__add_z_or_vec([1,2], [1,2,3]));
+assert([2,4,6] == tphl1__add_z_or_vec([1,2,3], [1,2,3]));
+
+/**
+ * Zrange can either be a list of Z values,
+ * or [X,Y,Z] positions to offset points by for each layer.
+ * Points may be 2D or 3D positions; if 2D, Z=0 is implied.
+ */
+function tphl1_extrude_polypoints(zrange, points) =
+	tphl1_make_polyhedron_from_layers([
+		for( z=zrange ) [ for(p=points) tphl1__add_z_or_vec(p, z) ]
+	]);
+
 
 use <./TOGMod1Constructors.scad>
 
