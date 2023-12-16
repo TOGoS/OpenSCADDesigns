@@ -20,6 +20,8 @@ block_height_u = 12;
 atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
 bottom_shape = "footed"; // ["footed","beveled"]
 
+lip_height = 2.54;
+
 // 'shell-xs' makes a cross section of the 'shell' between the ideal shape and the offset one
 mode = "normal"; // ["normal", "shell-xs"]
 shell_xs_angle = 0;
@@ -98,12 +100,20 @@ module tgmain() {
 		if( atom_hole_style == "THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20)],
 		if( atom_hole_style == "deep-THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20, inset=3)],
 	];
+
+	function blok() = tgx11_block(
+		block_size_ca,
+		atom_bottom_subtractions = atom_bottom_subtractions,
+		bottom_shape = bottom_shape,
+		lip_height = lip_height,
+		$tgx11_gender = "m"
+	);
 	
 	what =
 		item == "block" ? ["hand+glove",
-			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape, $tgx11_gender="m"),
+			blok(),
 			test_plate(block_size),
-			tgx11_block(block_size_ca, atom_bottom_subtractions=atom_bottom_subtractions, bottom_shape=bottom_shape, $tgx11_gender="m", $tgx11_offset=0),
+			blok($tgx11_offset=0),
 		] :
 		item == "v6hc-xc" ? polyhagl([20,20], function(offset) tgx11_v6c_flatright_polygon([12.7,12.7], offset=offset)) :
 		item == "foot-column" ? foot_column_demo() :
@@ -134,7 +144,7 @@ module tgmain() {
 }
 
 tgmain(
-	 $togridlib3_unit_table = tgx11_get_default_unit_table(),
+	$togridlib3_unit_table = tgx11_get_default_unit_table(),
 	$tgx11_offset = offset,
 	$fn = $preview ? preview_fn : render_fn
 );

@@ -214,13 +214,12 @@ let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v
 		block_size[2]+$tgx11_offset*2-bevel_size+1+1/32])]
 ];
 
-function tgx11_block(block_size_ca, bottom_shape="footed", atom_bottom_subtractions=[]) =
+function tgx11_block(block_size_ca, bottom_shape="footed", lip_height=2.54, atom_bottom_subtractions=[]) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(atom = togridlib3_decode([1,"atom"]))
-let(lip_height = 2.54)
 // TODO: Taper top and bottom all cool?
 ["difference",
 	["intersection",
@@ -239,7 +238,7 @@ let(lip_height = 2.54)
 	let( atom_bottom_subtraction = ["union", each atom_bottom_subtractions] )
 	for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*atom, ym*atom, 0], atom_bottom_subtraction],
 	
-	["translate", [0,0,block_size[2]], tgx11_atomic_block_bottom(
+	if( lip_height > 0 ) ["translate", [0,0,block_size[2]], tgx11_atomic_block_bottom(
 		block_size_ca, bottom_shape=bottom_shape,
 		$tgx11_offset=-$tgx11_offset, $tgx11_gender="f")],
 ];
