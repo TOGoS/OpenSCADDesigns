@@ -1,4 +1,4 @@
-// BrickHolder1.5
+// BrickHolder1.5.1
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -17,6 +17,8 @@
 //   (update to TGx11.scad should fix that $tgx11_offset was ignored).
 // v1.5:
 // - Report block size in millimeters and inches
+// v1.5.1:
+// - Update reference to TGx11.1Lib.scad
 
 /* [General] */
 
@@ -47,6 +49,8 @@ $tgx11_offset = -0.1;
 spacer_thickness = 12.7; // 0.01
 
 module __brickholder_end_params() { }
+
+$togridlib3_unit_table = tgx11_get_default_unit_table();
 
 cavity_size = [
 	brick_size[0] + margin*2,
@@ -80,7 +84,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
-use <../experimental/TGx11.scad>
+use <../lib/TGx11.1Lib.scad>
 
 $fn = 24;
 

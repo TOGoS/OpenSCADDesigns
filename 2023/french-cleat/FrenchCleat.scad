@@ -1,4 +1,4 @@
-// FrenchCleat-v1.5
+// FrenchCleat-v1.5.1
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -15,6 +15,8 @@
 // - Round the ends
 // v1.5:
 // - Hacked-in support to make TGx11-atom-female textured back
+// v1.5.1:
+// - Update reference to TGx11.1Lib.scad
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -40,11 +42,12 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
-use <../experimental/TGx11.scad>
-
-$fn = $preview ? 12 : 72;
+use <../lib/TGx11.1Lib.scad>
 
 module __fc202310__end_params() { }
+
+$fn = $preview ? 12 : 72;
+$togridlib3_unit_table = tgx11_get_default_unit_table();
 
 length               = togridlib3_decode(length_ca);
 length_gb            = floor(togridlib3_decode(length_ca, unit=[1.5, "inch"]));
