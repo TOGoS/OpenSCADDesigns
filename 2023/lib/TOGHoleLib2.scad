@@ -1,4 +1,4 @@
-// TOGHoleLib2.2
+// TOGHoleLib2.3
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -13,14 +13,19 @@
 //   while defaulting to type-specific values (usually 0.01)
 // v2.2:
 // - Add "THL-1004", which is really just THL-1001 but sloppier.
+// v2.3:
+// - Fix tog_holelib2_countersunk_hole to properly handle the case
+//   when neck_d < bore_d.  I think.  Might need more unit tests.
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
 
-function tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
+function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
+	assert(bore_d <= neck_d, str("bore_d (", bore_d, ") > neck_d (", neck_d, ")"))
 	// TODO: Fix to actually use bore_d!
 	tphl1_make_polyhedron_from_layer_function([
-		[-depth       , neck_d],
+		[-depth       , bore_d],
+		[-head_h-inset, bore_d],
 		[-head_h-inset, neck_d],
 		[       -inset, surface_d],
 		[   0.01      , surface_d],
@@ -28,14 +33,23 @@ function tog_holelib2_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_
 		[overhead_bore_height, overhead_bore_d]
 	], function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]));
 
-function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=-1, overhead_bore_d=0, overhead_bore_height=1, inset=0.01) =
+function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=undef, overhead_bore_d=0, overhead_bore_height=1, inset=0.01) =
+	let( adjusted_bore_d = is_undef(bore_d) ? neck_d : bore_d )
+	let( adjusted_neck_d = adjusted_bore_d < neck_d ? neck_d : adjusted_bore_d )
+	let( adjusted_head_h =
+		 adjusted_neck_d == neck_d ? head_h :
+		 head_h * (1 - (adjusted_neck_d - neck_d)/(surface_d - neck_d)) )
 	let(_inset = tog_holelib2__coalesce(inset, 0.01))
-	tog_holelib2_countersunk_hole_2(
-		surface_d, neck_d, head_h, depth,
-		bore_d == -1 ? neck_d : bore_d,
-		max(surface_d, overhead_bore_d),
-		overhead_bore_height,
-		inset=_inset
+	echo(surface_d=surface_d, neck_d=neck_d, head_h=head_h, adjusted_bore_d=adjusted_bore_d, adjusted_neck_d=adjusted_neck_d, adjusted_head_h=adjusted_head_h)
+	tog_holelib2__countersunk_hole_2(
+		surface_d = surface_d,
+		neck_d    = adjusted_neck_d,
+		head_h    = adjusted_head_h,
+		depth     = depth,
+		bore_d    = adjusted_bore_d,
+		overhead_bore_d = max(surface_d, overhead_bore_d),
+		overhead_bore_height = overhead_bore_height,
+		inset     = _inset
 	);
 
 function tog_holelib2__coalesce(v, default_v) = is_undef(v) ? default_v : v;
@@ -60,7 +74,7 @@ tog_holelib2_hole_types = [
 	["THL-1002", "Suitable for 1/4\" flathead"],
 	["THL-1003", "Suitable for #6 hex nuts or pan heads"],
 	// THL-1004 is what was called 'coutnersnuk', but without the automatic extra inset;
-	// it exists mostly to work around the current implementation
+	// it exists mostly to work around the pre-v2.3 implementation
 	// of THL-1001 having a bug where bore_d is ignored.
 	// THL-1004 is less precise, but good enough for most cases
 	["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
