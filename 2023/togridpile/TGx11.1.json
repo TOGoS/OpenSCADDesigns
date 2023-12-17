@@ -21,6 +21,20 @@
 			"offset": "-0.1",
 			"preview_fn": "24",
 			"render_fn": "24"
+		},
+		"p1307": {
+			"atom_hole_style": "deep-THL-1001-bottom",
+			"block_height_u": "4",
+			"block_size_chunks": "[4, 4]",
+			"bottom_shape": "footed",
+			"include_test_plate": "true",
+			"include_unoffset_ghost": "true",
+			"item": "block",
+			"lip_height": "0",
+			"mode": "normal",
+			"offset": "-0.1",
+			"preview_fn": "12",
+			"render_fn": "24"
 		}
 	},
 	"parameterSets": "",
