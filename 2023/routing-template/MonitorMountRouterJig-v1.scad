@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.4.2
+// MonitorMountRouterJig-v1.5
 // 
 // Versions:
 // v1.0:
@@ -26,9 +26,11 @@
 // - Refactor to only domoduile on the last line
 // v1.4.2:
 // - Use TOGPath1 to make ovals
+// v1.5:
+// - MMP-2315, 'polygonal-hole' support
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] **/
@@ -96,6 +98,15 @@ let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
 		if( xm != 0 ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
 ]];
 
+function make_2315ish(size, pocket_size) = [size, [
+	["polygonal-hole", [
+		[-pocket_size[0]/2, -pocket_size[1]/2],
+		[ pocket_size[0]/2, -pocket_size[1]/2],
+		[ pocket_size[0]/2,  pocket_size[1]/2],
+		[-pocket_size[0]/2,  pocket_size[1]/2],
+	]]
+]];
+
 // style name -> [size, cuts]
 function get_panel_info(style) =
 	(style == "MMP-2310" || style == "MMP-2311") ? [[6*inch,9*inch], [
@@ -109,6 +120,7 @@ function get_panel_info(style) =
 	style == "MMP-2312" ? make_2312ish([4.5*inch, 18*inch]) :
 	style == "MMP-2313" ? make_2312ish([4.5*inch, 12*inch]) :
 	style == "MMP-2314" ? make_2312ish([6.0*inch, 12*inch]) :
+	style == "MMP-2315" ? make_2315ish([6.0*inch, 12*inch], [1*inch,3*inch]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGMod1.scad>
@@ -189,6 +201,26 @@ function fat_polyline_to_togmod(r, points) =
 	["union",
 		for( i=[0 : 1 : len(points)-2] ) make_oval(r, points[i], points[i+1])];
 
+function make_polygonal_hole_2d_points(
+	points,
+	roff,
+	bitrad = template_counterbore_bit_diameter/2
+) = togpath1_rath_to_points(["togpath1-rath",
+	for(p=points) ["togpath1-rathnode", p, ["round", bitrad], ["offset", roff]]
+]);
+
+function make_polygonal_hole_2d(
+	points,
+	roff,
+	bitrad = template_counterbore_bit_diameter/2
+) = togmod1_make_polygon(make_polygonal_hole_2d_points(points, roff, bitrad));
+
+function make_polygonal_hole(
+	points,
+	roff,
+	bitrad = template_counterbore_bit_diameter/2
+) = tphl1_extrude_polypoints([-1, panel_thickness+1], make_polygonal_hole_2d_points(points, roff, bitrad));
+
 // fat_polyline(20, [[0,0], [100,100], [0,200]], $fn = 60);
 
 function decode_cut_for_panel(
@@ -221,18 +253,21 @@ function decode_cut_for_panel(
 	cutdesc[0] == "back-counterbored-slot"  ?	make_counterbored_slot(cutdesc[1], 0) :
 	cutdesc[0] == "normal-slot"             ? make_counterbored_slot(cutdesc[1]) :
 	cutdesc[0] == "alignment-hole"          ? make_alignment_hole(cutdesc[1]) :
+	cutdesc[0] == "polygonal-hole"          ? make_polygonal_hole(cutdesc[1], 0) :
 	assert(false, str("Unsupported panel cut: '", cutdesc[0], "'"));
 	
 function decode_cut_for_front_template(moddesc) =
 	moddesc[0] == "front-counterbored-slot" ? ["fat-polyline-rp", template_counterbore_radius, moddesc[1]] :
 	moddesc[0] == "back-counterbored-slot" ? ["fat-polyline-rp", template_slot_radius, moddesc[1]] :
 	moddesc[0] == "normal-slot" ? ["fat-polyline-rp", template_slot_radius, moddesc[1]] :
+	moddesc[0] == "polygonal-hole"          ? make_polygonal_hole_2d(moddesc[1], template_counterbore_r_offset) :
 	assert(false, str("Unsupported front template shape: '", moddesc[0], "'"));
 
 function decode_cut_for_back_template(moddesc) =
 	moddesc[0] == "back-counterbored-slot" ? ["fat-polyline-rp", template_counterbore_radius, moddesc[1]] :
 	moddesc[0] == "front-counterbored-slot" ? ["fat-polyline-rp", template_slot_radius, moddesc[1]] :
 	moddesc[0] == "normal-slot" ? ["fat-polyline-rp", template_slot_radius, moddesc[1]] :
+	moddesc[0] == "polygonal-hole"          ? make_polygonal_hole_2d(moddesc[1], template_counterbore_r_offset) :
 	assert(false, str("Unsupported front template shape: '", moddesc[0], "'"));
 
 function decode2(moddesc) =
