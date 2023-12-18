@@ -33,6 +33,15 @@
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1308": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "coutnersnuk",
+			"length_ca": "[4, \"chunk\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
 		}
 	},
 	"parameterSets": "",
