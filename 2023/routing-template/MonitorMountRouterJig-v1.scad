@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.5
+// MonitorMountRouterJig-v1.6
 // 
 // Versions:
 // v1.0:
@@ -28,6 +28,8 @@
 // - Use TOGPath1 to make ovals
 // v1.5:
 // - MMP-2315, 'polygonal-hole' support
+// v1.6:
+// - Matchfit grooves in the MMP-2315 panel, if thick enough
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315"]
@@ -98,13 +100,22 @@ let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
 		if( xm != 0 ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
 ]];
 
+function template_matchfit_groove(x=undef, y=undef) =
+	assert(is_undef(x) || is_undef(y))
+	assert(!is_undef(x) || !is_undef(y))
+	is_undef(x) ? ["template-matchfit-groove-x", y] : ["template-matchfit-groove-y", x];
+
 function make_2315ish(size, pocket_size) = [size, [
 	["polygonal-hole", [
 		[-pocket_size[0]/2, -pocket_size[1]/2],
 		[ pocket_size[0]/2, -pocket_size[1]/2],
 		[ pocket_size[0]/2,  pocket_size[1]/2],
 		[-pocket_size[0]/2,  pocket_size[1]/2],
-	]]
+	]],
+	for( ym=[-1,1] )
+		template_matchfit_groove(y=ym*round((pocket_size[1]/2 + 19.05)/19.05)*19.05),
+	for( xm=[-1,1] )
+		template_matchfit_groove(x=xm*round((pocket_size[0]/2 + 19.05)/19.05)*19.05),
 ]];
 
 // style name -> [size, cuts]
@@ -120,7 +131,7 @@ function get_panel_info(style) =
 	style == "MMP-2312" ? make_2312ish([4.5*inch, 18*inch]) :
 	style == "MMP-2313" ? make_2312ish([4.5*inch, 12*inch]) :
 	style == "MMP-2314" ? make_2312ish([6.0*inch, 12*inch]) :
-	style == "MMP-2315" ? make_2315ish([6.0*inch, 12*inch], [1*inch,3*inch]) :
+	style == "MMP-2315" ? make_2315ish([6.0*inch,  6*inch], [1*inch,3*inch]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGMod1.scad>
@@ -221,6 +232,27 @@ function make_polygonal_hole(
 	bitrad = template_counterbore_bit_diameter/2
 ) = tphl1_extrude_polypoints([-1, panel_thickness+1], make_polygonal_hole_2d_points(points, roff, bitrad));
 
+matchfit_groove_profile_points =
+let(u=25.4/32)
+[
+	[- 8*u, -13*u],
+	[  8*u, -13*u],
+	[  8*u, -12*u],
+	[  5*u,   0*u],
+	[  8*u,  12*u],
+	[  8*u,  13*u],
+	[- 8*u,  13*u],
+	[- 8*u,  12*u],
+	[- 5*u,   0*u],
+];
+
+function make_matchfit_groove_x(y) = ["translate", [0,y,0],
+	togmod1_linear_extrude_x([-100, 100], togmod1_make_polygon(matchfit_groove_profile_points))
+];
+function make_matchfit_groove_y(x) = ["translate", [x,0,0],
+	togmod1_linear_extrude_y([-100, 100], togmod1_make_polygon(matchfit_groove_profile_points))
+];
+
 // fat_polyline(20, [[0,0], [100,100], [0,200]], $fn = 60);
 
 function decode_cut_for_panel(
@@ -254,8 +286,15 @@ function decode_cut_for_panel(
 	cutdesc[0] == "normal-slot"             ? make_counterbored_slot(cutdesc[1]) :
 	cutdesc[0] == "alignment-hole"          ? make_alignment_hole(cutdesc[1]) :
 	cutdesc[0] == "polygonal-hole"          ? make_polygonal_hole(cutdesc[1], 0) :
+	cutdesc[0] == "template-matchfit-groove-x" ? ["union"] :
+	cutdesc[0] == "template-matchfit-groove-y" ? ["union"] :
 	assert(false, str("Unsupported panel cut: '", cutdesc[0], "'"));
-	
+
+function is_3d_cut(moddesc) =
+	moddesc[0] == "alignment-hole" ||
+	moddesc[0] == "template-matchfit-groove-x" ||
+	moddesc[0] == "template-matchfit-groove-y";
+
 function decode_cut_for_front_template(moddesc) =
 	moddesc[0] == "front-counterbored-slot" ? ["fat-polyline-rp", template_counterbore_radius, moddesc[1]] :
 	moddesc[0] == "back-counterbored-slot" ? ["fat-polyline-rp", template_slot_radius, moddesc[1]] :
@@ -281,7 +320,7 @@ function decode2(moddesc) =
 
 function decode_template_2d_cuts(scale, block, cuts, cut_decoder) = ["scale", scale, ["difference",
 	block,
-	for(cut=cuts) each cut[0] == "alignment-hole" ? [] : [decode2(cut_decoder(cut))]
+	for(cut=cuts) each is_3d_cut(cut) ? [] : [decode2(cut_decoder(cut))]
 ]];
 
 function make_the_template_2d(hull_shape_2d, cuts, mode) =
@@ -292,7 +331,11 @@ function make_the_template_2d(hull_shape_2d, cuts, mode) =
 function make_the_template(hull_shape_2d, cuts, mode, thickness) = ["difference",
 	["linear-extrude-zs", [0, thickness], make_the_template_2d(hull_shape_2d, cuts, mode)],
 	
-	for(cut=cuts) if(cut[0] == "alignment-hole") make_thl_1001([cut[1][0], cut[1][1], thickness-alignment_hole_countersink_inset]),
+	for(cut=cuts) each
+		cut[0] == "alignment-hole" ? [make_thl_1001([cut[1][0], cut[1][1], thickness-alignment_hole_countersink_inset])] :
+		cut[0] == "template-matchfit-groove-x" ? (thickness >= 12.7 ? [make_matchfit_groove_x(cut[1])] : []) :
+		cut[0] == "template-matchfit-groove-y" ? (thickness >= 12.7 ? [make_matchfit_groove_y(cut[1])] : []) :
+		[],
 ];
 
 
