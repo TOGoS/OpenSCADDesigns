@@ -1,4 +1,4 @@
-// TGx9.5.22 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.23 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -157,6 +157,8 @@
 // - sublip_width is now configurable
 // v9.5.22:
 // - Add framework-module-holder cavity type
+// v9.5.23:
+// - Add earrings-holder
 
 /* [Atom/chunk/block size] */
 
@@ -205,7 +207,7 @@ bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
 
-cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder"]
+cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
@@ -437,6 +439,7 @@ function tograck_cavity_sshape() = ["union",
 ];
 
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGMod1Constructors.scad>
 
 function make_framework_module_holder_cutout(count) =
 let( spacing = 12.7 )
@@ -453,6 +456,23 @@ let( finger_notch_depth = 19.05 )
 	tphl1_make_rounded_cuboid([finger_notch_width, (count+1)*spacing, finger_notch_depth], r=finger_notch_width/2)
 ];
 
+function make_earrings_holder_cutout(size) =
+let( wall_thickness = 4 )
+let( depth = (size[2]-floor_thickness) )
+let( magcone = tphl1_make_polyhedron_from_layer_function([
+	[-18, 0],
+	[  1, 8],
+], function(params) togmod1_circle_points(r=params[1], pos=[0,0,params[0]])) )
+["difference",
+	tphl1_make_rounded_cuboid([size[0]-wall_thickness*2, size[1]-wall_thickness*2, depth*2], r=2),
+	
+	for( ym=[-size[1]/12.7/2+1 : 1 : size[1]/12.7/2] )
+	["translate", [0,ym*12.7,-depth], tphl1_make_rounded_cuboid([size[0], 2, (depth-3)*2], r=1)],
+	
+	if( top_magnet_holes_enabled ) for( xm=[-1,1] ) for( ym=[-1,1] )
+	["translate", [xm*(block_size[0]/2-wall_thickness), ym*(block_size[1]/2-wall_thickness)], magcone],
+];
+
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
 	if( cavity_style == "cup" ) for(i=[0 : 1 : len(cup_holder_diameters)-1])
@@ -460,6 +480,7 @@ cavity_ops = [
 			["subtract",["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]],
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()],
 	if( cavity_style == "framework-module-holder" ) ["subtract", make_framework_module_holder_cutout(block_size[1]/12.7)],
+	if( cavity_style == "earrings-holder" ) ["subtract", make_earrings_holder_cutout(block_size)],
 ];
 
 //// Magnet hole precalculations
@@ -467,6 +488,9 @@ cavity_ops = [
 // Positions of top magnet holes unless they are on every chunk!
 top_magnet_hole_positions =
 	!top_magnet_holes_enabled2 ? [] :
+	(cavity_style == "earrings-holder") ? [
+		for( xm=[-1,1] ) for( ym=[-1,1] ) [xm*(block_size[0]/2 - atom_pitch/2), ym*(block_size[1]/2 - atom_pitch/2)]
+	] :
 	// TODO: Same for all but 'none', where they are (for dubious performance reasons) chunk based
 	// TODO: Place magnet holes anywhere they'll fit, e.g. if wall_thickness > 1/2"
 	(cavity_style == "cup" && label_width > atom_pitch/2) ? [
