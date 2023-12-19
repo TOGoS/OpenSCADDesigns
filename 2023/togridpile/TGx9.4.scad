@@ -1,4 +1,4 @@
-// TGx9.5.21 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.22 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -155,6 +155,8 @@
 // v9.5.21:
 // - cavity_corner_radius is now configurable
 // - sublip_width is now configurable
+// v9.5.22:
+// - Add framework-module-holder cavity type
 
 /* [Atom/chunk/block size] */
 
@@ -203,7 +205,7 @@ bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
 
-cavity_style = "cup"; // ["none","cup","tograck"]
+cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
@@ -434,12 +436,30 @@ function tograck_cavity_sshape() = ["union",
 		let(pos=[xm*12.7, ym*12.7, -block_size[2]+floor_thickness]) ["translate", pos, ["THL-1001", floor_thickness*2, block_size[2]]],
 ];
 
+use <../lib/TOGPolyhedronLib1.scad>
+
+function make_framework_module_holder_cutout(count) =
+let( spacing = 12.7 )
+let( module_depth = 33 )
+let( usb_depth = 12 )
+let( finger_notch_width = 19.05 )
+let( finger_notch_depth = 19.05 )
+["union",
+	for( ym=[-count/2 + 0.5 : 1 : count/2] )
+	["translate", [0, spacing*ym, 0], ["union",
+		tphl1_make_rounded_cuboid([32, 7.5, module_depth*2], r=[0.3, 0.3, 0], $fn=8),
+		["translate", [0,0,-module_depth], tphl1_make_rounded_cuboid([7, 3.175, usb_depth*2], r=[1.5, 1.5, 0], $fn=8)],
+	]],
+	tphl1_make_rounded_cuboid([finger_notch_width, (count+1)*spacing, finger_notch_depth], r=finger_notch_width/2)
+];
+
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
 	if( cavity_style == "cup" ) for(i=[0 : 1 : len(cup_holder_diameters)-1])
 		if(cup_holder_diameters[i] > 0 && cup_holder_depths[i] > 0)
 			["subtract",["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]],
-	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()]
+	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()],
+	if( cavity_style == "framework-module-holder" ) ["subtract", make_framework_module_holder_cutout(block_size[1]/12.7)],
 ];
 
 //// Magnet hole precalculations

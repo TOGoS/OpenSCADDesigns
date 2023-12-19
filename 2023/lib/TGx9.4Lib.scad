@@ -56,6 +56,9 @@
 // v1.21:
 // - Fix 'tgx1001_v6hc_block_subtractor' sshape to reference
 //   `-$tgx9_mating_offset` instead of `margin`
+// v1.22:
+// - Add support for 'polygon-vp' and 'polyhedron-vf' sshapes
+//   (copied from TOGMod1.scad)
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -447,6 +450,11 @@ module tgx9_do_sshape(shape) {
 		tgx9_usermod_1(len(shape) > 1 ? shape[1] : undef, len(shape) > 2 ? shape[2] : undef);
 	} else if( type == "tgx9_usermod_2" ) {
 		tgx9_usermod_2(len(shape) > 1 ? shape[1] : undef, len(shape) > 2 ? shape[2] : undef);
+	} else if( type == "polygon-vp" ) {
+		// ["polygon-vp", vertexes, paths]
+		polygon(points=shape[1], paths=shape[2]);
+	} else if( type == "polyhedron-vf" ) {
+		polyhedron(shape[1], faces=shape[2]);
 	} else if( type == "tgx1001_v6hc_block_subtractor" ) {
 		// ["tgx1001_v6hc_block_subtractor", block_size_ca, bevel_size=1.707*u]
 		// For historical reasons, default bevel size matches the v6.0 foot shape.
