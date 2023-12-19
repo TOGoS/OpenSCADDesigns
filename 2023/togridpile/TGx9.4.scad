@@ -1,4 +1,4 @@
-// TGx9.5.23 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.24 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -159,6 +159,8 @@
 // - Add framework-module-holder cavity type
 // v9.5.23:
 // - Add earrings-holder
+// v9.5.24:
+// - Fix framework-module-holder's USB-C connector pockets to be wide enough
 
 /* [Atom/chunk/block size] */
 
@@ -444,14 +446,17 @@ use <../lib/TOGMod1Constructors.scad>
 function make_framework_module_holder_cutout(count) =
 let( spacing = 12.7 )
 let( module_depth = 33 )
-let( usb_depth = 12 )
+let( usb_c_cutout_size = [10, 3.175, 10] )
 let( finger_notch_width = 19.05 )
 let( finger_notch_depth = 19.05 )
 ["union",
 	for( ym=[-count/2 + 0.5 : 1 : count/2] )
 	["translate", [0, spacing*ym, 0], ["union",
 		tphl1_make_rounded_cuboid([32, 7.5, module_depth*2], r=[0.3, 0.3, 0], $fn=8),
-		["translate", [0,0,-module_depth], tphl1_make_rounded_cuboid([7, 3.175, usb_depth*2], r=[1.5, 1.5, 0], $fn=8)],
+		["translate", [0,0,-module_depth], tphl1_make_rounded_cuboid(
+			[usb_c_cutout_size[0], usb_c_cutout_size[1], usb_c_cutout_size[2]*2],
+			r=[1.5, 1.5, 0], $fn=8)
+		],
 	]],
 	tphl1_make_rounded_cuboid([finger_notch_width, (count+1)*spacing, finger_notch_depth], r=finger_notch_width/2)
 ];
