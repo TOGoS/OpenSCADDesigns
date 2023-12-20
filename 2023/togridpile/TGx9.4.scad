@@ -1,4 +1,4 @@
-// TGx9.5.24 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.25 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -161,6 +161,8 @@
 // - Add earrings-holder
 // v9.5.24:
 // - Fix framework-module-holder's USB-C connector pockets to be wide enough
+// v9.5.25:
+// - Make framework-module-holder's slots a wee bit deeper (35mm instead of 33mm)
 
 /* [Atom/chunk/block size] */
 
@@ -445,10 +447,12 @@ use <../lib/TOGMod1Constructors.scad>
 
 function make_framework_module_holder_cutout(count) =
 let( spacing = 12.7 )
-let( module_depth = 33 )
+// 33 is enough for the modules; 36 should be enough for the uSD card
+// and maybe something another mm deeper, in case the need arises
+let( module_depth = 36 )
 let( usb_c_cutout_size = [10, 3.175, 10] )
 let( finger_notch_width = 19.05 )
-let( finger_notch_depth = 19.05 )
+let( finger_notch_depth = 22 )
 ["union",
 	for( ym=[-count/2 + 0.5 : 1 : count/2] )
 	["translate", [0, spacing*ym, 0], ["union",
