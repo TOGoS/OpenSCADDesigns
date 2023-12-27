@@ -1,10 +1,25 @@
 {
 	"parameterSets": {
+		"5 cent": {
+			"center_text": "5",
+			"diam": "35",
+			"thickness": "13.9",
+			"wall_thickness": "3.5",
+			"color": "red"
+		},
+		"10 cent": {
+			"center_text": "10",
+			"diam": "32",
+			"thickness": "17.2",
+			"wall_thickness": "3.5",
+			"color": "yellow"
+		},
 		"25 cent": {
 			"center_text": "25",
 			"diam": "38.4",
 			"thickness": "11.2",
-			"wall_thickness": "3.5"
+			"wall_thickness": "3.5",
+			"color": "blue"
 		}
 	},
 	"parameterSets": "",

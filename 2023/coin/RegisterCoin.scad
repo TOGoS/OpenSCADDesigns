@@ -1,8 +1,15 @@
+// RegisterCoin-v1.1
+// 
 // Replacement coins for the Fisher Price toy cash register
+// 
+// v1.1:
+// - Add color parameter, more to document the colors
+//   of the original coins than anything else
 
 diam = 38.4;
 wall_thickness = 3.5;
 thickness = 11.2;
+color = "blue";
 center_text = "25";
 
 $fn = $preview ? 8 : 144;
@@ -14,7 +21,7 @@ module m_linear_extrude(zrange) {
 	translate([0,0,zrange[0]]) linear_extrude(zrange[1]-zrange[0]) children();
 }
 
-union() {
+color(color) union() {
 	togmod1_domodule(["difference",
 		tphl1_make_z_cylinder(d=diam, zrange=[0, thickness]),
 		tphl1_make_z_cylinder(d=diam - wall_thickness*2, zrange=[wall_thickness, thickness+1]),
