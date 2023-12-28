@@ -1,11 +1,15 @@
-/// MatchfitHexHeadNut-v1.0
+// MatchfitHexHeadNut-v1.1
+//
+// v1.1:
+// - Default bottom_margin reduced to 0.5mm,
+//   hex_head_diameter increased by 0.4mm
 
-bottom_margin = 1;
-top_margin = 1;
+bottom_margin     =  0.5; // 0.1
+top_margin        =  1.0; // 0.1
+hex_head_diameter = 11.7; // 0.1
 
 inch = 25.4;
 hole_diameter = 1/4*inch + 0.5;
-hex_head_diameter = 7/16*inch + 0.2;
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGPath1.scad>

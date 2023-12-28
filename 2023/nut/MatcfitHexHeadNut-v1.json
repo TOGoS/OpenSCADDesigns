@@ -1,0 +1,20 @@
+{
+	"parameterSets": {
+		"p1318": {
+			"$fn": "24",
+			"bottom_margin": "1",
+			"hex_head_diameter": "11.3125",
+			"inch": "25.4",
+			"top_margin": "1"
+		},
+		"p1321": {
+			"$fn": "24",
+			"bottom_margin": "0.5",
+			"hex_head_diameter": "11.7",
+			"inch": "25.4",
+			"top_margin": "1"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
