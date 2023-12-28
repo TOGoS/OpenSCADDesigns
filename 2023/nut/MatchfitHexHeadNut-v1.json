@@ -4,6 +4,7 @@
 			"$fn": "24",
 			"bottom_margin": "1",
 			"hex_head_diameter": "11.3125",
+			"hex_head_depth": "5.0",
 			"inch": "25.4",
 			"top_margin": "1"
 		},
@@ -11,6 +12,15 @@
 			"$fn": "24",
 			"bottom_margin": "0.5",
 			"hex_head_diameter": "11.7",
+			"hex_head_depth": "5.0",
+			"inch": "25.4",
+			"top_margin": "1"
+		},
+		"p1322": {
+			"$fn": "24",
+			"bottom_margin": "0.5",
+			"hex_head_diameter": "11.7",
+			"hex_head_depth": "4.7",
 			"inch": "25.4",
 			"top_margin": "1"
 		}

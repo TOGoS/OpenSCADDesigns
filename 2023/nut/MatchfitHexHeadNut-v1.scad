@@ -1,12 +1,16 @@
-// MatchfitHexHeadNut-v1.1
+// MatchfitHexHeadNut-v1.2
 //
 // v1.1:
 // - Default bottom_margin reduced to 0.5mm,
 //   hex_head_diameter increased by 0.4mm
+// v1.2:
+// - Make hex_head_depth configurable,
+//   default to 4.7mm
 
 bottom_margin     =  0.5; // 0.1
 top_margin        =  1.0; // 0.1
 hex_head_diameter = 11.7; // 0.1
+hex_head_depth    =  4.7; // 0.1
 
 inch = 25.4;
 hole_diameter = 1/4*inch + 0.5;
@@ -39,7 +43,7 @@ function nut_hull() = tphl1_make_polyhedron_from_layer_function([
 
 function head_hole() = ["union",
 	tphl1_make_z_cylinder(d=hole_diameter, zrange=[-1, 3/8*inch+1]),
-	tphl1_extrude_polypoints([z2-5, z2+1], [
+	tphl1_extrude_polypoints([z2-hex_head_depth, z2+1], [
 		[-hex_head_diameter/cos(30)/2, 0],
 		[                           0, -hex_head_diameter/cos(60)/2],
 		[+hex_head_diameter/cos(30)/2, 0],
