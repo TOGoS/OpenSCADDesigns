@@ -80,6 +80,9 @@ tog_holelib2_hole_types = [
 	["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
+	["THL-1023", "Counterbored for M3 pan-head screws"],
+	["THL-1024", "Counterbored for M4 pan-head screws"],
+	["THL-1025", "Counterbored for M5 pan-head screws"],
 ];
 
 function tog_holelib2_get_hole_types() = tog_holelib2_hole_types;
@@ -95,4 +98,5 @@ function tog_holelib2_hole(type_name, depth=1000, overhead_bore_height=1, inset=
 	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
+	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.4, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));

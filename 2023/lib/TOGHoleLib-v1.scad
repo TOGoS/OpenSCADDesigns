@@ -157,6 +157,9 @@ tog_holelib_hole_types = [
 	// ["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
 	["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
+	// ["THL-1023", "Counterbored for M3 pan-head screws"],
+	// ["THL-1024", "Counterbored for M4 pan-head screws"],
+	// ["THL-1025", "Counterbored for M5 pan-head screws"],
 ];
 
 function tog_holelib_get_hole_types() = tog_holelib_hole_types;

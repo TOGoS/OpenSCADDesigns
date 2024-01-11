@@ -3,10 +3,17 @@
 // Gridfinity-on-the-outside, TOGridPile-on-the-inside
 // cup with holes for mounting to 2020 T-slot,
 // e.g. your 3D printer's framing, probably.
+//
+// My M3 pan-head screws:
+// - threaded diameter: 2.8mm
+// - head height: less than 2mm
+// - head width: 5.4mm
 
 block_size_gfc = [2,1,1];
 gfc_pitch_gfa  = 6;
 gfa_pitch      = 7;
+floor_thickness = 6.35;
+hole_patterns  = [["rect", [20,20], "THL-1023"]];
 
 debug = "none"; // ["none", "cutaway"]
 
@@ -16,6 +23,7 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGGridfinityLib-v2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGHoleLib2.scad>
 
 $fn = 24;
 
@@ -36,8 +44,26 @@ block_hull = ["intersection",
 	feet,
 	togridfinity2_xy_hull(block_size), // Might want to do a proper gridfinity lip!
 ];
-main_cavity = ["translate", [0,0,50+6.35], tphl1_make_rounded_cuboid(cavity_size, r=[2.5, 2.5, 2.5])];
-block = ["difference", block_hull, main_cavity];
+main_cavity = ["translate", [0,0,cavity_size[2]/2+floor_thickness], tphl1_make_rounded_cuboid(cavity_size, r=[2.5, 2.5, 2.5])];
+
+function hole_positions(pattern_spec, area_size) =
+let( spacing = pattern_spec[1] )
+[
+	for( xm=[-floor(area_size[0]/spacing[0])/2 + 0.5 : 1 : area_size[0]/spacing[0]/2] )
+	for( ym=[-floor(area_size[1]/spacing[1])/2 + 0.5 : 1 : area_size[1]/spacing[0]/2] )
+	[xm * spacing[0], ym*spacing[0]]
+];
+
+all_holes = ["union",
+	for( hp=hole_patterns )
+	let( hole_type = hp[2] )
+	let( hole=tog_holelib2_hole(hole_type, floor_thickness + 1) )
+	each [
+		for( pos=hole_positions(hp, block_size) ) ["translate", [pos[0], pos[1], floor_thickness], hole]
+	]
+];
+
+block	= ["difference", block_hull, main_cavity, all_holes];
 
 // TODO: Screw holes, I suppose on a 20x20mm grid,
 // for...pan-head...M3s?
