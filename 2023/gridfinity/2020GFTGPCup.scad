@@ -1,4 +1,4 @@
-// 2020MountableGridfinityTOGridPileCup-v0.1-dev
+// 2020MountableGridfinityTOGridPileCup-v0.1
 //
 // Gridfinity-on-the-outside, TOGridPile-on-the-inside
 // cup with holes for mounting to 2020 T-slot,
@@ -25,7 +25,7 @@ use <../lib/TOGGridfinityLib-v2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-$fn = 24;
+$fn = $preview ? 24 : 48;
 
 gfc_pitch  = gfc_pitch_gfa*gfa_pitch;
 gfc_size   = [1,1,1] * gfc_pitch;
