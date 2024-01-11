@@ -1,4 +1,4 @@
-// 2020MountableGridfinityTOGridPileCup-v0.1
+// 2020MountableGridfinityTOGridPileCup-v0.2
 //
 // Gridfinity-on-the-outside, TOGridPile-on-the-inside
 // cup with holes for mounting to 2020 T-slot,
@@ -8,8 +8,13 @@
 // - threaded diameter: 2.8mm
 // - head height: less than 2mm
 // - head width: 5.4mm
+// 
+// Versions:
+// v0.2:
+// - Height specified in mm instead of dumb gridfinity blocks
 
-block_size_gfc = [2,1,1];
+block_size_gfc = [2,1];
+block_height   = 19.05; // 0.01
 gfc_pitch_gfa  = 6;
 gfa_pitch      = 7;
 floor_thickness = 6.35;
@@ -29,7 +34,11 @@ $fn = $preview ? 24 : 48;
 
 gfc_pitch  = gfc_pitch_gfa*gfa_pitch;
 gfc_size   = [1,1,1] * gfc_pitch;
-block_size = block_size_gfc * gfc_pitch;
+block_size = [
+	block_size_gfc[0] * gfc_pitch,
+	block_size_gfc[1] * gfc_pitch,
+	block_height
+];
 
 cavity_size = [block_size[0]-3.5, block_size[1]-3.5, 100];
 echo(cavity_size);
