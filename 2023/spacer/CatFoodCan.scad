@@ -1,9 +1,12 @@
-// CatFoodCan-v1.0
+// CatFoodCan-v1.1
+//
+// v1.1:
+// - Slightly thinner lip to try to accomodate 9lives can
 
 // measured 85.5..86.0
 lip_outer_diameter     = 86.0;
 // measured 82.5..83.1
-lip_inner_diameter     = 82.5;
+lip_inner_diameter     = 84.0;
 sublip_inner_diameter  = 78.1;
 main_body_diameter     = 84.0;
 // lip_height is the height of the lip that will
