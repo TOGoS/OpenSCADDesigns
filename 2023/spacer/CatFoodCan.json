@@ -1,0 +1,22 @@
+{
+	"parameterSets": {
+		"p1331 - 3\/4\" solid with lip and beam cutout": {
+			"beam_attachment_holes_enabled": "true",
+			"beam_cutout_enabled": "true",
+			"beam_cutout_floor_thickness": "6.35",
+			"beam_cutout_round": "1.5",
+			"beam_cutout_width": "39",
+			"bottom_diameter": "82",
+			"floor_thickness": "999",
+			"lip_height": "2",
+			"lip_inner_diameter": "83.5",
+			"lip_outer_diameter": "86",
+			"main_body_diameter": "84",
+			"main_body_height": "19.05",
+			"sublip_inner_diameter": "78.1",
+			"top_shape": "lip"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
