@@ -1,4 +1,4 @@
-// TOGHoleLib2.3
+// TOGHoleLib2.5
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -16,6 +16,10 @@
 // v2.3:
 // - Fix tog_holelib2_countersunk_hole to properly handle the case
 //   when neck_d < bore_d.  I think.  Might need more unit tests.
+// v2.4:
+// - Add THL-1023 for counterbored M3s
+// v2.5:
+// - Adjusrt THL-1023 [counter]bore sizes slightly
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -98,5 +102,5 @@ function tog_holelib2_hole(type_name, depth=1000, overhead_bore_height=1, inset=
 	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
-	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.4, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
+	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));

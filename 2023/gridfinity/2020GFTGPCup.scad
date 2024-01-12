@@ -1,4 +1,4 @@
-// 2020MountableGridfinityTOGridPileCup-v0.2
+// 2020MountableGridfinityTOGridPileCup-v0.3
 //
 // Gridfinity-on-the-outside, TOGridPile-on-the-inside
 // cup with holes for mounting to 2020 T-slot,
@@ -12,6 +12,8 @@
 // Versions:
 // v0.2:
 // - Height specified in mm instead of dumb gridfinity blocks
+// v0.3:
+// - Make M3 bores wider and counterbores deeper
 
 block_size_gfc = [2,1];
 block_height   = 19.05; // 0.01
@@ -66,7 +68,7 @@ let( spacing = pattern_spec[1] )
 all_holes = ["union",
 	for( hp=hole_patterns )
 	let( hole_type = hp[2] )
-	let( hole=tog_holelib2_hole(hole_type, floor_thickness + 1) )
+	let( hole=tog_holelib2_hole(hole_type, floor_thickness + 1, inset=min(4,floor_thickness*2/3)) )
 	each [
 		for( pos=hole_positions(hp, block_size) ) ["translate", [pos[0], pos[1], floor_thickness], hole]
 	]
