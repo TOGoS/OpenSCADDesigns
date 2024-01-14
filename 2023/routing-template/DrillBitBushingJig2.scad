@@ -1,18 +1,27 @@
-// DrillBitBushingJig2.0
+// DrillBitBushingJig2.1
 // 
 // 'Modular' drill bit bushing holder
 // intended to be held in a line between two rails
+// 
+// v2.1:
+// - Make flange_width weirdly configurable
+// - s/end_margin/hull_xy_margin/, which applies to width, too
+// - Center mounting holes between body and flange edge,
+//   regardless of screwdown_hole_spacing (previously 'atom_pitch')
 
+// 9.525 = 3/8"
+screwdown_hole_spacing = 9.525; // 0.001
+chunk_pitch = 38.1;
 length_chunks = 2;
 flange_height = 6.35;
-chunk_pitch = 38.1;
-atom_pitch = 9.525;
 height = 38.1;
 corner_rounding_radius = 25.4/16;
 gridbeam_hole_diameter = 25.4*5/16;
 // alt_hole_diameter = 25.4*4.5/16;
 body_width = 19.05;
-end_margin = -0.1;
+flange_width = 38.1;
+// How much to subtract from length/width of body+flange
+hull_xy_margin = -0.1;
 flange_screwdown_holes_enabled = true;
 
 use <../lib/TOGHoleLib2.scad>
@@ -25,8 +34,8 @@ module __alksdlkn_end_params() { }
 $fn = $preview ? 24 : 48;
 
 function dbbj2_hull_profile_point_data() =
-let(fhw = 19.05  )
-let(bhw = body_width/2)
+let(fhw = flange_width/2 - hull_xy_margin)
+let(bhw =   body_width/2 - hull_xy_margin)
 let(fh  = flange_height )
 let(bh  = height   )
 [
@@ -51,28 +60,22 @@ function dbbj2_hull(xrange) =
 		for( p=ppoints ) [x, p[0], p[1]]
 	]);
 
-length = length_chunks * 38.1 - end_margin*2;
+length = length_chunks * 38.1 - hull_xy_margin*2;
 the_hull = dbbj2_hull([-length/2, length/2]);
 bushing_hole  = tphl1_make_z_cylinder(d=12.7, zrange=[-1,height+1]);
 gridbeam_hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(d=gridbeam_hole_diameter, zrange=[-30,30])];
-flange_screwdown_hole = tog_holelib2_hole("THL-1001", depth=flange_height+1, inset=max(0.1,flange_height-3.175));
-/*
-alt_hole   = ["rotate", [90,0,0], ["union",
-	tphl1_make_z_cylinder(d=alt_hole_diameter, zrange=[-body_width/2-4,-body_width/2+4]),
-	tphl1_make_z_cylinder(d=alt_hole_diameter, zrange=[ body_width/2-4, body_width/2+4]),
-]];
-*/
+flange_screwdown_hole = ["render", tog_holelib2_hole("THL-1001", depth=flange_height+1, inset=max(0.1,flange_height-3.175))];
 
-length_atoms = length_chunks*chunk_pitch/atom_pitch;
+length_screwdown_holes = round(length_chunks*chunk_pitch/screwdown_hole_spacing);
 
 the_holes = ["union",
 	for( xm=[-length_chunks/2+0.5 : 0.5 : length_chunks/2-0.5] ) ["translate", [xm*chunk_pitch, 0, 0], bushing_hole],
 	//for( xm=[-length_chunks/2+0.5 : 1 : length_chunks/2] ) ["translate", [xm*chunk_pitch, 0, height/2], alt_hole],
 	for( xm=[-length_chunks/2+0.5 : 0.5 : length_chunks/2-0.5] ) ["translate", [xm*chunk_pitch, 0, height/2], gridbeam_hole],
 	if( flange_screwdown_holes_enabled )
-		for( xm=[-length_atoms/2+0.5 : 1 : length_atoms/2-0.5] )
-		for( ym=[-1.5, 1.5] )
-		["translate", [xm*atom_pitch, ym*atom_pitch, flange_height], flange_screwdown_hole],
+		for( xm=[-length_screwdown_holes/2+0.5 : 1 : length_screwdown_holes/2-0.5] )
+		for( ym=[-1, 1] )
+		["translate", [xm*screwdown_hole_spacing, ym*(body_width+flange_width)/4, flange_height], flange_screwdown_hole],
 ];
 togmod1_domodule(["difference",
 	the_hull,
