@@ -1,4 +1,4 @@
-// DrillBitBushingJig2.3
+// DrillBitBushingJig2.4
 // 
 // 'Modular' drill bit bushing holder
 // intended to be held in a line between two rails
@@ -13,6 +13,8 @@
 // - Use two rounded cuboids instead of one linear extruded thing
 // - Additional Y-centered screwdown hole at each end
 // - Optional TOGridPile-compatible foot!
+// v2.4:
+// - Don't inset screwdown holes so much
 
 // 9.525 = 3/8"
 length_chunks = 2;
@@ -127,7 +129,7 @@ the_hull = ["intersection",
 
 bushing_hole  = tphl1_make_z_cylinder(d=bushing_hole_diameter, zrange=[-1,height+1]);
 gridbeam_hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(d=gridbeam_hole_diameter, zrange=[-30,30])];
-screwdown_hole = ["render", tog_holelib2_hole("THL-1001", depth=flange_height+1, inset=max(0.1,flange_height-3.175), overhead_bore_height=height)];
+screwdown_hole = ["render", tog_holelib2_hole("THL-1001", depth=flange_height+1, inset=1, overhead_bore_height=height)];
 
 x_marker_slot = togmod1_make_cuboid([1,2,flange_height*2+1]);
 y_marker_slot = togmod1_make_cuboid([2,1,flange_height*2+1]);
