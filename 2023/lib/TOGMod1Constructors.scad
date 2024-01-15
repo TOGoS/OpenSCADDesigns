@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.4
+// TOGMod1Constructors-v1.5
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -16,6 +16,12 @@
 // - Refactor togmod1_rounded_rect_points and togmod1_circle_points
 //   to use togmod1__make_nd_vector_adder for adapting to whatever
 //   `pos` parameter is.
+// v1.5:
+// - togmod_rounded_rect_points will not simplify completely rounded sides
+//   (where length of side is exactly twice the rounding radius)
+//   unless simplify_rounded_sides=true
+//   - This makes it more useful for polyhedron generation,
+//     where radius varies, but number of points must remain constant.
 
 use <./TOGArrayLib1.scad>
 
@@ -53,7 +59,7 @@ function togmod1_make_cuboid(size) =
 function togmod1_make_polygon(verts) =
 	["polygon-vp", verts, [[for( i=[0:1:len(verts)-1] ) i%len(verts)]]];
 
-function togmod1_rounded_rect_points(size, r, pos=[0,0]) =
+function togmod1_rounded_rect_points(size, r, pos=[0,0], simplify_rounded_sides=false) =
 	assert(is_list(size))
 	assert(len(size) >= 2)
 	let(radii = is_list(r) ? r : is_num(r) ? [r,r] : assert(false, "rounded_rect r(adius) should be list<num> or num"))
@@ -64,8 +70,8 @@ function togmod1_rounded_rect_points(size, r, pos=[0,0]) =
 	assert(size[0] >= 2*rx, str("size[0] must be >= 2*r[0]; size[0] = ",size[0],", 2*r[0] = ",2*rx))
 	assert(size[1] >= 2*ry, str("size[1] must be >= 2*r[1]; size[1] = ",size[1],", 2*r[1] = ",2*ry))
 	let(quarterfn=max($fn/4, 1))
-	let(qfnx = size[0] == 2*rx ? quarterfn-1 : quarterfn)
-	let(qfny = size[1] == 2*ry ? quarterfn-1 : quarterfn)
+	let(qfnx = simplify_rounded_sides && size[0] == 2*rx ? quarterfn-1 : quarterfn)
+	let(qfny = simplify_rounded_sides && size[1] == 2*ry ? quarterfn-1 : quarterfn)
 	let(finalizepos = togmod1__make_nd_vector_adder(pos))
 [
 	for(a=[0 : 1 : qfnx]) let(ang=      a*90/quarterfn) finalizepos([ size[0]/2-rx + rx*cos(ang),  size[1]/2-ry + ry*sin(ang)]),
@@ -75,7 +81,7 @@ function togmod1_rounded_rect_points(size, r, pos=[0,0]) =
 ];
 
 function togmod1_make_rounded_rect(size, r) =
-	togmod1_make_polygon(togmod1_rounded_rect_points(size,r));
+	togmod1_make_polygon(togmod1_rounded_rect_points(size,r,simplify_rounded_sides=true));
 
 function togmod1_circle_points(r, pos=[0,0], d=undef) =
 	assert( !is_undef(r) || !is_undef(d) )
