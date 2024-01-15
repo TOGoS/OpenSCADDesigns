@@ -1,0 +1,27 @@
+{
+	"parameterSets": {
+		"p1335": {
+			"body_extents_x": "[-1, 0]",
+			"body_width": "19.05",
+			"bushing_hole_diameter": "12.7",
+			"chunk_pitch": "38.1",
+			"flange_height": "6.35",
+			"foot_segmentation": "chunk",
+			"gridbeam_hole_diameter": "7.9375",
+			"height": "38.1",
+			"hull_xy_margin": "-0.1",
+			"length_chunks": "3",
+			"preview_fn": "24",
+			"render_fn": "48",
+			"screwdown_hole_spacing": "-1",
+			"screwdown_holes_enabled": "true",
+			"xy_corner_rounding_radius": "4.7625",
+			"z_corner_rounding_radius": "1.5875"
+		}
+	},
+	"parameterSets": "",
+	"parameterSets": "",
+	"parameterSets": "",
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
