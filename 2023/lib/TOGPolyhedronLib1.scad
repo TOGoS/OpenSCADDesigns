@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.6
+// TOGPolyhedronLib1.7
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -22,6 +22,10 @@
 // v1.6:
 // - Add tphl1_extrude_polypoints, which is basically a shorthand
 //   for tphl1_make_polyhedron_from_layers
+// v1.7:
+// - tphl1_make_rounded_cuboid corner_shape parameter may be
+//   'ellipsoid' (current behavior), or 'ovoid1' or 'ovoid2',
+//   which effectively apply a spherical rounding to the top/bottom edges
 
 // Winding order:
 // 
@@ -142,7 +146,19 @@ function tphl1_extrude_polypoints(zrange, points) =
 
 use <./TOGMod1Constructors.scad>
 
-function tphl1_make_rounded_cuboid(size, r) =
+/**
+ * Since a single r, or even Vec3 r, cannot describe how all 12 edges should be rounded,
+ * corner_shape provides additional information on how r should be interpreted for
+ * top/bottom edges.  The default, 'ellipsoid', is the most symmetrical in its
+ * treatment of the three axes.  'ovoid1' may be what you often actually
+ * want when r[2] is smaller than r[0] and/or r[1].
+ *
+ * @param corner_shape
+ *    "ellipsoid"  --  non-spherical corners are simply scaled spheres
+ *    "ovoid1"     --  radius of left/right|front/back top/bottom edges are min(rx|ry, rz), respectively
+ *    "ovoid2"     --  radius of top/bottom edges are rz
+ */
+function tphl1_make_rounded_cuboid(size, r, corner_shape="ellipsoid") =
 	assert(tal1_is_vec_of_num(size, 3), "tphl1_make_rounded_cuboid: size should be a Vec3<Num>")
 	let(radii = tal1_assert_for_each(
 		is_list(r) ? r : is_num(r) ? [r, r, r] : assert(false, "r(adius) should be list<num> or num"),
@@ -151,10 +167,15 @@ function tphl1_make_rounded_cuboid(size, r) =
 			str("size[",i,"] must be >= 2*r[",i,"]; size[0] = ",size[i],", 2*r[",i,"] = ", 2*r)
 		]
 	))
+	// zsubrad = how much to shrink layers at top/bottom
+	let(zsubrad =
+		corner_shape == "ellipsoid" ? radii :
+		corner_shape == "ovoid1" ? [min(radii[0], radii[2]), min(radii[1], radii[2])] :
+		corner_shape == "ovoid2" ? [radii[2], radii[2]] :
+		assert(false, str("Unrecognized corner shape: '", corner_shape, "'"))
+	)
 	// Need to be consistent when asking for rounded rect points,
 	// lest rounding errors give different results for different layers
-	let(is_semicircle_x = size[0] == radii[0]*2)
-	let(is_semicircle_y = size[1] == radii[1]*2)
 	let(quarterfn = max(ceil($fn/4), 1))
 	tphl1_make_polyhedron_from_layer_function(
 		radii[2] == 0 ? [
@@ -168,16 +189,19 @@ function tphl1_make_rounded_cuboid(size, r) =
 			let( z=z_za[0] )
 			let( zang=z_za[1] )
 			let( sinzang=sin(zang) )
-			let( lrx=radii[0]*sinzang )
-			let( lry=radii[1]*sinzang )
-			togmod1_rounded_rect_points([
-				// max() to avoid failure due to rounding error
-				is_semicircle_x ? 2*lrx : size[0]+radii[0]*2*(sinzang-1),
-				is_semicircle_y ? 2*lry : size[1]+radii[1]*2*(sinzang-1),
-			], r=[
-				lrx,
-				lry,
-			], pos=[0,0,z_za[0]])
+			let( ideal_layer_corner_radii = [
+				max(0, radii[0] + zsubrad[0]*(sinzang-1)),
+				max(0, radii[1] + zsubrad[1]*(sinzang-1)),
+			])
+			let( layer_size = [
+				size[0] + 2*zsubrad[0]*(sinzang-1),
+				size[1] + 2*zsubrad[1]*(sinzang-1),
+			])
+			togmod1_rounded_rect_points(layer_size, r=ideal_layer_corner_radii /*[
+				// In case there are rounding errors and adjustments become necessary:
+				min(max(0,layer_size[0]/2 - 1/128), ideal_layer_corner_radius[0]),
+				min(max(0,layer_size[1]/2 - 1/128), ideal_layer_corner_radius[1]),
+			]*/, pos=[0,0,z_za[0]])
 	);
 
 function tphl1_make_z_cylinder(d=undef, zrange=undef, zds=undef) =
