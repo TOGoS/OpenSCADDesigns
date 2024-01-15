@@ -1,4 +1,4 @@
-// DrillBitBushingJig2.1
+// DrillBitBushingJig2.2
 // 
 // 'Modular' drill bit bushing holder
 // intended to be held in a line between two rails
@@ -26,6 +26,7 @@ flange_screwdown_holes_enabled = true;
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
@@ -60,11 +61,15 @@ function dbbj2_hull(xrange) =
 		for( p=ppoints ) [x, p[0], p[1]]
 	]);
 
+flange_width_chunks = round(flange_width/chunk_pitch);
 length = length_chunks * 38.1 - hull_xy_margin*2;
 the_hull = dbbj2_hull([-length/2, length/2]);
 bushing_hole  = tphl1_make_z_cylinder(d=12.7, zrange=[-1,height+1]);
 gridbeam_hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(d=gridbeam_hole_diameter, zrange=[-30,30])];
 flange_screwdown_hole = ["render", tog_holelib2_hole("THL-1001", depth=flange_height+1, inset=max(0.1,flange_height-3.175))];
+
+x_marker_slot = togmod1_make_cuboid([1,2,flange_height*2+1]);
+y_marker_slot = togmod1_make_cuboid([2,1,flange_height*2+1]);
 
 length_screwdown_holes = round(length_chunks*chunk_pitch/screwdown_hole_spacing);
 
@@ -77,7 +82,14 @@ the_holes = ["union",
 		for( ym=[-1, 1] )
 		["translate", [xm*screwdown_hole_spacing, ym*(body_width+flange_width)/4, flange_height], flange_screwdown_hole],
 ];
+the_marks = ["union",
+	for( ym=[-1,1] ) for( xm=[-length_chunks/2+0.5 : 0.5 : length_chunks/2-0.5] )
+		["translate", [xm*chunk_pitch, ym*flange_width/2, 0], x_marker_slot],
+	for( xm=[-1,1] ) for( ym=[-flange_width_chunks/2+0.5 : 0.5 : flange_width_chunks/2-0.5] )
+		["translate", [xm*length/2, ym*chunk_pitch, 0], y_marker_slot],
+];
 togmod1_domodule(["difference",
 	the_hull,
-	the_holes
+	the_holes,
+	the_marks,
 ]);
