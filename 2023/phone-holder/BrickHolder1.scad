@@ -1,4 +1,4 @@
-// BrickHolder1.5.1
+// BrickHolder1.6
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -19,6 +19,8 @@
 // - Report block size in millimeters and inches
 // v1.5.1:
 // - Update reference to TGx11.1Lib.scad
+// v1.6:
+// - side_segmentation
 
 /* [General] */
 
@@ -40,6 +42,7 @@ top_cord_slot_diameter = 0; // 0.01
 
 bottom_segmentation = "none"; // ["none","atom"]
 top_segmentation = "none"; // ["none","atom"]
+side_segmentation = "none"; // ["none","atom"]
 back_segmentation = "none"; // ["none","atom"]
 front_segmentation = "none"; // ["none","atom"]
 $tgx11_offset = -0.1;
@@ -146,8 +149,20 @@ use <../lib/TOGMod1.scad>
 brick_holder_ = ["difference",
 	block_hull, cavity, ["x-debug", slot], mounting_holes, top_cord_slot
 ];
+
+left_side_intersection = side_segmentation == "atom" ? ["translate", [-block_size[0]/2, 0, block_size[2]/2], ["rotate", [0,90,0],
+	["render", tgx11_atomic_block_bottom(
+		[[block_size[2], "mm"], [block_size[1], "mm"], [block_size[0], "mm"]],
+		bottom_shape = "beveled", // No overhangs allowed
+		$tgx11_gender = "m"
+	)]
+]] : undef;
+
 brick_holder = ["intersection",
 	brick_holder_,
+	if( side_segmentation == "atom" ) ["intersection",
+		for( xs=[-1,1] ) ["scale", [xs,1,1], left_side_intersection]
+	],
 	if( back_segmentation == "atom" ) ["translate", [0, block_size[1]/2, block_size[2]/2], ["rotate", [90,0,0],
 		["render", tgx11_atomic_block_bottom(
 			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
@@ -170,7 +185,7 @@ brick_holder = ["intersection",
 
 spacer = ["difference",
 			 tphl1_make_rounded_cuboid([cavity_size[0]-1, cavity_size[1]-1, spacer_thickness], [3,3,min(spacer_thickness/2,3)]),
-	["x-debug", slot]
+	slot
 ];
 
 thing =
