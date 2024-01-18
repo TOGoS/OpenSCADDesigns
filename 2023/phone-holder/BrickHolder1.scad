@@ -1,4 +1,4 @@
-// BrickHolder1.6
+// BrickHolder1.6.1
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -21,6 +21,8 @@
 // - Update reference to TGx11.1Lib.scad
 // v1.6:
 // - side_segmentation
+// v1.6.1:
+// - Make debugging optional
 
 /* [General] */
 
@@ -51,7 +53,19 @@ $tgx11_offset = -0.1;
 
 spacer_thickness = 12.7; // 0.01
 
+/* [Detail] */
+
+render_fn = 24;
+
+/* [Preview] */
+
+preview_fn = 24;
+debug_holes_enabled = false;
+debug_front_slot_enabled = false;
+
 module __brickholder_end_params() { }
+
+function maybedebug(db=false, item) = db ? ["x-debug", item] : item;
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
@@ -89,7 +103,7 @@ use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TGx11.1Lib.scad>
 
-$fn = 24;
+$fn = $preview ? preview_fn : render_fn;
 
 block_hull = ["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid(block_size, 3)];
 cavity = ["translate", [0,0,floor_thickness+cavity_size[2]], tphl1_make_rounded_cuboid([cavity_size[0], cavity_size[1], cavity_size[2]*2], [1,1,1])];
@@ -103,7 +117,7 @@ slot = tphl1_make_polyhedron_from_layer_function([
 	togmod1_rounded_rect_points(zs[1], r=2, pos=[0,-block_size[1]/2, zs[0]])
 );
 
-mounting_hole = ["x-debug", ["rotate", [90,0,0], tog_holelib2_hole("THL-1003", depth=block_size[1]-cavity_size[1])]];
+mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [90,0,0], tog_holelib2_hole("THL-1003", depth=block_size[1]-cavity_size[1])]);
 mounting_holes = ["union",
 	for( xm=[round(-block_size[0]/atom)/2 + 0.5 : 1 : round(block_size[0]/atom)/2] )
 	let( x = xm*atom )
@@ -147,7 +161,7 @@ top_cord_slot =
 use <../lib/TOGMod1.scad>
 
 brick_holder_ = ["difference",
-	block_hull, cavity, ["x-debug", slot], mounting_holes, top_cord_slot
+	block_hull, cavity, maybedebug(debug_front_slot_enabled, slot), mounting_holes, top_cord_slot
 ];
 
 left_side_intersection = side_segmentation == "atom" ? ["translate", [-block_size[0]/2, 0, block_size[2]/2], ["rotate", [0,90,0],
