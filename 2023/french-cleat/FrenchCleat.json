@@ -42,6 +42,15 @@
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1339 - 7.5in with THL-1005 holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "THL-1005",
+			"length_ca": "[5, \"chunk\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
 		}
 	},
 	"parameterSets": "",

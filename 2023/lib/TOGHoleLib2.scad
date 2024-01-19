@@ -1,4 +1,4 @@
-// TOGHoleLib2.5
+// TOGHoleLib2.6
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -20,6 +20,8 @@
 // - Add THL-1023 for counterbored M3s
 // v2.5:
 // - Adjusrt THL-1023 [counter]bore sizes slightly
+// v2.6:
+// - Add THL-1005, a hexagonal countersunk hole
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -73,6 +75,10 @@ function tog_holelib2_hole1003(depth, overhead_bore_height=1, inset=undef) =
 	let(_inset = tog_holelib2__coalesce(inset, 3.175))
 	tog_holelib2_countersunk_hole(9.5, 4.5, 0, depth, 4.5, overhead_bore_height=overhead_bore_height, inset=_inset, $fn=6);
 
+function tog_holelib2_hole1005(depth, overhead_bore_height=1, inset=undef) =
+	let(_inset = tog_holelib2__coalesce(inset, 3.175))
+	tog_holelib2_countersunk_hole(9.5, 4.5, 2.5, depth, 4.5, overhead_bore_height=overhead_bore_height, inset=_inset, $fn=6);
+
 tog_holelib2_hole_types = [
 	["THL-1001", "Suitable for #6 flathead"],
 	["THL-1002", "Suitable for 1/4\" flathead"],
@@ -82,6 +88,7 @@ tog_holelib2_hole_types = [
 	// of THL-1001 having a bug where bore_d is ignored.
 	// THL-1004 is less precise, but good enough for most cases
 	["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
+	["THL-1005", "Countersunk for #6 flathead, but can also accept a hex nut"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 	["THL-1023", "Counterbored for M3 pan-head screws"],
@@ -102,5 +109,6 @@ function tog_holelib2_hole(type_name, depth=1000, overhead_bore_height=1, inset=
 	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
+	type_name == "THL-1005" ? tog_holelib2_hole1005(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));

@@ -1,4 +1,4 @@
-// FrenchCleat-v1.5.1
+// FrenchCleat-v1.6
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -17,6 +17,8 @@
 // - Hacked-in support to make TGx11-atom-female textured back
 // v1.5.1:
 // - Update reference to TGx11.1Lib.scad
+// v1.6:
+// - Provide some different THL-* hole types
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -24,7 +26,7 @@ length_ca = [6, "inch"];
 
 mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
 opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
-hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk"]
+hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005"]
 
 mode = "X"; // ["X", "Z", "tester"]
 
@@ -170,12 +172,10 @@ counterbored_hole = tphl1_make_polyhedron_from_layer_function([
 hole =
 	hole_style == "GB-counterbored" ? counterbored_hole :
 	hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
-	assert(false, str("Invalid hole style: '", hole_style, "'"));
+	["translate", [0,0,zp], tog_holelib2_hole(hole_style)];
 
 hole_spacing =
-	hole_style == "GB-counterbored" ? 38.1 :
-	hole_style == "coutnersnuk"     ? 12.7 :
-	assert(false, str("Invalid hole style: '", hole_style, "'"));
+	(hole_style == "GB-counterbored" || hole_style == "THL-1002") ? 38.1 : 12.7;
 
 hole_rows = [0];
 
