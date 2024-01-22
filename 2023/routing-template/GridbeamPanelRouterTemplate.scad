@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.7
+// GridbeamPanelRouterTemplate-v2.8
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -24,6 +24,8 @@
 // - $fn tweaks
 // v2.7:
 // - Add option for 'bowtie' cutouts along the edges
+// v2.8:
+// - Allow beveled_grooves_enabled=false
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -40,8 +42,14 @@ margin    = 0.00;  // 0.01
 
 // Size of holes; 12.2 printed with my regular Slic3r settings on my Kobra Max was found to fit 7/16" router bushings
 hole_diameter = 12;
+
+// Cut grooves to help guide the bushing into the holes; may be useful when hole_diameter is barely large enough for the bushing
+beveled_grooves_enabled = true;
+
 // How many units to skip at corners
 bowtie_position_offset = 1.0; // 0.5
+// How many bowtie units between cutouts
+bowtie_spacing = 1.0; // 0.5
 bowtie_edges = [true, true, false, false];
 
 bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-maximal"]
@@ -81,7 +89,7 @@ translate([0,0,0]) {
 	difference() {
 		linear_extrude(thickness) difference() {
 			rounded_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
-			for( pos=bowtie_positions(panel_size, [bowtie_length, bowtie_length], bowtie_position_offset*bowtie_length, edges=bowtie_edges ) ) {
+			for( pos=bowtie_positions(panel_size, [bowtie_length*bowtie_spacing, bowtie_length*bowtie_spacing], bowtie_position_offset*bowtie_length, edges=bowtie_edges ) ) {
 				translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_cutout_shape, bowtie_length, margin);
 			}
 			if( bowtie_position_offset == 0.5 ) {
@@ -102,7 +110,7 @@ translate([0,0,0]) {
 				}
 			}
 		}
-		for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size, grid_unit_size/2) ) {
+		if(beveled_grooves_enabled) for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size, grid_unit_size/2) ) {
 			translate([0,y,thickness]) rotate([0,0,90]) rotate([90,0,0]) linear_extrude(grid_unit_size*(panel_size_gc[0]-1), center=true) {
 				polygon([
 					[+hole_diameter/2 + thickness/2,  thickness/2],
