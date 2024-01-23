@@ -77,6 +77,28 @@
 			"preview_fn": "12",
 			"render_fn": "48",
 			"thickness": "3.175"
+		},
+		"p1342": {
+			"beveled_grooves_enabled": "false",
+			"bowtie_cutout_shape": "semi-maximal",
+			"bowtie_edges": "[\"true\", \"true\", \"true\", \"true\"]",
+			"bowtie_length": "19.05",
+			"bowtie_position_offset": "2",
+			"bowtie_spacing": "2",
+			"corner_radius": "4.7625",
+			"grid_unit_size": "38.1",
+			"hole2_type_name": "THL-1001",
+			"hole_diameter": "26",
+			"margin": "0",
+			"panel_size_gc": "[8, 8]",
+			"pocket_floor_thickness": "6",
+			"pocket_interior_angle": "60",
+			"pocket_interior_wall_spacing": "5",
+			"pocket_interior_wall_thickness": "1.5",
+			"pocket_wall_thickness": "3.175",
+			"preview_fn": "12",
+			"render_fn": "48",
+			"thickness": "3.175"
 		}
 	},
 	"fileFormatVersion": "1"
