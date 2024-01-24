@@ -1,4 +1,4 @@
-// DuctSegment1.0.0-dev
+// DuctSegment1.0.1-dev
 // 
 // For now this just demonstrates
 // a way to make tapered pipe segment
@@ -24,7 +24,7 @@ use <../lib/TOGPolyhedronLib1.scad>
 
 function taper_to_shape( taper ) =
 	tphl1_make_polyhedron_from_layer_function( taper,
-		function(layer) togmod1_circle_points(layer[1], [0,0,layer[0]])
+		function(layer) togmod1_circle_points(d=layer[1], pos=[0,0,layer[0]])
 	);
 
 function hollow_taper_to_shape( taper ) = ["difference",
