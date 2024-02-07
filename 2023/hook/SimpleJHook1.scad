@@ -6,6 +6,9 @@
 // v1.1:
 // - Make hole_diameter configurable
 // - Make hook_depth configurable
+// v1.2:
+// - Allow thickness to be customized
+// - Change how hole is placed
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGPath1.scad>
@@ -13,30 +16,36 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGMod1Constructors.scad>
 
 // Width, in mm
-width = 25.4;
+width         = 25.4; // 0.001
 // Diameter of hole, in mm
-hole_diameter = 7.9375;
+hole_diameter = 7.9375; // 0.001
 
 // Outer depth of hook, in mm
-hook_depth = 25.4;
+hook_depth    = 25.4; // 0.001
+head_height   = 25.4;
+thickness     = 3.175; // 0.001
 
 module __simplejhook1__end_params() { }
 
 $fn = $preview ? 32 : 64;
 
 u = 25.4/16;
+
+w_u = width/u;
 d_u = hook_depth/u;
 r_u = d_u/2;
+t_u = thickness/u;
+h_u = head_height/u;
 
 shape = [
-	[-r_u- 8,-r_u  ,r_u  , 0],
-	[     16,-r_u  ,    1, 1],
-	[     16,-r_u+2,    1, 1],
-	[-r_u- 6,-r_u+2,r_u-2, 0],
-	[-r_u- 6, r_u-2,r_u-2, 0],
-	[      0, r_u-2,    1, 1],
-	[      0, r_u  ,    1, 1],
-	[-r_u- 8, r_u  ,r_u  , 0],
+	[-r_u- 8    ,-r_u    ,r_u    , 0],
+	[   h_u,    ,-r_u    ,      1, 1],
+	[   h_u,    ,-r_u+t_u,      1, 1],
+	[-r_u- 8+t_u,-r_u+t_u,r_u-t_u, 0],
+	[-r_u- 8+t_u, r_u-t_u,r_u-t_u, 0],
+	[      0    , r_u-t_u,      1, 1],
+	[      0    , r_u    ,      1, 1],
+	[-r_u- 8    , r_u    ,r_u    , 0],
 ];
 
 function rath_at(ploj) = ["togpath1-rath",
@@ -59,7 +68,7 @@ body = tphl1_make_polyhedron_from_layer_function([
 togmod1_domodule(["difference",
 	body,
 	["translate",
-		[8*u, -r_u*u, width/2], togmod1_linear_extrude_y([-3*u, 3*u],
+		[max(h_u/2,h_u-w_u/2)*u, (-r_u+t_u/2)*u, width/2], togmod1_linear_extrude_y([-t_u*u, t_u*u],
 		togmod1_make_circle(d=hole_diameter))
 	 ]
 ]);

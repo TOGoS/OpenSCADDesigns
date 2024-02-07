@@ -4,6 +4,13 @@
 			"hole_diameter": "5",
 			"hook_depth": "38.1",
 			"width": "25.4"
+		},
+		"p1349": {
+			"head_height": "50.8",
+			"hole_diameter": "5",
+			"hook_depth": "76.2",
+			"thickness": "6.35",
+			"width": "38.1"
 		}
 	},
 	"parameterSets": "",
