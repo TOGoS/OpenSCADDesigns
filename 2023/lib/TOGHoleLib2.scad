@@ -35,6 +35,7 @@ function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore
 		[-head_h-inset, neck_d],
 		[       -inset, surface_d],
 		[   0.01      , surface_d],
+		if( overhead_bore_d > surface_d ) [ 0.01, overhead_bore_d ],
 		// Taper up to overhead_bore_d
 		[overhead_bore_height, overhead_bore_d]
 	], function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]));
@@ -53,7 +54,7 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 		head_h    = adjusted_head_h,
 		depth     = depth,
 		bore_d    = adjusted_bore_d,
-		overhead_bore_d = max(surface_d, overhead_bore_d),
+		overhead_bore_d = max(surface_d, tog_holelib2__coalesce(overhead_bore_d,0)),
 		overhead_bore_height = overhead_bore_height,
 		inset     = _inset
 	);
@@ -66,10 +67,11 @@ function tog_holelib2_hole1001(depth, overhead_bore_height=1, inset=undef) =
 	tog_holelib2_countersunk_hole(7.5, 3.5, 1.7, depth, 4.5, 0, overhead_bore_height, inset=_inset);
 
 // Suitable for 1/4" flatheads
-function tog_holelib2_hole1002(depth, overhead_bore_height=1, inset=undef) =
+function tog_holelib2_hole1002(depth, overhead_bore_height=1, overhead_bore_d=undef, inset=undef) =
 	let(inch = 25.4)
 	let(_inset = tog_holelib2__coalesce(inset, 0.1))
-	tog_holelib2_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, 5/16*inch, 0, overhead_bore_height, inset=_inset);
+	tog_holelib2_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, 5/16*inch,
+		overhead_bore_d, overhead_bore_height, inset=_inset);
 
 function tog_holelib2_hole1003(depth, overhead_bore_height=1, inset=undef) =
 	let(_inset = tog_holelib2__coalesce(inset, 3.175))
