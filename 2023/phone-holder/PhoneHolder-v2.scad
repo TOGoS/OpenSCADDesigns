@@ -1,4 +1,4 @@
-// PhoneHolder-v2.9
+// PhoneHolder-v2.10
 // 
 // Minimal outer box, designed to hold 
 // 
@@ -27,6 +27,11 @@
 // - Round front to match fillet in back
 // - Bevel, for lack of time to do something nicer at the moment,
 //   the top corners of the front slot
+// v2.10:
+// - Add option for 'swoopy' front slot
+// - Refactor to naturally put front slot at -Y
+// - Increase default render_fn fronm 24 to 48
+// - Change side slots to 2-chunk-high pattern
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGArrayLib1.scad>
@@ -41,10 +46,16 @@ back_height_chunks  = 1;
 block_depth_chunks  = 1;
 block_width_chunks  = 3;
 
+/* [Slots] */
+
+// 'swoopy' may be more approprate for blocks with full-height fronts
+front_slot_style = "standard"; // ["standard","swoopy"]
+
 /* [Margins] */
 
 outer_margin = 0.2;
 inner_margin = 0.6;
+// Recommend 0.2 if you're not applying X/Y compensation in slic3r, 0.1 if you are.
 togridpile_margin = 0.2;
 
 /* [Bottom] */
@@ -56,7 +67,7 @@ bottom_magnet_hole_depth    = 2.4; // 0.1
 
 /* [Detail] */
 
-render_fn = 24;
+render_fn = 48;
 
 module __asd123sudifn_end_params() { }
 
@@ -96,8 +107,8 @@ cavity_size  = [
 	block_depth-chunk_pitch + 1.25*inch,
 	block_size[2]
 ];
-front_panel_y0 = cavity_size[1]/2 + inner_margin;
-front_panel_y1 = block_size[1]/2 - outer_margin;
+front_panel_y0 = -block_size[1]/2 + outer_margin;
+front_panel_y1 = -cavity_size[1]/2 - inner_margin;
 
 panel_thickness = (block_size[1] - cavity_size[1])/2;
 side_thickness  = (block_size[0] - cavity_size[0])/2;
@@ -113,11 +124,71 @@ bottom_hole_size = [
 	block_depth-chunk_pitch + 1*inch
 ];
 
-bottom_hole_y0 = bottom_hole_size[1]/2;
+bottom_hole_y0 = -bottom_hole_size[1]/2;
 
 front_cutout_height = (back_height - front_height) * 2;
 echo(front_height=front_height, back_height=back_height, front_cutout_height=front_cutout_height);
 
+function phv2_standard_front_slot() = ["union",
+	// Front slot (panel section)
+	["translate", [0, (front_panel_y1 + front_panel_y0)/2, 0],
+		togmod1_linear_extrude_z([bottom_thickness, block_size[2]+1], make_rounded_gap_cutter([front_slot_width, front_panel_y1 - front_panel_y0], slot_rounding_r))
+	],
+	// Front slot (bottom section)
+	["translate", [0, (front_panel_y0 + bottom_hole_y0)/2, 0],
+		togmod1_linear_extrude_z([-1, bottom_thickness+1], make_rounded_gap_cutter([front_slot_width, bottom_hole_y0 - front_panel_y0], slot_rounding_r))
+	],
+	// Use a blunt tool to make top of front slot less sharp
+	["translate", [0, -block_size[1]/2 + outer_margin + panel_thickness/2, front_height],
+		let( bevel_size = chunk_pitch/2 )
+		// Abuse rounded cuboid to make a diamond, lmao
+		tphl1_make_rounded_cuboid([bevel_size * 2, panel_thickness*2, bevel_size * 2], [bevel_size, 0, bevel_size], $fn=4)
+	]
+];
+
+function phv2_cos_curve(t) = t <= 0 ? 0 : t >= 1 ? 1 : 0.5 - 0.5*cos(t*180);
+
+function phv2_swoopy_width_curve(t,trange=[0,1]) = t <= trange[0] ? 0 : t >= trange[1] ? 1 :
+	let(trangemag =  trange[1]-trange[0]   )
+	phv2_cos_curve((t-trange[0])/trangemag);
+
+function phv2_swoopy_front_slot() =
+let(slot_width_at_bottom = front_slot_width)
+let(slot_width_at_top    = block_size[0] - 19.05)
+tphl1_make_polyhedron_from_layer_function([
+	//[-100             , [bottom_hole_size[0], block_size[1]+bottom_hole_size[1]]],
+	//[block_size[2]+100, [bottom_hole_size[0], block_size[1]+bottom_hole_size[1]]],
+	for( z = [-100, for(z=[-1:5:block_size[2]+1]) z, block_size[2]+100] ) [z, [
+		slot_width_at_bottom + (slot_width_at_top-slot_width_at_bottom) * phv2_swoopy_width_curve(
+			z / block_size[2],
+			[0.25,0.65]
+		),
+		block_size[1]+bottom_hole_size[1]
+	]],
+], function( zs )
+	togmod1_rounded_rect_points(zs[1], r=2, pos=[0,-block_size[1]/2, zs[0]])
+);
+
+function phv2_front_slot(style) =
+	style == "standard" ? phv2_standard_front_slot() :
+	style == "swoopy" ? phv2_swoopy_front_slot() :
+	assert(false, str("Unrecognized front slot style: '", style, "'"));
+
+// Returns list of [slot Z position, slot height] in chunks
+function side_slot_grid(zrange=[0,front_height_chunks]) = [
+	for( z=[zrange[0] : 2 : zrange[1]-0.1] )
+		let(top=min(z+2,zrange[1]))
+			 [(z+top)/2, top-z]
+];
+/*
+	(zrange[1]-zrange[0] <= 2) ? [[(zrange[1]+zrange[0])/2, zrange[1]-zrange[0]]] :
+	[
+		for( subzrange=[
+			[zrange[0]  ,zrange[0]+2],
+			[zrange[0]+2,zrange[1]  ]
+		] ) each side_slot_grid(zrange=subzrange)
+	];
+*/
 module phv2_main() render() togmod1_domodule(["difference",
 	["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid([
 	   block_size[0]-outer_margin*2,
@@ -133,40 +204,28 @@ module phv2_main() render() togmod1_domodule(["difference",
 	])],
 	// Top/front cutout
 	if( front_cutout_height > 0 ) ["union",
-		["translate", [0, panel_thickness+block_size[1], back_height], togmod1_linear_extrude_x([-block_size[0], block_size[0]],
+		["translate", [0, -panel_thickness+block_size[1], back_height], togmod1_linear_extrude_x([-block_size[0], block_size[0]],
 			togmod1_make_rounded_rect([block_size[1]*3, front_cutout_height], r=6.35))],
-		["translate", [0, block_size[1]/2 - outer_margin, front_height],
+		["translate", [0, -block_size[1]/2 + outer_margin, front_height],
 			togmod1_linear_extrude_x([-block_size[0], block_size[0]],
 				make_corner_rounding_cutter(6.35, [-1,-1]))],
 	],
-	// Front slot (panel section)
-	["translate", [0, (front_panel_y1 + front_panel_y0)/2, 0],
-		togmod1_linear_extrude_z([bottom_thickness, block_size[2]+1], make_rounded_gap_cutter([front_slot_width, front_panel_y1 - front_panel_y0], slot_rounding_r))
-	],
-	// Front slot (bottom section)
-	["translate", [0, (front_panel_y1 + bottom_hole_y0)/2, 0],
-		togmod1_linear_extrude_z([-1, bottom_thickness+1], make_rounded_gap_cutter([front_slot_width, front_panel_y1 - bottom_hole_y0], slot_rounding_r))
-	],
-	// Use a blunt tool to make top of front slot less sharp
-	["translate", [0, block_size[1]/2 - outer_margin - panel_thickness/2, front_height],
-		let( bevel_size = chunk_pitch/2 )
-		// Abuse rounded cuboid to make a diamond, lmao
-		tphl1_make_rounded_cuboid([bevel_size * 2, panel_thickness*2, bevel_size * 2], [bevel_size, 0, bevel_size], $fn=4)
-	],
-
+	phv2_front_slot(front_slot_style),
+	
 	// Bottom hole
 	togmod1_linear_extrude_z([-1, bottom_thickness+1], togmod1_make_rounded_rect(bottom_hole_size, r=0.125*inch)),
 
 	// Side holes
-	["translate", [0, 0, front_height/2],
-		tphl1_make_rounded_cuboid([block_size[0]+2, chunk_pitch/2, front_height-chunk_pitch/2], [0, chunk_pitch/4, chunk_pitch/4])
+	for( ss=side_slot_grid() ) echo(ss=ss) ["translate",
+		[0,0,ss[0]*chunk_pitch],
+		tphl1_make_rounded_cuboid([block_size[0]+2, chunk_pitch/2, ss[1]*chunk_pitch-chunk_pitch/2], [0, chunk_pitch/4, chunk_pitch/4])
 	],
 
 	// Mounting holes
 	for( xm=[-block_width_chunks/2+0.5 : 1 : block_width_chunks/2] )
 	for( ym=[0.5 : 1 : back_height_chunks] )
-	["translate", [xm*chunk_pitch, -block_size[1]/2 + panel_thickness, ym*chunk_pitch],
-		["rotate", [-90,0,0], tog_holelib2_hole("THL-1002", overhead_bore_height=block_size[1])]
+	["translate", [xm*chunk_pitch, block_size[1]/2 - panel_thickness, ym*chunk_pitch],
+		["rotate", [90,0,0], tog_holelib2_hole("THL-1002", overhead_bore_height=block_size[1])]
 	],
 	
 	// Magnet holes
@@ -181,8 +240,7 @@ use <../lib/TGx9.4Lib.scad>
 use <../lib/TOGridLib3.scad>
 
 // phv2 puts front panel at +Y, but we want it at -Y actually lol
-// TODO, maybe: refactor phv2_main so it's the right way around in the first place
-rotate([0,0,180]) intersection() {
+intersection() {
 	phv2_main();
 
 	tgx9_block_foot(

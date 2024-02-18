@@ -1,4 +1,4 @@
-// TOGHoleLib2.6
+// TOGHoleLib2.7
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -22,6 +22,8 @@
 // - Adjusrt THL-1023 [counter]bore sizes slightly
 // v2.6:
 // - Add THL-1005, a hexagonal countersunk hole
+// v2.7:
+// - Remove some debug echoes
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -47,7 +49,6 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 		 adjusted_neck_d == neck_d ? head_h :
 		 head_h * (1 - (adjusted_neck_d - neck_d)/(surface_d - neck_d)) )
 	let(_inset = tog_holelib2__coalesce(inset, 0.01))
-	echo(surface_d=surface_d, neck_d=neck_d, head_h=head_h, adjusted_bore_d=adjusted_bore_d, adjusted_neck_d=adjusted_neck_d, adjusted_head_h=adjusted_head_h)
 	tog_holelib2__countersunk_hole_2(
 		surface_d = surface_d,
 		neck_d    = adjusted_neck_d,
