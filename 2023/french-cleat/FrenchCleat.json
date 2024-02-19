@@ -51,6 +51,15 @@
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1353 - 4.5in with counterbored GB holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[4.5, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
 		}
 	},
 	"parameterSets": "",
