@@ -1,4 +1,4 @@
-// HollowPanel v0.2
+// HollowPanel v0.4
 // 
 // A panel that you're supposed to fill in with your own goop
 // 
@@ -8,6 +8,9 @@
 // v0.3:
 // - Add y-wise rails
 // - Add notion of 'zhps'
+// v0.4:
+// - Make nubbins and rails optional
+// - Actually use render_fn
 
 chunk_pitch = 38.1;
 size_chunks = [3,4];
@@ -15,6 +18,9 @@ floor_thickness = 0.3;  // 0.001
 panel_thickness = 6.35; // 0.001
 wall_thickness = 1;
 render_fn = 72;
+
+nubbins_enabled = true;
+rails_enabled = true;
 
 function __asjd__end_params() = undef;
 
@@ -116,7 +122,7 @@ the_cutout_hps = ["hp-multixform", [
 	for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2] )
 	[xm*chunk_pitch,ym*chunk_pitch, 20],
 ], hole_rath];
-the_posts_hps = ["hp-multixform", [
+the_nubbins_hps = ["hp-multixform", [
 	for( xm=[-size_chunks[0]/2 + 1/4 : 1/2 : size_chunks[0]/2] )
 	for( ym=[-size_chunks[1]/2 + 1/4 : 1/2 : size_chunks[1]/2] )
 	[xm*chunk_pitch,ym*chunk_pitch, (0.125+xm*0.5+ym*0.5)*360],
@@ -124,8 +130,8 @@ the_posts_hps = ["hp-multixform", [
 
 ns_wall = rect_rath([wall_thickness*2, size_chunks[1]*chunk_pitch]);
 cavity_subtraction_zhpses = [
-	["zhps", ["rel", 0, 0.5], the_posts_hps],
-	["zhps", ["rel", 0, 1.1], ["hp-multixform", [
+	if( nubbins_enabled ) ["zhps", ["rel", 0, 0.5], the_nubbins_hps],
+	if( rails_enabled ) ["zhps", ["rel", 0, 1.1], ["hp-multixform", [
 		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2] ) [xm*chunk_pitch, 0, 0]
 	], ns_wall]]
 ];
@@ -135,7 +141,7 @@ panel = hp_make_panel(
 	wall_thickness = wall_thickness,
 	panel_hull_hps = the_hull_hps,
 	panel_cutout_hps = the_cutout_hps,
-	cavity_subtraction_zhpses = cavity_subtraction_zhpses,
-	$fn = 32);
+	cavity_subtraction_zhpses = cavity_subtraction_zhpses
+);
 
 togmod1_domodule(panel);
