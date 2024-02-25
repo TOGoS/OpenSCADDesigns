@@ -1,4 +1,4 @@
-// PictureFrameShortTeeth-v1.0
+// PictureFrameShortTeeth-v1.1
 // 
 // This one assumes that there's more depth than height,
 // i.e. the frame is thick, and you're going to attach
@@ -6,12 +6,17 @@
 // than to some solid surface within the frame
 // 
 // This is for hanging a fox thing that Sara's mom made.
+// 
+// Changes:
+// v1.1:
+// - Oops, v1.0 wasn't using 'depth' properly, still had 'height'; fixed.
+// - Make nail hole diameter configurable and default to 2mm
 
 module __end_params_xy123lk() { }
 
 u = 1.5875;
+nail_hole_d = 2;
 width     = 36*u;
-height    = 12*u;
 depth     = 10*u;
 thickness = 2*u;
 tooth_depth = 2*u;
@@ -24,7 +29,7 @@ use <../lib/TOGHoleLib2.scad>
 $fn = $preview ? 24 : 72;
 
 screw_hole = tog_holelib2_hole("THL-1001", depth=thickness*2, inset=1);
-nail_hole  = tphl1_make_z_cylinder(d=1, zrange=[-1,thickness+1]);
+nail_hole  = tphl1_make_z_cylinder(d=nail_hole_d, zrange=[-1,thickness+1]);
 
 function toothy_point_data(count) = [
 	[-count/2,8],
@@ -39,7 +44,7 @@ function toothy_point_data(count) = [
 mouth_width = 12*u;
 
 the_hull = ["intersection",
-	tphl1_make_rounded_cuboid([width, height, thickness*2], 2*u),
+	tphl1_make_rounded_cuboid([width, depth, thickness*2], 2*u),
 	["translate", [0,0,10], togmod1_make_cuboid([100,100,20])],
 ];
 
