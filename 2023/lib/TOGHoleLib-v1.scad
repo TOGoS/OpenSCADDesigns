@@ -156,6 +156,7 @@ tog_holelib_hole_types = [
 	// ["THL-1003", "Suitable for #6 hex nuts or pan heads"],
 	// ["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
 	// ["THL-1005", "Countersunk for #6 flathead, but can also accept a hex nut"],
+	// ["THL-1006", "Counterbored for 1/4\" furniture bolt, weld nut, etc"],
 	["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 	// ["THL-1023", "Counterbored for M3 pan-head screws"],
@@ -169,6 +170,8 @@ function tog_holelib_is_hole_type(type_name, idx=0) =
 	idx > len(tog_holelib_hole_types) ? false :
 	tog_holelib_hole_types[idx][0] == type_name ? true :
 	tog_holelib_is_hole_type(type_name, idx=idx + 1);
+
+// TODO: Maybe just use TOGHoleLib2 to implement everything roflmao
 
 module tog_holelib_hole(type_name, depth=1000, overhead_bore_height=1) {
 	if( type_name == "none" ) {
