@@ -214,6 +214,16 @@ let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v
 		block_size[2]+$tgx11_offset*2-bevel_size+1+1/32])]
 ];
 
+function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : "f";
+function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
+
+// TODO: Instead of explicit 'm' / 'f' gender,
+// invert whatever gender was passed in, same as we invert the offset!
+// Since offset and gender are always inverted together,
+// maybe they should be part of a shared structure,
+// oossibly along with other block settings
+// (making a hole?  err on the side of larger).
+
 function tgx11_block(block_size_ca, bottom_shape="footed", lip_height=2.54, atom_bottom_subtractions=[]) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
