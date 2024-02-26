@@ -1,4 +1,4 @@
-// LidHolder-v0.1
+// LidHolder-v0.2
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -11,6 +11,11 @@
 // - TODO: Maybe finger slots in the top/bottom of the front
 // 
 // Idea: Cut holes in the drywall and stick TOGridPile holders in there rofl
+// 
+// v0.1:
+// - Basic idea
+// v0.2:
+// - Imperfectize rath-based ovals to avoid CGAL errors
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -42,7 +47,7 @@ tgp_fn  = $preview ? 16 : 72;
 function lh_oval_rath(size, offset) =
 let( rx=size[0]/2 )
 let( ry=size[1]/2 )
-let( rr=min(rx,ry) )
+let( rr=min(rx,ry)-1 ) // That minus one helps prevent CGAL errors
 ["togpath1-rath",
 	["togpath1-rathnode", [-rx,-ry], ["round", rr], ["offset", offset]],
 	["togpath1-rathnode", [ rx,-ry], ["round", rr], ["offset", offset]],
