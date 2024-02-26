@@ -4,12 +4,6 @@
 // assuming that the lids have had stuff added to them
 // so they don't just stack on each other anymore.
 // 
-// - TODO: Bolt holes in sides and back
-// - TODO: Offset the lid slots to one side,
-//   put small holes for holding random whatevers
-//   (twist ties?  pencils?  screws?) along the edge
-// - TODO: Maybe finger slots in the top/bottom of the front
-// 
 // Idea: Cut holes in the drywall and stick TOGridPile holders in there rofl
 // 
 // v0.1:
@@ -18,6 +12,13 @@
 // - Imperfectize rath-based ovals to avoid CGAL errors
 // v0.3:
 // - Tunnels, mounting holes, fingerslides, refactoring...
+// 
+// - TODO: Bolt holes in sides?
+// - TODO: Better.more interesting 'extra space';
+//   maybe pseudo-randomly pick different size/shaped holes.
+//   And maybe they should go all the way through so that
+//   in case stuff gets stuck in there you can pull it out?
+// - TODO: Center the finger slots on the lid slot stack
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
