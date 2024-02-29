@@ -1,4 +1,4 @@
-// LidHolder-v0.4
+// LidHolder-v0.5
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -14,8 +14,9 @@
 // - Tunnels, mounting holes, fingerslides, refactoring...
 // v0.4:
 // - Fill extra space with a grid of holes
-// 
-// - TODO: Center the finger slots on the lid slot stack
+// v0.5:
+// - Reduce default lip height to 1/16" to avoid having to do v6hc subtractions
+// - Finger slots centered relative to lid slot stack instead of block
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -29,7 +30,7 @@ use <../lib/TOGHoleLib2.scad>
 block_size_chunks = [3,3,3];
 chunk_pitch = 38.1;
 
-lip_height = 2.54;
+lip_height = 1.5875;
 
 mode = "normal"; // ["normal","end-cb-hole","flanged-tunnel","fingerslot-subtraction"]
 
@@ -184,14 +185,14 @@ function remaining_volumes(volume, subtracted) = [
 // to get a particular arrangement of holes;
 // fix to do something more proper.
 function make_rectspace_filler(fillers, seed_deltas=[1,0]) =
-echo("make_rectspace_filler", filler_count=len(fillers))
+//echo("make_rectspace_filler", filler_count=len(fillers))
 let( spacefiller = function(volume, seed=0)
 	assert(is_rect_volume(volume), str("Expected a rectvolume, got ", volume))
 	let(vmin = volume[1], vmax=volume[2])
 	let(size = vmax-vmin)
 	size[1] <= 0 || size[0] <= 0 || size[2] <= 0 ? ["union"] :
-	 let(filler_index = seed % len(fillers))
-	echo("spacefiller:", vmin=vmin, seed=seed, filler_count=len(fillers), filler_index=filler_index)
+	let(filler_index = seed % len(fillers))
+	//echo("spacefiller:", vmin=vmin, seed=seed, filler_count=len(fillers), filler_index=filler_index)
 	let(filler = fillers[filler_index])
 	let(content = filler(volume, seed))
 	assert(content[0] == "bounded-vs", str("Expected filler function to return a bounded-vs, but got", content))
@@ -219,7 +220,7 @@ function(volume, seed=1)
 	let(usedsize=(usedvolume[2]-usedvolume[1]))
 	let(centerxy=(usedvolume[1]+usedvolume[2])/2)
 	let(centertop=[centerxy[0], centerxy[1], vmax[2]])
-	echo(volume=volume, usedvolume=usedvolume, usedsize=usedsize)
+	//echo(volume=volume, usedvolume=usedvolume, usedsize=usedsize)
 	["bounded-vs", usedvolume, ["translate", centertop, togmod1_make_cuboid([usedsize[0], usedsize[1], usedsize[2]*2])]];
 
 eh_fillers = [
@@ -287,8 +288,10 @@ extra_floor_z = 25.4; // Avoid tunnels
 extra_space_width = block_size[0] - min_walthik*3 - lidslot_width;
 echo(extra_space_width=extra_space_width);
 
+lidstack_center_x = -block_size[0]/2 + min_walthik+lidslot_width/2;
+
 lidstack_transform = function(s) ["translate", [
-	-block_size[0]/2 + min_walthik+lidslot_width/2,
+	lidstack_center_x,
 	0, block_size[2]
 ], ["rotate", [90,0,0], s]];
 
@@ -301,10 +304,11 @@ bottom_cb_hole = tog_holelib2_hole("THL-1006", depth=bottom_counterbore_z+1, ins
 
 slotstack = make_slotstack(slot_count, slot_oval_size);
 
-fingerslot_rath = make_fingerslot_rath(25.4, 38.1, y0=-lip_height);
-fingerslot_subtraction = ["translate", [0,0,block_size[2]], ["rotate", [-90,0,0],
-	tphl1_extrude_polypoints([-block_size[1], block_size[1]], togpath1_rath_to_points(fingerslot_rath, $fn=24))
-]];
+function make_fingerslot_subtraction(depth, thickness) =
+	let( fingerslot_rath = make_fingerslot_rath(25.4, depth) )
+	["rotate", [-90,0,0],
+		tphl1_extrude_polypoints([-thickness/2, thickness/2], togpath1_rath_to_points(fingerslot_rath))
+	];
 
 if( $preview && mode == "normal" ) togmod1_domodule(["x-debug", lidstack_transform(extended_slotstack_hull)]);
 
@@ -319,7 +323,6 @@ extra_space_volume = ["rectvolume",
 	[-extra_space_size[0]/2, -extra_space_size[1]/2, -extra_space_size[2]],
 	[ extra_space_size[0]/2,  extra_space_size[1]/2, 0],
 ];
-echo(extra_space_size=extra_space_size, extra_space_volume=extra_space_volume);
 /** Relative to the top/center of the extra space */
 extra_space_subtractions = generate_extra_holes(extra_space_volume);
 
@@ -348,8 +351,9 @@ mode == "normal" ? ["difference",
 		block_size[0]/2 - min_walthik - extra_space_width/2,
 		0, block_size[2]
 	], extra_space_subtractions],
-	
-	fingerslot_subtraction,
+
+
+	["translate", [lidstack_center_x, 0, block_size[2]+lip_height], make_fingerslot_subtraction(38.1+lip_height, block_size[1]*2, $fn=24)],
 					
 	// Y-holes
 	for( tunnel=[
@@ -362,5 +366,3 @@ mode == "normal" ? ["difference",
 assert(false, str("Bad mode: '", mode, "'"));
 
 togmod1_domodule(main);
-
-//togmod1_domodule(slotstack);
