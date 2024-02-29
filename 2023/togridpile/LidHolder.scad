@@ -1,4 +1,4 @@
-// LidHolder-v0.3
+// LidHolder-v0.4
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -12,14 +12,12 @@
 // - Imperfectize rath-based ovals to avoid CGAL errors
 // v0.3:
 // - Tunnels, mounting holes, fingerslides, refactoring...
+// v0.4:
+// - Fill extra space with a grid of holes
 // 
-// - TODO: Bolt holes in sides?
-// - TODO: Better.more interesting 'extra space';
-//   maybe pseudo-randomly pick different size/shaped holes.
-//   And maybe they should go all the way through so that
-//   in case stuff gets stuck in there you can pull it out?
 // - TODO: Center the finger slots on the lid slot stack
 
+use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
@@ -162,23 +160,107 @@ tphl1_make_z_cylinder(zds=[
 	[zrange[1]+end_offset, d+flange_radius*2],
 ]);
 
-extra_floor_z = 25.4; // Avoid tunnels
-extra_space_width = block_size[0] - min_walthik*3 - lidslot_width;
-echo(extra_space_width=extra_space_width);
 
-lidstack_transform = function(s) ["translate", [
-	-block_size[0]/2 + min_walthik+lidslot_width/2,
-	0, block_size[2]
-], ["rotate", [90,0,0], s]];
+//// Extra space user-upper
 
-tb_thik = (block_size[1] - slotstack_height)/2;
-end_cb_hole   = tog_holelib2_hole("THL-1006", depth=tb_thik*2, inset=min(tb_thik-2, 3.175), flange_radius=2, overhead_bore_height=10, $fn=tunnel_fn);
+eh_wall_thickness = 1;
 
-bottom_counterbore_z = 12.7;
+function is_rect_volume(vol) =
+	is_list(vol) && len(vol) == 3 && vol[0] == "rectvolume" &&
+	tal1_is_vec_of_num(vol[1], 3) &&
+	tal1_is_vec_of_num(vol[2], 3);
 
-bottom_cb_hole = tog_holelib2_hole("THL-1006", depth=bottom_counterbore_z+1, inset=0, overhead_bore_height=block_size[2]/2 - bottom_counterbore_z, $fn=tunnel_fn);
+function extend_volume(volume, wall_thickness) = ["rectvolume", volume[1], [volume[2][0]+wall_thickness, volume[2][1]+wall_thickness, volume[2][2]]];
 
-slotstack = make_slotstack(slot_count, slot_oval_size);
+function remaining_volumes(volume, subtracted) = [
+	// Assuming for now that subtracted is in the bottom-left of volume.
+	// Space to fill in +Y?
+	if( subtracted[2][1] < volume[2][1] ) ["rectvolume", [volume[1][0], subtracted[2][1], volume[1][2]], volume[2]],
+	// Space to fill in +X?
+	if( subtracted[2][0] < volume[2][0] ) ["rectvolume", [subtracted[2][0], volume[1][1], volume[1][2]], [volume[2][0], subtracted[2][1], volume[2][2]]],
+];
+
+// TODO: seed_deltas is a big stupid hack
+// to get a particular arrangement of holes;
+// fix to do something more proper.
+function make_rectspace_filler(fillers, seed_deltas=[1,0]) =
+echo("make_rectspace_filler", filler_count=len(fillers))
+let( spacefiller = function(volume, seed=0)
+	assert(is_rect_volume(volume), str("Expected a rectvolume, got ", volume))
+	let(vmin = volume[1], vmax=volume[2])
+	let(size = vmax-vmin)
+	size[1] <= 0 || size[0] <= 0 || size[2] <= 0 ? ["union"] :
+	 let(filler_index = seed % len(fillers))
+	echo("spacefiller:", vmin=vmin, seed=seed, filler_count=len(fillers), filler_index=filler_index)
+	let(filler = fillers[filler_index])
+	let(content = filler(volume, seed))
+	assert(content[0] == "bounded-vs", str("Expected filler function to return a bounded-vs, but got", content))
+	let(filled_volume = content[1])
+	let(filled_shape = content[2])
+	assert(is_rect_volume(filled_volume), str("Expected bounded-vs[1] to be a rectvolume, but got", content[1]))
+	let(rvs = remaining_volumes(volume, extend_volume(filled_volume, eh_wall_thickness)))
+	// TODO: for the general case, remaining_volumes needs to know about wall thickness!
+	// Assume for now that everything just works up the Y
+	["bounded-vs", volume, ["union",
+		filled_shape,
+		for( rvi = [0:1:len(rvs)-1] )
+			spacefiller(rvs[rvi], seed+seed_deltas[rvi])
+	]]
+) spacefiller;
+
+function make_rect_hole_space_filler(max_holesize) =
+function(volume, seed=1)
+	assert(is_rect_volume(volume), str("Expected a rectvolume, got ", volume))
+	let(vmin = volume[1], vmax=volume[2])
+	let(vsize = vmax-vmin)
+	let(usedx = min(vmax[0]-vmin[0], max_holesize[0]))
+	let(usedy = min(vmax[1]-vmin[1], max_holesize[1]))
+	let(usedvolume=["rectvolume", [vmin[0], vmin[1], vmin[2]], [vmin[0]+usedx, vmin[1]+usedy, vmax[2]]]) // TODO: Don't use all of it
+	let(usedsize=(usedvolume[2]-usedvolume[1]))
+	let(centerxy=(usedvolume[1]+usedvolume[2])/2)
+	let(centertop=[centerxy[0], centerxy[1], vmax[2]])
+	echo(volume=volume, usedvolume=usedvolume, usedsize=usedsize)
+	["bounded-vs", usedvolume, ["translate", centertop, togmod1_make_cuboid([usedsize[0], usedsize[1], usedsize[2]*2])]];
+
+eh_fillers = [
+	make_rect_hole_space_filler( [100, 7.9375] ),
+	make_rect_hole_space_filler( [4,4] ),
+];
+
+function flatten_filler_to_list(hf) =
+	hf[0] == "bounded-vs" ? flatten_filler_to_list(hf[2]) :
+	hf[0] == "union" ? [ for(i=[1:1:len(hf)-1]) each flatten_filler_to_list(hf[i]) ] :
+	[hf];
+
+function flatten_filler(hf) = ["union", each flatten_filler_to_list(hf)];
+/**
+ * Generate subtractions to cut down into an otherwise solid surface
+ * volume = ["rectvolume", min, max]
+ * Holes will be cut from the top, i.e. p1[2].
+ */
+// TODO: Replace with fill_space_using
+generate_extra_holes = function(volume, seed=0)
+	let(shape0 = make_rectspace_filler(eh_fillers)(volume,seed))
+	flatten_filler(shape0); // Flatten unions, remove bounds metadata
+
+/*
+function generate_extra_holes(volume, seed=1) =
+assert(is_rect_volume(volume), str("Expected a rectvolume, got ", volume))
+let(vmin = volume[1], vmax=volume[2])
+let(size = vmax-vmin)
+size[1] <= 0 || size[0] <= 0 || size[2] <= 0 ? ["union"] :
+let(filler = eh_fillers[seed % len(eh_fillers)]) // TODO: more options, randomize
+let(content = filler(volume, seed))
+assert(content[0] == "bounded-vs", str("Expected filler function to return a bounded-vs, but got", content))
+let(filled_volume = content[1])
+let(filled_shaoe = content[2])
+assert(is_rect_volume(filled_volume), str("Expected bounded-vs[1] to be a rectvolume, but got", content[1]))
+// Assume for now that everything just works up the Y
+let(remaining_volume = ["rectvolume", [vmin[0], filled_volume[2][1]+eh_wall_thickness, vmin[2]], vmax]) 
+["union", content[2], generate_extra_holes(remaining_volume, seed+1)];
+*/
+
+//// Fingerslot generation
 
 function make_fingerslot_rath(width, depth=undef, y0=0) =
 let(_depth = is_undef(depth) ? width*2 : depth)
@@ -198,12 +280,48 @@ let(rop = ["round", width/2.5])
 	["togpath1-rathnode", [-width*0.5, z0], rop],
 ];
 
+
+//// Main
+
+extra_floor_z = 25.4; // Avoid tunnels
+extra_space_width = block_size[0] - min_walthik*3 - lidslot_width;
+echo(extra_space_width=extra_space_width);
+
+lidstack_transform = function(s) ["translate", [
+	-block_size[0]/2 + min_walthik+lidslot_width/2,
+	0, block_size[2]
+], ["rotate", [90,0,0], s]];
+
+tb_thik = (block_size[1] - slotstack_height)/2;
+end_cb_hole   = tog_holelib2_hole("THL-1006", depth=tb_thik*2, inset=min(tb_thik-2, 3.175), flange_radius=2, overhead_bore_height=10, $fn=tunnel_fn);
+
+bottom_counterbore_z = 12.7;
+
+bottom_cb_hole = tog_holelib2_hole("THL-1006", depth=bottom_counterbore_z+1, inset=0, overhead_bore_height=block_size[2]/2 - bottom_counterbore_z, $fn=tunnel_fn);
+
+slotstack = make_slotstack(slot_count, slot_oval_size);
+
 fingerslot_rath = make_fingerslot_rath(25.4, 38.1, y0=-lip_height);
 fingerslot_subtraction = ["translate", [0,0,block_size[2]], ["rotate", [-90,0,0],
 	tphl1_extrude_polypoints([-block_size[1], block_size[1]], togpath1_rath_to_points(fingerslot_rath, $fn=24))
 ]];
 
 if( $preview && mode == "normal" ) togmod1_domodule(["x-debug", lidstack_transform(extended_slotstack_hull)]);
+
+/*extra_space_subtractions = togmod1_make_cuboid([
+	// TODO: Something more useful than a big empty rectangle;
+	// this is just a placeholder
+	extra_space_width, block_size[1]-min_walthik*2, (block_size[2]-extra_floor_z)*2]
+);*/
+
+extra_space_size = [extra_space_width, block_size[1]-min_walthik*2, block_size[2]-extra_floor_z];
+extra_space_volume = ["rectvolume",
+	[-extra_space_size[0]/2, -extra_space_size[1]/2, -extra_space_size[2]],
+	[ extra_space_size[0]/2,  extra_space_size[1]/2, 0],
+];
+echo(extra_space_size=extra_space_size, extra_space_volume=extra_space_volume);
+/** Relative to the top/center of the extra space */
+extra_space_subtractions = generate_extra_holes(extra_space_volume);
 
 main =
 mode == "flanged-tunnel" ? lh__tunnel(5/16*inch, [-25.4, 25.4], flange_radius=2, $fn=tunnel_fn) :
@@ -229,11 +347,7 @@ mode == "normal" ? ["difference",
 	["translate", [
 		block_size[0]/2 - min_walthik - extra_space_width/2,
 		0, block_size[2]
-	], togmod1_make_cuboid([
-		// TODO: Something more useful than a big empty rectangle;
-		// this is just a placeholder
-		extra_space_width, block_size[1]-min_walthik*2, (block_size[2]-extra_floor_z)*2]
-	)],
+	], extra_space_subtractions],
 	
 	fingerslot_subtraction,
 					
