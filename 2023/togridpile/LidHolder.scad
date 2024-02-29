@@ -1,4 +1,4 @@
-// LidHolder-v0.5
+// LidHolder-v0.6
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -17,6 +17,9 @@
 // v0.5:
 // - Reduce default lip height to 1/16" to avoid having to do v6hc subtractions
 // - Finger slots centered relative to lid slot stack instead of block
+// v0.6:
+// - Fix hack-ass seed delta calculation for filling of extra space;
+//   it is still a hack, but works better.
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -184,7 +187,7 @@ function remaining_volumes(volume, subtracted) = [
 // TODO: seed_deltas is a big stupid hack
 // to get a particular arrangement of holes;
 // fix to do something more proper.
-function make_rectspace_filler(fillers, seed_deltas=[1,0]) =
+function make_rectspace_filler(fillers, seed_deltas=[0,1]) =
 //echo("make_rectspace_filler", filler_count=len(fillers))
 let( spacefiller = function(volume, seed=0)
 	assert(is_rect_volume(volume), str("Expected a rectvolume, got ", volume))
@@ -204,8 +207,9 @@ let( spacefiller = function(volume, seed=0)
 	// Assume for now that everything just works up the Y
 	["bounded-vs", volume, ["union",
 		filled_shape,
-		for( rvi = [0:1:len(rvs)-1] )
-			spacefiller(rvs[rvi], seed+seed_deltas[rvi])
+		for( rv = rvs )
+			// Hack!  Don't adjust seed for +x volumes
+			spacefiller(rv, seed+seed_deltas[rv[1][0] > volume[1][0] ? 0 : 1])
 	]]
 ) spacefiller;
 
