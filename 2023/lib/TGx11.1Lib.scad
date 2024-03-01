@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.7
+// TGx11.1Lib - v11.1.8
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -10,7 +10,13 @@
 // Changes:
 // v11.1.7
 // - Fix tgx11__get_gender() to return $tgx11_gender if defined
-// 
+// v11.1.8:
+// - tgx11_block uses tgx11__get_gender() and tgx11__invert_gender() functions
+//   instead of hardcoding 'm' and 'f'.
+// - Refactor block body placement to be a little more explicit
+//   and maybe more 'correct', also (stopping at exectly the point
+//   where the bevels meet)
+//
 // TODO: 'chunk' bottom style
 // 
 // TODO: 'atomic' bottom style
@@ -204,6 +210,8 @@ let(atom_foot =
 )
 let(v6hc_y = togmod1_linear_extrude_y([-block_size[1]/2+6, block_size[1]/2-6], v6hc))
 let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v6hc))
+let(body_z0 = bevel_size-$tgx11_offset*sqrt(2)) // Seems to work, though I didn't actually do the math <_<
+let(body_z1 = block_size[2]+1+1/32)
 // tgx11_chunk_unifoot(block_size),
 ["union",
 	// Atom feet
@@ -213,26 +221,20 @@ let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v
 	// X-axis v6hcs
 	for(ym=atom_yms) ["translate", [0,ym*atom,atom/2], v6hc_x],
 	// Chunk body
-	["translate", [0,0,bevel_size+block_size[2]/2], togmod1_make_cuboid([
-		block_size[0]-12, block_size[1]-12,
-		block_size[2]+$tgx11_offset*2-bevel_size+1+1/32])]
+	["translate", [0,0,(body_z0+body_z1)/2], togmod1_make_cuboid([
+		block_size[0]-atom, block_size[1]-atom,
+		body_z1-body_z0])]
 ];
 
 function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : $tgx11_gender;
 function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
-
-// TODO: Instead of explicit 'm' / 'f' gender,
-// invert whatever gender was passed in, same as we invert the offset!
-// Since offset and gender are always inverted together,
-// maybe they should be part of a shared structure,
-// oossibly along with other block settings
-// (making a hole?  err on the side of larger).
 
 function tgx11_block(block_size_ca, bottom_shape="footed", lip_height=2.54, atom_bottom_subtractions=[]) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
+let($tgx11_gender = tgx11__get_gender())
 let(atom = togridlib3_decode([1,"atom"]))
 // TODO: Taper top and bottom all cool?
 ["difference",
@@ -245,7 +247,7 @@ let(atom = togridlib3_decode([1,"atom"]))
 			block_size_ca[0],
 			block_size_ca[1],
 			[togridlib3_decode(block_size_ca[2], [1, "mm"]) + lip_height, "mm"]
-		], bottom_shape=bottom_shape, $tgx11_gender="m"),
+		], bottom_shape=bottom_shape),
 	],
 	
 	if( len(atom_bottom_subtractions) > 0 )
@@ -254,7 +256,7 @@ let(atom = togridlib3_decode([1,"atom"]))
 	
 	if( lip_height > 0 ) ["translate", [0,0,block_size[2]], tgx11_atomic_block_bottom(
 		block_size_ca, bottom_shape=bottom_shape,
-		$tgx11_offset=-$tgx11_offset, $tgx11_gender="f")],
+		$tgx11_offset=-$tgx11_offset, $tgx11_gender=tgx11__invert_gender($tgx11_gender))],
 ];
 
 function tgx11_get_default_unit_table() = [
