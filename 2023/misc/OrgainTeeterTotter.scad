@@ -1,3 +1,5 @@
+// OrgainTeeterTotter-v1.0
+
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -40,7 +42,7 @@ totter = ["difference",
 	["rotate", [90,0,0], tphl1_extrude_polypoints([-totter_size[1]/2, totter_size[1]/2], togpath1_rath_to_points(totter_rath))],
 	["translate", [0,0,totter_size[2]], togmod1_make_cuboid([totter_size[0]*2, cradle_hull_size[1]+2, (totter_size[2]-totter_floor_thickness)*2])],
 	["translate", totter_pivot_position, screw_hole],
-	for( ym=[-1,1] ) ["translate", [0,ym*0.75*inch,totter_floor_thickness], mounting_hole],
+	for( ym=[-1,0,1] ) ["translate", [0,ym*0.75*inch,totter_floor_thickness], mounting_hole],
 ];
 
 assembly = ["union", totter, ["translate", totter_pivot_position-cradle_pivot_position, cradle]];
