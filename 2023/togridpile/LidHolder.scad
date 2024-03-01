@@ -1,4 +1,4 @@
-// LidHolder-v0.7
+// LidHolder-v0.8
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -23,6 +23,9 @@
 // v0.7:
 // - Make $tgx11_offset configurable, default to more conservative -0.2.
 // - Note that TGx11.1Lib v11.1.7 fixes a bug in tgx11__get_gender().
+// v0.8:
+// - Adjust position of 'TGP block body' (the bit that fills in gaps between chunks above the bevel)
+//   downward by $tgx11_offset
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -138,7 +141,7 @@ let(bevel_size = togridlib3_decode([1,"tgp-standard-bevel"]))
 			// Feet
 			for(xm=chunk_xms) for(ym=chunk_yms) ["translate", [xm, ym, 0]*chunk_pitch, chunk_foot],
 			// Chunk body so that corners between feet aren't so deep
-			["translate", [0,0,atom/2+bevel_size], togmod1_make_cuboid([block_size[0]-atom, block_size[1]-atom, atom])]
+			["translate", [0,0,atom/2+bevel_size - $tgx11_offset], togmod1_make_cuboid([block_size[0]-atom, block_size[1]-atom, atom])]
 		],
 	],
 	
