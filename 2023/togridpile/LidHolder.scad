@@ -1,4 +1,4 @@
-// LidHolder-v0.6
+// LidHolder-v0.7
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -20,6 +20,9 @@
 // v0.6:
 // - Fix hack-ass seed delta calculation for filling of extra space;
 //   it is still a hack, but works better.
+// v0.7:
+// - Make $tgx11_offset configurable, default to more conservative -0.2.
+// - Note that TGx11.1Lib v11.1.7 fixes a bug in tgx11__get_gender().
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -37,10 +40,12 @@ lip_height = 1.5875;
 
 mode = "normal"; // ["normal","end-cb-hole","flanged-tunnel","fingerslot-subtraction"]
 
+// Recommended: -0.1 if subtracting additional during slic1ng, -0.2 otherwise.
+$tgx11_offset = -0.2;
+
 module __lh202301__end_paramns() { }
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
-$tgx11_offset = -0.1;
 
 block_size_ca = [for(d=block_size_chunks) [d, "chunk"]];
 block_size = togridlib3_decode_vector(block_size_ca);

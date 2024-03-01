@@ -1,11 +1,15 @@
-// TGx11
-//
+// TGx11.1Lib - v11.1.7
+// 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
 // 
 // TODO: v6gc should be:
 // - For the male case: narrower; find out what the equivalent outer bevel
 //   of 'v6.0' style is and use that
+// 
+// Changes:
+// v11.1.7
+// - Fix tgx11__get_gender() to return $tgx11_gender if defined
 // 
 // TODO: 'chunk' bottom style
 // 
@@ -214,7 +218,7 @@ let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v
 		block_size[2]+$tgx11_offset*2-bevel_size+1+1/32])]
 ];
 
-function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : "f";
+function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : $tgx11_gender;
 function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
 
 // TODO: Instead of explicit 'm' / 'f' gender,
