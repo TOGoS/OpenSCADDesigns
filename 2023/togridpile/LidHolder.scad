@@ -1,4 +1,4 @@
-// LidHolder-v0.8
+// LidHolder-v0.9
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -26,6 +26,8 @@
 // v0.8:
 // - Adjust position of 'TGP block body' (the bit that fills in gaps between chunks above the bevel)
 //   downward by $tgx11_offset
+// v0.9:
+// - Inset extra space fillers a little bit
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -256,22 +258,6 @@ generate_extra_holes = function(volume, seed=0)
 	let(shape0 = make_rectspace_filler(eh_fillers)(volume,seed))
 	flatten_filler(shape0); // Flatten unions, remove bounds metadata
 
-/*
-function generate_extra_holes(volume, seed=1) =
-assert(is_rect_volume(volume), str("Expected a rectvolume, got ", volume))
-let(vmin = volume[1], vmax=volume[2])
-let(size = vmax-vmin)
-size[1] <= 0 || size[0] <= 0 || size[2] <= 0 ? ["union"] :
-let(filler = eh_fillers[seed % len(eh_fillers)]) // TODO: more options, randomize
-let(content = filler(volume, seed))
-assert(content[0] == "bounded-vs", str("Expected filler function to return a bounded-vs, but got", content))
-let(filled_volume = content[1])
-let(filled_shaoe = content[2])
-assert(is_rect_volume(filled_volume), str("Expected bounded-vs[1] to be a rectvolume, but got", content[1]))
-// Assume for now that everything just works up the Y
-let(remaining_volume = ["rectvolume", [vmin[0], filled_volume[2][1]+eh_wall_thickness, vmin[2]], vmax]) 
-["union", content[2], generate_extra_holes(remaining_volume, seed+1)];
-*/
 
 //// Fingerslot generation
 
@@ -336,7 +322,14 @@ extra_space_volume = ["rectvolume",
 	[ extra_space_size[0]/2,  extra_space_size[1]/2, 0],
 ];
 /** Relative to the top/center of the extra space */
-extra_space_subtractions = generate_extra_holes(extra_space_volume);
+extra_space_subtractions = ["union",
+	togmod1_make_cuboid([
+		extra_space_size[0]+0.2,
+		extra_space_size[1]+0.2,
+		12.7
+	]),
+	generate_extra_holes(extra_space_volume)
+];
 
 main =
 mode == "flanged-tunnel" ? lh__tunnel(5/16*inch, [-25.4, 25.4], flange_radius=2, $fn=tunnel_fn) :
