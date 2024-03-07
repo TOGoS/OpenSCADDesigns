@@ -1,10 +1,13 @@
-// OrgainPlatform-v1.2
+// OrgainPlatform-v1.3
 // 
 // Platform to hold a teeter-totter for Renee's Orgain
 // v1.1:
 // - What if kinda TOGridPile baseplate?
 // v1.2:
 // - Fix the center holes to be countersunk on the right side
+// v1.3:
+// - Fix that tgx11_offset was applied backwards oops
+// - Fix overhead_bore_height formula to work when lip_height = 0
 
 lip_height = 0; // 0.0001
 // 'atom' doesn't work so well with the holes we've got; 'chatom' would be better but TGx11.1Lib doesn't do that, yet.
@@ -45,13 +48,13 @@ hull_size = [
 hull_size_ca = [ for(d=hull_size) [d,"mm"]];
 $fn = $preview ? 24 : 72;
 
-cshole = tog_holelib2_hole("THL-1005", depth=hull_size[2]*2, overhead_bore_height=lip_height*2);
+cshole = tog_holelib2_hole("THL-1005", depth=hull_size[2]*2, overhead_bore_height=lip_height+1);
 magnet_hole = tphl1_make_z_cylinder(d=magnet_hole_diameter, zrange=[-magnet_hole_depth, magnet_hole_depth]);
 
 function make_tgp_cutout(chunk_pitch, center_hole, include_magnet_holes=false) = ["union",
 	["translate", [0,0,chunk_pitch/2],
 		tphl1_make_rounded_cuboid(
-			[chunk_pitch - 2*u + $tgx11_offset*2, chunk_pitch - 2*u + $tgx11_offset*2, chunk_pitch],
+			[chunk_pitch - 2*u - $tgx11_offset*2, chunk_pitch - 2*u - $tgx11_offset*2, chunk_pitch],
 			[u, u, 0]
 		)
 	],
