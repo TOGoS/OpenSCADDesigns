@@ -1,4 +1,4 @@
-// TGx9.5.25 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.26 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -163,6 +163,10 @@
 // - Fix framework-module-holder's USB-C connector pockets to be wide enough
 // v9.5.25:
 // - Make framework-module-holder's slots a wee bit deeper (35mm instead of 33mm)
+// v9.5.26:
+// - Options for mug handle cutout
+// - Option to simplify foot in preview mode, for when you're messing with
+//   cavity settings and don't want to wait so long between previews
 
 /* [Atom/chunk/block size] */
 
@@ -174,10 +178,10 @@ chunk_pitch_atoms = 3;
 block_size_chunks = [1, 1];
 // Block height, in 'u', not including lip
 block_height_u    = 24;
-// Height that lip extends beyond top; 0 for no lip, -1 for an inverted lip
+// Height that lip extends beyond top; 0 for no lip, -1 for an inverted lip; 1.58 is just under 1/16"
 lip_height = 2.54;
 foot_segmentation = "chunk"; // ["atom","chatom","chunk","block","none"]
-// Foot column shape; only applicable when foot_segmentation = "chunk"
+// Foot column shape; only applicable when foot_segmentation = "chatom"
 chatomic_foot_column_style = "v8.0"; // ["none", "v6.0", "v6.1", "v6.2", "v8.0", "v8.4"]
 // Segmentation for lip; 'atom' and 'chatom' not advised unless lip is inverted
 lip_segmentation = "block"; // ["atom","chatom","chunk","block"]
@@ -240,6 +244,9 @@ cup_holder_diameters = [];
 // Depths of cup holder cutouts, from innermost to outermost
 cup_holder_depths = [];
 
+mug_handle_cutout_depth = 0;
+mug_handle_cutout_width = 0;
+
 /* [Cavity (TOGRack)] */
 
 tograck_upper_cavity_rim_mode = "none"; // ["none","x","full"]
@@ -255,12 +262,16 @@ margin = 0.075; // 0.001
 // Margin for bowtie cutouts; Since they are supposed to be tight, I usually leave this zero and rely on Slic3r X/Y compenation.
 bowtie_margin = 0.000; // 0.001
 
-preview_fn = 12;
 render_fn = 36;
 
-$fn = $preview ? preview_fn : render_fn;
+/* [Preview] */
+
+preview_fn = 12;
+simplify_foot_for_preview = false;
 
 module tgx9__end_params() { }
+
+$fn = $preview ? preview_fn : render_fn;
 
 assert( len(cup_holder_diameters) == len(cup_holder_depths), "Cup holder radius and depth lists should be the same length");
 
@@ -482,11 +493,26 @@ let( magcone = tphl1_make_polyhedron_from_layer_function([
 	["translate", [xm*(block_size[0]/2-wall_thickness), ym*(block_size[1]/2-wall_thickness)], magcone],
 ];
 
+function make_mug_handle_cutout(width, depth, cornervec) =
+let( cvx = cornervec[0]-width/3.1, cvy = cornervec[1]-width/3.1 ) // 1/3 pulled out of nowhere but seems to work
+["translate", [cvx/2, cvy/2, 0],
+	["rotate", [0,0,atan2(cvy,cvx)],
+		tphl1_make_rounded_cuboid(
+			[sqrt(cvx*cvx + cvy*cvy), width, depth*2],
+			r=[width/2, width/2, depth/2],
+			corner_shape="ovoid1"
+		)
+	]
+];
+
+// Operations to be done on the block from the top center
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
 	if( cavity_style == "cup" ) for(i=[0 : 1 : len(cup_holder_diameters)-1])
 		if(cup_holder_diameters[i] > 0 && cup_holder_depths[i] > 0)
 			["subtract",["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]],
+	if( mug_handle_cutout_width > 0 && mug_handle_cutout_depth > 0 )
+		["subtract", make_mug_handle_cutout(mug_handle_cutout_width, mug_handle_cutout_depth, [block_size[0]/2-wall_thickness, block_size[1]/2-wall_thickness])],
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()],
 	if( cavity_style == "framework-module-holder" ) ["subtract", make_framework_module_holder_cutout(block_size[1]/12.7)],
 	if( cavity_style == "earrings-holder" ) ["subtract", make_earrings_holder_cutout(block_size)],
@@ -543,7 +569,7 @@ v6hc_foot_bevel_size =
 
 module tgx9_main_cup() tgx9_cup(
 	block_size_ca = block_size_ca,
-	foot_segmentation = foot_segmentation,
+	foot_segmentation = ($preview && simplify_foot_for_preview) ? "none" : foot_segmentation,
 	lip_height    = lip_height,
 	floor_thickness = floor_thickness,
 	wall_thickness = wall_thickness,
