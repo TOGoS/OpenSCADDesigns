@@ -1,4 +1,9 @@
 // Megablok-v0.1
+// 
+// v0.1:
+// - First attempt: print first, see what happens later
+// - Not designed to stack onto LEGO or Duplo bricks
+//   (walls are too thick)
 
 chunk_h_pitch = 31.75; // 0.0001
 chunk_v_pitch = 38.10; // 0.0001
