@@ -1,16 +1,25 @@
-// Megablok-v0.1
+// Megablok-v0.2
 // 
 // v0.1:
 // - First attempt: print first, see what happens later
 // - Not designed to stack onto LEGO or Duplo bricks
 //   (walls are too thick)
+// - In practice: studs are fine, interior is too tight
+// v0.2:
+// - Removed actual_actual_width parameter in favor of
+//   outer_offset
+// - Add inner_offset
+// - Slope interior 'flanges' somewhat
+// - Default block size is 1x1x1
+// - Round X/Y corners more because why not
 
 chunk_h_pitch = 31.75; // 0.0001
 chunk_v_pitch = 38.10; // 0.0001
-chunk_actual_width = 31.4;
+outer_offset  = -0.15;
+inner_offset = -0.2;
 round_stud_diameter = 26.7;
 stud_bevel_size = 4;
-block_size_chunks = [2,1,1];
+block_size_chunks = [1,1,1];
 stud_height = 20.5;
 
 preview_fn = 12;
@@ -50,9 +59,11 @@ function make_megablok_system(
 						]
 					],
 					tphl1_make_z_cylinder(zds=[
-						[                           -1, round_stud_diameter],
-						[size[2] - 8 - stud_bevel_size, round_stud_diameter],
-						[size[2] - 8                  , round_stud_diameter - stud_bevel_size*2],
+						[                           -1, round_stud_diameter - inner_offset*2 + 2],
+						[                            0, round_stud_diameter - inner_offset*2 + 2],
+						[                            6, round_stud_diameter - inner_offset*2    ],
+						[size[2] - 8 - stud_bevel_size, round_stud_diameter - inner_offset*2    ],
+						[size[2] - 8                  , round_stud_diameter - inner_offset*2 - stud_bevel_size*2],
 					])
 				]
 			])
@@ -63,7 +74,7 @@ function make_megablok_system(
 						size[0] + outer_offset*2,
 						size[1] + outer_offset*2,
 						size[2]
-					], r=1)],
+					], r=[6,6,1], corner_shape="ovoid1")],
 					
 					for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2] )
 					for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] )
@@ -78,7 +89,7 @@ function make_megablok_system(
 
 blocksys = make_megablok_system(
 	chunk_size = [chunk_h_pitch, chunk_h_pitch, chunk_v_pitch],
-	outer_offset = (chunk_actual_width - chunk_h_pitch)/2
+	outer_offset = outer_offset
 );
 
 togmod1_domodule(blocksys("block")(block_size_chunks));
