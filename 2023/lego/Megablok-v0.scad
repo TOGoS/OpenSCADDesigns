@@ -1,4 +1,4 @@
-// Megablok-v0.2
+// Megablok-v0.3
 // 
 // v0.1:
 // - First attempt: print first, see what happens later
@@ -12,15 +12,18 @@
 // - Slope interior 'flanges' somewhat
 // - Default block size is 1x1x1
 // - Round X/Y corners more because why not
+// v0.3:
+// - Increase stud bevel size to 5mm
+// - Decrease stud height to 3/4"
 
 chunk_h_pitch = 31.75; // 0.0001
 chunk_v_pitch = 38.10; // 0.0001
 outer_offset  = -0.15;
 inner_offset = -0.2;
 round_stud_diameter = 26.7;
-stud_bevel_size = 4;
+stud_bevel_size = 5;
 block_size_chunks = [1,1,1];
-stud_height = 20.5;
+stud_height = 19.05;
 
 preview_fn = 12;
 render_fn = 48;
