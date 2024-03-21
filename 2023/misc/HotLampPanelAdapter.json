@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p1372": {
+			"alt_counterbore_diameter": "8",
+			"alt_hole_diameter": "5",
+			"chunk_pitch": "38.1",
+			"hole_spacing_chunks": "1",
+			"hull_size_chunks": "[4, 3]",
+			"hull_thickness": "9.525",
+			"main_counterbore_diameter": "8",
+			"main_hole_diameter": "8",
+			"post_groove_diameter": "12",
+			"post_groove_spacing": "67.6",
+			"post_groove_z_adjust": "1"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
