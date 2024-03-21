@@ -83,6 +83,15 @@ function togpath1__pointlist_normalized_relative_edge_vectors(points) =
 
 //// Qath - Path defined by center and radius of each corner arc
 
+// Qath = ["togpath1-qath", ...QuathSeg...]
+// QathSeg = ["togpath1-qathseg", point, angle0, angle1, radius]
+// 
+// Positive angle difference means a counter-clockwise turn around
+// the point, negative means a clockwise turn around the point.
+// i.e. if tracing a shape counter-clockwise, point should be
+// inside the shape when angle1 > angle0, and outside  when angle1 < angle0.
+// I think (writing this months after having coded it).
+
 function togpath1_merge_qath_info(i0, i1) =
 	let(type = i0[0] == "togpath1-qath-info" && i1[0] == "togpath1-qath-info" ? "togpath1-qath-info" : "invalid")
 	let(min_radius = is_undef(i0[1]) || is_undef(i1[1]) ? undef : min(i0[1],i1[1]))
@@ -147,30 +156,80 @@ assert(togpath1_qath_info(qath)[0] == "togpath1-qath-info")
 	[seg[0], seg[1], seg[2], seg[3], seg[4] + offset]
 ];
 
-function togpath1_qathseg_points(seg, offset=0) =
+function togpath1__qathseg_to_polypoints(seg, offset=0) =
 	let( a0 = seg[2] )
 	let( a1 = seg[3] )
 	let( rad = seg[4] )
 	let( rad1 = rad + (a1>a0?1:-1)*offset )
 	assert( rad >= 0 )
-	let( vcount = ceil(abs(a1 - a0) * max($fn,1) / 360) )
-	assert( vcount >= 1 )
+	assert( abs(a1 - a0) > 0 )
+	// fcount = face count = just 'at least one, or $fn / (angle/360)'
+	// vertex count is face count + 1
+	// 
+	// For polyhedron generation, it may be useful to allow fcount
+	// to be overridden to a constant value, and allow a1-a0 = 0.
+	// Until then, keep it simple:
+	let( fcount = max(1, ceil(abs(a1 - a0) * max($fn,1) / 360)) )
+	assert( fcount >= 1 )
 [
-	for( vi = [0:1:vcount] )
+	for( vi = [0:1:fcount] )
 	// Calculate angles in such a way that first and last are exact
-	let( a = a0 * (vcount-vi)/vcount + a1 * vi/vcount )
+	let( a = a0 * (fcount-vi)/fcount + a1 * vi/fcount )
 	[seg[1][0] + cos(a) * rad1, seg[1][1] + sin(a) * rad1]
 ];
 
-function togpath1_qath_points(qath, offset=0) =
+function togpath1_qath_to_polypoints(qath, offset=0) =
 let(qathinfo = togpath1_qath_info(qath))
 assert(qathinfo[0] != "invalid", qathinfo[2])
 assert(qathinfo[0] == "togpath1-qath-info")
 assert(qathinfo[1] >= 0, str("Can't turn qath into points because minimum radius is < 0: ", qathinfo[1]))
 [
 	for( si = [1:1:len(qath)-1] )
-	each togpath1_qathseg_points(qath[si],offset=offset)
+	each togpath1__qathseg_to_polypoints(qath[si],offset=offset)
 ];
+
+// For backward compatibility.
+// 'to polypoints' implies a specific conversion, whereas just 'points'
+// might seem to mean extracting the original point data or something.
+// TODO: Replace references.
+function togpath1_qath_points(qath, offset=0) = togpath1_qath_to_polypoints(qath,offset=offset);
+
+
+/**
+ * For now this only allows two points, because I didn't want to bother
+ * with the math for concave turns (even though it's already been
+ * figured out for rendering zaths).
+ * 
+ * Generates a qath that traces around the line,
+ * optionally at some radius.
+ * 
+ * Primary use case is for making ovals in a way that's
+ * slightly more efficient (and has fewer corner cases)
+ * than making a rectangle and then rounding the corners;
+ * this only makes one 180-degree turn at each end instead
+ * of two 90-degree ones
+ */
+function togpath1_polyline_to_qath(points, r=0) =
+assert(len(points) == 2, "togpath1_polyline_to_qath: Only simple lines supported for now")
+let(diff = points[1]-points[0])
+let(ang = atan2(diff[1], diff[0]))
+["togpath1-qath",
+	["togpath1-qathseg", points[0], ang+90, ang+270, r],
+	["togpath1-qathseg", points[1], ang-90, ang+ 90, r],
+];
+
+togpath1__assert_equals(
+	["togpath1-qath",
+		["togpath1-qathseg", [-2,0],  90, 270, 1],
+		["togpath1-qathseg", [ 2,0], -90,  90, 1],
+	],
+	togpath1_polyline_to_qath([[-2,0],[2,0]], r=1)
+);
+togpath1__assert_equals(
+	[[-2,1],[-3,0],[-2,-1],[2,-1],[3,0],[2,1]],
+	togpath1_qath_to_polypoints(togpath1_polyline_to_qath([[-2,0],[2,0]], r=1), $fn=4)
+);
+
 
 //// Zath - points with offset vector
 
