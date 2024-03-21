@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.8
+// TGx11.1Lib - v11.1.9
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -16,6 +16,8 @@
 // - Refactor block body placement to be a little more explicit
 //   and maybe more 'correct', also (stopping at exectly the point
 //   where the bevels meet)
+// v11.1.9:
+// - Update reference to togpath1_qath_to_polypoints
 //
 // TODO: 'chunk' bottom style
 // 
@@ -32,8 +34,8 @@ use <../lib/TOGridLib3.scad>
 
 function tgx11_ath_to_polygon(thing, offset=0) =
 	togmod1_make_polygon(
-		thing[0] == "togpath1-qath" ? togpath1_qath_points(thing, offset=offset) :
-		thing[0] == "togpath1-zath" ? togpath1_zath_points(thing, offset=offset) :
+		thing[0] == "togpath1-qath" ? togpath1_qath_to_polypoints(thing, offset=offset) :
+		thing[0] == "togpath1-zath" ? togpath1_zath_to_polypoints(thing, offset=offset) :
 		assert(false, str("Unrecognized object: ", thing))
 	);
 
@@ -132,7 +134,7 @@ function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = togpath1_zath_to
  */
 function tgx11_chunk_xs_points(size, gender="m", offset=0) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
-	togpath1_qath_points(tgx11_chunk_xs_qath(size, gender=gender, offset=offset));
+	togpath1_qath_to_polypoints(tgx11_chunk_xs_qath(size, gender=gender, offset=offset));
 
 // v6 atom foot cross-section
 function tgx11_v6c_polygon(atom_size, gender="m", offset=0) = // tgx11_ath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
@@ -145,7 +147,7 @@ function tgx11_v6c_flatright_polygon(atom_size, gender="m", offset=0) =
 	let( offset = offset-column_inset )
 	togmod1_make_polygon([
 		[atom_size[0]/2+offset,  atom_size[1]/2+offset],
-		each togpath1_qath_points(tgx11_chunk_xs_half_qath(atom_size, gender=gender, offset=offset)),
+		each togpath1_qath_to_polypoints(tgx11_chunk_xs_half_qath(atom_size, gender=gender, offset=offset)),
 		[atom_size[0]/2+offset, -atom_size[1]/2-offset],
 	]);
 

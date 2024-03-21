@@ -1,4 +1,4 @@
-// BrickHolder1.6.1
+// BrickHolder1.6.2
 // 
 // Holder for arbitrary 'bricks'
 // with mounting holes to attach to gridbeam or togbeam or whatever
@@ -23,6 +23,9 @@
 // - side_segmentation
 // v1.6.1:
 // - Make debugging optional
+// v1.6.2:
+// - Remove make_oval, which was unused, referenced togpath1_qath_points,
+//   which has been renamed, and is obsoleted by togpath1_polyline_to_qath.
 
 /* [General] */
 
@@ -125,14 +128,6 @@ mounting_holes = ["union",
 	for( zm=[1.5 : 1 : round(block_size[2]/atom)] )
 	["translate", [xm*atom, cavity_size[1]/2, zm*atom], mounting_hole]
 ];
-
-function make_oval(r, p0, p1) =
-let(diff = p1-p0)
-let(ang = atan2(diff[1], diff[0]))
-togmod1_make_polygon(togpath1_qath_points(["togpath1-qath",
-	["togpath1-qathseg", p0, ang-270, ang-90, r],
-	["togpath1-qathseg", p1, ang-90, ang+90, r]
-]));
 
 // TODO for fanciness: Round around the hole!
 top_cord_slot =

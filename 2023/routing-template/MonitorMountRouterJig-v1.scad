@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.6
+// MonitorMountRouterJig-v1.6.2
 // 
 // Versions:
 // v1.0:
@@ -30,6 +30,8 @@
 // - MMP-2315, 'polygonal-hole' support
 // v1.6:
 // - Matchfit grooves in the MMP-2315 panel, if thick enough
+// v1.6.2:
+// - Update reference to togpath1_qath_to_polypoints
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315"]
@@ -188,13 +190,7 @@ module fat_polyline(diameter, points) {
 	}
 }
 
-function make_oval(r, p0, p1) =
-let(diff = p1-p0)
-let(ang = atan2(diff[1], diff[0]))
-togmod1_make_polygon(togpath1_qath_points(["togpath1-qath",
-	["togpath1-qathseg", p0, ang-270, ang-90, r],
-	["togpath1-qathseg", p1, ang-90, ang+90, r]
-]));
+function make_oval(r, p0, p1) = togmod1_make_polygon(togpath1_qath_to_polypoints(togpath1_polyline_to_qath([p0,p1],r)));
 
 function jj_is_pointlist(points, dims=2, offset=0) =
 	is_list(points) && (

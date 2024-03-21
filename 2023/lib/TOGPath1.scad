@@ -188,10 +188,11 @@ assert(qathinfo[1] >= 0, str("Can't turn qath into points because minimum radius
 	each togpath1__qathseg_to_polypoints(qath[si],offset=offset)
 ];
 
-// For backward compatibility.
+// Deprecated; use togpath1_qath_to_polypoints.
+// Same thing, different name.
+// 
 // 'to polypoints' implies a specific conversion, whereas just 'points'
 // might seem to mean extracting the original point data or something.
-// TODO: Replace references.
 function togpath1_qath_points(qath, offset=0) = togpath1_qath_to_polypoints(qath,offset=offset);
 
 
@@ -268,12 +269,16 @@ function togpath1__max_of(list, i=0, acc=0) =
 
 
 
-function togpath1_zath_points(zath, offset=0) =
+function togpath1_zath_to_polypoints(zath, offset=0) =
 let(points     = togpath1_zath_points_nocheck(zath,0    ))
 let(new_points = togpath1_zath_points_nocheck(zath,offset))
 let(edgecomp   = togpath1__compare_edge_nvecs(points, new_points))
 assert(togpath1__max_of(edgecomp) < 0.1, str("Max edge direction difference=", togpath1__max_of(edgecomp)))
 new_points;
+
+// Deprecated alias to togpath1_zath_to_polypoints
+function togpath1_zath_points(zath, offset=0) = togpath1_zath_to_polypoints(zath, offset=offset);
+
 
 
 function togpath1_zath_to_qath(zath, radius=0, offset=0, closed=true) =
@@ -374,7 +379,7 @@ function togpath1__rathnode_apply_op(pa, pb, pc, op) =
 	op[0] == "offset" ? togpath1__offset(pa, pb, pc, op[1]) :
 	assert(false, str("Unrecognized rath node op, '", op, "'"));
 
-function togpath1__rathnode_to_points(pa, pb, pc, rathnode, opindex) =
+function togpath1__rathnode_to_polypoints(pa, pb, pc, rathnode, opindex) =
 	assert(is_list(pa))
 	assert(is_list(pb))
 	assert(is_list(pc))
@@ -382,9 +387,9 @@ function togpath1__rathnode_to_points(pa, pb, pc, rathnode, opindex) =
 	assert(is_num(opindex))
 	opindex == len(rathnode) ? [pb] :
 	let( newpoints = [pa, each togpath1__rathnode_apply_op(pa, pb, pc, rathnode[opindex]), pc] )
-	[ for( i=[1:1:len(newpoints)-2] ) each togpath1__rathnode_to_points(newpoints[i-1], newpoints[i], newpoints[i+1], rathnode, opindex+1) ];
+	[ for( i=[1:1:len(newpoints)-2] ) each togpath1__rathnode_to_polypoints(newpoints[i-1], newpoints[i], newpoints[i+1], rathnode, opindex+1) ];
 
-function togpath1_rath_to_points(rath) =
+function togpath1_rath_to_polypoints(rath) =
 	assert(rath[0] == "togpath1-rath")
 	let(points = [ for(i=[1:1:len(rath)-1]) rath[i][1] ])
 [
@@ -392,8 +397,11 @@ function togpath1_rath_to_points(rath) =
 	let( pa = points[ (i-1+len(points))%len(points) ] )
 	let( pb = points[ (i              )           ] )
 	let( pc = points[ (i+1            )%len(points) ] )
-	each togpath1__rathnode_to_points(pa, pb, pc, rath[i+1], 2)
+	each togpath1__rathnode_to_polypoints(pa, pb, pc, rath[i+1], 2)
 ];
+
+// Deprecated name for togpath1_rath_to_polypoints
+function togpath1_rath_to_points(rath) = togpath1_rath_to_polypoints(rath);
 
 function togpath1_map_rath_nodes(rath, func) = [
 	rath[0],
