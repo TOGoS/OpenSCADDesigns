@@ -1,27 +1,34 @@
 // Minimally-altered copy of BowtieLib from ProjectNotes2/2023/3DPrinting/BowtieConnector/BowtieLib.scad
 //
-// v1.1:
+// v0.1:
 // - `bowtie_positions` can take an `edges` parameter to include points only along certain [N,E,S,W] edges
-// v1.2:
+// v0.2:
 // - Add `edge_bowties` module
+// v0.3:
+// - Reverse order of bowtie_point_data so that it follows the usual
+//   counter-clockwise convention and can be eeasily extruded
+// - Add 'concave'/'convex' info to point data
+// - Add get_bowtie_point_data()
 
 inch = 25.4;
 
 bowtie_point_data = [
 	// X, Y (length/6), offsetX, offsetY (caller units)
-	[-3, 2,-1  , 1],
-	[-2, 2, 0.5, 1],
-	[-1, 1, 0.5, 1],
-	[ 1, 1,-0.5, 1],
-	[ 2, 2,-0.5, 1],
-	[ 3, 2, 1  , 1],
-	[ 3,-2, 1  ,-1],
-	[ 2,-2,-0.5,-1],
-	[ 1,-1,-0.5,-1],
-	[-1,-1, 0.5,-1],
-	[-2,-2, 0.5,-1],
-	[-3,-2,-1  ,-1]
+	[-3,-2,-1  ,-1, "convex" ],
+	[-2,-2, 0.5,-1, "convex" ],
+	[-1,-1, 0.5,-1, "concave"],
+	[ 1,-1,-0.5,-1, "concave"],
+	[ 2,-2,-0.5,-1, "convex" ],
+	[ 3,-2, 1  ,-1, "convex" ],
+	[ 3, 2, 1  , 1, "convex" ],
+	[ 2, 2,-0.5, 1, "convex" ],
+	[ 1, 1,-0.5, 1, "concave"],
+	[-1, 1, 0.5, 1, "concave"],
+	[-2, 2, 0.5, 1, "convex" ],
+	[-3, 2,-1  , 1, "convex" ],
 ];
+
+function get_bowtie_point_data() = bowtie_point_data;
 
 module beveled_square(size, r) {
 	x0 = -size[0]/2;
