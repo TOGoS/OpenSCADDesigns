@@ -1,7 +1,12 @@
-// DovetailTrackSection0.1
+// DovetailTrackSection0.2
 // 
 // Gridbeam / TOGRack-compatible chunk with
 // a Matchfit-compatible dovetail slot.
+// 
+// v0.2:
+// - Reduce slot taper length to 3/16",
+//   but make it flare out more towards the end,
+//   but only half as much in the Z direction
 
 // More negative makes bigger holes
 bowtie_offset = -0.2;
@@ -17,20 +22,28 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
+function dts0_xf(xf, dat) = [xf*dat[0], for(i=[1:1:len(dat)-1]) dat[i]];
+// concat data with its 'mirror', dedfined as the same in reverse order with the first element reversed
+function dts0_mirr(dats) = [
+	for( i=[0 : +1 : len(dats)-1]) dts0_xf(+1, dats[i]),
+	for( i=[len(dats)-1 : -1 : 0]) dts0_xf(-1, dats[i]),
+];
+
 function make_slot(
 	length,
-	taper_length = 9.525,
+	taper_length = 4.7625,
 	pp = tmfl1_get_matchfit_groove_profile_points()
 ) =
-	tphl1_make_polyhedron_from_layer_function([
-		[-1/2, -1, 1.2],
-		[-1/2,  1, 1  ],
-		[ 1/2, -1, 1  ],
-		[ 1/2,  1, 1.2],
-	], function(params)
-		let(x = params[0]*length + params[1]*taper_length)
-		let(yzscale = params[2])
-		[for(p=pp) [x, p[0]*yzscale, p[1]*yzscale]]
+	tphl1_make_polyhedron_from_layer_function(dts0_mirr([
+		[[-1/2, -1  ], 2   ],
+		[[-1/2,  0  ], 1.2 ],
+		[[-1/2,  1/4], 1.1 ],
+		[[-1/2,  1  ], 1   ],
+	]), function(params)
+		let(x = params[0][0]*length + params[0][1]*taper_length)
+		let(yscale = params[1])
+		let(zscale = (1+params[1])/2)
+		[for(p=pp) [x, p[0]*yscale, p[1]*zscale]]
 	);
 
 function make_hull(size) = 
