@@ -355,7 +355,7 @@ function togpath1__offset(pa, pb, pc, dist) =
 	let( ovec = tcplx1_multiply(ab_normalized, [0,-1]) + tcplx1_multiply(ab_normalized, [ov_forward,0]) )
 	[pb + ovec*dist];
 
-function togpath1__round(pa, pb, pc, radius) =
+function togpath1__round(pa, pb, pc, radius, force_fn=undef) =
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
 	let( turndir = turn > 0 ? 1 : -1 ) // +1=left, -1=right
@@ -364,7 +364,7 @@ function togpath1__round(pa, pb, pc, radius) =
 	let( fulc = pb - turndir * ovec*radius )
 	let( a0 = togpath1__line_angle(pa, pb) - turndir * 90 )
 	let( a1 = a0+turn )
-	let( vcount = ceil(abs(turn) * max($fn,1) / 360) )
+	let( vcount = !is_undef(force_fn) ? force_fn+1 : ceil(abs(turn) * max($fn,1) / 360) )
 	assert( vcount >= 1 )
 	[
 		for( vi = [0:1:vcount] )
@@ -375,7 +375,7 @@ function togpath1__round(pa, pb, pc, radius) =
 
 function togpath1__rathnode_apply_op(pa, pb, pc, op) =
 	op[0] == "bevel" ? togpath1__bevel(pa, pb, pc, op[1]) :
-	op[0] == "round" ? togpath1__round(pa, pb, pc, op[1]) :
+	op[0] == "round" ? togpath1__round(pa, pb, pc, op[1], force_fn=op[2]) :
 	op[0] == "offset" ? togpath1__offset(pa, pb, pc, op[1]) :
 	assert(false, str("Unrecognized rath node op, '", op, "'"));
 
