@@ -1,6 +1,11 @@
-// MicroRail0.1
+// MicroRail0.2
+// 
+// v0.2
+// - Attempt to fix clip path to be not too tight in parts
+// - mode = "rail"|"clip" instead of always both at once
 
 length_chunks = 3;
+mode = "rail"; // ["rail", "clip"]
 offset = -0.1;
 
 use <../lib/TOGHoleLib2.scad>
@@ -48,7 +53,7 @@ let( length_mholes = round(length/12.7) )
 	for( xm=[-length_mholes/2+0.5 : 1 : length_mholes/2-0.4] ) ["translate", [xm*mhole_pitch, 0, 0], mhole],
 ];
 
-function clip_rath(iops=[], eops=[], cops=[], oops=[]) = ["togpath1-rath",
+function clip_rath(iops=[], lops=[], eops=[], cops=[], oops=[]) = ["togpath1-rath",
 	["togpath1-rathnode", [- 7*u,  12*u], each cops],
 	["togpath1-rathnode", [-12*u,   7*u], each eops],
 	["togpath1-rathnode", [-12*u, - 6*u], each eops],
@@ -58,10 +63,10 @@ function clip_rath(iops=[], eops=[], cops=[], oops=[]) = ["togpath1-rath",
 	
 	["togpath1-rathnode", [ 10*u, - 5*u], each cops],
 	["togpath1-rathnode", [  5*u, -10*u], each iops],
-	["togpath1-rathnode", [- 5*u, -10*u], each iops],
-	["togpath1-rathnode", [-10*u, - 5*u], each iops],
-	["togpath1-rathnode", [-10*u,   5*u], each iops],
-	["togpath1-rathnode", [- 9*u,   6*u], each iops],
+	["togpath1-rathnode", [- 5*u, -10*u], each lops],
+	["togpath1-rathnode", [-10*u, - 5*u], each lops],
+	["togpath1-rathnode", [-10*u,   5*u], each lops],
+	["togpath1-rathnode", [- 9*u,   6*u], each lops],
 	["togpath1-rathnode", [  9*u,   6*u], each iops],
 	["togpath1-rathnode", [ 10*u,   5*u], each cops],
 	
@@ -78,6 +83,7 @@ outer_rad=4*u;
 
 the_clip = tphl1_extrude_polypoints([0, 19.05], togpath1_rath_to_polypoints(clip_rath(
 	iops=[["round", outer_rad-2*u]],
+	lops=[["round", 2]],
 	eops=[["round", outer_rad]],
 	cops=[["round", 1]],
 	oops=[["offset", $tgx11_offset]]
@@ -87,7 +93,6 @@ rail_length = length_chunks*chunk_pitch;
 
 the_rail = make_microrail(rail_length);
 
-togmod1_domodule(["union",
-	["translate", [-rail_length/2 - 25.4, 0, 0], the_clip],
-	the_rail,
-]);
+togmod1_domodule(
+	mode == "rail" ? the_rail : the_clip
+);
