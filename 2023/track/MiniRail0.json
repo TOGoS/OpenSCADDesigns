@@ -1,18 +1,19 @@
 {
 	"parameterSets": {
-		"p1379": {
-			"alt_hole_type": "THL-1001",
-			"hole_type": "THL-1002",
-			"length_chunks": "5",
-			"mode": "rail",
-			"offset": "-0.1"
-		},
 		"p1380": {
 			"alt_hole_type": "THL-1001",
 			"hole_type": "THL-1002",
 			"length_chunks": "5",
 			"mode": "jammer",
 			"offset": "0.1"
+		},
+		"p1379": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "5",
+			"mode": "rail",
+			"notches_enabled": "false",
+			"offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"
