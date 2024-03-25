@@ -1,4 +1,4 @@
-// MiniRail0.6
+// MiniRail0.7
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -12,6 +12,8 @@
 // - Add notches for stoppers or whatever you want to not move
 // v0.6:
 // - Add notch clip
+// v0.7:
+// - Slightly deeper insets
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "jammer", "notch-clip"]
@@ -68,8 +70,8 @@ tphl1_make_polyhedron_from_layer_function([
 	[ for(yz=yzpoints) [lon[0], yz[0], yz[1]] ]
 );
 
-mhole = ["rotate", [180,0,0], tog_holelib2_hole(hole_type, inset=1)];
-alt_mhole = ["rotate", [180,0,0], tog_holelib2_hole(alt_hole_type, inset=1)];
+mhole = ["rotate", [180,0,0], tog_holelib2_hole(hole_type, inset=2)];
+alt_mhole = ["rotate", [180,0,0], tog_holelib2_hole(alt_hole_type, inset=2)];
 
 function make_minirail(length) =
 let( length_mholes = round(length/mhole_pitch) )
