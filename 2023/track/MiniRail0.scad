@@ -1,4 +1,4 @@
-// MiniRail0.5
+// MiniRail0.6
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -10,9 +10,11 @@
 // - Add 'jammer' - don't forget to increase offset to >0!
 // v0.5
 // - Add notches for stoppers or whatever you want to not move
+// v0.6:
+// - Add notch clip
 
 length_chunks = 3;
-mode = "rail"; // ["rail", "clip", "jammer"]
+mode = "rail"; // ["rail", "clip", "jammer", "notch-clip"]
 hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
 alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
@@ -120,6 +122,27 @@ function clip_rath(iops=[], lops=[], eops=[], cops=[], oops=[]) = ["togpath1-rat
 	["togpath1-rathnode", [- 4*u,  12*u], each oops, each cops],
 ];
 
+function notch_clip_rath() =
+let( f = $tgx11_offset )
+["togpath1-rath",
+	["togpath1-rathnode", [  0*u, - 1*u], ["round", 1*u]],
+	["togpath1-rathnode", [- 2*u, - 1*u], ["round", 1*u]],
+	["togpath1-rathnode", [- 3*u, - 2*u]],
+	["togpath1-rathnode", [- 5*u, - 2*u]],
+	["togpath1-rathnode", [- 6*u, - 1*u], ["round", 1*u]],
+	["togpath1-rathnode", [- 8*u, - 1*u]],
+	["togpath1-rathnode", [- 6*u - f,   1*u - f]],
+	["togpath1-rathnode", [  4*u + f,   1*u - f]],
+	["togpath1-rathnode", [  5*u,   0*u], ["round", 1*u]],
+	["togpath1-rathnode", [  7*u,   1*u], ["round", 0.5*u]],
+	["togpath1-rathnode", [  6*u,   2*u], ["round", 0.5*u]],
+	["togpath1-rathnode", [  0*u,   2*u], ["round", 0.5*u]],
+	["togpath1-rathnode", [- 1*u,   3*u], ["round", 0.5*u]],
+	["togpath1-rathnode", [- 7*u,   3*u], ["round", 2*u]],
+	["togpath1-rathnode", [-13*u,  -3*u], ["round", 2*u]],
+	["togpath1-rathnode", [  0*u,  -3*u], ["round", 1*u]],
+];
+
 outer_rad=4*u;
 
 the_clip = tphl1_extrude_polypoints([0, 19.05], togpath1_rath_to_polypoints(clip_rath(
@@ -136,6 +159,7 @@ the_jammer = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(jam
 	cops=[["round", 1]],
 	oops=[["offset", $tgx11_offset]]
 )));
+the_notch_clip = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(notch_clip_rath()));
 
 rail_length = length_chunks*chunk_pitch;
 
@@ -145,5 +169,6 @@ togmod1_domodule(
 	mode == "rail" ? the_rail :
 	mode == "clip" ? the_clip :
 	mode == "jammer" ? the_jammer :
+	mode == "notch-clip" ? the_notch_clip :
 	assert(false, str("Unrecognized mode: '", mode, "'"))
 );
