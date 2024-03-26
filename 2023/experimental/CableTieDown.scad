@@ -1,17 +1,24 @@
+// v0.2:
+// - 45-0-45-degree string trough for better printability
+
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
-$fn = 24;
+$fn = $preview ? 16 : 48;
 
 torus = ["difference",
 	togmod1_make_cuboid([6.35, 50, 50]),
 	//togmod1_make_cuboid([50, 25.4, 19.05-6.35]),
 	// TODO: Make the unner surface rounded
 	tphl1_make_polyhedron_from_layer_function([
-		for( a=[-180:15:0] ) [3.5*cos(a), 4+3.5*sin(a)]
+		//for( a=[-180:15:0] ) [3.5*cos(a), 4+3.5*sin(a)]
+		[-3.5, 2.5],
+		[-1.5, 0.5],
+		[ 1.5, 0.5],
+		[ 3.5, 2.5],
 	], function(xo) [
 		for(rpp = togpath1_rath_to_polypoints(["togpath1-rath",
 			["togpath1-rathnode", [-16, -6], ["round", 4], ["offset", xo[1]]],
