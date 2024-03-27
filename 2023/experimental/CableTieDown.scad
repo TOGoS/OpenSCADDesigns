@@ -10,6 +10,8 @@
 // - Attempt to have minimum of 2mm floor between string groove
 //   and bottom of mounting hole counterbore
 //   (v0.3 with default settings had only a single layer!)
+// 
+// TODO: Give it a TOGridPile-compatible bottom cuz why not lol
 
 block_size = [38.1, 38.1, 19.05]; // 0.01
 cable_groove_depth         = 3.8; // 0.1
