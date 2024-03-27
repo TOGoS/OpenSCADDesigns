@@ -23,6 +23,10 @@
 			"mode": "rail",
 			"notches_enabled": "true",
 			"offset": "-0.1"
+		},
+		"p1387 - clip w/ -0.3mm offset": {
+			"mode": "notch-clip",
+			"offset": "-0.3"
 		}
 	},
 	"fileFormatVersion": "1"

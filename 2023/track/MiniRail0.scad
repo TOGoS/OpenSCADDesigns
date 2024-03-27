@@ -14,6 +14,8 @@
 // - Add notch clip
 // v0.7:
 // - Slightly deeper insets
+// v0.8:
+// - 'Fix' (it's still kinda weird) offset calculation for clip
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "jammer", "notch-clip"]
@@ -126,16 +128,18 @@ function clip_rath(iops=[], lops=[], eops=[], cops=[], oops=[]) = ["togpath1-rat
 
 function notch_clip_rath() =
 let( f = $tgx11_offset )
+let( f2 = (sqrt(2)-1)*f )
+let( f3 = sqrt(2)*f )
 ["togpath1-rath",
 	["togpath1-rathnode", [  0*u, - 1*u], ["round", 1*u]],
 	["togpath1-rathnode", [- 2*u, - 1*u], ["round", 1*u]],
 	["togpath1-rathnode", [- 3*u, - 2*u]],
 	["togpath1-rathnode", [- 5*u, - 2*u]],
 	["togpath1-rathnode", [- 6*u, - 1*u], ["round", 1*u]],
-	["togpath1-rathnode", [- 8*u, - 1*u]],
-	["togpath1-rathnode", [- 6*u - f,   1*u - f]],
-	["togpath1-rathnode", [  4*u + f,   1*u - f]],
-	["togpath1-rathnode", [  5*u,   0*u], ["round", 1*u]],
+	["togpath1-rathnode", [- 8*u + f3, - 1*u]],
+	["togpath1-rathnode", [- 6*u + f2, 1*u - f]],
+	["togpath1-rathnode", [  4*u - f2, 1*u - f]],
+	["togpath1-rathnode", [  5*u - f3,   0*u], ["round", 1*u]],
 	["togpath1-rathnode", [  7*u,   1*u], ["round", 0.5*u]],
 	["togpath1-rathnode", [  6*u,   2*u], ["round", 0.5*u]],
 	["togpath1-rathnode", [  0*u,   2*u], ["round", 0.5*u]],
