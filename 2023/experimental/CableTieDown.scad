@@ -1,4 +1,4 @@
-// CableTieDown0.4
+// CableTieDown0.5
 // 
 // v0.2:
 // - 45-0-45-degree string trough for better printability
@@ -10,6 +10,8 @@
 // - Attempt to have minimum of 2mm floor between string groove
 //   and bottom of mounting hole counterbore
 //   (v0.3 with default settings had only a single layer!)
+// v0.5:
+// - Add 'string holes' in case that's useful to you
 // 
 // TODO: Give it a TOGridPile-compatible bottom cuz why not lol
 
@@ -18,6 +20,7 @@ cable_groove_depth         = 3.8; // 0.1
 string_groove_depth_bottom = 6.0; // 0.1
 string_groove_depth_top    = 3.0; // 0.1
 string_groove_depth_side   = 4.0; // 0.1
+string_hole_diameter       = 3;
 
 module __ctd0__end_params() { }
 
@@ -79,6 +82,10 @@ torus = make_string_cutout(
 	[string_groove_depth_top, string_groove_depth_side, string_groove_depth_bottom]
 );
 
+string_hole =
+	string_hole_diameter > 0 ? tphl1_make_z_cylinder(d=string_hole_diameter, zrange=[-block_size[2], +block_size[2]]) :
+	["union"];
+
 function ctd0__average(a,b) = (a+b)/2;
 
 cb_floor_z_ideal = string_groove_depth_bottom + 2;
@@ -91,5 +98,6 @@ togmod1_domodule(["difference",
 	["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid(block_size, 4.7625)],
 	["translate", [0,0,cb_floor_z], tog_holelib2_hole("THL-1006", depth=block_size[2], inset=0, overhead_bore_height=block_size[2])],
 	["translate", [0,0,block_size[2]], tphl1_make_rounded_cuboid([50,19.05,cable_groove_depth*2], [0,3,3])],
-	for(xm=[-1,1]) ["translate", [-25.4/3*xm,0,block_size[2]/2], torus]
+	for(xm=[-1,1]) ["translate", [-25.4/3*xm,0,block_size[2]/2], torus],
+	for(r=[0,90,180,270]) ["rotate", [0,0,r], ["translate", [-25.4/3,0,block_size[2]/2], string_hole]],
 ]);
