@@ -1,4 +1,4 @@
-// MiniRail0.7
+// MiniRail0.9
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -15,10 +15,16 @@
 // v0.7:
 // - Slightly deeper insets
 // v0.8:
-// - 'Fix' (it's still kinda weird) offset calculation for clip
+// - 'Fix' (it's still kinda weird) offset calculation for notch clip
+// v0.9:
+// - Add 'miniclip'
+// - Sloppily refactor clip shape rath generation in whatever way
+//   seemed most expedient for making variations on the clip shape.
+//   It might be not worse than it was.
+// - Clip and jammer raths now use y=0 as the 'top'
 
 length_chunks = 3;
-mode = "rail"; // ["rail", "clip", "jammer", "notch-clip"]
+mode = "rail"; // ["rail", "clip", "miniclip", "jammer", "notch-clip"]
 hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
 alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
@@ -87,43 +93,77 @@ let( length_mholes = round(length/mhole_pitch) )
 	for( xm=[-length_mholes/2+1   : 1 : length_mholes/2-0.9] ) ["translate", [xm*mhole_pitch, 0, 0], alt_mhole],
 ];
 
-function jammer_rath(iops=[], lops=[], eops=[], cops=[], oops=[]) = ["togpath1-rath",
-	["togpath1-rathnode", [ 12*u,   7*u], each cops],
-	["togpath1-rathnode", [  7*u,  12*u], each cops],
+outer_rad=4*u;
 
-	["togpath1-rathnode", [  4*u,  12*u], each oops, each cops],
-	["togpath1-rathnode", [  8*u,   8*u], each oops           ],
-	["togpath1-rathnode", [- 8*u,   8*u], each oops           ],
-	["togpath1-rathnode", [- 4*u,  12*u], each oops, each cops],
+// Internal corner ops
+iops = [["round", outer_rad-2*u]];
+lops = [["round", 2]];
+// External corner ops
+eops = [["round", outer_rad]];
+// Even smaller corners, where needed
+cops = [["round", 1]];
+// Offset ops, for use in the inside of the clip
+oops = [["offset", $tgx11_offset]];
 
-	["togpath1-rathnode", [- 7*u,  12*u], each cops],
-	["togpath1-rathnode", [-12*u,   7*u], each cops],
+
+function make_jammer_rath() = ["togpath1-rath",
+	["togpath1-rathnode", [ 12*u, - 5*u], each cops],
+	["togpath1-rathnode", [  7*u,   0*u], each cops],
+
+	["togpath1-rathnode", [  4*u,   0*u], each oops, each cops],
+	["togpath1-rathnode", [  8*u, - 4*u], each oops           ],
+	["togpath1-rathnode", [- 8*u, - 4*u], each oops           ],
+	["togpath1-rathnode", [- 4*u,   0*u], each oops, each cops],
+
+	["togpath1-rathnode", [- 7*u,   0*u], each cops],
+	["togpath1-rathnode", [-12*u, - 5*u], each cops],
 ];
 
-function clip_rath(iops=[], lops=[], eops=[], cops=[], oops=[]) = ["togpath1-rath",
-	["togpath1-rathnode", [- 7*u,  12*u], each cops],
-	["togpath1-rathnode", [-12*u,   7*u], each eops],
-	["togpath1-rathnode", [-12*u, - 6*u], each eops],
-	["togpath1-rathnode", [- 6*u, -12*u], each eops],
-	["togpath1-rathnode", [  6*u, -12*u], each eops],
-	["togpath1-rathnode", [ 12*u, - 6*u], each cops],
+function make_clip_top_rathnodes() = [
+	["togpath1-rathnode", [-10*u,  -8*u]],
+
+	["togpath1-rathnode", [-10*u,  -7*u], each lops],
+	["togpath1-rathnode", [- 9*u,  -6*u], each lops],
+	["togpath1-rathnode", [  9*u,  -6*u], each iops],
+	["togpath1-rathnode", [ 10*u,  -7*u], each cops],
 	
-	["togpath1-rathnode", [ 10*u, - 5*u], each cops],
-	["togpath1-rathnode", [  5*u, -10*u], each iops],
-	["togpath1-rathnode", [- 5*u, -10*u], each lops],
-	["togpath1-rathnode", [-10*u, - 5*u], each lops],
-	["togpath1-rathnode", [-10*u,   5*u], each lops],
-	["togpath1-rathnode", [- 9*u,   6*u], each lops],
-	["togpath1-rathnode", [  9*u,   6*u], each iops],
-	["togpath1-rathnode", [ 10*u,   5*u], each cops],
+	["togpath1-rathnode", [ 12*u,  -5*u], each cops],
+	["togpath1-rathnode", [  7*u,   0*u], each cops],
 	
-	["togpath1-rathnode", [ 12*u,   7*u], each cops],
-	["togpath1-rathnode", [  7*u,  12*u], each cops],
+	["togpath1-rathnode", [  4*u,   0*u], each oops, each cops],
+	["togpath1-rathnode", [  8*u,  -4*u], each oops           ],
+	["togpath1-rathnode", [- 8*u,  -4*u], each oops           ],
+	["togpath1-rathnode", [- 4*u,   0*u], each oops, each cops],
+
+	["togpath1-rathnode", [- 7*u,   0*u], each cops],
+	["togpath1-rathnode", [-12*u,  -5*u], each eops],
+
+	["togpath1-rathnode", [-12*u,  -8*u]],
+];
+
+function make_clip_rath() = ["togpath1-rath",
+	each make_clip_top_rathnodes(),
 	
-	["togpath1-rathnode", [  4*u,  12*u], each oops, each cops],
-	["togpath1-rathnode", [  8*u,   8*u], each oops           ],
-	["togpath1-rathnode", [- 8*u,   8*u], each oops           ],
-	["togpath1-rathnode", [- 4*u,  12*u], each oops, each cops],
+	["togpath1-rathnode", [-12*u, -18*u], each eops],
+	["togpath1-rathnode", [- 6*u, -24*u], each eops],
+	["togpath1-rathnode", [  6*u, -24*u], each eops],
+	["togpath1-rathnode", [ 12*u, -18*u], each cops],
+	
+	["togpath1-rathnode", [ 10*u, -17*u], each cops],
+	["togpath1-rathnode", [  5*u, -22*u], each iops],
+	["togpath1-rathnode", [- 5*u, -22*u], each lops],
+	["togpath1-rathnode", [-10*u, -17*u], each lops],
+];
+
+function make_miniclip_rath() = ["togpath1-rath",
+	each make_clip_top_rathnodes(),
+	
+	["togpath1-rathnode", [-12*u, -14*u], each eops],
+	["togpath1-rathnode", [ 10*u, -14*u], each eops],
+	["togpath1-rathnode", [ 12*u, -12*u], each cops],	
+	["togpath1-rathnode", [ 10*u, -11*u], each cops],	
+	["togpath1-rathnode", [  9*u, -12*u], each iops],	
+	["togpath1-rathnode", [-10*u, -12*u], each iops],
 ];
 
 function notch_clip_rath() =
@@ -149,22 +189,9 @@ let( f3 = sqrt(2)*f )
 	["togpath1-rathnode", [  0*u,  -3*u], ["round", 1*u]],
 ];
 
-outer_rad=4*u;
+function make_cliplike(rath) = tphl1_extrude_polypoints([0, 19.05], togpath1_rath_to_polypoints(rath));
 
-the_clip = tphl1_extrude_polypoints([0, 19.05], togpath1_rath_to_polypoints(clip_rath(
-	iops=[["round", outer_rad-2*u]],
-	lops=[["round", 2]],
-	eops=[["round", outer_rad]],
-	cops=[["round", 1]],
-	oops=[["offset", $tgx11_offset]]
-)));
-the_jammer = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(jammer_rath(
-	iops=[["round", outer_rad-2*u]],
-	lops=[["round", 2]],
-	eops=[["round", outer_rad]],
-	cops=[["round", 1]],
-	oops=[["offset", $tgx11_offset]]
-)));
+the_jammer     = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(make_jammer_rath()));
 the_notch_clip = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(notch_clip_rath()));
 
 rail_length = length_chunks*chunk_pitch;
@@ -173,7 +200,8 @@ the_rail = make_minirail(rail_length);
 
 togmod1_domodule(
 	mode == "rail" ? the_rail :
-	mode == "clip" ? the_clip :
+	mode == "clip" ? make_cliplike(make_clip_rath()) :
+	mode == "miniclip" ? make_cliplike(make_miniclip_rath()) :
 	mode == "jammer" ? the_jammer :
 	mode == "notch-clip" ? the_notch_clip :
 	assert(false, str("Unrecognized mode: '", mode, "'"))
