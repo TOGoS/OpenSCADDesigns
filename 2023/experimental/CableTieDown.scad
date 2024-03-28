@@ -1,4 +1,4 @@
-// CableTieDown0.5
+// CableTieDown0.6
 // 
 // v0.2:
 // - 45-0-45-degree string trough for better printability
@@ -12,8 +12,8 @@
 //   (v0.3 with default settings had only a single layer!)
 // v0.5:
 // - Add 'string holes' in case that's useful to you
-// 
-// TODO: Give it a TOGridPile-compatible bottom cuz why not lol
+// v0.6:
+// - Give it a TOGridPile-compatible bottom cuz why not lol
 
 block_size = [38.1, 38.1, 19.05]; // 0.01
 cable_groove_depth         = 3.8; // 0.1
@@ -22,8 +22,11 @@ string_groove_depth_top    = 3.0; // 0.1
 string_groove_depth_side   = 4.0; // 0.1
 string_hole_diameter       = 3;
 
+$tgx11_offset = -0.1;
+
 module __ctd0__end_params() { }
 
+use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -94,8 +97,13 @@ cb_floor_z = min(
 	ctd0__average(cb_floor_z_ideal, block_size[2] - cable_groove_depth - 2)
 );
 
+the_hull = ["intersection",
+	tgx11_chunk_unifoot(block_size, $tgx11_gender="m", $togridlib3_unit_table=tgx11_get_default_unit_table()),
+	tphl1_make_rounded_cuboid([block_size[0],block_size[1],block_size[2]*2], 4.7625)
+];
+
 togmod1_domodule(["difference",
-	["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid(block_size, 4.7625)],
+	the_hull,
 	["translate", [0,0,cb_floor_z], tog_holelib2_hole("THL-1006", depth=block_size[2], inset=0, overhead_bore_height=block_size[2])],
 	["translate", [0,0,block_size[2]], tphl1_make_rounded_cuboid([50,19.05,cable_groove_depth*2], [0,3,3])],
 	for(xm=[-1,1]) ["translate", [-25.4/3*xm,0,block_size[2]/2], torus],
