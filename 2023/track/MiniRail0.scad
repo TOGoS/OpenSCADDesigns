@@ -1,4 +1,4 @@
-// MiniRail0.9
+// MiniRail0.10
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -22,12 +22,16 @@
 //   seemed most expedient for making variations on the clip shape.
 //   It might be not worse than it was.
 // - Clip and jammer raths now use y=0 as the 'top'
+// v0.10:
+// - Clip thickness configurable, defaults to 1/2" instead of 3/4",
+//   to fit between notch clips
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "miniclip", "jammer", "notch-clip"]
 hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
 alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
+clip_width = 12.7;
 offset = -0.1;
 
 use <../lib/TOGHoleLib2.scad>
@@ -189,7 +193,7 @@ let( f3 = sqrt(2)*f )
 	["togpath1-rathnode", [  0*u,  -3*u], ["round", 1*u]],
 ];
 
-function make_cliplike(rath) = tphl1_extrude_polypoints([0, 19.05], togpath1_rath_to_polypoints(rath));
+function make_cliplike(rath) = tphl1_extrude_polypoints([0, clip_width], togpath1_rath_to_polypoints(rath));
 
 the_jammer     = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(make_jammer_rath()));
 the_notch_clip = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(notch_clip_rath()));
