@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.9
+// TGx11.1Lib - v11.1.10
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -18,8 +18,13 @@
 //   where the bevels meet)
 // v11.1.9:
 // - Update reference to togpath1_qath_to_polypoints
+// v11.1.10
+// - Fix unifoot generation for short blocks
 //
 // TODO: 'chunk' bottom style
+// (currently can hack it by making chunk=atom, but that's kinda ugly)
+//
+// TODO: Fix weirdness with v6hc (x-debug it to see) when chunk=atom
 // 
 // TODO: 'atomic' bottom style
 
@@ -175,21 +180,24 @@ function tgx11_chunk_foot(size) =
 	let( u = togridlib3_decode([1,"u"]) )
 	let( offset=$tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
+	let( height = max(size[2], 8*u+3/32) )
 	tgx11__chunk_footlike([
 		[0*u - offset    , -2*u + offset*z41],
 		[4*u - offset*z41,  2*u + offset],
-		[size[2]         ,  2*u + offset]
+		[height          ,  2*u + offset]
 	], size=size);
 
 function tgx11_chunk_unifoot(size) =
+	echo("tgx11_chunk_unifoot", size=size)
 	let( u = togridlib3_decode([1,"u"]) )
 	let( offset=$tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
+	let( height = max(size[2], 8*u+3/32) )
 	tgx11__chunk_footlike([
 		[0*u - offset    , -1*u + offset],
 		[1*u - offset*z41, -1*u + offset],
 		[4*u - offset*z41,  2*u + offset],
-		[size[2]         ,  2*u + offset]
+		[height          ,  2*u + offset]
 	], size=size);
 
 /**
