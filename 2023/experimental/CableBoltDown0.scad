@@ -1,7 +1,9 @@
-// CableBoltDown0.2
+// CableBoltDown0.3
 // 
 // v0.2:
 // - cap, currently thicker than necessary
+// v0.3:
+// - Cap, fixed.
 
 mode = "block"; // [ "block", "cap" ]
 
@@ -13,7 +15,7 @@ block_size_ca = [[1, "chunk"], [1, "chunk"], [8, "u"]];
 
 // 2u would be fine for cap height, but TGx11.1Lib has trouble with it.
 // TODO: Fix that.
-cap_size_ca = [[1, "chunk"], [1, "chunk"], [4, "u"]];
+cap_size_ca = [[1, "chunk"], [1, "chunk"], [2, "u"]];
 
 
 use <../lib/TGx11.1Lib.scad>
