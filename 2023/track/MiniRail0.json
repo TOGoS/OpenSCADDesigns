@@ -27,6 +27,11 @@
 		"p1387 - clip w/ -0.3mm offset": {
 			"mode": "notch-clip",
 			"offset": "-0.3"
+		},
+		"p1403": {
+			"mode": "notch-clip",
+			"notch_width": "6.15",
+			"offset": "-0.3"
 		}
 	},
 	"fileFormatVersion": "1"
