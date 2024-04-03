@@ -1,23 +1,37 @@
-// CompactLidHolder1.1
+// CompactLidHolder1.2
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
+// 
+// v1.2:
+// - Add 'spacer' mode
 
+comb_length_chunks = 4;
+mode = "combs"; // ["combs", "spacer"]
+
+module __clh1__askjdniu24tr_end_params() { }
+
+use <../lib/TOGridLib3.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGVecLib0.scad>
+use <../lib/TGx11.1Lib.scad>
 
-inch = 25.4;
-u = inch/16;
-atom = 12.7;
+$togridlib3_unit_table = tgx11_get_default_unit_table();
 
-comb_thickness = 3.175;
+u = togridlib3_decode([1, "u"]);
+atom = togridlib3_decode([1, "atom"]);
 
-comb_length_u = 6*16;
+comb_thickness = togridlib3_decode([2, "u"]);
+
+comb_length_u = togridlib3_decode(comb_length_chunks, unit=[1, "u"]);
 comb_height_u = 3*16;
 
+bottom_segmentation = "none";
+
+$tgx11_offset = -0.1;
 $fn = $preview ? 16 : 48;
 
 comb_corner_ops = [["bevel", 2*u], ["round", 2*u]];
@@ -68,12 +82,74 @@ hole_positions = [
 
 hole = tog_holelib2_hole("THL-1001", depth=comb_thickness*2, inset=0.5);
 
+spacer_big_hole = tog_holelib2_hole("THL-1002", depth=50, inset=2*u, $fn=min($fn,48));
+spacer_small_hole = tog_holelib2_hole("THL-1001", depth=50, inset=2*u, $fn=min($fn,32));
+
 comb = ["difference",
 	plate,
 	for( hp=hole_positions ) ["translate", [hp[0], hp[1], comb_thickness], hole]
 ];
 
-togmod1_domodule(["union",
-	["translate", [0, 12.7,0], comb],
-	["translate", [0,-12.7,0], ["scale", [1,-1,1], comb]],
-]);
+spacer_length = togridlib3_decode([44,"u"]);
+spacer_width  = togridlib3_decode([24,"u"]);
+spacer_thickness = togridlib3_decode([1, "atom"]);
+spacer_end_hole_diameter = 3;
+spacer_end_hole_depth = 12;
+// spacer_long_end_hole  = ["rotate", [0,90,0], tphl1_make_z_cylinder(zrange=[-spacer_length, +spacer_length], d=spacer_end_hole_diameter)];
+spacer_short_end_hole = ["rotate", [0,90,0],
+	tphl1_make_z_cylinder(zds=[
+		[-spacer_end_hole_depth, 0],
+		[-spacer_end_hole_depth+3, spacer_end_hole_diameter], 
+		[ spacer_end_hole_depth-3, spacer_end_hole_diameter], 
+		[ spacer_end_hole_depth, 0],
+	], $fn=min($fn,16))
+];
+
+spacer_side_hole_depth = 3;
+spacer_side_hole_positions = [
+	for( y=[-spacer_width/2, spacer_width/2] ) for( xm=[round(-spacer_length/12.7/2) + 1 : 0.5 : round(spacer_length/12.7/2) - 0.9] )
+	[xm*12.7, y]
+];
+spacer_side_hole = ["rotate", [90,0,0],
+	tphl1_make_z_cylinder(zds=[
+		[-spacer_side_hole_depth, 0],
+		[-0.1                   , spacer_end_hole_diameter], 
+		[ 0.1                   , spacer_end_hole_diameter], 
+		[ spacer_side_hole_depth, 0],
+	], $fn=min($fn,16))
+];
+
+
+spacer_small_hole_positions = [
+	for( y=[-8*u, 8*u] ) for( xm=[round(-spacer_length/12.7/2) + 1 : 1 : spacer_length/12.7/2 - 0.5] )
+	[xm*12.7, y]
+];
+
+function make_spacer() = ["difference",
+	["intersection",
+		tphl1_make_rounded_cuboid([spacer_length, 24*u, spacer_thickness], r=[3*u, 3*u, 1*u], corner_shape="ovoid1"),
+		if( bottom_segmentation == "chatom" ) ["translate", [0,0,-spacer_thickness/2], tgx11_atomic_block_bottom(
+			[
+				[ceil(spacer_length/12.7), "atom"],
+				[ceil(spacer_width/12.7), "atom"],
+				[round(spacer_thickness*2/12.7), "atom"],
+			],
+			$tgx11_gender = "m"
+		)]
+	],
+	for( xm=[-0.5,0,0.5] ) ["translate", [xm*24*u, 0, spacer_thickness/2], spacer_big_hole],
+	//for( y=[-8*u, 8*u] ) ["translate", [0,y,0], spacer_long_end_hole],
+	for(ym=[-8 : 4 : 8]) for( xm=[-0.5,0.5] ) ["translate", [xm*spacer_length,ym*u,0], spacer_short_end_hole],
+	for(pos=spacer_small_hole_positions) ["translate", [pos[0], pos[1], spacer_thickness/2], spacer_small_hole],
+	for(pos=spacer_side_hole_positions) ["translate", pos, spacer_side_hole],
+];
+
+thing =
+	mode == "combs" ? ["union",
+		["translate", [0, 12.7,0], comb],
+		["translate", [0,-12.7,0], ["scale", [1,-1,1], comb]],
+	] :
+	mode == "spacer" ? make_spacer() :
+	assert(false, str("Unrecognized mode: '", mode, "'"));
+
+togmod1_domodule(thing);
