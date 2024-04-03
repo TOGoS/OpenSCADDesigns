@@ -1,4 +1,4 @@
-// LidHolder-v0.9
+// LidHolder-v0.10
 // 
 // TOGridPile-ish holder for wide mouth mason jar lids,
 // assuming that the lids have had stuff added to them
@@ -28,6 +28,9 @@
 //   downward by $tgx11_offset
 // v0.9:
 // - Inset extra space fillers a little bit
+// v0.10:
+// - Correct lidslot_height to be 1/4" instead of 1/8",
+//   and correct usage to halve it, for same end result
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -57,7 +60,7 @@ block_size = togridlib3_decode_vector(block_size_ca);
 
 inch = 25.4;
 lidslot_width  = 3.4*inch;
-lidslot_height = 1/8*inch;
+lidslot_height = 1/4*inch;
 lidslot_neck_width = 2.8*inch;
 lidslot_pitch = 3/8*inch;
 
@@ -95,11 +98,11 @@ tphl1_make_polyhedron_from_layer_function([
 	for( l=[-slot_count/2+0.5 : 1 : slot_count/2] )	each [
 		[(l-0.5)*lidslot_pitch                 , neckoff],
 		each lh_shape_wall(
-			l*lidslot_pitch - lidslot_height,
+			l*lidslot_pitch - lidslot_height/2,
 			neckoff, slotoff, 1
 		),
 		each lh_shape_wall(
-			l*lidslot_pitch + lidslot_height,
+			l*lidslot_pitch + lidslot_height/2,
 			slotoff, neckoff, 1
 		),
 	],
