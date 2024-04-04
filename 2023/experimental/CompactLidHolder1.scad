@@ -1,10 +1,12 @@
-// CompactLidHolder1.2
+// CompactLidHolder1.3
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
 // 
 // v1.2:
 // - Add 'spacer' mode
+// v1.3:
+// - Fix calculation of comb_length_u
 
 comb_length_chunks = 4;
 mode = "combs"; // ["combs", "spacer"]
@@ -26,7 +28,7 @@ atom = togridlib3_decode([1, "atom"]);
 
 comb_thickness = togridlib3_decode([2, "u"]);
 
-comb_length_u = togridlib3_decode(comb_length_chunks, unit=[1, "u"]);
+comb_length_u = togridlib3_decode([comb_length_chunks, "chunk"], unit=[1, "u"]);
 comb_height_u = 3*16;
 
 bottom_segmentation = "none";
