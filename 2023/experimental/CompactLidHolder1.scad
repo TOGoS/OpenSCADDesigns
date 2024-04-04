@@ -55,8 +55,8 @@ function make_comb_rath_u(backoff=0) = ["togpath1-rath",
 	for( x = [comb_length_u/2 - 11 : -6 : -comb_length_u/2 + 7] ) each [
 		["togpath1-rathnode", [x  , comb_height_u], each comb_tip_ops],
 		// Backoff = Y offset of 'back'; hardcoded multipliers based on assumed 3/28 slope follow:
-		["togpath1-rathnode", [x+3 - backoff*3/28, 14+backoff], each comb_inner_ops],
-		["togpath1-rathnode", [x-1 - backoff*3/28, 14+backoff], each comb_inner_ops],
+		["togpath1-rathnode", [x+3 - backoff*3/28, 20+backoff], each comb_inner_ops],
+		["togpath1-rathnode", [x-1 - backoff*3/28, 20+backoff], each comb_inner_ops],
 		["togpath1-rathnode", [x-4, comb_height_u], each comb_tip_ops],
 	],
 
