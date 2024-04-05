@@ -348,12 +348,17 @@ function togpath1__bevel(pa, pb, pc, bevel_size) =
 	let( bc_normalized = tcplx1_normalize(pc-pb) )
 	[pb + ba_normalized * bevel_size, pb + bc_normalized * bevel_size];
 
-function togpath1__offset(pa, pb, pc, dist) =
+// Given 3 points: pa,pb,pc, determine an offset vector
+// that when added to pb, will be `dist` from both pa-pb and pb-pc.
+function togpath1__offset_vector(pa, pb, pc, dist) =
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
 	let( ov_forward = tan(turn/2) )
 	let( ovec = tcplx1_multiply(ab_normalized, [0,-1]) + tcplx1_multiply(ab_normalized, [ov_forward,0]) )
-	[pb + ovec*dist];
+	ovec*dist;
+
+function togpath1__offset(pa, pb, pc, dist) =
+	[pb + togpath1__offset_vector(pa, pb, pc, dist)];
 
 function togpath1__round(pa, pb, pc, radius, force_fn=undef) =
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
@@ -413,3 +418,53 @@ function togpath1_offset_rath(rath,offset) =
 	assert(is_num(offset))
 	offset == 0 ? rath :
 	togpath1_map_rath_nodes(rath, function(rn) [each rn, ["offset", offset]]);
+
+
+// Calculate an offset vector from pa
+// given the next point, pb, and the angle
+// from pa-pb
+function togpath1__la_offset_vector(pa, pb, angle, length=1) =
+	let( ab = tcplx1_normalize(pb - pa) )
+	tcplx1_multiply( ab, [cos(angle)*length, sin(angle)*length] );
+
+// Make a zath by offsetting the given polyline to the right and left by r.
+// Convex corners are not beveled, so will be 'pointy'.
+function togpath1_polyline_to_zath(polyline, end_shape="square") =
+// end_shape would affect end offset vectors, which are currently
+// hardcoded to the 'square' shape.
+assert( end_shape == "square" )
+let( sqrt2 = sqrt(2) )
+["togpath1-zath",
+	for( i=[0 : 1 : len(polyline)-1] ) [
+		polyline[i],
+		i == 0               ? togpath1__la_offset_vector(polyline[0  ], polyline[1], -135, sqrt2) :
+		i == len(polyline)-1 ? togpath1__la_offset_vector(polyline[i-1], polyline[i], - 45, sqrt2) :
+		togpath1__offset_vector(polyline[i-1], polyline[i], polyline[i+1], 1)
+	],
+	for( i=[len(polyline)-1 : -1 : 0] ) [
+		polyline[i],
+		i == len(polyline)-1 ? togpath1__la_offset_vector(polyline[i], polyline[i-1], -135, sqrt2) :
+		i == 0               ? togpath1__la_offset_vector(polyline[1], polyline[0]  , - 45, sqrt2) :
+		togpath1__offset_vector(polyline[i+1], polyline[i], polyline[i-1], 1)
+	]
+];
+
+// Make a rath by offsetting the given polyline to the right and left by r.
+// Optionally rounds ends.
+// 
+// Convex corners are not beveled, so will be 'pointy'.
+// If you want wider turns, round the polyline before passing it in,
+// or maybe do some post-processing of the rath idk.
+// 
+// end_shape = "round"|"square", matching behavior of SVG's `stroke-linecap`
+// (may add 'butt' later)
+function togpath1_polyline_to_rath(polyline, r, end_shape="round") =
+assert( end_shape == "square" || end_shape == "round" )
+let( end_ops = end_shape == "round" ? [["round", r-0.1, round($fn/4)]] : [] )
+let( polylen = len(polyline) )
+let( zath = togpath1_polyline_to_zath(polyline, end_shape="square") )
+["togpath1-rath",
+	for( i=[1:1:len(zath)-1] ) let( p = zath[i] )
+		let( is_end_node = i == 1 || i == 1 + polylen-1 || i == 1 + polylen || i == len(zath)-1 )
+		["togpath1-rathnode", p[0] + p[1]*r, if(is_end_node) each end_ops]
+];
