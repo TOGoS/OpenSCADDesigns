@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p1411 - Annealing test beam": {
+			"$fn": "24",
+			"chunk_pitch": "12.7",
+			"corner_rounding_radius": "3.2",
+			"hole_diameter": "4",
+			"length_chunks": "15",
+			"thickness": "3.2"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
