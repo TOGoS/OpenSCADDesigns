@@ -1,4 +1,4 @@
-// LEDChannelClip
+// LEDChannelClip1.1
 // 
 // To hold the extruded aluminium 'LED strip channels'
 // against a gridbeam or other surface.
@@ -55,8 +55,8 @@ _flangefn > 0 ? [
 
 //the_cutout = togmod1_make_cuboid([channel_width, hull_size[1]*2, channel_height*2]);
 the_cutout = ["rotate", [90,0,0], tphl1_make_polyhedron_from_layer_function([
-	each lcc__flange_zds(-hull_width/2-0.5, 0, 3.175, -1),
-	each lcc__flange_zds( hull_width/2+0.5, 0, 3.175,  1),
+	each lcc__flange_zds(-hull_width/2-0.1, 0, 3.175, -1),
+	each lcc__flange_zds( hull_width/2+0.1, 0, 3.175,  1),
 ], function(funk)
 	rect_points([channel_width + funk[1], channel_height*2+funk[1]], funk[0])
 )];
