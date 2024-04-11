@@ -1,6 +1,9 @@
-// MirrorClip0.1
+// MirrorClip0.2
 // 
 // For mounting a mirror to the wall.
+// 
+// v0.2:
+// - Deeper inset, why not
 
 hole_style = "THL-1001"; // ["THL-1001", "THL-1002"]
 
@@ -16,7 +19,7 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
-hole = tog_holelib2_hole(hole_style, depth=hull_size[2]*2, inset=1);
+hole = tog_holelib2_hole(hole_style, depth=hull_size[2]*2, inset=3.175);
 
 thing = ["difference",
 	["translate", [0,0,hull_size[2]], ["intersection",
