@@ -1,9 +1,17 @@
 {
 	"parameterSets": {
-		"p1418 - Game controller hook": {
+		"p1418 - Game Controller Hook Take 1": {
 			"front_height_u": "16",
-			"outer_curve_radius_u": "999",
 			"outer_depth_u": "24",
+			"thickness_u": "2",
+			"total_height_u": "48",
+			"width_u": "40"
+		},
+		"p1419 - Game Controller Hook Take 2": {
+			"back_curve_radius_u": "999",
+			"front_curve_radius_u": "4",
+			"front_height_u": "8",
+			"outer_depth_u": "32",
 			"thickness_u": "2",
 			"total_height_u": "48",
 			"width_u": "40"

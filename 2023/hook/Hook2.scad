@@ -1,10 +1,15 @@
 // Hook2.0
+//
+// Changes:
+// v2.1
+// - Front/back curve radii separately configurable
 
 total_height_u = 48;
 front_height_u = 16;
 thickness_u    =  2;
 outer_depth_u  = 24;
-outer_curve_radius_u = 999;
+front_curve_radius_u = 999; // 0.01
+back_curve_radius_u  = 999; // 0.01
 width_u        = 24;
 
 module __asdmlkaslkd__end_params() { }
@@ -27,18 +32,20 @@ y2 = front_height_u*u;
 y3 = total_height_u*u;
 
 r_c = thickness/3;
-r_o = min(outer_curve_radius_u, y2-y0 - r_c - 0.25, (x2-x0)/2 - 0.25);
-r_i = max(r_o - thickness, 0);
+r_bo = min( back_curve_radius_u, y3-y0 - r_c - 0.25, (x2-x0)/2 - 0.25);
+r_fo = min(front_curve_radius_u, y2-y0 - r_c - 0.25, (x2-x0)/2 - 0.25);
+r_bi = max(r_bo - thickness, 0);
+r_fi = max(r_fo - thickness, 0);
 
 function make_hook_rath(y3) = ["togpath1-rath",
-	["togpath1-rathnode", [x3, y0], ["round", r_o]],
+	["togpath1-rathnode", [x3, y0], ["round", r_bo]],
 	["togpath1-rathnode", [x3, y3], ["round", r_c]],
 	["togpath1-rathnode", [x2, y3], ["round", r_c]],
-	["togpath1-rathnode", [x2, y1], ["round", r_i]],
-	["togpath1-rathnode", [x1, y1], ["round", r_i]],
+	["togpath1-rathnode", [x2, y1], ["round", r_bi]],
+	["togpath1-rathnode", [x1, y1], ["round", r_fi]],
 	["togpath1-rathnode", [x1, y2], ["round", r_c]],
 	["togpath1-rathnode", [x0, y2], ["round", r_c]],
-	["togpath1-rathnode", [x0, y0], ["round", r_o]],
+	["togpath1-rathnode", [x0, y0], ["round", r_fo]],
 ];
 
 z_corner_radius = min(hole_spacing, width/2-0.5);
