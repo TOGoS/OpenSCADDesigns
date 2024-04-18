@@ -1,4 +1,4 @@
-// CompactLidHolder1.7
+// CompactLidHolder1.9
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
@@ -15,9 +15,13 @@
 // - comb_depth_u is configurable
 // v1.7:
 // - Option for 1/2" square notches near ends of comb
+// v1.8:
+// - spacer3, spacer4
+// v1.9:
+// - Small holes in spacer2, spacer3, spacer4
 
 comb_length_chunks = 4;
-mode = "combs"; // ["combs", "spacer", "spacer2"]
+mode = "combs"; // ["combs", "spacer", "spacer2", "spacer3", "spacer4"]
 
 /* [Comb Options] */
 // Depth of comb, in 1/16"; 28 or 34 recommended
@@ -159,6 +163,7 @@ spacer_small_hole_positions = [
 	for( y=[-8*u, 8*u] ) for( xm=[round(-spacer_length/12.7/2) + 1 : 1 : spacer_length/12.7/2 - 0.5] )
 	[xm*12.7, y]
 ];
+spacer2_small_hole_positions = spacer_small_hole_positions;
 
 function make_spacer() = ["difference",
 	["intersection",
@@ -190,7 +195,7 @@ function make_spacer2_rath(corner_ops) = ["togpath1-rath",
 	["togpath1-rathnode", [-spacer_length/2, 0                        ], each corner_ops],
 ];
 
-function make_spacer2() = ["difference",
+function make_spacer2(end_hole_yus=[-8 : 4 : 8]) = ["difference",
 	tphl1_make_polyhedron_from_layer_function(
 		[
 			[-12*u  , -1],
@@ -201,7 +206,45 @@ function make_spacer2() = ["difference",
 		function(yo) [ for(p=togpath1_rath_to_polypoints(make_spacer2_rath([["round", 2*u], ["offset", yo[1]]]))) [p[0], -yo[0], p[1]] ]
 	),
 	for( xm=[-0.5,0,0.5] ) ["translate", [xm*24*u, 0, 2*u], spacer_big_hole],
-	for(ym=[-8 : 4 : 8]) for( xm=[-0.5,0.5] ) ["translate", [xm*spacer_length,ym*u,spacer_thickness/2], spacer_short_end_hole],
+	for(ym=end_hole_yus) for( xm=[-0.5,0.5] ) ["translate", [xm*spacer_length,ym*u,spacer_thickness/2], spacer_short_end_hole],
+	for(pos=spacer2_small_hole_positions) ["translate", [pos[0], pos[1], 2*u], spacer_small_hole],
+];
+
+function make_spacer3() =
+let( comb_x0_u = -24, comb_x1_u = -22 )
+let( wall_x0_u = -32, wall_x1_u = -28 )
+let( dubmarg = 0.2 ) // 'double margin' on each side of comb
+let( tun=["rotate", [0,90,0], tphl1_make_z_cylinder(d=5, zrange=[-12,12])] )
+["difference",
+	["union",
+		make_spacer2(end_hole_yus=[-8,8]),
+		for( xs=[1,-1] ) ["scale", [xs,1,1], ["union",
+			["translate", [(wall_x1_u+comb_x0_u-dubmarg)/2*u,0,4*u], ["difference",
+				tphl1_make_rounded_cuboid([(comb_x0_u-dubmarg-wall_x1_u)*u, spacer_width, spacer_thickness], 1),
+				for(ym=[-8,8]) ["translate", [0,ym*u,0], tun],
+			]],
+			["translate", [(comb_x0_u+comb_x1_u)/2*u,0,4*u], tphl1_make_rounded_cuboid([8*u, 8*u, spacer_thickness], 1*u)],
+		]],
+	],
+	for( xm=[1,-1] ) ["translate", [wall_x0_u*u*xm,0,spacer_thickness/2], spacer_short_end_hole]
+];
+
+function make_spacer4() =
+let( comb_x0_u = -24, comb_x1_u = -22 )
+let( wall_x0_u = -32, wall_x1_u = -28 )
+let( tun=["rotate", [0,90,0], tphl1_make_z_cylinder(d=5, zrange=[-12,12])] )
+["difference",
+	["union",
+		make_spacer2(end_hole_yus=[-8,8]),
+		for( xs=[1,-1] ) ["scale", [xs,1,1], ["union",
+			/*["translate", [(wall_x1_u+comb_x0_u-0.2)/2*u,0,4*u], ["difference",
+				tphl1_make_rounded_cuboid([(comb_x0_u-0.2-wall_x1_u)*u, spacer_width, spacer_thickness], 1),
+				for(ym=[-8,8]) ["translate", [0,ym*u,0], tun],
+			]],*/
+			["translate", [(wall_x1_u+comb_x1_u+4)/2*u,0,4*u], tphl1_make_rounded_cuboid([(comb_x1_u+4-wall_x1_u)*u, 8*u, spacer_thickness], 1*u)],
+		]],
+	],
+	for( xm=[1,-1] ) ["translate", [wall_x0_u*u*xm,0,spacer_thickness/2], spacer_short_end_hole]
 ];
 
 thing =
@@ -211,6 +254,8 @@ thing =
 	] :
 	mode == "spacer"  ? ["translate", [0,0,spacer_thickness/2], make_spacer()] :
 	mode == "spacer2" ? make_spacer2() :
+	mode == "spacer3" ? make_spacer3() :
+	mode == "spacer4" ? make_spacer4() :
 	assert(false, str("Unrecognized mode: '", mode, "'"));
 
 togmod1_domodule(thing);
