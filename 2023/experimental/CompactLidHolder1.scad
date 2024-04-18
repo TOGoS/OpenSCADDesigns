@@ -1,4 +1,4 @@
-// CompactLidHolder1.6
+// CompactLidHolder1.7
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
@@ -13,11 +13,17 @@
 // - Add 'spacer2' mode
 // v1.6:
 // - comb_depth_u is configurable
+// v1.7:
+// - Option for 1/2" square notches near ends of comb
 
 comb_length_chunks = 4;
 mode = "combs"; // ["combs", "spacer", "spacer2"]
+
+/* [Comb Options] */
 // Depth of comb, in 1/16"; 28 or 34 recommended
 comb_depth_u = 28;
+comb_little_notches_enabled = true;
+comb_big_notches_enabled = false;
 
 module __clh1__askjdniu24tr_end_params() { }
 
@@ -36,7 +42,8 @@ atom = togridlib3_decode([1, "atom"]);
 
 comb_thickness = togridlib3_decode([2, "u"]);
 
-comb_length_u = togridlib3_decode([comb_length_chunks, "chunk"], unit=[1, "u"]);
+// TODO: Shouldn't need to 'round'; decode should be precise when possible!
+comb_length_u = round(togridlib3_decode([comb_length_chunks, "chunk"], unit=[1, "u"]));
 comb_height_u = 3*16;
 
 bottom_segmentation = "none";
@@ -50,14 +57,31 @@ comb_tip_ops = [["round", 1]];
 
 function make_comb_rath_u(depth_u) =
 ["togpath1-rath",
-	for( x=[-comb_length_u/2 + 8 : 8 : comb_length_u/2-8] ) each [
+	for( x=[-comb_length_u/2 + 8 : 8 : comb_length_u/2-8] ) each
+	let( mode =
+		comb_big_notches_enabled && (x == -comb_length_u/2+8  || x == comb_length_u/2-16) ? "up" :
+		comb_big_notches_enabled && (x == -comb_length_u/2+16 || x == comb_length_u/2- 8) ? "down" :
+		comb_little_notches_enabled ? "notch" : "flat"
+	)
+	mode == "notch" ? [
 		// TOGridPile atomic bottom!!
 		// (could be really fancy and do it in the Z direction also. P-:)
 		["togpath1-rathnode", [x-2, 0], ["round", 2*u]],
 		["togpath1-rathnode", [x  , 2]],
 		["togpath1-rathnode", [x+2, 0], ["round", 2*u]],
-	],
-
+	] :
+	mode == "up" ? [
+		["togpath1-rathnode", [x-2, 0], ["round", 2*u]],
+		["togpath1-rathnode", [x  , 2], ["round", 2*u]],
+		["togpath1-rathnode", [x  , 8], ["round", 1*u]],
+	] :
+	mode == "down" ? [
+		["togpath1-rathnode", [x  , 8], ["round", 1*u]],
+		["togpath1-rathnode", [x  , 2], ["round", 2*u]],
+		["togpath1-rathnode", [x+2, 0], ["round", 2*u]],
+	] :
+	[],
+	
 	["togpath1-rathnode", [ comb_length_u/2,             0], each comb_corner_ops],
 	["togpath1-rathnode", [ comb_length_u/2, comb_height_u], each comb_corner_ops],
 
