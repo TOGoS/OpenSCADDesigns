@@ -1,4 +1,4 @@
-// CompactLidHolder1.5
+// CompactLidHolder1.6
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
@@ -11,9 +11,13 @@
 // - Fix comb back Y position
 // v1.5:
 // - Add 'spacer2' mode
+// v1.6:
+// - comb_depth_u is configurable
 
 comb_length_chunks = 4;
 mode = "combs"; // ["combs", "spacer", "spacer2"]
+// Depth of comb, in 1/16"; 28 or 34 recommended
+comb_depth_u = 28;
 
 module __clh1__askjdniu24tr_end_params() { }
 
@@ -44,7 +48,8 @@ comb_corner_ops = [["bevel", 2*u], ["round", 2*u]];
 comb_inner_ops = [["round", 2]];
 comb_tip_ops = [["round", 1]];
 
-function make_comb_rath_u(backoff=0) = ["togpath1-rath",
+function make_comb_rath_u(depth_u) =
+["togpath1-rath",
 	for( x=[-comb_length_u/2 + 8 : 8 : comb_length_u/2-8] ) each [
 		// TOGridPile atomic bottom!!
 		// (could be really fancy and do it in the Z direction also. P-:)
@@ -59,8 +64,8 @@ function make_comb_rath_u(backoff=0) = ["togpath1-rath",
 	for( x = [comb_length_u/2 - 11 : -6 : -comb_length_u/2 + 7] ) each [
 		["togpath1-rathnode", [x  , comb_height_u], each comb_tip_ops],
 		// Backoff = Y offset of 'back'; hardcoded multipliers based on assumed 3/28 slope follow:
-		["togpath1-rathnode", [x+3 - backoff*3/28, 20+backoff], each comb_inner_ops],
-		["togpath1-rathnode", [x-1 - backoff*3/28, 20+backoff], each comb_inner_ops],
+		["togpath1-rathnode", [x  +depth_u*3/28, comb_height_u-depth_u], each comb_inner_ops],
+		["togpath1-rathnode", [x-4+depth_u*3/28, comb_height_u-depth_u], each comb_inner_ops],
 		["togpath1-rathnode", [x-4, comb_height_u], each comb_tip_ops],
 	],
 
@@ -72,13 +77,13 @@ function scale_rath_points(rath, scale) = [rath[0],
 	for( i=[1:1:len(rath)-1] ) [rath[i][0], rath[i][1]*scale, for(j=[2:1:len(rath[i])-1]) rath[i][j]]
 ];
 
-function make_comb_rath(backoff=0) = scale_rath_points(make_comb_rath_u(backoff), u);
+function make_comb_rath(comb_depth_u=28) = scale_rath_points(make_comb_rath_u(comb_depth_u), u);
 
 plate = tphl1_make_polyhedron_from_layer_function([
 	[0               , 0],
 	[comb_thickness/2, 1],
 	[comb_thickness  , 0],
-], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(make_comb_rath(zo[1])), zo[0]));
+], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(make_comb_rath(comb_depth_u-zo[1]/u)), zo[0]));
 
 hole_positions = [
 	for( xu=[-comb_length_u/2 + 4 : 8 : comb_length_u/2-3] ) [xu*u, 4*u],
