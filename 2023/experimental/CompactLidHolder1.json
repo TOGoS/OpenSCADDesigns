@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p1421 - deep, notched combs": {
+			"mode": "combs",
+			"comb_length_chunks": "4",
+			"comb_depth_u": "34",
+			"comb_big_notches_enabled": "true",
+			"comb_little_notches_enabled": "true"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
