@@ -1,4 +1,4 @@
-// CompactLidHolder1.9
+// CompactLidHolder1.10
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
@@ -19,9 +19,11 @@
 // - spacer3, spacer4
 // v1.9:
 // - Small holes in spacer2, spacer3, spacer4
+// v1.10:
+// - Add 'sidepanel' mode
 
 comb_length_chunks = 4;
-mode = "combs"; // ["combs", "spacer", "spacer2", "spacer3", "spacer4"]
+mode = "combs"; // ["combs", "spacer", "spacer2", "spacer3", "spacer4", "sidepanel"]
 
 /* [Comb Options] */
 // Depth of comb, in 1/16"; 28 or 34 recommended
@@ -34,6 +36,7 @@ module __clh1__askjdniu24tr_end_params() { }
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGVecLib0.scad>
@@ -113,7 +116,7 @@ plate = tphl1_make_polyhedron_from_layer_function([
 	[comb_thickness  , 0],
 ], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(make_comb_rath(comb_depth_u-zo[1]/u)), zo[0]));
 
-hole_positions = [
+comb_hole_positions = [
 	for( xu=[-comb_length_u/2 + 4 : 8 : comb_length_u/2-3] ) [xu*u, 4*u],
 	[(-comb_length_u/2+4)*u, 12*u],
 	for( yu=[12 : 8 : comb_height_u-1] ) [(comb_length_u/2-4)*u, yu*u],
@@ -126,7 +129,7 @@ spacer_small_hole = tog_holelib2_hole("THL-1001", depth=50, inset=0.1, overhead_
 
 comb = ["difference",
 	plate,
-	for( hp=hole_positions ) ["translate", [hp[0], hp[1], comb_thickness], hole]
+	for( hp=comb_hole_positions ) ["translate", [hp[0], hp[1], comb_thickness], hole]
 ];
 
 spacer_length = togridlib3_decode([44,"u"]);
@@ -247,6 +250,35 @@ let( tun=["rotate", [0,90,0], tphl1_make_z_cylinder(d=5, zrange=[-12,12])] )
 	for( xm=[1,-1] ) ["translate", [wall_x0_u*u*xm,0,spacer_thickness/2], spacer_short_end_hole]
 ];
 
+function make_sidepanel() =
+let(length = togridlib3_decode([comb_length_chunks, "chunk"]))
+let(height = 3*25.4)
+let(thickness = 2*u)
+let(dp = 19.05)
+let(diamond = togmod1_make_polygon([[0,-8],[8,0],[0,8],[-8,0]]))
+["difference",
+	togmod1_linear_extrude_z([0, thickness], ["difference",
+		togmod1_make_polygon(togpath1_rath_to_polypoints(["togpath1-rath",
+			["togpath1-rathnode", [  length/2, -height/2], each comb_corner_ops],
+			["togpath1-rathnode", [  length/2,  height/2], each comb_corner_ops],
+			["togpath1-rathnode", [ -length/2,  height/2], each comb_corner_ops],
+			["togpath1-rathnode", [ -length/2, -height/2], each comb_corner_ops],
+		])),
+		
+		for( ym=[-round(height/dp)/2+1 : 1 : round(height/dp)/2-1] )
+		for( xm=[-round(length/dp)/2+0.5 : 1 : round(length/dp)/2-0.5] )
+		["translate", [xm*dp, ym*dp, 0], diamond],
+		
+		for( ym=[-round(height/dp)/2+1.5 : 1 : round(height/dp)/2-1.5] )
+		for( xm=[-round(length/dp)/2+1 : 1 : round(length/dp)/2-1] )
+		["translate", [xm*dp, ym*dp, 0], diamond]
+	]),
+	
+	for( ym=[-round(height/12.7)/2 + 0.5, round(height/12.7)/2-0.5] )
+	for( xm=[-round(length/12.7)/2 + 0.5 : 1 : length/12.7/2] )
+	["translate", [xm*12.7, ym*12.7, thickness], hole]
+];
+
 thing =
 	mode == "combs" ? ["union",
 		["translate", [0, 12.7,0], comb],
@@ -256,6 +288,7 @@ thing =
 	mode == "spacer2" ? make_spacer2() :
 	mode == "spacer3" ? make_spacer3() :
 	mode == "spacer4" ? make_spacer4() :
+	mode == "sidepanel" ? make_sidepanel() :
 	assert(false, str("Unrecognized mode: '", mode, "'"));
 
 togmod1_domodule(thing);
