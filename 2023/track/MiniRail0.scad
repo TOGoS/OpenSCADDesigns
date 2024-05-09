@@ -1,4 +1,4 @@
-// MiniRail0.11
+// MiniRail0.11.1
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -28,6 +28,8 @@
 // v0.11:
 // - For notch clips, $tgx11_offset applies only to width of trapezoid
 // - Additional cutout in lower-left corner of notch clip trapezoid
+// v0.11.1:
+// - Minor refactoring to make it easier to experiment with different rail sizes
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "miniclip", "jammer", "notch-clip"]
@@ -36,6 +38,10 @@ alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
 clip_width = 12.7;
 notch_width = 6.35;
+
+rail_thickness_u =  4;
+rail_width_u     = 12;
+
 offset = -0.1;
 
 use <../lib/TOGHoleLib2.scad>
@@ -46,18 +52,29 @@ use <../lib/TOGPolyhedronLib1.scad>
 
 module ___edasdkn123und_end_params() { }
 
-u = 25.4/16;
+u_num = 25.4;
+u_den = 16;
+
+u = u_num / u_den;
 chunk_pitch = 38.1;
 mhole_pitch = chunk_pitch;
 $fn = $preview ? 12 : 48;
 $tgx11_offset = offset;
 
-function make_minirail_profile_rath(tap=0, notch=0, off=0) =
+function make_minirail_profile_rath(
+	tap = 0,
+	notch = 0,
+	off = 0,
+	w = rail_width_u    *u_num/u_den,
+	h = rail_thickness_u*u_num/u_den
+) =
+let( hw = w/2 )
+let( hh = h/2 )
 ["togpath1-rath",
-	["togpath1-rathnode", [-8*u, -2*u + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
-	["togpath1-rathnode", [+8*u, -2*u + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
-	["togpath1-rathnode", [+4*u + notch*2*u, +2*u + tap - notch*2*u], ["offset", off+tap]],
-	["togpath1-rathnode", [-4*u - notch*2*u, +2*u + tap - notch*2*u], ["offset", off+tap]],
+	["togpath1-rathnode", [-hw-hh, -hh + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
+	["togpath1-rathnode", [+hw+hh, -hh + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
+	["togpath1-rathnode", [+hw-hh + notch*hh, +hh + tap - notch*hh], ["offset", off+tap]],
+	["togpath1-rathnode", [-hw+hh - notch*hh, +hh + tap - notch*hh], ["offset", off+tap]],
 ];
 
 function make_minirail_hull(
