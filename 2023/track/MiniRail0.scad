@@ -1,4 +1,4 @@
-// MiniRail0.12
+// MiniRail0.13
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -32,11 +32,14 @@
 // - Minor refactoring to make it easier to experiment with different rail sizes
 // v0.12:
 // - Add 'spacer' mode
+// v0.13:
+// - Add 2mm hole mode, which is kinda weird
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip"]
-hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
-alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
+hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002","2mm"]
+alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002","2mm"]
+hole_pattern = "chunk"; // ["chunk", "atom"]
 notches_enabled = true;
 clip_width = 12.7;
 notch_width = 6.35;
@@ -59,7 +62,8 @@ u_den = 16;
 
 u = u_num / u_den;
 chunk_pitch = 38.1;
-mhole_pitch = chunk_pitch;
+atom_pitch  = 12.7;
+notch_spacing = chunk_pitch/2;
 $fn = $preview ? 12 : 48;
 $tgx11_offset = offset;
 
@@ -105,19 +109,25 @@ tphl1_make_polyhedron_from_layer_function([
 	[ for(yz=yzpoints) [lon[0], yz[0], yz[1]] ]
 );
 
-mhole = ["rotate", [180,0,0], tog_holelib2_hole(hole_type, inset=2)];
-alt_mhole = ["rotate", [180,0,0], tog_holelib2_hole(alt_hole_type, inset=2)];
+function mekhole(hole_type) =
+	hole_type == "2mm" ? tphl1_make_z_cylinder(d=2, zrange=[-10, 10]) :
+	tog_holelib2_hole(hole_type, inset=2);
+
+mhole = ["rotate", [180,0,0], mekhole(hole_type)];
+alt_mhole = ["rotate", [180,0,0], mekhole(alt_hole_type)];
 
 function make_minirail(length) =
+let( mhole_pitch = hole_pattern == "chunk" ? chunk_pitch : atom_pitch )
+let( xm0offset   = hole_pattern == "chunk" ? 0.5 : 0.25 )
 let( length_mholes = round(length/mhole_pitch) )
 ["difference",
 	["translate", [0, 0, 2*u], make_minirail_hull(
 		length,
 		notch_width = notches_enabled ? 6.35 : 0,
-		notch_spacing = mhole_pitch / 2
+		notch_spacing = notch_spacing
 	)],
-	for( xm=[-length_mholes/2+0.5 : 1 : length_mholes/2-0.4] ) ["translate", [xm*mhole_pitch, 0, 0], mhole],
-	for( xm=[-length_mholes/2+1   : 1 : length_mholes/2-0.9] ) ["translate", [xm*mhole_pitch, 0, 0], alt_mhole],
+	for( xm=[-length_mholes/2+xm0offset     : 1 : length_mholes/2-xm0offset+0.1] ) ["translate", [xm*mhole_pitch, 0, 0], mhole],
+	for( xm=[-length_mholes/2+xm0offset+0.5 : 1 : length_mholes/2-xm0offset+0.1] ) ["translate", [xm*mhole_pitch, 0, 0], alt_mhole],
 ];
 
 outer_rad=4*u;
