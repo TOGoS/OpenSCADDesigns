@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p1425 - 1\" spacer": {
+			"mode": "spacer",
+			"rail_offset": "-0.1",
+			"width": "25.4"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
