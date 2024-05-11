@@ -1,8 +1,12 @@
-// MiniRailHanger0.1
+// MiniRailHanger0.2
 // 
 // Can I use a MiniRail as a tiny French cleat?
 // This hanger is designed to hold one corner
 // (print two to hang both corners) of my 4x4 USB switcher.
+// 
+// Versions:
+// v0.2:
+// - Fix placement of top hole
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -72,6 +76,6 @@ rvole = ["rotate", [0, 90, 0], vole];
 
 togmod1_domodule(["difference",
 	hanger_body,
-	for( ym=[-8, -36, -60] )
+	for( ym=[-12, -36, -60] )
 	["translate", [6*u, ym*u, 6*u], rvole]
 ]);
