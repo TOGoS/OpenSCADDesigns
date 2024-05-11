@@ -1,4 +1,4 @@
-// MiniRail0.11.1
+// MiniRail0.12
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -30,9 +30,11 @@
 // - Additional cutout in lower-left corner of notch clip trapezoid
 // v0.11.1:
 // - Minor refactoring to make it easier to experiment with different rail sizes
+// v0.12:
+// - Add 'spacer' mode
 
 length_chunks = 3;
-mode = "rail"; // ["rail", "clip", "miniclip", "jammer", "notch-clip"]
+mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip"]
 hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
 alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
@@ -191,6 +193,19 @@ function make_miniclip_rath() = ["togpath1-rath",
 	["togpath1-rathnode", [-10*u, -12*u], each iops],
 ];
 
+function make_spacer_rath() = ["togpath1-rath",
+	["togpath1-rathnode", [ 13*u,  -6*u], each lops],
+	["togpath1-rathnode", [  7*u,   0*u], each cops],
+	
+	["togpath1-rathnode", [  4*u,   0*u], each oops, each cops],
+	["togpath1-rathnode", [  8*u,  -4*u], each oops           ],
+	["togpath1-rathnode", [- 8*u,  -4*u], each oops           ],
+	["togpath1-rathnode", [- 4*u,   0*u], each oops, each cops],
+
+	["togpath1-rathnode", [- 7*u,   0*u], each cops],
+	["togpath1-rathnode", [-13*u,  -6*u], each lops],
+];
+
 function make_notch_clip_rath() =
 let( f = $tgx11_offset )
 let( f2 = (sqrt(2)-1)*f )
@@ -227,6 +242,7 @@ togmod1_domodule(
 	mode == "rail"       ? the_rail :
 	mode == "clip"       ? make_cliplike(make_clip_rath(), clip_width) :
 	mode == "miniclip"   ? make_cliplike(make_miniclip_rath(), clip_width) :
+	mode == "spacer"     ? make_cliplike(make_spacer_rath(), clip_width) :
 	mode == "jammer"     ? make_cliplike(make_jammer_rath()    , notch_width) :
 	mode == "notch-clip" ? make_cliplike(make_notch_clip_rath(), notch_width) :
 	assert(false, str("Unrecognized mode: '", mode, "'"))
