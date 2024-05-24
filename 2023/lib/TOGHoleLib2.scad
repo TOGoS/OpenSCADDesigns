@@ -1,4 +1,4 @@
-// TOGHoleLib2.8
+// TOGHoleLib2.9
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -27,31 +27,36 @@
 // v2.8:
 // - Slight refactor to use tphl1_make_z_cylinder instead of duplicating it
 // - THL1006, a counterbored hole which can flange at the surface
+// v2.9:
+// - Fix so that countersinks with negative insets work
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
 
 function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
 	assert(bore_d <= neck_d, str("bore_d (", bore_d, ") > neck_d (", neck_d, ")"))
+	let( small_positive_z = max(0, -inset)+0.01 ) // Z just above surface, or top of counterbore edge, whichever is higher
+	assert(overhead_bore_height > small_positive_z)
 	// TODO: Fix to actually use bore_d!
 	tphl1_make_z_cylinder(zds=[
 		[-depth       , bore_d],
 		[-head_h-inset, bore_d],
 		[-head_h-inset, neck_d],
 		[       -inset, surface_d],
-		[   0.01      , surface_d],
+		[small_positive_z, surface_d],
 		if( overhead_bore_d > surface_d ) [ 0.01, overhead_bore_d ],
 		// Taper up to overhead_bore_d
 		[overhead_bore_height, overhead_bore_d]
 	]);
 
-function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=undef, overhead_bore_d=0, overhead_bore_height=1, inset=0.01) =
+function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=undef, overhead_bore_d=0, overhead_bore_height=undef, inset=0.01) =
 	let( adjusted_bore_d = is_undef(bore_d) ? neck_d : bore_d )
 	let( adjusted_neck_d = adjusted_bore_d < neck_d ? neck_d : adjusted_bore_d )
 	let( adjusted_head_h =
 		 adjusted_neck_d == neck_d ? head_h :
 		 head_h * (1 - (adjusted_neck_d - neck_d)/(surface_d - neck_d)) )
 	let(_inset = tog_holelib2__coalesce(inset, 0.01))
+	let(_overhead_bore_height = is_undef(overhead_bore_height) ? max(0, -inset) + 1 : overhead_bore_height)
 	tog_holelib2__countersunk_hole_2(
 		surface_d = surface_d,
 		neck_d    = adjusted_neck_d,
@@ -59,7 +64,7 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 		depth     = depth,
 		bore_d    = adjusted_bore_d,
 		overhead_bore_d = max(surface_d, tog_holelib2__coalesce(overhead_bore_d,0)),
-		overhead_bore_height = overhead_bore_height,
+		overhead_bore_height = _overhead_bore_height,
 		inset     = _inset
 	);
 
