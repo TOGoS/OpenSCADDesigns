@@ -1,0 +1,26 @@
+{
+	"parameterSets": {
+		"p1430 - simple rail demo": {
+			"atom_pitch_u": "4",
+			"countersink_inset": "-0.5",
+			"mode": "simple-rail",
+			"panel_edge_offset": "-0.2",
+			"panel_hole_style": "number4-counterbored",
+			"panel_size_atoms": "[5, 5]",
+			"panel_thickness_u": "1",
+			"simple_rail_height_u": "8"
+		},
+		"p1431 - simple panel demo": {
+			"atom_pitch_u": "4",
+			"countersink_inset": "-0.5",
+			"mode": "panel",
+			"panel_edge_offset": "-0.2",
+			"panel_hole_style": "number4-counterbored",
+			"panel_size_atoms": "[6, 6]",
+			"panel_thickness_u": "1",
+			"simple_rail_height_u": "8"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}

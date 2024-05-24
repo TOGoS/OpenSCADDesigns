@@ -2,12 +2,18 @@
 // 
 // "What if TOGRack, but on a 1/4-inch grid and #4 screws?"
 
+mode = "panel"; // ["panel", "simple-rail"]
+
 countersink_inset = 0.1;
 atom_pitch_u = 4;
 panel_thickness_u = 2;
 panel_size_atoms = [11,11];
 panel_hole_style = "number4-straight"; // ["none","number4-straight", "number4-counterbored"]
 panel_edge_offset = -0.2;
+
+/* [Simple rail] */
+
+simple_rail_height_u = 12;
 
 module __1oij2eo1in__end_params() { }
 
@@ -75,7 +81,27 @@ panel = ["difference",
 	], phole]
 ];
 
-togmod1_domodule(panel);
+simple_rail_height = u_to_mm(simple_rail_height_u);
+
+simple_rail_hole = tphl1_make_z_cylinder(d=2, zrange=[-simple_rail_height,simple_rail_height]);
+
+simple_rail = ["difference",
+	tphl1_make_rounded_cuboid([
+		atom_to_mm(panel_size_atoms[0]),
+		atom_to_mm(1),
+		simple_rail_height
+	], r=[atom_to_mm(1/2), atom_to_mm(1/2), 0]),
+
+	for( xm=[-panel_size_atoms[0]/2+0.5 : 1 : panel_size_atoms[0]/2] )
+	["translate", [atom_to_mm(xm), 0, 0], simple_rail_hole]
+];
+
+thing =
+	mode == "panel" ? panel :
+	mode == "simple-rail" ? simple_rail :
+	assert(false, str("Unrecognized mode: '", mode, "'"));
+
+togmod1_domodule(thing);
 
 // Good atom size divides into gridbeam sizes - 1/4".
 // That seems to limit us to 1/4".  :-P
