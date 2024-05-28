@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p1432": {
+			"inner_offset": "-0.2",
+			"lip_height": "1.5875",
+			"outer_offset": "-0.1",
+			"size_chunks": "[2, 2, 1]"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
