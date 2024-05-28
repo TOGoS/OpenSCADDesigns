@@ -4,6 +4,7 @@ size_chunks = [1,2,1];
 outer_offset = -0.1; // 0.1
 inner_offset = -0.2; // 0.1
 lip_height = 1.5875; // 0.0001
+bottom_segmentation = "atom"; // ["atom","chatom","none"]
 
 module __tr2c0__end_params() { }
 
@@ -48,7 +49,7 @@ function rack_hull(nsize, lip_height) =
 	let(hsize = [nsize[0] - 4*u, nsize[1] - 14*u])
 	let(csize = [nsize[0] - 3*u, nsize[1] -  3*u])
 	tphl1_make_polyhedron_from_layer_function([
-		[      -1, ["b", nsize,   outer_offset]],
+		[       0, ["b", nsize,   outer_offset]],
 		[ liptopz, ["b", nsize,   outer_offset]],
 		[ liptopz, ["b", nsize,-u-inner_offset]],
 		[   rackz, ["b", nsize,-u-inner_offset]],
@@ -78,7 +79,7 @@ function rack(size_ca) =
 	let( rackz = size[2] - 6.35 )
 	["difference",
 		["intersection",
-			tgx11_atomic_block_bottom([[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]]),
+			if( bottom_segmentation != "none" ) tgx11_atomic_block_bottom([[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]], segmentation=bottom_segmentation),
 			rack_hull(size_chunks*chunk_pitch, lip_height=lip_height)
 		],
 	

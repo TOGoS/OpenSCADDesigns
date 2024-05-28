@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.11
+// TGx11.1Lib - v11.1.12
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -24,13 +24,11 @@
 // - tgx11_atomic_block_bottom takes atom size into account for v6hcs,
 //   which might screw up some designs that were (ab)using it to make
 //   chunk-segmented bottoms!
-//
+// v11.1.12:
+// - Add support for foot segmentation="chatom"
+// 
 // TODO: 'chunk' bottom style
 // (currently can hack it by making chunk=atom, but that's kinda ugly)
-//
-// TODO: Fix weirdness with v6hc (x-debug it to see) when chunk=atom
-// 
-// TODO: 'atomic' bottom style
 
 module __tgx11lib_end_params() { }
 
@@ -204,27 +202,52 @@ function tgx11_chunk_unifoot(size) =
 		[height          ,  2*u + offset]
 	], size=size);
 
+function tgx11_chunk_column(size) =
+	let( u = togridlib3_decode([1,"u"]) )
+	let( offset=$tgx11_offset )
+	let( z41 = sqrt(2) - 1 )
+	let( height = max(size[2], 8*u+3/32) )
+	tgx11__chunk_footlike([
+		[0*u - offset    , -1*u + offset],
+		[height          , -1*u + offset]
+	], size=size);
+
+
 /**
  * 'atomic' foot shape + enough solid stuff above to fully fill the rest of the block and goa bit beyond.
  * Intended to be intersected with a block hull that is no larger than block_size
  */
-function tgx11_atomic_block_bottom(block_size_ca, bottom_shape="footed") =
+function tgx11_atomic_block_bottom(
+	block_size_ca,
+	bottom_shape = "footed",
+	segmentation = "atom",
+) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
+let(block_size_chunks = togridlib3_decode_vector(block_size_ca, [1, "chunk"]))
 let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon(
 	togridlib3_decode_vector([[1, "atom"], [1,"atom"]]),
 	gender=$tgx11_gender, offset=$tgx11_offset
 )])
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
+let(chunk_xms = [-block_size_chunks[0]/2+0.5:1:block_size_chunks[0]/2])
+let(chunk_yms = [-block_size_chunks[1]/2+0.5:1:block_size_chunks[1]/2])
 let(u = togridlib3_decode([1,"u"]))
 let(bevel_size = togridlib3_decode([1,"tgp-standard-bevel"]))
 let(atom = togridlib3_decode([1,"atom"]))
+let(chunk = togridlib3_decode([1,"chunk"]))
 let(atom_foot =
-	bottom_shape == "footed" ? tgx11_chunk_unifoot([atom,atom,block_size[2]+3/32]) :
+	bottom_shape == "footed" ? (
+		// If 'chatomic', then the chunk will provide the bevel;
+		// simplify things by letting atoms be straight:
+		segmentation == "chatom" ? tgx11_chunk_column([atom,atom,block_size[2]+3/32]) :
+		tgx11_chunk_unifoot([atom,atom,block_size[2]+3/32])
+	):
 	bottom_shape == "beveled" ? tgx11_chunk_foot([atom,atom,block_size[2]+3/32]) :
 	assert(false, str("Unrecognized bottom_shape '", bottom_shape, "' (expected 'footed' or 'beveled')"))
 )
+let(chunk_beveled_foot = tgx11_chunk_foot([chunk,chunk,block_size[2]+2.5/32]))
 let(v6hc_y = togmod1_linear_extrude_y([-block_size[1]/2+6, block_size[1]/2-6], v6hc))
 let(v6hc_x = togmod1_linear_extrude_x([-block_size[0]/2+6, block_size[0]/2-6], v6hc))
 let(body_z0 = bevel_size-$tgx11_offset*sqrt(2)) // Seems to work, though I didn't actually do the math <_<
@@ -240,13 +263,21 @@ let(body_z1 = block_size[2]+1+1/32)
 	// Chunk body
 	["translate", [0,0,(body_z0+body_z1)/2], togmod1_make_cuboid([
 		block_size[0]-atom, block_size[1]-atom,
-		body_z1-body_z0])]
+		body_z1-body_z0])],
+	
+	if( segmentation == "chatom" ) for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*chunk, ym*chunk, 0], chunk_beveled_foot],
 ];
 
 function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : $tgx11_gender;
 function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
 
-function tgx11_block(block_size_ca, bottom_shape="footed", lip_height=2.54, atom_bottom_subtractions=[]) =
+function tgx11_block(
+	block_size_ca, bottom_shape="footed",
+	lip_height=2.54,
+	atom_bottom_subtractions=[],
+	bottom_segmentation = "atom",
+	top_segmentation = "atom"
+) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
@@ -260,11 +291,15 @@ let(atom = togridlib3_decode([1,"atom"]))
 			size = block_size,
 			offset = $tgx11_offset
 		)),
-		tgx11_atomic_block_bottom([
-			block_size_ca[0],
-			block_size_ca[1],
-			[togridlib3_decode(block_size_ca[2], [1, "mm"]) + lip_height, "mm"]
-		], bottom_shape=bottom_shape),
+		tgx11_atomic_block_bottom(
+			[
+				block_size_ca[0],
+				block_size_ca[1],
+				[togridlib3_decode(block_size_ca[2], [1, "mm"]) + lip_height, "mm"]
+			],
+			segmentation = bottom_segmentation,
+			bottom_shape = bottom_shape
+		),
 	],
 	
 	if( len(atom_bottom_subtractions) > 0 )
@@ -273,6 +308,7 @@ let(atom = togridlib3_decode([1,"atom"]))
 	
 	if( lip_height > 0 ) ["translate", [0,0,block_size[2]], tgx11_atomic_block_bottom(
 		block_size_ca, bottom_shape=bottom_shape,
+		segmentation = top_segmentation,
 		$tgx11_offset=-$tgx11_offset, $tgx11_gender=tgx11__invert_gender($tgx11_gender))],
 ];
 
