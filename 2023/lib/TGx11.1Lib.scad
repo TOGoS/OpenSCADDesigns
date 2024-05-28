@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.10
+// TGx11.1Lib - v11.1.11
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -20,6 +20,10 @@
 // - Update reference to togpath1_qath_to_polypoints
 // v11.1.10
 // - Fix unifoot generation for short blocks
+// v11.1.11:
+// - tgx11_atomic_block_bottom takes atom size into account for v6hcs,
+//   which might screw up some designs that were (ab)using it to make
+//   chunk-segmented bottoms!
 //
 // TODO: 'chunk' bottom style
 // (currently can hack it by making chunk=atom, but that's kinda ugly)
@@ -207,7 +211,10 @@ function tgx11_chunk_unifoot(size) =
 function tgx11_atomic_block_bottom(block_size_ca, bottom_shape="footed") =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
-let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon([12.7,12.7], gender=$tgx11_gender, offset=$tgx11_offset)])
+let(v6hc = ["rotate", [0,0,90], tgx11_v6c_flatright_polygon(
+	togridlib3_decode_vector([[1, "atom"], [1,"atom"]]),
+	gender=$tgx11_gender, offset=$tgx11_offset
+)])
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let(u = togridlib3_decode([1,"u"]))
