@@ -29,12 +29,8 @@ module tog_shapelib_rounded_beveled_square(size, bevel_size=3.175, rounding_radi
 	assert(size[1]/2 - bevel_size - rounding_radius*0.414 >= 0);
 	// Maybe not exactly necessary
 
-	// Based on an OpenSCAD diagram and some measurements,
-	// Max rounding radius is approximately (2+107/256) / (1+53/128)
-	// = (/ (+ 2 (/ 107.0 256)) (+ 1 (/ 53.0 128))) = 1.709.
-	// Which is awfully close to sqrt(2)/2+1, 0.707,
-	// but I haven't worked out the math, yet.
-	// Saying it must be <= 1.7 for now.
+	// For a 45-degree bevel, max rounding radius is
+	// sqrt(2)/2 + 1 = about 1.707
 	
 	assert(rounding_radius <= bevel_size * 1.7,
 		str("rounding_radius must be <= bevel_size * 1.7, but rounding_radius = ", rounding_radius,
