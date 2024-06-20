@@ -1,3 +1,7 @@
+// A 1.5" square with separately-configurable center and outer holes,
+// with options to make the hull so that it would fit into a TOGridPile
+// (beveled, no foot) or Gridfinity baseplate (which is of questionable value).
+
 // 1/8" = 3.175, 3/16" = 4.7625
 thickness = 3.175;
 togridpile_compat = false;
