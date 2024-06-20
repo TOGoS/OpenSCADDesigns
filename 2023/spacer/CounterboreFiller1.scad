@@ -1,7 +1,8 @@
-// CounterboreFiller1.1
+// CounterboreFiller1.2
 //
 // Changes:
-// - v1.1: Make parametrically instead of using a DXF
+// v1.1: Make parametrically instead of using a DXF
+// v1.2: Do it with TOGMod!
 
 thickness = 3.175;
 bevel_size = 0.5;
@@ -17,35 +18,24 @@ circle_diameter = 21;
 
 $fn = $preview ? 24 : 48;
 
-module roundify_2d(rounding_radius) {
-	if( rounding_radius <= 0 ) children();
-	else minkowski() {
-		children();
-		circle(r=rounding_radius, $fn=$fn*2);
-	}
-}
-
-module hull_shape_2d(off=0, rounding_radius=6.35) {
-	roundify_2d(rounding_radius) {
-		intersection() {
-			square([square_length + off*2 - rounding_radius*2, square_length + off*2 - rounding_radius*2], center=true);
-			circle(d = circle_diameter + off*2 - rounding_radius*2, $fn=$fn*2);
-		}
-	}
-	//scale(25.4) import("CounterboreFillerOutline1.dxf", $fn = $fn*2);
-}
-
-module the_hull() {
-	hull() {
-		linear_extrude(thickness) hull_shape_2d(off=-bevel_size);
-		translate([0,0,bevel_size]) linear_extrude(thickness - bevel_size*2) hull_shape_2d(off=0);
-	}
-}
-
 use <../lib/TOGMod1.scad>
 use <../lib/TOGHoleLib2.scad>
+use <../lib/TOGMod1Constructors.scad>
 
-difference() {
-	the_hull();
-	togmod1_domodule(["translate", [0,0,thickness], tog_holelib2_hole(hole_style, depth=thickness+1, inset=0.5)]);
-}
+function roundify_2d(rounding_radius, shape) =
+	rounding_radius <= 0 ? shape : ["minkowski", shape, togmod1_make_circle(r=rounding_radius, $fn=$fn*2)];
+
+function hull_shape_2d(off=0, rounding_radius=6.35) = roundify_2d(rounding_radius, ["intersection",
+	togmod1_make_rounded_rect([square_length + off*2 - rounding_radius*2, square_length + off*2 - rounding_radius*2], r=0),
+	togmod1_make_circle(d = circle_diameter + off*2 - rounding_radius*2, $fn=$fn*2)
+]);
+
+function the_hull() = ["hull",
+	["linear-extrude-zs", [0           , thickness           ], hull_shape_2d(off=-bevel_size)],
+	["linear-extrude-zs", [0+bevel_size, thickness-bevel_size], hull_shape_2d(off=0)],
+];
+
+togmod1_domodule(["difference",
+	the_hull(),
+	["translate", [0,0,thickness], tog_holelib2_hole(hole_style, depth=thickness+1, inset=0.5)]
+]);

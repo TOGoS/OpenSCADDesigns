@@ -41,6 +41,11 @@ module togmod1_domodule(mod) {
 		}
 	} else if( mod[0] == "render" ) {
 		render() togmod1_domodule(mod[1]);
+	} else if( mod[0] == "minkowski" ) {
+		minkowski() {
+			togmod1_domodule(mod[1]);
+			togmod1_domodule(mod[2]);
+		}
 	} else if( mod[0] == "x-debug" ) {
 		# togmod1_domodule(mod[1]);
 	} else {
