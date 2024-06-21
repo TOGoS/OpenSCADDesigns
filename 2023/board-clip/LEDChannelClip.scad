@@ -1,4 +1,4 @@
-// LEDChannelClip1.3
+// LEDChannelClip1.4
 // 
 // To hold the extruded aluminium 'LED strip channels'
 // against a gridbeam or other surface.
@@ -16,11 +16,16 @@
 // - 'square1' mode puts chatomic TOGridPile feet on the thing,
 //   and puts hole2_type holes in the corners
 // - Move several constants out of the configurable section
+// v1.4:
+// - Make channel_width and channel_height configurable
 
 mode = "single"; // ["single","double","square1"]
 
 hole1_type = "THL-1002";
 hole2_type = "THL-1001";
+
+channel_width  = 16;
+channel_height =  9;
 
 $tgx11_offset = -0.1;
 
@@ -35,9 +40,6 @@ use <../lib/TGx11.1Lib.scad>
 $fn = $preview ? 16 : 64;
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
-
-channel_width  = 16;
-channel_height =  9;
 
 single_channel_x_adjust = -3.175;
 

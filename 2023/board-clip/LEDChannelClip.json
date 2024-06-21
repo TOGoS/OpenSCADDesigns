@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p1436": {
+			"$tgx11_offset": "-0.1",
+			"channel_width": "17",
+			"hole1_type": "THL-1002",
+			"hole2_type": "THL-1001",
+			"mode": "square1"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
