@@ -1,4 +1,4 @@
-// LEDChannelClip1.2
+// LEDChannelClip1.3
 // 
 // To hold the extruded aluminium 'LED strip channels'
 // against a gridbeam or other surface.
@@ -11,26 +11,38 @@
 // Changes;
 // v1.2:
 // - Add 'square1' mode
+// v1.3:
+// - Round cutout 'flange' corners
+// - 'square1' mode puts chatomic TOGridPile feet on the thing,
+//   and puts hole2_type holes in the corners
+// - Move several constants out of the configurable section
 
 mode = "single"; // ["single","double","square1"]
 
 hole1_type = "THL-1002";
 hole2_type = "THL-1001";
 
-channel_x_adjust = -3.175;
+$tgx11_offset = -0.1;
+
+module __ledchannelclip_end_params() { }
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TGx11.1Lib.scad>
 
 $fn = $preview ? 16 : 64;
+
+$togridlib3_unit_table = tgx11_get_default_unit_table();
 
 channel_width  = 16;
 channel_height =  9;
 
+single_channel_x_adjust = -3.175;
+
 narrow_hull_width = 19.05;
-single_channel_pos_x = narrow_hull_width+channel_width/2+channel_x_adjust;
+single_channel_pos_x = narrow_hull_width+channel_width/2+single_channel_x_adjust;
 double_hull_length = 50.8;
 single_hull_length = ceil((single_channel_pos_x + channel_width/2+1)/12.7)*12.7;
 
@@ -67,7 +79,8 @@ function make_the_cutout(w,h) = ["rotate", [90,0,0], tphl1_make_polyhedron_from_
 	each lcc__flange_zds(-hull_size[1]/2-0.1, 0, 3.175, -1),
 	each lcc__flange_zds( hull_size[1]/2+0.1, 0, 3.175,  1),
 ], function(funk)
-	rect_points([w+funk[1], h+funk[1]], funk[0])
+	togmod1_rounded_rect_points([w+funk[1], h+funk[1]], r=funk[1]/2, pos=[0,0,funk[0]])
+	//rect_points([w+funk[1], h+funk[1]], funk[0])
 )];
 
 hole1 = tog_holelib2_hole(hole1_type, depth=hull_size[2]+1);
@@ -88,11 +101,26 @@ double_thing = ["difference",
 	["translate", [ hole_offset_x, 0, 0], ["rotate", [180,0,0], hole2]],
 ];
 
-function make_square1_thing() = ["translate", [0,0,hull_size[1]/2], ["rotate", [90,0,0], ["difference",
-	tphl1_make_rounded_cuboid(hull_size, r=[3.2,3.2,3.2], corner_shape="ovoid1"),
-	make_the_cutout(channel_width, 25.4),
-	["translate", [-hull_size[0]/2, 0, 0], ["rotate", [0,-90,0], hole1]],
-]]];
+function make_square1_hull() =
+	let($tgx11_gender = "m")
+	//["translate", [0,0,hull_size[1]/2], tphl1_make_rounded_cuboid([hull_size[0], hull_size[2], hull_size[1]], r=[3.2,3.2,3.2], corner_shape="ovoid1")];
+	["intersection",
+		for( f=[0,1] )
+			["translate", [0,0,hull_size[1] * f], ["rotate", [180*f,0,0], tgx11_atomic_block_bottom([[1,"chunk"],[1,"chunk"],[1,"chunk"]], segmentation="chatom")]],
+		tphl1_extrude_polypoints([-1,hull_size[1]], tgx11_chunk_xs_points(
+			size = [hull_size[0], hull_size[2], hull_size[1]],
+			offset = $tgx11_offset
+		)),		
+	];
+
+square1_small_through_hole = tog_holelib2_hole(hole2_type, depth=hull_size[1]+1);
+
+function make_square1_thing() = ["difference",
+	make_square1_hull(),
+	["translate", [0,0,hull_size[1]/2], ["rotate", [90,0,0], make_the_cutout(channel_width, 25.4)]],
+	["translate", [-hull_size[0]/2, 0, hull_size[1]/2], ["rotate", [0,-90,0], hole1]],
+	for( xm=[-1,1] ) for( ym=[-1,1] ) ["translate", [xm*12.7, ym*12.7, hull_size[1]+$tgx11_offset], square1_small_through_hole],
+];
 
 togmod1_domodule(
 	mode == "single" ? single_thing :
