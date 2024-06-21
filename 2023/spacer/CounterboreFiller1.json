@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p1434 (emulated)": {
+			"bevel_size": "0.5",
+			"circle_diameter": "20.64",
+			"hole_style": "THL-1001",
+			"rounding_radius": "6.35",
+			"square_length": "19.05",
+			"thickness": "3.175"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
