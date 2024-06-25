@@ -1,4 +1,4 @@
-// PhoneHolder-v2.10
+// PhoneHolder-v2.11
 // 
 // Minimal outer box, designed to hold 
 // 
@@ -32,6 +32,8 @@
 // - Refactor to naturally put front slot at -Y
 // - Increase default render_fn fronm 24 to 48
 // - Change side slots to 2-chunk-high pattern
+// v2.11:
+// - Add mounting_hole_style options: THL-1001, THL-1002, or THL-1001+1002
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGArrayLib1.scad>
@@ -50,6 +52,10 @@ block_width_chunks  = 3;
 
 // 'swoopy' may be more approprate for blocks with full-height fronts
 front_slot_style = "standard"; // ["standard","swoopy"]
+
+/* [Holes] */
+
+mounting_hole_style = "THL-1002"; // ["THL-1001", "THL-1002", "THL-1001+1002"]
 
 /* [Margins] */
 
@@ -180,6 +186,28 @@ function side_slot_grid(zrange=[0,front_height_chunks]) = [
 		let(top=min(z+2,zrange[1]))
 			 [(z+top)/2, top-z]
 ];
+
+thl_1001_r = ["rotate", [90,0,0], tog_holelib2_hole("THL-1001", overhead_bore_height=1)];
+thl_1002_r = ["rotate", [90,0,0], tog_holelib2_hole("THL-1002", overhead_bore_height=block_size[1])];
+
+block_size_atoms = togridlib3_decode_vector(block_size_ca, unit=[1, "atom"]);
+
+function make_mounting_holes(style) =
+	style == "THL-1001+1002" ? [each make_mounting_holes("THL-1001"), each make_mounting_holes("THL-1002")] :
+	style == "THL-1002" ? [
+		for( xm=[-block_width_chunks/2+0.5 : 1 : block_width_chunks/2] )
+		for( ym=[0.5 : 1 : back_height_chunks] )
+		["translate", [xm*chunk_pitch, block_size[1]/2 - panel_thickness, ym*chunk_pitch], thl_1002_r],
+	] :
+	style == "THL-1001" ? [
+		for( xm=[-block_size_atoms[0]/2+1.5 : 1 : block_size_atoms[0]/2-1.4] )
+		for( ym=[1.5 : 1 : block_size_atoms[2]] )
+		["translate", [xm*atom_pitch, block_size[1]/2 - panel_thickness, ym*atom_pitch], thl_1001_r],
+	] :
+	assert(false, str("Unrecognized mounting hole style: '", style, "'"));
+
+mounting_holes = make_mounting_holes(mounting_hole_style);
+
 /*
 	(zrange[1]-zrange[0] <= 2) ? [[(zrange[1]+zrange[0])/2, zrange[1]-zrange[0]]] :
 	[
@@ -222,11 +250,7 @@ module phv2_main() render() togmod1_domodule(["difference",
 	],
 
 	// Mounting holes
-	for( xm=[-block_width_chunks/2+0.5 : 1 : block_width_chunks/2] )
-	for( ym=[0.5 : 1 : back_height_chunks] )
-	["translate", [xm*chunk_pitch, block_size[1]/2 - panel_thickness, ym*chunk_pitch],
-		["rotate", [90,0,0], tog_holelib2_hole("THL-1002", overhead_bore_height=block_size[1])]
-	],
+	each mounting_holes,
 	
 	// Magnet holes
 	if( bottom_magnet_hole_diameter > 0 && bottom_magnet_hole_depth > 0 )

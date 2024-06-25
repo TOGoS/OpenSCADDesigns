@@ -42,6 +42,22 @@
 			"outer_margin": "0.2",
 			"render_fn": "48",
 			"togridpile_margin": "0.2"
+		},
+		"p1438": {
+			"back_height_chunks": "4",
+			"block_depth_chunks": "1",
+			"block_width_chunks": "3",
+			"bottom_magnet_hole_depth": "2.4",
+			"bottom_magnet_hole_diameter": "6.4",
+			"foot_segmentation": "chatom",
+			"foot_v6hc_style": "v6.2",
+			"front_height_chunks": "4",
+			"front_slot_style": "swoopy",
+			"inner_margin": "0.6",
+			"mounting_hole_style": "THL-1001+1002",
+			"outer_margin": "0.2",
+			"render_fn": "48",
+			"togridpile_margin": "0.2"
 		}
 	},
 	"parameterSets": "",
