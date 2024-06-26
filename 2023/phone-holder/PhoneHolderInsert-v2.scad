@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.7
+// PhoneHolderInsert-v2.8
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -27,6 +27,8 @@
 // - Add PHI-1005, an insert for holding an actual phone!
 // v2.7:
 // - Add PHI-1006, an updated insert for the 3"x3"x0.75" USB charger block
+// v2.8:
+// - Add PHI-1005-sub and mounting holes on PHI-1005
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -34,7 +36,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1006","block"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1006","block", "PHI-1005-sub"]
 
 outer_margin = 0.6;
 
@@ -132,6 +134,7 @@ make_phi_1005_cut = function()
 	["translate", [0, 0, 1/16*inch], tphl1_make_rounded_cuboid([60, 13, 1/4*inch], r=[1.6, 1.6, 0])],
 	["translate", [0, 0, 1/4*inch], tphl1_make_rounded_cuboid([92, 20, 1/4*inch], r=[2, 2, 1.6])],
 	make_slot_cut(($hull_size[1]-13)/2),
+	for( xm=[-1, +1] ) ["translate", [xm*1.5*inch, 0, 1/8*inch], tog_holelib2_hole("THL-1001")],
 ];
 
 function get_shape_info(style) =
@@ -153,6 +156,34 @@ function make_phi(style) =
 		shape_info[1](),
 	];
 
+
+bottom_hole_size = [
+	2*38.1 + 0.75*inch,
+	         1*inch
+];
+sub_offset = -0.15;
+underblock_hull_size = [
+	bottom_hole_size[0] + sub_offset*2,
+	bottom_hole_size[1] + sub_offset*2,
+	1/4*inch
+];
+burthole = ["rotate", [180,0,0], tog_holelib2_hole("THL-1005")];
+
+function make_underblock() = ["difference",
+	["linear-extrude-zs", [0, 1/4*inch], ["difference",
+		togmod1_make_rounded_rect(underblock_hull_size, r=6),
+		togmod1_make_rounded_rect([60, 13], r=3),
+		["translate",
+			[0,-underblock_hull_size[1]/2+(underblock_hull_size[1]-13)/4],make_rounded_gap_cutter([13, (underblock_hull_size[1]-13)/2], r=3)],
+		//for( xm=[-1,1] ) ["translate", [xm*1.5*inch, 0], togmod1_make_circle(d=3)],
+	]],
+	for( xm=[-1,1] ) ["translate", [xm*1.5*inch, 0], burthole],
+];
+
 // PHI-1001 = A very basic phone holder insert
 
-togmod1_domodule(make_phi(style));
+thing =
+	style == "PHI-1005-sub" ? make_underblock() :
+	make_phi(style);
+
+togmod1_domodule(thing);
