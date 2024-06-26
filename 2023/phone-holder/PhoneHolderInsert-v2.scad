@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.9
+// PhoneHolderInsert-v2.9.1
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -31,6 +31,9 @@
 // - Add PHI-1005-sub and mounting holes on PHI-1005
 // v2.9:
 // - PHI-1005-sub and mounting holes on PHI-1005
+// v2.9.1
+// - increase sub_offset slightly (from -0.15 -0.20 mm)
+// - Add PHI-1005+sub mode, for your convenience
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -38,7 +41,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1006","block", "PHI-1005-sub"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1006","block", "PHI-1005-sub", "PHI-1005+sub"]
 
 outer_margin = 0.6;
 
@@ -163,7 +166,7 @@ bottom_hole_size = [
 	2*38.1 + 0.75*inch,
 	         1*inch
 ];
-sub_offset = -0.15;
+sub_offset = -0.2;
 underblock_hull_size = [
 	bottom_hole_size[0] + sub_offset*2,
 	bottom_hole_size[1] + sub_offset*2,
@@ -186,8 +189,14 @@ function make_underblock() = ["difference",
 
 // PHI-1001 = A very basic phone holder insert
 
-thing =
-	style == "PHI-1005-sub" ? make_underblock() :
-	make_phi(style);
+function make_thing(name) =
+	name == "PHI-1005+sub" ? ["union",
+		["translate", [0,  38.1, 0], make_thing("PHI-1005")],
+		["translate", [0, -38.1, 0], make_thing("PHI-1005-sub")],
+	]:
+	name == "PHI-1005-sub" ? make_underblock() :
+	make_phi(name);
+
+thing = make_thing(style);
 
 togmod1_domodule(thing);
