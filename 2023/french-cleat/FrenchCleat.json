@@ -60,6 +60,33 @@
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1443 - 4.5in, flat back, THL-1005 holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005",
+			"length_ca": "[4.5, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1444 - 6.0in, flat back, THL-1005 holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005",
+			"length_ca": "[6.0, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1445 - 7.5in, flat back, THL-1005 holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005",
+			"length_ca": "[7.5, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
 		}
 	},
 	"parameterSets": "",
