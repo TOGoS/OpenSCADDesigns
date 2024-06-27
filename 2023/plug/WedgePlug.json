@@ -1,0 +1,18 @@
+{
+	"parameterSets": {
+		"p1439 - short plug, small hole": {
+			"$fn": "48",
+			"flange_diameter": "12.7",
+			"flange_thickness": "1.6",
+			"funnel_depth": "1",
+			"funnel_large_diameter": "4",
+			"hole_diameter": "3.1",
+			"large_diameter": "8",
+			"length": "6",
+			"small_diameter": "7",
+			"taper_length": "2"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
