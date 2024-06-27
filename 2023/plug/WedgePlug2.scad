@@ -1,4 +1,4 @@
-// WedgePlug-v2.1
+// WedgePlug-v2.2
 // 
 // A different approach to the wedge plug,
 // using a THL-1005 hole for a hex nut at the butt end of the thing,
@@ -8,6 +8,9 @@
 // Changes:
 // v2.1:
 // - Bevel the bottom
+// v2.2:
+// - Always show cross-section when $preview
+// - Allow roundy_height to be a larger proportion of tlange_thickness
 
 /* [Exterior] */
 
@@ -35,7 +38,7 @@ use <../lib/TOGPolyhedronLib1.scad>
 module wedgeplug2__end_params() { }
 
 hole_diameter         =  3.0;
-roundy_height = min(2, flange_thickness/2);
+roundy_height = min(2, flange_thickness-0.5);
 
 total_height = flange_thickness+barrel_length;
 
@@ -63,5 +66,5 @@ difference() {
 		tog_holelib2_hole("THL-1005", depth=total_height+2, inset=0, overhead_bore_height = total_height)
 	]]);
 
-	//translate([5,0,0]) cube([10,20,40], center=true);
+	if($preview) # translate([5,5,0]) cube([10,10,40], center=true);
 }
