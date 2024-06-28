@@ -1,4 +1,4 @@
-// FrenchCleat-v1.6
+// FrenchCleat-v1.7
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -19,6 +19,8 @@
 // - Update reference to TGx11.1Lib.scad
 // v1.6:
 // - Provide some different THL-* hole types
+// v1.7:
+// - THL-1005-5u option (5/16" deep countersunk holes instead of only 1/8"ish)
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -26,7 +28,7 @@ length_ca = [6, "inch"];
 
 mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
 opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
-hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005"]
+hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u"]
 
 mode = "X"; // ["X", "Z", "tester"]
 
@@ -172,6 +174,7 @@ counterbored_hole = tphl1_make_polyhedron_from_layer_function([
 hole =
 	hole_style == "GB-counterbored" ? counterbored_hole :
 	hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
+	hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], tog_holelib2_hole("THL-1005", inset=5*25.4/16)] :
 	["translate", [0,0,zp], tog_holelib2_hole(hole_style)];
 
 hole_spacing =

@@ -87,6 +87,42 @@
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1446 - 3.0in, flat back, THL-1005-5u holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[3.0, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1447 - 4.5in, flat back, THL-1005-5u holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[4.5, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1448 - 6.0in, flat back, THL-1005-5u holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[6.0, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1449 - 7.5in, flat back, THL-1005-5u holes": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[7.5, \"inch\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
 		}
 	},
 	"parameterSets": "",
