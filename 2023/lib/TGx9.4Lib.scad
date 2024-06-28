@@ -59,6 +59,9 @@
 // v1.22:
 // - Add support for 'polygon-vp' and 'polyhedron-vf' sshapes
 //   (copied from TOGMod1.scad)
+// v1.23:
+// - Add support for 'x-debug' sshape
+// - Add support for block_bottom_ops
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -468,6 +471,8 @@ module tgx9_do_sshape(shape) {
 			$tgx1001_bevel_size = bevel_size,
 			offset        = -$tgx9_mating_offset
 		);
+	} else if( type == "x-debug" ) {
+		# tgx9_do_sshape(shape[1]);
 	} else {
 		assert(false, str("Unrecognized S-shape type: '", type, "'"));
 	}
@@ -644,6 +649,7 @@ module tgx9_cup_top(
 	floor_thickness, // TODO: Remove; no longer used!
 	lip_chunk_ops = [],
 	block_top_ops = [],
+	block_bottom_ops = [],
 ) {
 	block_size        = tgx9_map(block_size_ca, function(ca) togridlib3_decode(ca));
 	corner_radius     = togridlib3_decode([1, "f-outer-corner-radius"]);
@@ -681,11 +687,13 @@ module tgx9_cup_top(
 		translate([0,0,block_size[2]]) {
 			for( op=block_top_ops ) if(op[0] == "subtract") tgx9_do_sshape(op[1]);
 		}
+		for( op=block_bottom_ops ) if(op[0] == "subtract") tgx9_do_sshape(op[1]);
 	}
 
 	translate([0,0,block_size[2]]) {
 		for( op=block_top_ops ) if(op[0] == "add") tgx9_do_sshape(op[1]);
 	}
+	for( op=block_bottom_ops ) if(op[0] == "add") tgx9_do_sshape(op[1]);
 
 	/*
 	My original vision for this module:
@@ -712,6 +720,7 @@ module tgx9_cup(
 	lip_chunk_ops = [],
 	// floor_chunk_ops = []
 	block_top_ops = [],
+	block_bottom_ops = [],
 	v6hc_style = "none",
 ) intersection() {
 	block_size = togridlib3_decode_vector(block_size_ca);
@@ -735,6 +744,7 @@ module tgx9_cup(
 		floor_thickness   = floor_thickness,
 		// floor_chunk_ops   = floor_chunk_ops
 		block_top_ops     = block_top_ops,
+		block_bottom_ops  = block_bottom_ops,
 		lip_chunk_ops     = lip_chunk_ops
 	) children();
 	

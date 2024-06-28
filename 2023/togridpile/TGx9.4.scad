@@ -1,4 +1,4 @@
-// TGx9.5.26 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.27 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -167,6 +167,8 @@
 // - Options for mug handle cutout
 // - Option to simplify foot in preview mode, for when you're messing with
 //   cavity settings and don't want to wait so long between previews
+// v9.5.27:
+// - 'gencase1' cavity mode, for making 'generic open-sided cases' for things
 
 /* [Atom/chunk/block size] */
 
@@ -211,11 +213,13 @@ top_magnet_holes_enabled = false;
 screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 chunk_center_screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
 chunk_edge_screw_hole_style = "none"; // ["none","THL-1001","THL-1002"]
+// Note that 'north, east, south, west' is the same order as CSS uses for e.g. margins.
+// Whether to put bowtie cutouts along [N,E,S,W] (0 for no, 1 for yes)
 bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
 
-cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder"]
+cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder","gencase1"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
@@ -255,6 +259,11 @@ tograck_lower_cavity_rim_mode = "none"; // ["none","x","full"]
 // Experimental/unstable
 x_tograck_conduit_diameter = 0;
 
+/* [Cavity (gencase)] */
+
+// Whether to leave the [N,E,S,W] sides open for the 'gencase1' cavity
+gencase_open_sides = [0,0,0,0];
+
 /* [Detail] */
 
 // Margin for TOGridPile mating surfaces
@@ -287,6 +296,7 @@ if( lip_height > 0 ) {
 
 // use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGHoleLib-v1.scad>
+use <../lib/TOGHoleLib2.scad>
 // use <../lib/TOGUnitTable-v1.scad>
 use <../lib/TOGridLib3.scad>
 include <../lib/TGx9.4Lib.scad>
@@ -398,15 +408,15 @@ module tgx9_usermod_1(what, arg0) {
 		}
 	} else if( what == "chunk-screw-holes" ) {
 		for( pos=[[0,-1],[-1,0],[0,1],[1,0],[0,0]] ) {
-			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
+			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0, overhead_bore_height=13);
 		}
 	} else if( what == "chunk-center-screw-hole" ) {
 		for( pos=[[0,0]] ) {
-			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
+			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0, overhead_bore_height=13);
 		}
 	} else if( what == "chunk-edge-screw-holes" ) {
 		for( pos=[[0,-1],[-1,0],[0,1],[1,0]] ) {
-			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0);
+			translate(pos*atom_pitch) tog_holelib_hole(arg0 == undef ? screw_hole_style : arg0, overhead_bore_height=13);
 		}
 	} else {
 		assert(false, str("Unrecognized user module argument: '", what, "'"));
@@ -505,6 +515,43 @@ let( cvx = cornervec[0]-width/3.1, cvy = cornervec[1]-width/3.1 ) // 1/3 pulled 
 	]
 ];
 
+function lerp(v0, v1, t) = (1-t)*v0 + t*v1;
+
+// Open-sided box for making 'generic' cases.
+// You're expected to put a bunch of hot glue in there or something
+// to hold your thing in place.
+function make_gencase1_subtraction(block_size, open_sides) = tphl1_make_polyhedron_from_layer_function(
+	[
+		floor_thickness - block_size[2],
+		block_size[2]*2 - block_size[2],
+	],
+	let(ins0 = 8, ins1=10)
+	let(x1 = -block_size[0]/2+ins0, x2 = -block_size[0]/2+ins1, x3 = block_size[0]/2-ins1, x4 = block_size[0]/2-ins0)
+	let(x0 = lerp(x1, -block_size[0]/2-1, open_sides[3]))
+	let(x5 = lerp(x4,  block_size[0]/2+1, open_sides[1]))
+	let(y1 = -block_size[1]/2+ins0, y2 = -block_size[1]/2+ins1, y3 = block_size[1]/2-ins1, y4 = block_size[1]/2-ins0)
+	let(y0 = lerp(y1, -block_size[1]/2-1, open_sides[2]))
+	let(y5 = lerp(y4,  block_size[1]/2+1, open_sides[0]))
+	function(z) [
+		[x0, y2, z],
+		[x1, y2, z],
+		[x2, y1, z],
+		[x2, y0, z],
+		[x3, y0, z],
+		[x3, y1, z],
+		[x4, y2, z],
+		[x5, y2, z],
+		[x5, y3, z],
+		[x4, y3, z],
+		[x3, y4, z],
+		[x3, y5, z],
+		[x2, y5, z],
+		[x2, y4, z],
+		[x1, y3, z],
+		[x0, y3, z],
+	]
+);
+
 // Operations to be done on the block from the top center
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
@@ -516,6 +563,7 @@ cavity_ops = [
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()],
 	if( cavity_style == "framework-module-holder" ) ["subtract", make_framework_module_holder_cutout(block_size[1]/12.7)],
 	if( cavity_style == "earrings-holder" ) ["subtract", make_earrings_holder_cutout(block_size)],
+	if( cavity_style == "gencase1" ) ["subtract", make_gencase1_subtraction(block_size, open_sides=gencase_open_sides)],
 ];
 
 //// Magnet hole precalculations
@@ -565,6 +613,8 @@ v6hc_foot_bevel_size =
 	effective_v6hc_subtraction_style == "v6.1" ? v6_1_foot_bevel_size :
 	0.12345; // Not applicable
 
+corner_bottom_up_screw_hole_style = cavity_style == "gencase1" ? "THL-1001" : "none";
+
 //// Main
 
 module tgx9_main_cup() tgx9_cup(
@@ -603,6 +653,12 @@ module tgx9_main_cup() tgx9_cup(
 		["subtract",["translate", [0, 0, min(floor_thickness,block_size[2])], ["tgx9_usermod_1", "chunk-center-screw-hole", chunk_center_screw_hole_style]]],
 		["subtract",["translate", [0, 0, min(floor_thickness,block_size[2])], ["tgx9_usermod_1", "chunk-edge-screw-holes", chunk_edge_screw_hole_style]]],
 		if( bottom_magnet_holes_enabled ) ["subtract",["tgx9_usermod_1", "chunk-magnet-holes"]],
+	],
+	block_bottom_ops = [
+		let(hole=["rotate", [180,0,0], tog_holelib2_hole(corner_bottom_up_screw_hole_style, overhead_bore_height=1, inset=max(1, floor_thickness-4), depth=block_size[2]*2)])
+			for( xm=[-1,1] ) for( ym=[-1,1] )
+				["subtract", ["translate", [xm*(block_size[0]/2-atom_pitch/2), ym*(block_size[1]/2-atom_pitch/2), 0], hole]]
+				
 	]
 );
 
