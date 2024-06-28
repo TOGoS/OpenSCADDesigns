@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.12
+// TGx11.1Lib - v11.1.13
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -26,6 +26,8 @@
 //   chunk-segmented bottoms!
 // v11.1.12:
 // - Add support for foot segmentation="chatom"
+// v11.1.13:
+// - Add tgx11_block_bottom, which supports 'block', 'atom', or 'chatom' foot styles
 // 
 // TODO: 'chunk' bottom style
 // (currently can hack it by making chunk=atom, but that's kinda ugly)
@@ -268,12 +270,20 @@ let(body_z1 = block_size[2]+1+1/32)
 	if( segmentation == "chatom" ) for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*chunk, ym*chunk, 0], chunk_beveled_foot],
 ];
 
+function tgx11_block_bottom(
+	block_size_ca,
+	bottom_shape = "footed",
+	segmentation = "atom",
+) =
+	segmentation == "block" ? tgx11_chunk_unifoot(togridlib3_decode_vector(block_size_ca)) :
+	tgx11_atomic_block_bottom(block_size_ca, bottom_shape, segmentation);
+
 function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : $tgx11_gender;
 function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
 
 function tgx11_block(
 	block_size_ca, bottom_shape="footed",
-	lip_height=2.54,
+	lip_height = 2.54,
 	atom_bottom_subtractions=[],
 	bottom_segmentation = "atom",
 	top_segmentation = "atom"
@@ -306,7 +316,7 @@ let(atom = togridlib3_decode([1,"atom"]))
 	let( atom_bottom_subtraction = ["union", each atom_bottom_subtractions] )
 	for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*atom, ym*atom, 0], atom_bottom_subtraction],
 	
-	if( lip_height > 0 ) ["translate", [0,0,block_size[2]], tgx11_atomic_block_bottom(
+	if( lip_height > 0 ) ["translate", [0,0,block_size[2]], tgx11_block_bottom(
 		block_size_ca, bottom_shape=bottom_shape,
 		segmentation = top_segmentation,
 		$tgx11_offset=-$tgx11_offset, $tgx11_gender=tgx11__invert_gender($tgx11_gender))],

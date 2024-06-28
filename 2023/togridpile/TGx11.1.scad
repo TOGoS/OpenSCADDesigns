@@ -10,15 +10,13 @@
 //   (may need to abolish tgp-min-corner-radius)
 // 
 // TODO: 'chunk' bottom style
-// 
-// TODO: 'atomic' bottom style
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
 block_height_u = 12;
 
-bottom_segmentation = "atom"; // ["atom","chatom","none"]
-top_segmentation = "atom"; // ["atom","chatom","none"]
+bottom_segmentation = "chatom"; // ["atom","chatom","block","none"]
+top_segmentation = "block"; // ["atom","chatom","block","none"]
 atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
 bottom_shape = "footed"; // ["footed","beveled"]
 
