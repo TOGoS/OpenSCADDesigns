@@ -15,10 +15,11 @@ item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","auto
 block_size_chunks = [2,2];
 block_height_u = 12;
 
-bottom_segmentation = "chatom"; // ["atom","chatom","block","none"]
-top_segmentation = "block"; // ["atom","chatom","block","none"]
+bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
+top_segmentation = "block"; // ["atom","chatom","chunk","block","none"]
 atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
 bottom_shape = "footed"; // ["footed","beveled"]
+bottom_v6hc_style = "v6.1"; // ["v6.1", "none"]
 
 lip_height = 2.54;
 
@@ -104,9 +105,10 @@ module tgmain() {
 	function blok() = tgx11_block(
 		block_size_ca,
 		bottom_segmentation = bottom_segmentation,
+		bottom_shape        = bottom_shape,
+		bottom_v6hc_style   = bottom_v6hc_style,
 		top_segmentation = top_segmentation,
 		atom_bottom_subtractions = atom_bottom_subtractions,
-		bottom_shape = bottom_shape,
 		lip_height = lip_height,
 		$tgx11_gender = "m"
 	);
