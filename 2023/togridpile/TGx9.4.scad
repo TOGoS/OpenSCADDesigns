@@ -1,4 +1,4 @@
-// TGx9.5.27 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.28 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -169,6 +169,8 @@
 //   cavity settings and don't want to wait so long between previews
 // v9.5.27:
 // - 'gencase1' cavity mode, for making 'generic open-sided cases' for things
+// v9.5.27:
+// - Fix that lip_segmentation was not explicitly passed to tgx9_cup
 
 /* [Atom/chunk/block size] */
 
@@ -621,6 +623,7 @@ module tgx9_main_cup() tgx9_cup(
 	block_size_ca = block_size_ca,
 	foot_segmentation = ($preview && simplify_foot_for_preview) ? "none" : foot_segmentation,
 	lip_height    = lip_height,
+	lip_segmentation = lip_segmentation,
 	floor_thickness = floor_thickness,
 	wall_thickness = wall_thickness,
 	v6hc_style = v6hc_style,

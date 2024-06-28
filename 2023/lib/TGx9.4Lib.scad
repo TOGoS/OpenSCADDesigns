@@ -62,6 +62,8 @@
 // v1.23:
 // - Add support for 'x-debug' sshape
 // - Add support for block_bottom_ops
+// v1.28:
+// - Fix that lip_segmentation was not a parameter to tgx9_cup or tgx9_cup_top
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -643,7 +645,7 @@ function tgx9_invert_ops(ops) = tgx9_map(ops, function (op) tgx9_invert_op(op));
 // Intersect with a foot to make a full block.
 module tgx9_cup_top(
 	block_size_ca,
-	foot_segmentation,
+	lip_segmentation,
 	lip_height,
 	wall_thickness,  // TODO: Remove; no longer used!
 	floor_thickness, // TODO: Remove; no longer used!
@@ -716,6 +718,7 @@ module tgx9_cup(
 	wall_thickness,  // TODO: Remove; no longer used!
 	floor_thickness, // TODO: Remove; no longer used!
 	lip_height        = 2.54,
+	lip_segmentation = "block",
 	bottom_chunk_ops          = [],
 	lip_chunk_ops = [],
 	// floor_chunk_ops = []
@@ -738,8 +741,8 @@ module tgx9_cup(
 	// 'cup top' is *everything else*
 	tgx9_cup_top(
 		block_size_ca     = block_size_ca,
-		foot_segmentation = foot_segmentation,
 		lip_height        = lip_height,
+		lip_segmentation  = lip_segmentation,
 		wall_thickness    = wall_thickness,
 		floor_thickness   = floor_thickness,
 		// floor_chunk_ops   = floor_chunk_ops
