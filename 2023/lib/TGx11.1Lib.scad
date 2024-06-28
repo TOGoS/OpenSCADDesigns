@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.13
+// TGx11.1Lib - v11.1.14
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -28,6 +28,8 @@
 // - Add support for foot segmentation="chatom"
 // v11.1.13:
 // - Add tgx11_block_bottom, which supports 'block', 'atom', or 'chatom' foot styles
+// v11.1.14:
+// - Fix to use chunk_xms/yms instead of atom_xms/yms for chatomic feet
 // 
 // TODO: 'chunk' bottom style
 // (currently can hack it by making chunk=atom, but that's kinda ugly)
@@ -267,7 +269,7 @@ let(body_z1 = block_size[2]+1+1/32)
 		block_size[0]-atom, block_size[1]-atom,
 		body_z1-body_z0])],
 	
-	if( segmentation == "chatom" ) for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*chunk, ym*chunk, 0], chunk_beveled_foot],
+	if( segmentation == "chatom" ) for(xm=chunk_xms) for(ym=chunk_yms) ["translate", [xm*chunk, ym*chunk, 0], chunk_beveled_foot],
 ];
 
 function tgx11_block_bottom(
