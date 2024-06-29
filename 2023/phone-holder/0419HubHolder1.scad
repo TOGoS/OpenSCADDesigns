@@ -1,4 +1,4 @@
-// 0419HubHolder1.0
+// 0419HubHolder1.1
 // 
 // Holder for Falwedi USB docking station, model # 0419H
 // https://www.amazon.com/Docking-Multiport-DisplayPort-Ethernet-Compatible/dp/B0B9BG7K1Z
@@ -6,11 +6,11 @@
 // Measured dimensions: 140.4mm x 56.3mm x 15.6mm
 // Every side has ports on it, but maybe the last 8mm or so at the
 // ends of the long edges could be spared
-
-// TODO: Check measured dimensions.  Product page indicates
-// 100.1mm wide, not 56.3.  160.0mm long (maybe that includes a bit of the cable),
-// and 18.034mm thick (which is a little more than my 15.6mm).
-// Might be that those are the dimensions of a different thing.
+// 
+// Changes:
+// v1.1:
+// - Verified the dimensions, removed TODO about it
+// - Remove extra/wrong topside corner holes
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGridLib3.scad>
@@ -59,6 +59,11 @@ function xratter_xy(w,h,thickness,tr=2,br=2) = tphl1_make_polyhedron_from_layer_
 function xratter_xz(w,h,thickness,tr=2,br=2) = ["rotate", [90,0, 0], xratter_xy(w,h,thickness,tr=tr,br=br)];
 function xratter_yz(w,h,thickness,tr=2,br=2) = ["rotate", [90,0,90], xratter_xy(w,h,thickness,tr=tr,br=br)];
 
+floor_hole_positions = [
+	for( xm=[-1 : 1 : 1] ) for( ym=[-block_size[1]/atom_pitch/2+0.5 : 1 : block_size[1]/atom_pitch/2-0.4] ) [xm*atom_pitch,ym*atom_pitch,floor_thickness],
+	for( xm=[-2 : 1 : 2] ) for( ym=[-block_size[1]/atom_pitch/2+1.5 : 1 : block_size[1]/atom_pitch/2-1.4] ) [xm*atom_pitch,ym*atom_pitch,floor_thickness],
+];
+
 thing = ["difference",
 	tgx11_block(
 		block_size_ca = block_size_ca,
@@ -76,8 +81,7 @@ thing = ["difference",
 	["translate", [0, 0, block_size[2]+lip_height],
 		xratter_yz(hub_cavity_size[1]-14, cavity_depth+lip_height, block_size[0]+4, tr=4, br=1)
 	],
-	for( xm=[-2 : 1 : 2] ) for( ym=[-block_size[1]/atom_pitch/2+0.5 : 1 : block_size[1]/atom_pitch/2-0.4] )
-		["translate", [xm*atom_pitch,ym*atom_pitch,floor_thickness], fhole],
+	for( pos=floor_hole_positions ) ["translate", pos, fhole],
 ];
 
 togmod1_domodule(thing);
