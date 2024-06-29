@@ -123,6 +123,51 @@
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
+		},
+		"1455": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[5, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"1456": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[6, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"1457": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[7, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"1458": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[8, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"1459": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[9, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
 		}
 	},
 	"parameterSets": "",
