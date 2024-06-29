@@ -1,4 +1,4 @@
-// TOGHoleLib2.9
+// TOGHoleLib2.10
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -29,6 +29,8 @@
 // - THL1006, a counterbored hole which can flange at the surface
 // v2.9:
 // - Fix so that countersinks with negative insets work
+// v2.10:
+// - Always taper overhead bores
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -46,7 +48,8 @@ function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore
 		[small_positive_z, surface_d],
 		if( overhead_bore_d > surface_d ) [ 0.01, overhead_bore_d ],
 		// Taper up to overhead_bore_d
-		[overhead_bore_height, overhead_bore_d]
+		[overhead_bore_height, overhead_bore_d],
+		[overhead_bore_height+overhead_bore_d, 0],
 	]);
 
 function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=undef, overhead_bore_d=0, overhead_bore_height=undef, inset=0.01) =
