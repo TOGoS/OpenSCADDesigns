@@ -1,10 +1,12 @@
-// Hemisphere1.1
+// Hemisphere1.2
 // 
 // Hemisphere for setting a camera on or something
 //
 // Changes:
 // v1.1:
 // - For infill efficiency, only have some holes
+// v1.2:
+// - No v6hcs
 
 $tgx11_offset = -0.1;
 
@@ -62,6 +64,7 @@ thing2 = ["intersection",
 	thing1,
 	tgx11_block_bottom(
 		[[d, "mm"], [d, "mm"], [d/2, "mm"]], $tgx11_gender="m",
+		v6hc_style = "none",
 		segmentation = "chunk"
 	),
 ];
