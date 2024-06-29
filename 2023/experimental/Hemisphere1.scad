@@ -1,6 +1,10 @@
-// Hemisphere1.0
+// Hemisphere1.1
 // 
 // Hemisphere for setting a camera on or something
+//
+// Changes:
+// v1.1:
+// - For infill efficiency, only have some holes
 
 $tgx11_offset = -0.1;
 
@@ -26,6 +30,16 @@ hemi = ["intersection",
 
 small_hole = tog_holelib2_hole("THL-1005", depth=d, overhead_bore_height=d, inset=0);
 
+randish_values = [871,238,957,613,450,912,637,845,673,289,012,934,876,128,345,199,348,591,723,40];
+
+function randish1(a) =
+	let( a_int = floor(a) )
+	let( a_mod = a_int % len(randish_values) )
+	let( a_fixed = a_mod < 0 ? len(randish_values) + a_mod : a_mod )
+	randish_values[a_fixed] + a - a_mod;
+
+function randish2(a,b) = randish1(randish1(a)*b+b);
+
 thing1 = ["difference",
 	hemi,
 	
@@ -35,6 +49,7 @@ thing1 = ["difference",
 	for( ym=[round(-d/12.7)+0.5 : 1 : ceil(d/12.7)] )
 	let( x=xm*12.7 ) let( y=ym*12.7 )
 	let( xy_dist = sqrt(x*x+y*y) )
+	if( abs(randish2(xm,ym)) % 4 < 1 )
 	if( xy_dist < d/2-4 && xy_dist > 12.7 )
 	["translate", [x,y,12.7], small_hole],
 ];
