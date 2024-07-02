@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p1462": {
+			"block_height": "42",
+			"block_size_gfc": "[1, 2]",
+			"debug": "none",
+			"floor_thickness": "6.35",
+			"gfa_pitch": "7",
+			"gfc_pitch_gfa": "6",
+			"hole_patterns": "[[\"bottom-rect\", [20, 20], \"THL-1023\"], [\"back-rect\", [42, 21], \"THL-1001\"]]"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}

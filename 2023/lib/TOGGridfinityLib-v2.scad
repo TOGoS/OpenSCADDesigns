@@ -67,6 +67,12 @@ function togridfinity2_foot(size=[42,42,42]) =
 		function(p) togmod1_rounded_rect_points([size[0]-p[0]*2, size[1]-p[0]*2], r=4-p[0], pos=[0,0,p[1]])
 	);
 
+function togridfinity2_lip(size=[42,42,42]) =
+	tphl1_make_polyhedron_from_layer_function(
+		togridfinity2__pad_foot_points( togridfinity2_full_lip_corner_profile_points, size, 4 ),
+		function(p) togmod1_rounded_rect_points([size[0]-p[0]*2, size[1]-p[0]*2], r=4-p[0], pos=[0,0,p[1]])
+	);
+
 function togridfinity2_xy_hull(size=[42,42,42]) =
 	let( gf_margin = 0.25 )
 	tphl1_make_polyhedron_from_layer_function(
