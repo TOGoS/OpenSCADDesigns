@@ -33,6 +33,11 @@ module togmod1_domodule(mod) {
 		for( i=[1:1:len(mod)-1] ) togmod1_domodule(mod[i]);
 	} else if( mod[0] == "hull" ) {
 		hull() for( i=[1:1:len(mod)-1] ) togmod1_domodule(mod[i]);
+	} else if( mod[0] == "offset-rs" ) {
+		assert(len(mod) == 3);
+		assert(is_num(mod[1]));
+		assert(is_list(mod[2]));
+		offset(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "linear-extrude-zs" ) {
 		// ["linear-extrude-zs", [z0,z1], 2d_shape] // centered
 		// ["linear-extrude-zs", height, 2d_shape]
