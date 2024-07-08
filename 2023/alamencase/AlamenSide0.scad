@@ -1,4 +1,4 @@
-// AlamenSide0.1
+// AlamenSide0.2
 // 
 // Sides for my home-printed computer case,
 // which actually contains a Amazon-bought part,
@@ -6,6 +6,12 @@
 // 
 // v0.1:
 // - First attempt.  Very holey.  Prototype?
+// v0.2:
+// - Make thickness adjustable
+// - Adjust counterbore and countersink depth based on thickness
+
+thickness = 9.53; // 0.01
+regular_hole_grid_enabled = true;
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -19,7 +25,7 @@ module __alamenside__end_params() { }
 inch = 25.4;
 atom_pitch = inch/2;
 
-size = [12*inch, 7.5*inch, 3/8*inch];
+size = [12*inch, 7.5*inch, thickness];
 
 the_hull = ["linear-extrude-zs",
 	[0, size[2]],
@@ -57,6 +63,7 @@ function list_contains(haystack, matcher, index=0) =
 	len(haystack) > index && (matcher(haystack[index]) || list_contains(haystack, matcher, index+1));
 
 holes = [
+	if( regular_hole_grid_enabled )
 	for( xm=[round(-size[0]/atom_pitch)/2+0.5 : 1 : size[0]/atom_pitch/2] )
 		for( ym=[round(-size[1]/atom_pitch)/2+0.5 : 1 : size[1]/atom_pitch/2] )
 			if( !list_contains(slot_positions, function(sp) xx__dist(sp, atom_pitch*[xm,ym]) < atom_pitch-1) )
@@ -69,18 +76,22 @@ holes = [
 function extrude_polyline(points, zds) = tphl1_make_polyhedron_from_layer_function(zds, function(zd)
 	togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_polyline_to_rath(points, zd[1]/2, end_shape="round")), zd[0]));
 
+
+counterbore_inset = min(size[2]/2, 3/16*inch);
+countersink_inset = min(size[2]/3, 1/8 *inch);
+
 function make_counterbored_slot(points) = 
 let( hole_d = 4.5 )
 let( cb_d = 9.5 )
-let( cb_bottom_z = size[2]/2 )
+let( cb_bottom_z = size[2] - counterbore_inset )
 extrude_polyline(
 	points,
 	[[-1, hole_d], [cb_bottom_z, hole_d], [cb_bottom_z, cb_d], [size[2]+1, cb_d]],
 	$fn = 24
 );
 
-small_top_hole    = ["render", ["translate", [0,0,size[2]], tog_holelib2_hole("THL-1005", inset=size[2]/3, depth=size[2]+1)]];
-small_bottom_hole = ["render", ["rotate", [180,0,0], tog_holelib2_hole("THL-1005", inset=size[2]/3, depth=size[2]+1)]];
+small_top_hole    = ["render", ["translate", [0,0,size[2]], tog_holelib2_hole("THL-1005", inset=countersink_inset, depth=size[2]+1)]];
+small_bottom_hole = ["render", ["rotate", [180,0,0], tog_holelib2_hole("THL-1005", inset=countersink_inset, depth=size[2]+1)]];
 small_slot = ["render", make_counterbored_slot([[-inch/16, 0], [+inch/16,0]])];
 
 function decode_hole(thing) =
