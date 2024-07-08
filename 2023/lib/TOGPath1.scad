@@ -419,6 +419,16 @@ function togpath1_offset_rath(rath,offset) =
 	offset == 0 ? rath :
 	togpath1_map_rath_nodes(rath, function(rn) [each rn, ["offset", offset]]);
 
+function togpath1_make_rectangle_rath(size, corner_ops=[], position=[0,0]) = ["togpath1-rath",
+	["togpath1-rathnode", [position[0]-size[0]/2, position[1]-size[1]/2], each corner_ops],
+	["togpath1-rathnode", [position[0]+size[0]/2, position[1]-size[1]/2], each corner_ops],
+	["togpath1-rathnode", [position[0]+size[0]/2, position[1]+size[1]/2], each corner_ops],
+	["togpath1-rathnode", [position[0]-size[0]/2, position[1]+size[1]/2], each corner_ops],
+];
+
+function togpath1_make_circle_rath(r, position=[0,0]) = togpath1_make_rectangle_rath(
+	[r*2, r*2], corner_ops=[["round", r]], position=position
+);
 
 // Calculate an offset vector from pa
 // given the next point, pb, and the angle
@@ -460,6 +470,12 @@ let( sqrt2 = sqrt(2) )
 // (may add 'butt' later)
 function togpath1_polyline_to_rath(polyline, r, end_shape="round") =
 assert( end_shape == "square" || end_shape == "round" )
+len(polyline) == 1 ? (
+	end_shape == "round" ? togpath1_make_circle_rath(r=r, position=polyline[0]) :
+	end_shape == "square" ? togpath1_make_rectangle_rath([r*2,r*2], position=polyline[0]) :
+	assert(false, str("Unsupported end_shape for single-point polyline: '", end_shape, "'"))
+) :
+assert( len(polyline) >= 2 )
 let( end_ops = end_shape == "round" ? [["round", r-0.1, round($fn/4)]] : [] )
 let( polylen = len(polyline) )
 let( zath = togpath1_polyline_to_zath(polyline, end_shape="square") )
