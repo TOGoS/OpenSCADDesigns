@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.5
+// TOGMod1Constructors-v1.6
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -22,6 +22,9 @@
 //   unless simplify_rounded_sides=true
 //   - This makes it more useful for polyhedron generation,
 //     where radius varies, but number of points must remain constant.
+// v1.6:
+// - togmod1_make_rect makes a simple rectangle
+// - togmod1_make_rounded_rect will defer to togmod1_make_rect when r=0
 
 use <./TOGArrayLib1.scad>
 
@@ -80,7 +83,16 @@ function togmod1_rounded_rect_points(size, r, pos=[0,0], simplify_rounded_sides=
 	for(a=[0 : 1 : qfny]) let(ang=270 + a*90/quarterfn) finalizepos([ size[0]/2-rx + rx*cos(ang), -size[1]/2+ry + ry*sin(ang)]),
 ];
 
+function togmod1_make_rect(size) =
+	togmod1_make_polygon([
+		[-size[0]/2, -size[1]/2],
+		[+size[0]/2, -size[1]/2],
+		[+size[0]/2, +size[1]/2],
+		[-size[0]/2, +size[1]/2],
+	]);
+
 function togmod1_make_rounded_rect(size, r) =
+	r == 0 ? togmod1_make_rect(size) :
 	togmod1_make_polygon(togmod1_rounded_rect_points(size,r,simplify_rounded_sides=true));
 
 function togmod1_circle_points(r, pos=[0,0], d=undef) =
