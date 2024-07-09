@@ -1,4 +1,4 @@
-// AlamenSide0.2
+// AlamenSide0.3
 // 
 // Sides for my home-printed computer case,
 // which actually contains a Amazon-bought part,
@@ -9,6 +9,8 @@
 // v0.2:
 // - Make thickness adjustable
 // - Adjust counterbore and countersink depth based on thickness
+// v0.3:
+// - Fix hole positions
 
 thickness = 9.53; // 0.01
 regular_hole_grid_enabled = true;
@@ -36,7 +38,7 @@ size_atoms = [round(size[0]/atom_pitch), round(size[1]/atom_pitch)];
 
 slot_positrations =
 let(rymin=-size[1]/2/atom_pitch, rymax=size[1]/2/atom_pitch, rxmin=-size[0]/2/atom_pitch, rxmax=size[0]/2/atom_pitch)
-let(y1 = 0.5, x1 = 1.5, x2 = 3.5)
+let(y1 = 0.5, x1 = 1.5, x2 = 5.5)
 [
 	for( xo=[0,2] ) for( yo=[0,1] ) for( xm=[-1, 1] ) for( ym=[-1, 1] ) each [
 		[atom_pitch * [xm * (rxmin + x1 + xo), ym * (rymin + y1 + yo)],  0],
