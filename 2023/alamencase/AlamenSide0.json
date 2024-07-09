@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p1468": {
+			"big_hole_style": "mesh",
+			"regular_hole_grid_enabled": "true",
+			"thickness": "3.18"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
