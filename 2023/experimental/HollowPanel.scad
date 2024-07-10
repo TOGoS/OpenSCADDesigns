@@ -1,4 +1,4 @@
-// HollowPanel v0.4
+// HollowPanel v0.5
 // 
 // A panel that you're supposed to fill in with your own goop
 // 
@@ -11,6 +11,11 @@
 // v0.4:
 // - Make nubbins and rails optional
 // - Actually use render_fn
+// v0.5:
+// - Allow floor_thickness = 0, in which case
+//   nubbins will be skipped
+// - Rail height is 1/2 that of the walls
+// - Add east/west rails
 
 chunk_pitch = 38.1;
 size_chunks = [3,4];
@@ -19,8 +24,8 @@ panel_thickness = 6.35; // 0.001
 wall_thickness = 1;
 render_fn = 72;
 
-nubbins_enabled = true;
-rails_enabled = true;
+nubbin_height_rel = 0.5;
+rail_height_rel   = 0.5;
 
 function __asjd__end_params() = undef;
 
@@ -45,8 +50,12 @@ function hps_to_togmod(thing, offset=0) =
 
 // zhps = ["zhps", zhp_zrange, hps]
 // zhp_zrange = ["rel", 0..1, 0..1] | ["abs", z0, z1]
+// - 'abs' :: absolute Z values
+// - 'rel' :: ratio between 0..1 which is scaled/offset within...some context
 
 function hp__lerp(x, v0, v1) = v0*(1-x) + v1*x;
+
+rail_zhprange = ["rel", 0, rail_height_rel];
 
 function zhp_translate_zrange(zhp_range, into) =
 	echo("translating ", zhp_range, " into ", into)
@@ -62,8 +71,11 @@ function hp_make_panel(z0, z1, z2, wall_thickness,
 	panel_cutout_hps = ["union"],
 	cavity_subtraction_zhpses = []
 ) =
+let( effective_z1 = z1 <= 0 ? -1 : z1 )
 let( abs_cavity_subtraction_zhpses = [
-	for(zhps=cavity_subtraction_zhpses) ["zhps", zhp_translate_zrange(zhps[1], ["abs",z1,z2]), zhps[2]]
+	// Translate cavity_subtraction_zhpses to absolute Z values
+	for( zhps = cavity_subtraction_zhpses )
+		["zhps", zhp_translate_zrange(zhps[1], ["abs",effective_z1,z2]), zhps[2]]
 ] )
 ["difference",
 	["linear-extrude-zs", [z0,z2], ["difference",
@@ -71,13 +83,15 @@ let( abs_cavity_subtraction_zhpses = [
 		hps_to_togmod(panel_cutout_hps)
 	]],
 	["difference",
-		["linear-extrude-zs", [z1,z2+1], ["difference",
+		["linear-extrude-zs", [effective_z1,z2+1], ["difference",
 			hps_to_togmod(hps_grow(panel_hull_hps, -wall_thickness)),
 			hps_to_togmod(hps_grow(panel_cutout_hps, wall_thickness)),
+			// Any subtractions that fill the whole Z range do as 2D:
 			for( cszhps=abs_cavity_subtraction_zhpses ) let(zr=cszhps[1]) each [
 				if( zr[1] <= z1 && zr[2] >= z2 ) hps_to_togmod(echo(zr2=zr[2], z2=z2) cszhps[2])
 			]
 		]],
+		// Any subtractions that don't fill the whole Z range do as 3D:
 		for( cszhps=abs_cavity_subtraction_zhpses ) let(zr=cszhps[1]) each [
 			if( zr[1] > z1 || zr[2] < z2 ) ["linear-extrude-zs", [zr[1],zr[2]], hps_to_togmod(cszhps[2])]
 		]
@@ -109,7 +123,9 @@ let(ry=size[1]/2)
 function oval_rath(sr,lr) = rect_rath([lr*2, sr*2], [["round", sr]]);
 post_rath = oval_rath(1,4);
 
-hullrop = ["round", 12.7];
+hull_corner_radius = min(4.7625, chunk_pitch/2);
+
+hullrop = ["round", hull_corner_radius];
 
 the_hull_hps = ["togpath1-rath",
 	["togpath1-rathnode", [-w/2, -h/2], hullrop],
@@ -129,11 +145,15 @@ the_nubbins_hps = ["hp-multixform", [
 ], post_rath];
 
 ns_wall = rect_rath([wall_thickness*2, size_chunks[1]*chunk_pitch]);
+ew_wall = rect_rath([size_chunks[0]*chunk_pitch, wall_thickness*2]);
 cavity_subtraction_zhpses = [
-	if( nubbins_enabled ) ["zhps", ["rel", 0, 0.5], the_nubbins_hps],
-	if( rails_enabled ) ["zhps", ["rel", 0, 1.1], ["hp-multixform", [
+	if( floor_thickness > 0 && nubbin_height_rel > 0 ) ["zhps", ["rel", 0, nubbin_height_rel], the_nubbins_hps],
+	if( rail_zhprange[2] > 0 ) ["zhps", rail_zhprange, ["hp-multixform", [
 		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2] ) [xm*chunk_pitch, 0, 0]
-	], ns_wall]]
+	], ns_wall]],
+	if( rail_zhprange[2] > 0 ) ["zhps", rail_zhprange, ["hp-multixform", [
+		for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2] ) [0, ym*chunk_pitch, 0]
+	], ew_wall]],
 ];
 
 panel = hp_make_panel(

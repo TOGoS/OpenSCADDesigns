@@ -1,0 +1,17 @@
+{
+	"parameterSets": {
+		"p1469": {
+			"chunk_pitch": "38.1",
+			"floor_thickness": "0",
+			"hole_diameter": "7.9375",
+			"nubbin_height_rel": "0.3",
+			"panel_thickness": "6.35",
+			"rail_height_rel": "0.5",
+			"render_fn": "72",
+			"size_chunks": "[3, 4]",
+			"wall_thickness": "1"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
