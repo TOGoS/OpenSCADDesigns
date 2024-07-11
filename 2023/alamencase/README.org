@@ -1,0 +1,37 @@
+#+TITLE: This terrible overengineered computer case
+
+The minimal open case / bracket thing was supposed to make it EASY!
+
+** [2024-07-11] Design
+
+Attempt to use a 1/2" grid as much as possible.
+The ALAMENGDA bracket happens to have several holes
+that are approximately on this grid.
+Unfortunately its width is about 17+1/4",
+so some special bits will need to be made width-wise.
+
+ALAMENGDA bracket thing at the bottom/front
+(treating all the ports as 'front').
+
+Sandwich that between two 12" x 7.5" sides,
+which need to be relatively thin lest the total width become more than 18".
+The top, back, and remainder of the bottom will fit between those sides.
+
+The bottom will attach directly to the sides, and be 17+1/4" x 1+1/2" x 1/2"
+(or maybe 3/4" or even 1", for extra stremgth).
+It needs to be attached securely because it may be used to hang the whole
+thing on a wall by means of counterbored gridbeam holes for attaching to
+a French cleat.  It will therefore also need threaded holes in the ends
+to attach to the sides.
+
+The top will not connect directly to the sides, but onto 11.5" rails
+along the top edges, leaving the last 1/2" for the back framing.
+
+The top is simply a 12" x 17" x 1/2" piece, with 1/2"-spaced
+holes along the edges to attach to the rails and back frame.
+
+Since 12" doesn't leave much room for cabling, the back will be designed
+such that fans extend beyond the 12".  A back 'frame' piece
+fills the space between the bottom, top, and sides,
+gives some stiffness and provides rails along which fans
+can be bolted to the backside.
