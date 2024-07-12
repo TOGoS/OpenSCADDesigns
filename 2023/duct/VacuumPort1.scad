@@ -1,7 +1,11 @@
-// VacuumPort1.0
+// VacuumPort1.1
 // 
 // A port for so-called 2.5" (really 2.35") vacuum hoses
 // to be attached using the standard 1/2" grid of holes
+// 
+// Versions:
+// v1.1:
+// - Add bracing grid
 
 panel_thickness = 3.175;
 mounting_hole_diameter = 4.5;
@@ -25,8 +29,27 @@ use <../lib/TOGVecLib0.scad>
 inch = 25.4;
 port_fn = $preview ? 48 : 96;
 
-panel_hull = ["linear-extrude-zs", [0, panel_thickness],
-	togmod1_make_rounded_rect([3*inch, 3*inch], r=6.35, $fn=24)
+//function make_panel_hull_2d(size) = togmod1_make_rounded_rect(size, r=6.35, $fn=24);
+
+grid_2d =
+let( line = togmod1_make_rect([4*inch, 3.175]) )
+["union",
+	for( xm=[-2 : 1 : 2] ) ["translate", [xm*12.7, 0, 0], ["rotate", [0,0,90], line]],
+	for( ym=[-2 : 1 : 2] ) ["translate", [0, ym*12.7, 0], ["rotate", [0,0, 0], line]],
+];
+
+panel_hull = ["intersection",
+	["union",
+		["linear-extrude-zs", [-1, panel_thickness], togmod1_make_rect([4  *inch, 4  *inch])],
+		["linear-extrude-zs", [panel_thickness-1, port_height + 1], grid_2d],
+	],
+	tphl1_make_polyhedron_from_layer_function(
+		[
+			[0          , 3*inch],
+			[6.35       , 3*inch],
+			[6.35 + 25.4, 1*inch],
+		], function(zd) togvec0_offset_points(togmod1_rounded_rect_points([zd[1], zd[1]], r=6.35, $fn=24), zd[0])
+	),
 ];
 
 port_hull = ["linear-extrude-zs", [1, port_height],
