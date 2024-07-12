@@ -1,4 +1,4 @@
-// VacuumPort1.1
+// VacuumPort1.2
 // 
 // A port for so-called 2.5" (really 2.35") vacuum hoses
 // to be attached using the standard 1/2" grid of holes
@@ -6,6 +6,9 @@
 // Versions:
 // v1.1:
 // - Add bracing grid
+// v1.2:
+// - Extra columns in the corners to fill in some small
+//   gaps between the grid and the port.
 
 panel_thickness = 3.175;
 mounting_hole_diameter = 4.5;
@@ -58,10 +61,16 @@ port_hull = ["linear-extrude-zs", [1, port_height],
 
 mounting_hole_2d = togmod1_make_circle(d=mounting_hole_diameter, $fn=24);
 
+extra_column = tphl1_make_rounded_cuboid([6.35, 6.35, 1.25*inch], r=3, $fn=24);
+
+extra_columns = ["union",
+	for( xm=[-1,1] ) for( ym=[-1,1] ) ["translate", [xm*1.75*12.7, ym*1.75*12.7, 1.25*inch/2], extra_column]
+];
+
 function approx_eq(a, b) = let(rat = a/b) (rat > 0.99 && rat < 1.01);
 
 togmod1_domodule(["difference",
-	["union", panel_hull, port_hull],
+	["union", panel_hull, port_hull, extra_columns],
 	tphl1_make_polyhedron_from_layer_function(
 		// Calculate Z positions and diameters of *actual*
 		// taper, which is extrapolated from taper_d0/d1/length
