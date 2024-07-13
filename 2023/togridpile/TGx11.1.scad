@@ -44,6 +44,7 @@ module __tgx11_end_params() { }
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
+use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
