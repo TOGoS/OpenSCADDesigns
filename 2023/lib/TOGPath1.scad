@@ -360,6 +360,10 @@ function togpath1__offset_vector(pa, pb, pc, dist) =
 function togpath1__offset(pa, pb, pc, dist) =
 	[pb + togpath1__offset_vector(pa, pb, pc, dist)];
 
+// TODO: Figure out what force_fn *should* mean, make it work.
+// Current [2024-07-13] thinking is that it would be most useful
+// for it to mean the number of points, where 1 is okay, though possibly treated as a special case (don't round).
+// This way the number of points in a shape is simply the sum of the force_fns.
 function togpath1__round(pa, pb, pc, radius, force_fn=undef) =
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
