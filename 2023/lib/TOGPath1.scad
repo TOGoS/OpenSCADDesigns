@@ -360,10 +360,9 @@ function togpath1__offset_vector(pa, pb, pc, dist) =
 function togpath1__offset(pa, pb, pc, dist) =
 	[pb + togpath1__offset_vector(pa, pb, pc, dist)];
 
-// TODO: Figure out what force_fn *should* mean, make it work.
-// Current [2024-07-13] thinking is that it would be most useful
-// for it to mean the number of points, where 1 is okay, though possibly treated as a special case (don't round).
-// This way the number of points in a shape is simply the sum of the force_fns.
+// Rounds a corner using `force_fn` (or `ceil($fn * angle/360)`) points.
+// If point count is 1, will return `[pb]`.
+// Note that this is designed to be used to round corners between two straight line segments.
 function togpath1__round(pa, pb, pc, radius, force_fn=undef) =
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
@@ -373,12 +372,14 @@ function togpath1__round(pa, pb, pc, radius, force_fn=undef) =
 	let( fulc = pb - turndir * ovec*radius )
 	let( a0 = togpath1__line_angle(pa, pb) - turndir * 90 )
 	let( a1 = a0+turn )
-	let( vcount = !is_undef(force_fn) ? force_fn+1 : ceil(abs(turn) * max($fn,1) / 360) )
-	assert( vcount >= 1 )
+	let( vcount = !is_undef(force_fn) ? force_fn : ceil(abs(turn) * max($fn,1) / 360) )
+	let( vmax = vcount-1 )
+	assert( vmax >= 0 )
+	vmax == 0 ? [pb] : // Special case when only one point
 	[
-		for( vi = [0:1:vcount] )
+		for( vi = [0:1:vmax] )
 		// Calculate angles in such a way that first and last are exact
-		let( a = a0 * (vcount-vi)/vcount + a1 * vi/vcount )
+		let( a = a0 * (vmax-vi)/vmax + a1 * vi/vmax )
 		[fulc[0] + cos(a) * radius, fulc[1] + sin(a) * radius]
 	];
 
