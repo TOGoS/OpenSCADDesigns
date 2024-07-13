@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p1476": {
+			"atom_pitch": "12.7",
+			"drill_hole_diameter": "3",
+			"hole_pattern": "B",
+			"length_atoms": "12",
+			"mounting_hole_diameter": "4.5"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
