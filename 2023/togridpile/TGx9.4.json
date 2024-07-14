@@ -178,7 +178,7 @@
 			"lip_segmentation": "block",
 			"magnet_hole_depth": "2.4",
 			"magnet_hole_diameter": "6.2",
-			"margin": "0.075",
+			"margin": "0.1",
 			"mug_handle_cutout_depth": "0",
 			"mug_handle_cutout_width": "0",
 			"preview_fn": "12",
