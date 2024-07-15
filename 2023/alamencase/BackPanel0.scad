@@ -1,4 +1,4 @@
-// BackPanel0.2
+// BackPanel0.3
 // 
 // 5"x7.5" panel for the back of the AlamenCase.
 // You should be able to mount a 120mm fan behind it.
@@ -6,8 +6,15 @@
 // 
 // v0.2:
 // - Add 'frame' style.
+// v0.3:
+// - FIX HEIGHT!  Was supposed to be 6.5", to fit between top and bottom,
+//   not 7.5", the height of the whole case.
+// - Rename frame+fan-panel style, because it does include a frame,
+//   and I might want 'fan-panel' to be just a panel.
 
-style = "fan-panel"; // ["fan-panel","frame"]
+style = "frame+fan-panel"; // ["frame+fan-panel","frame"]
+
+module __bp0__end_params() { }
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -25,37 +32,37 @@ thl_1005 = tog_holelib2_hole("THL-1005", depth=20, overhead_bore_height=20, inse
 
 fan_panel = ["difference",
 	togmod1_linear_extrude_z([0    ,atom], ["difference",
-		togmod1_make_rounded_rect([10*atom, 15*atom], r=3*u, $fn=24),
+		togmod1_make_rounded_rect([10*atom, 13*atom], r=3*u, $fn=24),
 		["intersection",
 			togmod1_make_circle(d=120, $fn=72),
 			togmod1_make_rounded_rect([8.1*atom, 10*atom], r=2*u, $fn=16),
 		],
 	]),
-	togmod1_linear_extrude_z([3.175,atom+1], togmod1_make_rounded_rect([ 8*atom, 13*atom], r=1*u, $fn=24)),
+	togmod1_linear_extrude_z([3.175,atom+1], togmod1_make_rounded_rect([ 8*atom, 11*atom], r=1*u, $fn=24)),
 	
 	// Fan mounting holes
 	for( xm=[-1,1] ) for( ym=[-1,1] ) ["translate", [xm*105/2, ym*105/2, 3.175], thl_1005],
 
 	// Counutbored TOGBeam holes
-	for( xm=[-4.5,4.5] ) for( ym=[-7,-6,-5,-3,3,5,6,7] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
-	for( xm=[-4.5 : 1 : 4.5] ) for( ym=[-7,7] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
+	for( xm=[-4.5,4.5] ) for( ym=[-6,-5,-3,3,5,6] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
+	for( xm=[-4.5 : 1 : 4.5] ) for( ym=[-6,6] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
 	
 	for( xm=[-3.5 : 1 : 3.5] ) ["translate", [xm*atom, 0, atom/2], ["rotate", [90,0,0], 5mm_hole]],
-	for( ym=[-6,each [-5:1:5],6] ) ["translate", [0, ym*atom, atom/2], ["rotate", [0,90,0], 5mm_hole]],
+	for( ym=[-5,each [-5:1:5],5] ) ["translate", [0, ym*atom, atom/2], ["rotate", [0,90,0], 5mm_hole]],
 ];
 
 frame = ["difference",
 	togmod1_linear_extrude_z([0    ,atom], ["difference",
-		togmod1_make_rounded_rect([10*atom, 15*atom], r=3*u, $fn=24),
-		togmod1_make_rounded_rect([8*atom, 13*atom], r=2*u, $fn=16),
+		togmod1_make_rounded_rect([10*atom, 13*atom], r=3*u, $fn=24),
+		togmod1_make_rounded_rect([ 8*atom, 11*atom], r=2*u, $fn=16),
 	]),
 	
 	// Counutbored TOGBeam holes
-	for( xm=[-4.5,4.5] ) for( ym=[-7 : 1 : 7] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
-	for( xm=[-4.5 : 1 : 4.5] ) for( ym=[-7,7] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
+	for( xm=[-4.5,4.5] ) for( ym=[-6 : 1 : 6] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
+	for( xm=[-4.5 : 1 : 4.5] ) for( ym=[-6,6] ) ["translate", [xm*atom, ym*atom, atom], thl_1001],
 	
 	for( xm=[-3.5 : 1 : 3.5] ) ["translate", [xm*atom, 0, atom/2], ["rotate", [90,0,0], 5mm_hole]],
-	for( ym=[-6,each [-5:1:5],6] ) ["translate", [0, ym*atom, atom/2], ["rotate", [0,90,0], 5mm_hole]],
+	for( ym=[-5,each [-5:1:5],5] ) ["translate", [0, ym*atom, atom/2], ["rotate", [0,90,0], 5mm_hole]],
 ];
 
-togmod1_domodule(style == "fan-panel" ? fan_panel : frame);
+togmod1_domodule(style == "frame+fan-panel" ? fan_panel : frame);
