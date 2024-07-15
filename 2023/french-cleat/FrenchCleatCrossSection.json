@@ -11,6 +11,22 @@
 			"thickness_inches": "0.75",
 			"top_edge_slant": "1",
 			"top_edge_trim_inches": "0.062"
+		},
+		"p1489": {
+			"_comments": [
+				"WSTYPE-4114-H3FS, 1/16\" trim",
+				"What you make with a 3+1/2\" board"
+			],
+			"$fn": "20",
+			"bottom_edge_slant": "1",
+			"bottom_edge_trim_inches": "0.375",
+			"hole_diameter": "5",
+			"hole_spacing_inches": "0.75",
+			"length_inches": "0.75",
+			"nominal_height_inches": "3",
+			"thickness_inches": "0.75",
+			"top_edge_slant": "1",
+			"top_edge_trim_inches": "0.062"
 		}
 	},
 	"parameterSets": "",
