@@ -169,7 +169,7 @@
 //   cavity settings and don't want to wait so long between previews
 // v9.5.27:
 // - 'gencase1' cavity mode, for making 'generic open-sided cases' for things
-// v9.5.27:
+// v9.5.28:
 // - Fix that lip_segmentation was not explicitly passed to tgx9_cup
 
 /* [Atom/chunk/block size] */
