@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.7
+// TOGPolyhedronLib1.8
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -26,6 +26,9 @@
 // - tphl1_make_rounded_cuboid corner_shape parameter may be
 //   'ellipsoid' (current behavior), or 'ovoid1' or 'ovoid2',
 //   which effectively apply a spherical rounding to the top/bottom edges
+// v1.8:
+// - Fix `tphl1_faces` to mind `cap_top` and `cap_bottom`,
+//   so you can make e.g. toruses.
 
 // Winding order:
 // 
@@ -69,10 +72,10 @@ let( l1 = (i+1)*layerspan )
 ];
 
 function tphl1_faces( layers, layerspan, cap_bottom=true, cap_top=true ) = [
-	each tphl1_cap_faces( layers, layerspan, 0, reverse=true ),
+	if( cap_bottom ) each tphl1_cap_faces( layers, layerspan, 0, reverse=true ),
 	// For now, assume convex end caps
 	for( li=[0 : 1 : len(layers)-2] ) each tphl1_layer_faces(layers, layerspan, li),
-	each tphl1_cap_faces( layers, layerspan, len(layers)-1, reverse=false )
+	if( cap_top ) each tphl1_cap_faces( layers, layerspan, len(layers)-1, reverse=false )
 ];
 
 function tphl1_points(layers, layerspan) = [
