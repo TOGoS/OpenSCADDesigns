@@ -1,6 +1,11 @@
-// FanPanel0.1
+// FanPanel0.2
 // 
 // Various fan-related parts
+// 
+// Versions:
+// v0.2:
+// - Add 'cxtor-demo' mode, which exists so I could take a screenshot
+//   of both the matching parts at once.
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -8,7 +13,7 @@
 //   (120mm x 120mm x 25mm), so the fan is a little smaller.
 // - Hole spacing is a 105mm square
 
-what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel", "filter-holder-wall"]
+what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel", "filter-holder-wall", "cxtor-demo"]
 
 module fp0__end_params() { }
 
@@ -164,6 +169,7 @@ thing =
 	what == "fan-adapter-panel" ? the_fan_adapter_panel :
 	what == "filter-holder-bottom-panel" ? the_filter_holder_bottom_panel :
 	what == "filter-holder-wall" ? the_filter_holder_wall :
+	what == "cxtor-demo" ? ["union", the_filter_holder_wall, ["translate", [6*inch, 0, 0], the_filter_holder_bottom_panel]] :
 	assert(false, str("What is the ", what, "?"));
 
 togmod1_domodule(thing);
