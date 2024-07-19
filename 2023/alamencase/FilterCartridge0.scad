@@ -1,4 +1,4 @@
-// FilterCartridge0.5
+// FilterCartridge0.6
 // 
 // v0.1:
 // - Just the bottom panel; takes forever to render!
@@ -13,6 +13,10 @@
 // - Remove dead code
 // - Organize options
 // - Add `wall_height` option
+// v0.6:
+// - Center hole
+// - Add 'empty' grating style
+// - $tgx11_offset = -0.1; outer_margin is applied separately.
 
 what = "bottom"; // ["bottom", "grating-layer", "walls"]
 
@@ -22,7 +26,9 @@ wall_height = 19.05;
 
 /* [Grating/panel settings] */
 
-grating_style = "grating1"; // ["grating1", "grating2","grating3"]
+grating_style = "grating1"; // ["empty","grating1", "grating2","grating3"]
+
+center_hole_diameter = 0;
 
 /* [Margins, Detail] */
 
@@ -122,11 +128,25 @@ function tgrat1_grating_to_togmod(area, grating_config) =
 //// End grating proto-lib
 
 
+effective_center_hole_diameter = what == "walls" ? 0 : center_hole_diameter;
+
+the_center_hole_2d =
+	effective_center_hole_diameter == 0 ? ["union"] :
+	togmod1_make_circle(d=center_hole_diameter, $fn=48);
+
+the_center_hole_border =
+	effective_center_hole_diameter == 0 ? ["union"] :
+	togmod1_make_circle(d=center_hole_diameter + inch/4, $fn=48);	
 
 the_cutout_rath = make_cutout_rath(size, -inch/8);
 
 the_hull_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(make_hull_rath(size, -outer_margin)));
-the_cutout_hull_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(the_cutout_rath));
+
+the_cutout_hull_2d = ["difference",
+	togmod1_make_polygon(togpath1_rath_to_polypoints(the_cutout_rath)),
+	
+	the_center_hole_border,
+];
 
 grating1_config = tgrat1_make_multi_grating([
 	tgrat1_make_grating([0.6,1.2],  3,  30),
@@ -150,7 +170,7 @@ grating3_config = tgrat1_make_multi_grating([
 ]);
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
-$tgx11_offset = -outer_margin;
+$tgx11_offset = -0.1;
 
 panel_size_ca = [[9, "atom"], [9, "atom"], [2, "u"]];
 
@@ -166,7 +186,17 @@ hole_positions = [
 	for( xm=[-1,1] ) for( ym=[-1,1] ) [xm*(panel_size[0]-12.7)/2, ym*(panel_size[1]-12.7)/2]
 ];
 
-function make_bottom_panel( grating_config ) = ["intersection",
+function extend_zrange(zrange, amt) = [zrange[0]-amt, zrange[1]+amt];
+
+function make_bottom_panel( grating_config ) =
+let( zrange = [0, panel_size[2]] )
+let( zrange1 = extend_zrange(zrange, 1) )
+let( zrange2 = extend_zrange(zrange, 2) )
+["intersection",
+	togmod1_linear_extrude_z(zrange1, ["difference",
+		the_hull_2d,
+		the_center_hole_2d
+	]),
 	["difference",
 		bottom_panel_hull,
 		for( pos=hole_positions )
@@ -174,7 +204,7 @@ function make_bottom_panel( grating_config ) = ["intersection",
 	],
 	["union",
 		tgrat1_grating_to_togmod([4.5*inch, 4.5*inch], grating_config),
-		togmod1_linear_extrude_z([-1, 10], ["difference",
+		togmod1_linear_extrude_z(zrange2, ["difference",
 			togmod1_make_rect([1000,1000]),
 			the_cutout_hull_2d
 		]),
@@ -186,7 +216,10 @@ let( zrange=tgrat1_grating_zrange(grating_config) )
 echo( grating_zrange=zrange )
 ["intersection",
 	["difference",
-		togmod1_linear_extrude_z(zrange, the_hull_2d),
+		togmod1_linear_extrude_z(zrange, ["difference",
+			the_hull_2d,
+			the_center_hole_2d
+		]),
 		for( pos=hole_positions )
 			["translate", [pos[0], pos[1], min(zrange[0], zrange[1]-3)], mounting_hole],
 	],
@@ -223,6 +256,7 @@ walls = ["linear-extrude-zs",
 ];
 
 grating_config =
+	grating_style == "empty" ? ["union"] :
 	grating_style == "grating1" ? grating1_config :
 	grating_style == "grating2" ? grating2_config :
 	grating_style == "grating3" ? grating3_config :
