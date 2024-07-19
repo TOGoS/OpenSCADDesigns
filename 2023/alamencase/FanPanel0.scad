@@ -1,4 +1,4 @@
-// FanPanel0.2
+// FanPanel0.3
 // 
 // Various fan-related parts
 // 
@@ -6,12 +6,16 @@
 // v0.2:
 // - Add 'cxtor-demo' mode, which exists so I could take a screenshot
 //   of both the matching parts at once.
+// v0.3:
+// - Extend mounting holes into slots that will align
+//   with either 120mm fan holes (105mm pattern)
+//   or TOGBeams (101.6mm pattern).
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
 //   This is actually the size of their enclosure
 //   (120mm x 120mm x 25mm), so the fan is a little smaller.
-// - Hole spacing is a 105mm square
+// - Hole spacing for 120mm fans is a 105mm square
 
 what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel", "filter-holder-wall", "cxtor-demo"]
 
@@ -134,6 +138,22 @@ fa_panel_mhole = thl_1005;
 
 
 fp_fhole = tog_holelib2_hole("THL-1001", depth=50, inset=0.1);
+fp_fhole_top = tog_holelib2_hole("THL-1001", depth=0, inset=0.1);
+fp_fhole_shaft = tphl1_make_z_cylinder(zrange=[-50,50], d=4.5);
+
+fp_fhol2 = ["union",
+	// Surely there is a more elegant way to do this;
+	// actually I think there's a polyline function somewher;
+	// just not bothering for now.
+	["hull",
+		["translate", [2*inch,2*inch,0], fp_fhole_top],
+		["translate", [105/2 , 105/2,0], fp_fhole_top],
+	],
+	["hull",
+		["translate", [2*inch,2*inch,0], fp_fhole_shaft],
+		["translate", [105/2 , 105/2,0], fp_fhole_shaft],
+	],
+];
 
 center_cutout_2d = ["intersection",
 	togmod1_make_circle(d=120, $fn=72),
@@ -161,8 +181,12 @@ the_filter_holder_wall = fp0_wr_wall(wall_rath, wall_height, wall_thickness);
 
 the_filter_holder_bottom_panel = ["difference",
 	fp0_wr_panel(wall_rath, panel_thickness, wall_thickness),
+	
 	togmod1_linear_extrude_z([-1, panel_thickness+1], center_cutout_2d),
-	for( pos=120mm_mounting_hole_positions ) ["translate", [pos[0],pos[1],panel_thickness], fp_fhole],
+	// for( pos=120mm_mounting_hole_positions ) ["translate", [pos[0],pos[1],panel_thickness], fp_fhole],
+	["translate", [0,0,panel_thickness], ["union",
+		for( rot=[0,90,180,270] ) ["rotate", [0,0,rot], fp_fhol2]
+	]],
 ];
 
 thing =
