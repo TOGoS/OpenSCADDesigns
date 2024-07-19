@@ -1,0 +1,27 @@
+{
+	"parameterSets": {
+		"p1501": {
+			"center_hole_diameter": "0",
+			"grating_style": "grating3",
+			"outer_margin": "0.2",
+			"wall_height": "19.05",
+			"what": "bottom"
+		},
+		"p1500": {
+			"center_hole_diameter": "38",
+			"grating_style": "grating3",
+			"outer_margin": "0.2",
+			"wall_height": "19.05",
+			"what": "bottom"
+		},
+		"p1502": {
+			"center_hole_diameter": "0",
+			"grating_style": "grating3",
+			"outer_margin": "0.2",
+			"wall_height": "19.05",
+			"what": "walls"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
