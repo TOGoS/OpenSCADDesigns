@@ -1,4 +1,4 @@
-// FanPanel0.4
+// FanPanel0.5
 // 
 // Various fan-related parts
 // 
@@ -12,6 +12,10 @@
 //   or TOGBeams (101.6mm pattern).
 // v0.4:
 // - Configurable inner and outer margins
+// v0.5:
+// - Actually let's make the smaller hole pattern 100mm,
+//   in case someone wants to use this with some
+//   25mm-based system.
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -145,19 +149,17 @@ fp_fhole = tog_holelib2_hole("THL-1001", depth=50, inset=0.1);
 fp_fhole_top = tog_holelib2_hole("THL-1001", depth=0, inset=0.1);
 fp_fhole_shaft = tphl1_make_z_cylinder(zrange=[-50,50], d=4.5);
 
-fp_fhol2 = ["union",
-	// Surely there is a more elegant way to do this;
-	// actually I think there's a polyline function somewher;
-	// just not bothering for now.
-	["hull",
-		["translate", [2*inch,2*inch,0], fp_fhole_top],
-		["translate", [105/2 , 105/2,0], fp_fhole_top],
-	],
-	["hull",
-		["translate", [2*inch,2*inch,0], fp_fhole_shaft],
-		["translate", [105/2 , 105/2,0], fp_fhole_shaft],
-	],
-];
+fp_fhol2 =
+	let( hole_spacings=[100,105] )
+	let( parts=[fp_fhole_top, fp_fhole_shaft] )
+	["union",
+		// Surely there is a more elegant way to do this;
+		// actually I think there's a polyline function somewher;
+		// just not bothering for now.
+		for( part=parts ) ["hull",
+			for( spac=hole_spacings ) ["translate", [spac/2, spac/2], part]
+		],
+	];
 
 center_cutout_2d = ["intersection",
 	togmod1_make_circle(d=120, $fn=72),
