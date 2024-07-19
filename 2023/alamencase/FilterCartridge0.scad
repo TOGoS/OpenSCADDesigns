@@ -1,7 +1,11 @@
-// FilterCartridge0.1
+// FilterCartridge0.2
 // 
 // v0.1:
 // - Just the bottom panel; takes forever to render!
+// v0.2:
+// - Add what="walls"
+
+what = "bottom"; // ["bottom", "walls"]
 
 outer_margin = 0.2;
 grating0_thickness = 1;
@@ -98,8 +102,10 @@ let( tri2 = togmod1_make_polygon([[-cellsize[0]*3/8,  cellsize[1]*7/16], [cellsi
 	],
 ];
 
+the_cutout_rath = make_cutout_rath(size, -inch/8);
+
 the_hull_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(make_hull_rath(size, -outer_margin)));
-the_cutout_hull_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(make_cutout_rath(size, -inch/8)));
+the_cutout_hull_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(the_cutout_rath));
 
 the_cutout = ["intersection",
 	["union",
@@ -134,12 +140,15 @@ panel_hull =
 
 mounting_hole = ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=panel_size[2]+1, inset=0.2)];
 
-thing1 = ["intersection",
+hole_positions = [
+	for( xm=[-1,1] ) for( ym=[-1,1] ) [xm*(panel_size[0]-12.7)/2, ym*(panel_size[1]-12.7)/2]
+];
+
+panel = ["intersection",
 	["difference",
 		panel_hull,
-		for( xm=[-1,1] ) for( ym=[-1,1] )
-			["translate", [xm*(panel_size[0]-12.7)/2, ym*(panel_size[1]-12.7)/2, 0],
-				mounting_hole],
+		for( pos=hole_positions )
+			["translate", [pos[0], pos[1], 0], mounting_hole],
 	],
 	["union",
 		grating1,
@@ -150,6 +159,50 @@ thing1 = ["intersection",
 	],
 ];
 
-thing = thing1;
+wall_height = inch*3/4;
+
+walls_outer_polypoints =
+	let( corner_ops = [["bevel", inch/8], ["round", inch/8], ["offset", $tgx11_offset]] )
+	togpath1_rath_to_polypoints(["togpath1-rath",
+		["togpath1-rathnode", [-size[0]/2, -size[1]/2], each corner_ops],
+		["togpath1-rathnode", [ size[0]/2, -size[1]/2], each corner_ops],
+		["togpath1-rathnode", [ size[0]/2,  size[1]/2], each corner_ops],
+		["togpath1-rathnode", [-size[0]/2,  size[1]/2], each corner_ops],
+	]);
+
+walls_inner_polypoints =
+	let( corner_ops = [["bevel", inch*3/8], ["round", inch/8], ["offset", $tgx11_offset]] )
+	togpath1_rath_to_polypoints(the_cutout_rath /*["togpath1-rath",
+		["togpath1-rathnode", [-size[0]/2, -size[1]/2], each corner_ops],
+		["togpath1-rathnode", [ size[0]/2, -size[1]/2], each corner_ops],
+		["togpath1-rathnode", [ size[0]/2,  size[1]/2], each corner_ops],
+		["togpath1-rathnode", [-size[0]/2,  size[1]/2], each corner_ops],
+	]*/);
+
+/*
+walls = ["difference",
+	tphl1_make_polyhedron_from_layer_function([
+		[0          , walls_outer_polypoints],
+		[wall_height, walls_outer_polypoints],
+		[wall_height, walls_inner_polypoints],
+		[0          , walls_inner_polypoints],
+		[0          , walls_outer_polypoints],
+	], function(p) togvec0_offset_points(p[1], p[0]), cap_bottom = false, cap_top = false),
+]
+*/
+
+walls = ["linear-extrude-zs",
+	[0, wall_height],
+	["difference",
+		the_hull_2d,
+		the_cutout_hull_2d,
+		for( pos=hole_positions ) ["translate", pos, togmod1_make_circle(d=5)],
+	]
+];
+
+thing =
+	what == "bottom" ? panel :
+	what == "walls" ? walls :
+	assert(false, str("What is the ", what));
 
 togmod1_domodule(thing);
