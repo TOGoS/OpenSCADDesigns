@@ -1,4 +1,4 @@
-// FilterCartridge0.3
+// FilterCartridge0.4
 // 
 // v0.1:
 // - Just the bottom panel; takes forever to render!
@@ -7,9 +7,11 @@
 // v0.3:
 // - Add what="grating-layer"
 // - Add grating_style="grating1"|"grating2"
+// v0.4:
+// - Add 'grating3'
 
 what = "bottom"; // ["bottom", "grating-layer", "walls"]
-grating_style = "grating1"; // ["grating1", "grating2"]
+grating_style = "grating1"; // ["grating1", "grating2","grating3"]
 
 outer_margin = 0.2;
 grating0_thickness = 1;
@@ -159,6 +161,13 @@ grating2_config = tgrat1_make_multi_grating([
 	tgrat1_make_grating([0.6,2*layer_height],  3, 120, 3*layer_height),
 ]);
 
+grating3_config = tgrat1_make_multi_grating([
+	tgrat1_make_grating([0.6,2*layer_height],  3,  30, 1*layer_height),
+	tgrat1_make_grating([0.6,2*layer_height],  3, 120, 3*layer_height),
+	tgrat1_make_grating([1.2,4*layer_height], 12,  75, 6*layer_height),
+	tgrat1_make_grating([1.2,8*layer_height], 12,   0, 8*layer_height),
+]);
+
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 $tgx11_offset = -outer_margin;
 
@@ -238,6 +247,7 @@ walls = ["linear-extrude-zs",
 grating_config =
 	grating_style == "grating1" ? grating1_config :
 	grating_style == "grating2" ? grating2_config :
+	grating_style == "grating3" ? grating3_config :
 	assert(false, str("Unknown grating style: '", grating_style, "'"));
 
 thing =
