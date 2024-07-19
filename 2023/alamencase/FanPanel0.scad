@@ -1,4 +1,4 @@
-// FanPanel0.3
+// FanPanel0.4
 // 
 // Various fan-related parts
 // 
@@ -10,6 +10,8 @@
 // - Extend mounting holes into slots that will align
 //   with either 120mm fan holes (105mm pattern)
 //   or TOGBeams (101.6mm pattern).
+// v0.4:
+// - Configurable inner and outer margins
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -18,6 +20,8 @@
 // - Hole spacing for 120mm fans is a 105mm square
 
 what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel", "filter-holder-wall", "cxtor-demo"]
+inner_margin = 0.2;
+outer_margin = 0.1;
 
 module fp0__end_params() { }
 
@@ -62,27 +66,27 @@ function fp0__cxtor(rath, pos=0, r=25.4/16) =
 		[ 0,  r],
 	], pos=pos);
 
-function fp0__wall_hull(rath, height, thickness) =
+function fp0__wall_hull(rath, height, thickin, thickout) =
 	let( cxtor = fp0__cxtor(rath) )
 	fp0__ring(rath, [
-		[-thickness/2,      0],
-		[ thickness/2,      0],
-		[ thickness/2, height],
-		[-thickness/2, height],
+		[-thickin ,      0],
+		[ thickout,      0],
+		[ thickout, height],
+		[-thickin , height],
 	]);
 
-function fp0_wr_wall(rath, height, thickness) =
+function fp0_wr_wall(rath, height, thickin, thickout) =
 	let( cxtor = fp0__cxtor(rath, r=inch/16+0.1) )
 	["difference",
-		fp0__wall_hull(rath, height, thickness),
+		fp0__wall_hull(rath, height, thickin, thickout),
 		["translate", [0,0,0     ], cxtor],
 		["translate", [0,0,height], cxtor],
 	];
 
 // Wall-ridged panel
-function fp0_wr_panel(rath, panel_thickness, wall_thickness) =
+function fp0_wr_panel(rath, panel_thickness, thickout) =
 	let( cxtor = fp0__cxtor(rath, r=inch/16-0.1) )
-	let( panel_rath = togpath1_offset_rath(rath, wall_thickness/2) )
+	let( panel_rath = togpath1_offset_rath(rath, thickout) )
 	let( panel_polypoints = togpath1_rath_to_polypoints(panel_rath) )
 	["union",
 		tphl1_make_polyhedron_from_layer_function(
@@ -164,7 +168,7 @@ the_fan_adapter_panel =
 let( fa_panel_size = [5*inch, 6.5*inch, fa_panel_thickness] )
 ["difference",
 	togmod1_linear_extrude_z([0,fa_panel_thickness], ["difference",
-		togmod1_make_rounded_rect(fa_panel_size, r=6.35),
+		togmod1_make_rounded_rect([fa_panel_size[0] - outer_margin*2, fa_panel_size[1] - outer_margin*2], r=6.35),
 		
 		center_cutout_2d, // Big center hole for air
 		for( x=[-38.1,0,38.1] ) ["translate", [x,2*inch], togmod1_make_rounded_rect([6.35, 1.35*inch], r=3)], // Slot for the cable
@@ -177,10 +181,14 @@ let( fa_panel_size = [5*inch, 6.5*inch, fa_panel_thickness] )
 			["translate", [pos[0],pos[1],fa_panel_thickness], fa_panel_mhole],
 ];
 
-the_filter_holder_wall = fp0_wr_wall(wall_rath, wall_height, wall_thickness);
+the_filter_holder_wall = fp0_wr_wall(
+	wall_rath, wall_height,
+	wall_thickness/2 - inner_margin,
+	wall_thickness/2 - outer_margin
+);
 
 the_filter_holder_bottom_panel = ["difference",
-	fp0_wr_panel(wall_rath, panel_thickness, wall_thickness),
+	fp0_wr_panel(wall_rath, panel_thickness, wall_thickness/2 - outer_margin),
 	
 	togmod1_linear_extrude_z([-1, panel_thickness+1], center_cutout_2d),
 	// for( pos=120mm_mounting_hole_positions ) ["translate", [pos[0],pos[1],panel_thickness], fp_fhole],
