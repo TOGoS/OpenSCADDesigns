@@ -1,4 +1,4 @@
-// TOGHoleLib2.10
+// TOGHoleLib2.11
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -31,6 +31,8 @@
 // - Fix so that countersinks with negative insets work
 // v2.10:
 // - Always taper overhead bores
+// v2.11:
+// - Add THL-1007, counterbored-for-hex-nut with 'hole remedy'
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -71,6 +73,31 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 		inset     = _inset
 	);
 
+// TOTHINKABOUT: This could all be done with a single polyhedron!
+// TOTHINKABOUT: Perhaps every counterbored hole should have the option
+//   of remedy_depth > 0
+function tog_holelib2_counterbored_with_remedy_hole(
+	counterbore_d, shaft_d, depth, overhead_bore_height=undef, remedy_depth=0.3, inset=1
+) =
+	let(_overhead_bore_height = is_undef(overhead_bore_height) ? max(0, -inset) + 1 : overhead_bore_height)
+	["intersection",
+		tphl1_make_z_cylinder(zds=[
+			[0 - depth - 10                             ,       shaft_d],
+			[0 - inset - remedy_depth                   ,       shaft_d],
+			[0 - inset - remedy_depth                   , counterbore_d],
+			[0 + _overhead_bore_height                  , counterbore_d],
+			[0 + _overhead_bore_height + counterbore_d/2,             0],
+		]),
+		["union",
+			let(cbbh = _overhead_bore_height + counterbore_d + inset)
+				["translate", [0,0,cbbh/2-inset],
+					togmod1_make_cuboid([counterbore_d * 2, counterbore_d * 2, cbbh])],
+			let(sbbh = depth*2)
+				["translate", [0,0,-depth/2],
+					togmod1_make_cuboid([counterbore_d * 1.5, shaft_d+0.1, sbbh])],
+		]
+	];
+
 function tog_holelib2__coalesce(v, default_v) = is_undef(v) ? default_v : v;
 
 // Suitable for #6 flatheads
@@ -92,6 +119,10 @@ function tog_holelib2_hole1003(depth, overhead_bore_height=1, inset=undef) =
 function tog_holelib2_hole1005(depth, overhead_bore_height=1, inset=undef) =
 	let(_inset = tog_holelib2__coalesce(inset, 3.175))
 	tog_holelib2_countersunk_hole(9.5, 4.5, 2.5, depth, 4.5, overhead_bore_height=overhead_bore_height, inset=_inset, $fn=6);
+
+function tog_holelib2_hole1007(depth, overhead_bore_height=1, inset=undef) =
+	let(_inset = tog_holelib2__coalesce(inset, 3.175))
+	tog_holelib2_counterbored_with_remedy_hole(9.5, 4.5, depth, overhead_bore_height=overhead_bore_height, inset=_inset, $fn=6);
 
 function tog_holelib2__min_delta(list, index=0, current=9999) =
 	index >= len(list)-1 ? current :
@@ -130,6 +161,7 @@ tog_holelib2_hole_types = [
 	["THL-1004", "Suitable for #6 flathead, but roomier than 1001"],
 	["THL-1005", "Countersunk for #6 flathead, but can also accept a hex nut"],
 	["THL-1006", "Counterbored for 1/4\" furniture bolt, weld nut, etc"],
+	["THL-1007", "Counterbored for #6 hex nut, with 'hole overhang remedy'"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 	["THL-1023", "Counterbored for M3 pan-head screws"],
@@ -163,5 +195,6 @@ function tog_holelib2_hole(
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	type_name == "THL-1005" ? tog_holelib2_hole1005(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1006" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=inset, flange_radius=flange_radius) :
+	type_name == "THL-1007" ? tog_holelib2_hole1007(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
