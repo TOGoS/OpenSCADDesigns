@@ -431,6 +431,10 @@ function togpath1_make_rectangle_rath(size, corner_ops=[], position=[0,0]) = ["t
 	["togpath1-rathnode", [position[0]-size[0]/2, position[1]+size[1]/2], each corner_ops],
 ];
 
+function togpath1_make_polygon_rath(r, position=[0,0]) = ["togpath1-rath",
+	for( i=[0:1:$fn-1] ) ["togpath1-rathnode", [position[0]+r*cos(i*360/$fn), position[1]+r*sin(i*360/$fn)]]
+];
+
 function togpath1_make_circle_rath(r, position=[0,0]) = togpath1_make_rectangle_rath(
 	[r*2, r*2], corner_ops=[["round", r]], position=position
 );
