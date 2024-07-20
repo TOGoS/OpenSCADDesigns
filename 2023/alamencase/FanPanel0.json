@@ -4,6 +4,11 @@
 			"inner_margin": "0.2",
 			"outer_margin": "0.1",
 			"what": "filter-holder"
+		},
+		"p1505": {
+			"inner_margin": "0.2",
+			"outer_margin": "0.1",
+			"what": "fan-adapter-panel"
 		}
 	},
 	"parameterSets": "",

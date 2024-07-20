@@ -1,4 +1,4 @@
-// FanPanel0.6
+// FanPanel0.7
 // 
 // Various fan-related parts
 // 
@@ -18,6 +18,10 @@
 //   25mm-based system.
 // v0.6:
 // - Add 'filter-holder'
+// v0.7:
+// - Flip fan panel
+// - Change fan mounting holes into slots for 100mm-105mm hole patterns
+// - Make use THL-1007s on bottom side
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -25,7 +29,7 @@
 //   (120mm x 120mm x 25mm), so the fan is a little smaller.
 // - Hole spacing for 120mm fans is a 105mm square
 
-what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel","filter-holder-wall","filter-holder","cxtor-demo"]
+what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel","filter-holder-wall","filter-holder","cxtor-demo","THL-1007"]
 inner_margin = 0.2;
 outer_margin = 0.1;
 
@@ -141,10 +145,27 @@ let( corner_ops = [["round", inch*3/16]] )
 
 fa_panel_thickness = 6.35;
 
-thl_1005 = tog_holelib2_hole("THL-1005", depth=50, inset=2);
+thl_1007 = tog_holelib2_hole("THL-1007", depth=50, inset=2);
 
-fa_panel_fhole = thl_1005;
-fa_panel_mhole = thl_1005;
+function slot_polygon_points(points, radius) =
+	assert(is_list(points))
+	assert(is_num(radius))
+	assert(radius > 0)
+	let( slot_rath = togpath1_polyline_to_rath(points, radius, end_shape="square") )
+	let( slot_rath_2 = ["togpath1-rath", for(i=[1:1:len(slot_rath)-1]) [each slot_rath[i], ["bevel",radius/2]]] )
+	togpath1_rath_to_polypoints(slot_rath_2);
+
+function extrude_polyline(points, zds) = tphl1_make_polyhedron_from_layer_function(zds, function(zd)
+	togvec0_offset_points(slot_polygon_points(points, zd[1]/2), zd[0]));
+
+// fa_panel_fhole = thl_1007;
+fa_panel_mhole = ["render", ["rotate", [180,0,0], thl_1007]];
+fa_panel_fslot = extrude_polyline([for(d=[100,105]) [d/2,d/2]], zds=[
+	[                  -1, 4.5],
+	[fa_panel_thickness/2, 4.5],
+	[fa_panel_thickness/2, 9.5],
+	[fa_panel_thickness+1, 9.5],
+]);
 
 
 fp_fhole = tog_holelib2_hole("THL-1001", depth=50, inset=0.1);
@@ -178,11 +199,12 @@ let( fa_panel_size = [5*inch, 6.5*inch, fa_panel_thickness] )
 		for( x=[-38.1,0,38.1] ) ["translate", [x,2*inch], togmod1_make_rounded_rect([6.35, 1.35*inch], r=3)], // Slot for the cable
 	]),
 	
-	for( pos=120mm_mounting_hole_positions ) ["translate", [pos[0],pos[1],0], ["rotate",[180,0,0],fa_panel_fhole]],
+	for( ang=[0,90,180,270] ) ["rotate", [0,0,ang], fa_panel_fslot],
+	// for( pos=120mm_mounting_hole_positions ) ["translate", [pos[0],pos[1],0], ["rotate",[180,0,0],fa_panel_fhole]],
 	
 	for( pos=rect_edge_mhole_positions(fa_panel_size, 12.7) )
 		if( round(abs(pos[1]/12.7) - 4) != 0 )
-			["translate", [pos[0],pos[1],fa_panel_thickness], fa_panel_mhole],
+			["translate", [pos[0],pos[1],0], fa_panel_mhole],
 ];
 
 the_filter_holder_wall = fp0_wr_wall(
@@ -217,6 +239,7 @@ the_filter_holder =
 	];
 
 thing =
+	what == "THL-1007" ? thl_1007 :
 	what == "fan-adapter-panel" ? the_fan_adapter_panel :
 	what == "filter-holder-bottom-panel" ? the_filter_holder_bottom_panel :
 	what == "filter-holder-wall" ? the_filter_holder_wall :
