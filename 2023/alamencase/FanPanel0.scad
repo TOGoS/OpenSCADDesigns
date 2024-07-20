@@ -1,4 +1,4 @@
-// FanPanel0.5
+// FanPanel0.6
 // 
 // Various fan-related parts
 // 
@@ -16,6 +16,8 @@
 // - Actually let's make the smaller hole pattern 100mm,
 //   in case someone wants to use this with some
 //   25mm-based system.
+// v0.6:
+// - Add 'filter-holder'
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -23,7 +25,7 @@
 //   (120mm x 120mm x 25mm), so the fan is a little smaller.
 // - Hole spacing for 120mm fans is a 105mm square
 
-what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel", "filter-holder-wall", "cxtor-demo"]
+what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel","filter-holder-wall","filter-holder","cxtor-demo"]
 inner_margin = 0.2;
 outer_margin = 0.1;
 
@@ -189,20 +191,36 @@ the_filter_holder_wall = fp0_wr_wall(
 	wall_thickness/2 - outer_margin
 );
 
+the_panel_holes = ["union",
+	for( rot=[0,90,180,270] ) ["rotate", [0,0,rot], fp_fhol2]
+];
+
 the_filter_holder_bottom_panel = ["difference",
 	fp0_wr_panel(wall_rath, panel_thickness, wall_thickness/2 - outer_margin),
 	
 	togmod1_linear_extrude_z([-1, panel_thickness+1], center_cutout_2d),
 	// for( pos=120mm_mounting_hole_positions ) ["translate", [pos[0],pos[1],panel_thickness], fp_fhole],
-	["translate", [0,0,panel_thickness], ["union",
-		for( rot=[0,90,180,270] ) ["rotate", [0,0,rot], fp_fhol2]
-	]],
+	["translate", [0,0,panel_thickness], the_panel_holes],
 ];
+
+the_filter_holder =
+	let( cxtor = fp0__cxtor(wall_rath, r=inch/16-0.1) )
+	let( height = panel_thickness + wall_height )
+	let( hull_rath = togpath1_offset_rath(wall_rath, wall_thickness/2-outer_margin) )
+	let( interior_rath = togpath1_offset_rath(wall_rath, -wall_thickness/2+inner_margin) )
+	["difference",
+	   togmod1_linear_extrude_z([0,height], togmod1_make_polygon(togpath1_rath_to_polypoints(hull_rath))),
+		togmod1_linear_extrude_z([panel_thickness,height+1], togmod1_make_polygon(togpath1_rath_to_polypoints(interior_rath))),
+		togmod1_linear_extrude_z([-1, height+1], center_cutout_2d),
+		["translate", [0,0,panel_thickness], the_panel_holes],
+		["translate", [0,0,height], cxtor],
+	];
 
 thing =
 	what == "fan-adapter-panel" ? the_fan_adapter_panel :
 	what == "filter-holder-bottom-panel" ? the_filter_holder_bottom_panel :
 	what == "filter-holder-wall" ? the_filter_holder_wall :
+	what == "filter-holder" ? the_filter_holder :
 	what == "cxtor-demo" ? ["union", the_filter_holder_wall, ["translate", [6*inch, 0, 0], the_filter_holder_bottom_panel]] :
 	assert(false, str("What is the ", what, "?"));
 

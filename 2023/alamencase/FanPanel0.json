@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p1504": {
+			"inner_margin": "0.2",
+			"outer_margin": "0.1",
+			"what": "filter-holder"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
