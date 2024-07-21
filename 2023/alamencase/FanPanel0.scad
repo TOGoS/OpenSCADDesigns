@@ -1,4 +1,4 @@
-// FanPanel0.7
+// FanPanel0.8
 // 
 // Various fan-related parts
 // 
@@ -22,6 +22,8 @@
 // - Flip fan panel
 // - Change fan mounting holes into slots for 100mm-105mm hole patterns
 // - Make use THL-1007s on bottom side
+// v0.8:
+// - Add fan-holder
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -29,7 +31,7 @@
 //   (120mm x 120mm x 25mm), so the fan is a little smaller.
 // - Hole spacing for 120mm fans is a 105mm square
 
-what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel","filter-holder-wall","filter-holder","cxtor-demo","THL-1007"]
+what = "filter-holder-bottom-panel"; // ["fan-adapter-panel","filter-holder-bottom-panel","filter-holder-wall","filter-holder","cxtor-demo","fan-holder","THL-1007"]
 inner_margin = 0.2;
 outer_margin = 0.1;
 
@@ -238,12 +240,37 @@ the_filter_holder =
 		["translate", [0,0,height], cxtor],
 	];
 
+use <../lib/TGx11.1Lib.scad>
+
+$togridlib3_unit_table = tgx11_get_default_unit_table();
+$tgx11_offset = -outer_margin;
+
+the_fan_holder =
+let( slot_positions = [[-2*inch, -2.5*inch]] )
+["difference",
+	tgx11_block(
+		[[5, "inch"], [5, "inch"], [1.25, "inch"]],
+		top_segmentation = "block"
+	),
+	["translate", [0,0,1.25*inch], tphl1_make_rounded_cuboid([121.5,121.5,2*inch], r=[1,1,0])],
+	togmod1_linear_extrude_z([-1, 100], center_cutout_2d),
+	for( pos=slot_positions ) ["translate", [pos[0], pos[1], 0.75*inch],
+		//["rotate", [90,0,0],	tphl1_make_z_cylinder(d=10, zrange=[-100,100])]
+		togmod1_linear_extrude_y( [-10,10], togmod1_make_rounded_rect([10,10], r=4.5) )
+	],
+	for( pos=slot_positions ) ["translate", [pos[0], pos[1], 1.25*inch],
+		//["rotate", [90,0,0],	tphl1_make_z_cylinder(d=10, zrange=[-100,100])]
+		togmod1_linear_extrude_y( [-10,10], togmod1_make_rect([4,20]) )
+	],
+];
+
 thing =
 	what == "THL-1007" ? thl_1007 :
 	what == "fan-adapter-panel" ? the_fan_adapter_panel :
 	what == "filter-holder-bottom-panel" ? the_filter_holder_bottom_panel :
 	what == "filter-holder-wall" ? the_filter_holder_wall :
 	what == "filter-holder" ? the_filter_holder :
+	what == "fan-holder" ? the_fan_holder :
 	what == "cxtor-demo" ? ["union", the_filter_holder_wall, ["translate", [6*inch, 0, 0], the_filter_holder_bottom_panel]] :
 	assert(false, str("What is the ", what, "?"));
 
