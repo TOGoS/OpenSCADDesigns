@@ -1,4 +1,4 @@
-// TOGHoleLib2.11
+// TOGHoleLib2.12
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -33,6 +33,8 @@
 // - Always taper overhead bores
 // v2.11:
 // - Add THL-1007, counterbored-for-hex-nut with 'hole remedy'
+// v2.12:
+// - Adjust the hole remedy technique somewhat
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -77,24 +79,29 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 // TOTHINKABOUT: Perhaps every counterbored hole should have the option
 //   of remedy_depth > 0
 function tog_holelib2_counterbored_with_remedy_hole(
-	counterbore_d, shaft_d, depth, overhead_bore_height=undef, remedy_depth=0.3, inset=1
+	counterbore_d, shaft_d, depth, overhead_bore_height=undef, remedy_depth=0.4, inset=1
 ) =
 	let(_overhead_bore_height = is_undef(overhead_bore_height) ? max(0, -inset) + 1 : overhead_bore_height)
 	["intersection",
-		tphl1_make_z_cylinder(zds=[
-			[0 - depth - 10                             ,       shaft_d],
-			[0 - inset - remedy_depth                   ,       shaft_d],
-			[0 - inset - remedy_depth                   , counterbore_d],
-			[0 + _overhead_bore_height                  , counterbore_d],
-			[0 + _overhead_bore_height + counterbore_d/2,             0],
-		]),
+		["union",
+			tphl1_make_z_cylinder(zds=[
+				[0 - depth - 10                             ,       shaft_d],
+				[0 - inset - remedy_depth                   ,       shaft_d],
+				[0 - inset - remedy_depth                   , counterbore_d],
+				[0 + _overhead_bore_height                  , counterbore_d],
+				[0 + _overhead_bore_height + counterbore_d/2,             0],
+			]),
+			// There's probably a more elegant way to do this
+			["translate", [0,0,-inset],
+				togmod1_make_cuboid([shaft_d+0.1, shaft_d, remedy_depth*4])],
+		],
 		["union",
 			let(cbbh = _overhead_bore_height + counterbore_d + inset)
 				["translate", [0,0,cbbh/2-inset],
 					togmod1_make_cuboid([counterbore_d * 2, counterbore_d * 2, cbbh])],
 			let(sbbh = depth*2)
 				["translate", [0,0,-depth/2],
-					togmod1_make_cuboid([counterbore_d * 1.5, shaft_d+0.1, sbbh])],
+					togmod1_make_cuboid([shaft_d+0.1, counterbore_d * 1.5, sbbh])],
 		]
 	];
 
