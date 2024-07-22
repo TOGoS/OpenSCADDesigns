@@ -1,4 +1,4 @@
-// FanPanel0.8
+// FanPanel0.9
 // 
 // Various fan-related parts
 // 
@@ -24,6 +24,8 @@
 // - Make use THL-1007s on bottom side
 // v0.8:
 // - Add fan-holder
+// v0.9:
+// - Extra holes in fan holder, in case they're useful
 
 // Notes:
 // - 120mm fans are, supposedly, 120mm in diameter.
@@ -262,6 +264,7 @@ let( slot_positions = [[-2*inch, -2.5*inch]] )
 		//["rotate", [90,0,0],	tphl1_make_z_cylinder(d=10, zrange=[-100,100])]
 		togmod1_linear_extrude_y( [-10,10], togmod1_make_rect([4,20]) )
 	],
+	for( r=[-45,45,135] ) ["rotate", [0,0,r], ["translate", [0,0,0.75*inch], togmod1_linear_extrude_x( [0,100], togmod1_make_rounded_rect([5,10], r=2) )]],
 ];
 
 thing =
