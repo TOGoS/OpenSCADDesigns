@@ -1,4 +1,4 @@
-// TGx9.5.28 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.29 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -171,6 +171,10 @@
 // - 'gencase1' cavity mode, for making 'generic open-sided cases' for things
 // v9.5.28:
 // - Fix that lip_segmentation was not explicitly passed to tgx9_cup
+// v9.5.29:
+// - Add 'gencase_brick_size' option, which, if nonzero, alters
+//   the gencase0 subtraction and adds a brick to the preview
+// - Hack for certain gencases (e.g. p1509) to give them more mounting holes
 
 /* [Atom/chunk/block size] */
 
@@ -265,6 +269,8 @@ x_tograck_conduit_diameter = 0;
 
 // Whether to leave the [N,E,S,W] sides open for the 'gencase1' cavity
 gencase_open_sides = [0,0,0,0];
+// Size of brick to be subtracted and shown in preview, if non-zero
+gencase_brick_size = [0,0,0];
 
 /* [Detail] */
 
@@ -302,6 +308,9 @@ use <../lib/TOGHoleLib2.scad>
 // use <../lib/TOGUnitTable-v1.scad>
 use <../lib/TOGridLib3.scad>
 include <../lib/TGx9.4Lib.scad>
+
+function volume_is_positive(size, index=0) =
+	index == len(size) || (size[index] > 0 && volume_is_positive(size, index+1));
 
 if( false ) undefined_module(); // Doesn't crash OpenSCAD
 
@@ -367,7 +376,7 @@ function get_cavity_corner_radius() =
 		togridlib3_decode([1, "f-outer-corner-radius"]) - wall_thickness
 	);
 
-module the_cup_cavity() if(cavity_size[0] > 0 && cavity_size[1] > 0 && cavity_size[2] > 0) difference() {
+module the_cup_cavity() if(volume_is_positive(cavity_size)) difference() {
 	cavity_corner_radius    = get_cavity_corner_radius();
 	// Double-height cavity size, to cut through any lip protrusions, etc:
 	dh_cavity_size = [cavity_size[0], cavity_size[1], cavity_size[2]*2];
@@ -522,16 +531,21 @@ function lerp(v0, v1, t) = (1-t)*v0 + t*v1;
 // Open-sided box for making 'generic' cases.
 // You're expected to put a bunch of hot glue in there or something
 // to hold your thing in place.
-function make_gencase1_subtraction(block_size, open_sides) = tphl1_make_polyhedron_from_layer_function(
+function make_gencase1_main_subtraction(block_size, floor_thickness, opening_widths=[0,0,0,0]) = tphl1_make_polyhedron_from_layer_function(
 	[
 		floor_thickness - block_size[2],
 		block_size[2]*2 - block_size[2],
 	],
-	let(ins0 = 8, ins1=10)
-	let(x1 = -block_size[0]/2+ins0, x2 = -block_size[0]/2+ins1, x3 = block_size[0]/2-ins1, x4 = block_size[0]/2-ins0)
+	let(open_sides = [for(w=opening_widths) w > 0 ? 1 : 0])
+	// TODO: Refactor so that top/bottom/left/right widths can be different
+	let(xins1 = (block_size[0]-max(opening_widths[0],opening_widths[2]))/2 )
+	let(xins0 = xins1-2)
+	let(yins1 = (block_size[1]-max(opening_widths[1],opening_widths[3]))/2 )
+	let(yins0 = yins1-2)
+	let(x1 = -block_size[0]/2+xins0, x2 = -block_size[0]/2+xins1, x3 = block_size[0]/2-xins1, x4 = block_size[0]/2-xins0)
 	let(x0 = lerp(x1, -block_size[0]/2-1, open_sides[3]))
 	let(x5 = lerp(x4,  block_size[0]/2+1, open_sides[1]))
-	let(y1 = -block_size[1]/2+ins0, y2 = -block_size[1]/2+ins1, y3 = block_size[1]/2-ins1, y4 = block_size[1]/2-ins0)
+	let(y1 = -block_size[1]/2+yins0, y2 = -block_size[1]/2+yins1, y3 = block_size[1]/2-yins1, y4 = block_size[1]/2-yins0)
 	let(y0 = lerp(y1, -block_size[1]/2-1, open_sides[2]))
 	let(y5 = lerp(y4,  block_size[1]/2+1, open_sides[0]))
 	function(z) [
@@ -554,6 +568,22 @@ function make_gencase1_subtraction(block_size, open_sides) = tphl1_make_polyhedr
 	]
 );
 
+function make_gencase1_subtraction(block_size, floor_thickness, open_sides=[0,0,0,0], brick_size=[0,0,0]) =
+	["union",
+		make_gencase1_main_subtraction(block_size, floor_thickness, opening_widths=[
+			// Logic to avoid user having to enter opening widths,
+			// though maybe that should be possible, with some special
+			// value (maybe -1) meaning 'auto'
+			open_sides[0] > 0 ? (brick_size[0] == 0 ? block_size - 20 : brick_size[0])-4 : 0,
+			open_sides[1] > 0 ? (brick_size[1] == 0 ? block_size - 20 : brick_size[1])-4 : 0,
+			open_sides[2] > 0 ? (brick_size[0] == 0 ? block_size - 20 : brick_size[0])-4 : 0,
+			open_sides[3] > 0 ? (brick_size[1] == 0 ? block_size - 20 : brick_size[1])-4 : 0,
+		]),
+		
+		if( brick_size[0] > 0 && brick_size[1] > 0 && brick_size[2] > 0 )
+		["translate", [0,0,-block_size[2]/2+floor_thickness-0.1], tphl1_make_rounded_cuboid([brick_size[0],brick_size[1],block_size[2]], r=[1,1,0])],
+	];
+
 // Operations to be done on the block from the top center
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
@@ -565,7 +595,8 @@ cavity_ops = [
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()],
 	if( cavity_style == "framework-module-holder" ) ["subtract", make_framework_module_holder_cutout(block_size[1]/12.7)],
 	if( cavity_style == "earrings-holder" ) ["subtract", make_earrings_holder_cutout(block_size)],
-	if( cavity_style == "gencase1" ) ["subtract", make_gencase1_subtraction(block_size, open_sides=gencase_open_sides)],
+	if( cavity_style == "gencase1" ) ["subtract", make_gencase1_subtraction(
+		block_size, floor_thickness=floor_thickness, open_sides=gencase_open_sides, brick_size=gencase_brick_size)],
 ];
 
 //// Magnet hole precalculations
@@ -615,7 +646,28 @@ v6hc_foot_bevel_size =
 	effective_v6hc_subtraction_style == "v6.1" ? v6_1_foot_bevel_size :
 	0.12345; // Not applicable
 
+// This is a hacked-in thing for gencase.
+// More general solution might be good.
+// Like an array of bottom subtractions.
+
 corner_bottom_up_screw_hole_style = cavity_style == "gencase1" ? "THL-1001" : "none";
+
+bottom_up_hole_positions = [
+	if( cavity_style == "gencase1" ) each [
+		for( xm=[-1,1] ) for( ym=[-1,1] ) [xm*(block_size[0]/2-atom_pitch/2), ym*(block_size[1]/2-atom_pitch/2), 0],
+		// Hack specifically for gencases with a closed left end
+		// and enough room there for another row of holes:
+		if( gencase_brick_size[0] > 0 && block_size[0] - gencase_brick_size[0] > 0.8*atom_pitch && gencase_open_sides[3] == 0 )
+		for( ym=[-round(block_size[1]/atom_pitch)/2+1.5 : 1 : block_size[1]/atom_pitch/2-1] )
+			[-1*(block_size[0]/2-atom_pitch/2), ym*atom_pitch, 0],
+	]
+];
+
+preview_additions = ["union",
+	if( cavity_style == "gencase1" && volume_is_positive(gencase_brick_size) )
+	echo(gencase_brick_size)
+	["translate", [0,0,floor_thickness+gencase_brick_size[2]/2], ["x-debug", togmod1_make_cuboid(gencase_brick_size)]]
+];
 
 //// Main
 
@@ -659,8 +711,8 @@ module tgx9_main_cup() tgx9_cup(
 	],
 	block_bottom_ops = [
 		let(hole=["rotate", [180,0,0], tog_holelib2_hole(corner_bottom_up_screw_hole_style, overhead_bore_height=1, inset=max(1, floor_thickness-4), depth=block_size[2]*2)])
-			for( xm=[-1,1] ) for( ym=[-1,1] )
-				["subtract", ["translate", [xm*(block_size[0]/2-atom_pitch/2), ym*(block_size[1]/2-atom_pitch/2), 0], hole]]
+			for( pos=bottom_up_hole_positions )
+				["subtract", ["translate", pos, hole]]
 				
 	]
 );
@@ -674,3 +726,5 @@ difference() {
 		edge_bowties(block_size, bowtie_edges=bowtie_edges, offset=bowtie_margin);
 	}
 }
+
+if( $preview ) tgx9_do_sshape(preview_additions);
