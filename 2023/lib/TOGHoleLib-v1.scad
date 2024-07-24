@@ -1,4 +1,4 @@
-// TOGHoleLib-v1.5.1
+// TOGHoleLib-v1.5.2
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -19,6 +19,8 @@
 // - Add partial, experimental, unstable support for THL-1021, a square hole for Mini-PV/Dupont connectors
 // v1.5.1:
 // - tog_holelib_hole1021: change default margins (0.2mm and 0.3mm) and include_pin1_marker (false)
+// v1.5.2:
+// - Always taper overhead bores, same as TOGHoleLib2.10 does
 
 module tog_holelib_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height) {
 	rotate_extrude() {
@@ -38,7 +40,7 @@ module tog_holelib_countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, 
 				[      surface_d/2,                 0.01 ],
 				[overhead_bore_d/2,                 0.01 ],
 				[overhead_bore_d/2,  overhead_bore_height],
-				[              0  ,  overhead_bore_height],
+				[              0  ,  overhead_bore_height+overhead_bore_d],
 			]);
 		}
 	}
