@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.10
+// PhoneHolderInsert-v2.11
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -39,6 +39,9 @@
 // - PHI-1005's connector holes are a little more inset
 // - sub_margin is now configurable
 // - Underblocks have a slight bevel around their bottom edge
+// v2.11:
+// - Add 'PHI-1008', an insert for holding my big honking
+//   2024 ETF Dell Docking Station Power Brick
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -47,7 +50,7 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 
 // IU=integrated underblock
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1005-IU","PHI-1005-sub","PHI-1005+sub","PHI-1006","PHI-1006-IU","PHI-1007","PHI-1007-IU","block"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1005-IU","PHI-1005-sub","PHI-1005+sub","PHI-1006","PHI-1006-IU","PHI-1007","PHI-1007-IU","PHI-1008","block"]
 
 outer_margin = 0.6;
 sub_margin = 0.3;
@@ -164,6 +167,21 @@ make_phi_1007_cut = function()
 	if( !$integrated_underblock ) for( xm=[-1, +1] ) ["translate", [xm*1.5*inch, 0, 1/4*inch], tog_holelib2_hole("THL-1001", inset=2)],
 ];
 
+// For Dell 180W power brick;
+// Brick is 76mm wide, fills the whole depth, and has an 18mm flange
+make_phi_1008_cut = function()
+let( cavity_width = 78 )
+let( floor_thickness = 6.35 )
+["union",
+	["translate", [0, 0, range_mid($vcut_zrange)], tphl1_make_rounded_cuboid([30, 20, range_length($vcut_zrange)], r=[6, 6, 0])],
+	make_slot_cut(($hull_size[1]-20)/2),
+	["translate", [0,0,$hull_size[2]], ["union",
+		togmod1_make_cuboid([cavity_width, $hull_size[1]*2, ($hull_size[2]-floor_thickness)*2]),
+		for( xm=[-1,1] ) ["translate", [xm*cavity_width/2,0,0], ["rotate", [90,45,0], togmod1_make_cuboid([10,10,100])]],
+	]],
+	if( !$integrated_underblock ) for( xm=[-1.5, -1, +1, +1.5] ) ["translate", [xm*inch, 0, floor_thickness], tog_holelib2_hole("THL-1001", inset=2.5, overhead_bore_height=100)],
+];
+
 
 // TODO: Refactor so that 2D and 3D cuts are specified separately
 function get_shape_info(style) =
@@ -174,6 +192,7 @@ function get_shape_info(style) =
 	style == "PHI-1005" ? [1/4 * inch, make_phi_1005_cut] :
 	style == "PHI-1006" ? [2   * inch, make_phi_1006_cut] :
 	style == "PHI-1007" ? [1/8 * inch, make_phi_1007_cut] :
+	style == "PHI-1008" ? [1.5 * inch, make_phi_1008_cut] :
 	[1/4 * inch, function() ["union"]];
 
 function make_phi(style) =
