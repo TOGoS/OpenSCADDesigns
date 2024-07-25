@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.11
+// PhoneHolderInsert-v2.12
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -42,15 +42,18 @@
 // v2.11:
 // - Add 'PHI-1008', an insert for holding my big honking
 //   2024 ETF Dell Docking Station Power Brick
+// v2.12:
+// - Add 'PHI-1008-sub' and 'underhook'
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
+use <../lib/TOGPath1.scad>
 
 // IU=integrated underblock
-style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1005-IU","PHI-1005-sub","PHI-1005+sub","PHI-1006","PHI-1006-IU","PHI-1007","PHI-1007-IU","PHI-1008","block"]
+style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1005-IU","PHI-1005-sub","PHI-1005+sub","PHI-1006","PHI-1006-IU","PHI-1007","PHI-1007-IU","PHI-1008","PHI-1008-sub","underhook","block"]
 
 outer_margin = 0.6;
 sub_margin = 0.3;
@@ -216,7 +219,9 @@ underblock_hull_size = [
 	bottom_hole_size[1] - sub_margin*2,
 	1/4*inch
 ];
-burthole = ["rotate", [180,0,0], tog_holelib2_hole("THL-1005", depth=100)];
+
+underblock_thl_1005 = ["rotate", [180,0,0], tog_holelib2_hole("THL-1005", depth=100)];
+underblock_straight_hole = tphl1_make_z_cylinder(zrange=[-100,100], d=5);
 tgp_y_groove = let(u=inch/16) tphl1_make_polyhedron_from_layer_function([-50,50], function(y) [[-2*u,y,0],[0,y,2*u],[2*u,y,0],[0,y,-2*u]]);
 
 function make_underblock_convex_hull_2d() = togmod1_make_rounded_rect(underblock_hull_size, r=6);
@@ -268,23 +273,23 @@ function make_underblock_groove_subtractions() = [
 	for( xm=[-0.5,0.5] ) ["translate", [xm*1.5*inch, 0, 0], tgp_y_groove],
 ];
 
-function make_underblock_connector_hole_subtractions() = [
-	for( xm=[-1,1] ) ["translate", [xm*1.5*inch, 0, 0], burthole],
+function make_underblock_connector_hole_subtractions(hole=underblock_thl_1005) = [
+	for( xm=[-1,1] ) ["translate", [xm*1.5*inch, 0, 0], hole],
 ];
 
-function make_underblock_subtractions(include_connector_holes=true) = [
+function make_underblock_subtractions(connector_hole=underblock_thl_1005) = [
 	each make_underblock_groove_subtractions(),
-	if( include_connector_holes ) each make_underblock_connector_hole_subtractions(),
+	each make_underblock_connector_hole_subtractions(hole=connector_hole),
 ];
 
 function make_underblock(
 	height=1/4*inch,
-	include_center_hole=true,
+	connector_hole=underblock_thl_1005,
 	center_hole_size=[60,13],
 	bottom_bevel_size = 1.6,
 ) = ["difference",
 	make_underblock_hull(height),
-	each make_underblock_subtractions(),
+	each make_underblock_subtractions(connector_hole=connector_hole),
 ];
 
 function make_phi_with_underblock(style, include_connector_holes=false) =
@@ -298,9 +303,29 @@ function make_phi_with_underblock(style, include_connector_holes=false) =
 			["translate", [0,0,1/4*inch], make_phi_hull()],
 		],
 		["translate", [0,0,1/4*inch], let($vcut_zrange = [-1/4*inch-1, $block_size[2]+1]) shape_info[1]()],
-		each make_underblock_subtractions(include_connector_holes=include_connector_holes),
+		each make_underblock_subtractions(connector_hole=include_connector_holes ? underblock_thl_1005 : ["union"]),
 	];
 
+function make_underhook() =
+let( r=inch/16 )
+let( w=19.05 )
+let( dtop=25.4 )
+let( dbot=25.4 )
+let( h=25.4 )
+let( lrath = ["togpath1-rath",
+	["togpath1-rathnode", [+dtop-r,  0- r  ],                ],
+	["togpath1-rathnode", [  0  +r,  0- r  ], ["round", 4   ]],
+	["togpath1-rathnode", [  0  +r, -h+ r  ], ["round", 6   ]],
+	["togpath1-rathnode", [+dbot-r, -h+ r  ], ["round", 6   ]],
+	["togpath1-rathnode", [+dbot-r, -h+ 9  ],                ],
+])
+let( polyline = togpath1_rath_to_polypoints(lrath) )
+let( rath =	togpath1_polyline_to_rath(polyline, r=r) )
+let( polypoints =	togpath1_rath_to_polypoints(rath) )
+["difference",
+	tphl1_extrude_polypoints([0,w], polypoints),
+	["translate", [dtop/2,-2*r,w/2], ["rotate", [90,0,0], tog_holelib2_hole("THL-1001", inset=r*2/3, overhead_bore_height=h)]],
+];
 
 // PHI-1001 = A very basic phone holder insert
 
@@ -313,6 +338,8 @@ function make_thing(name, integrated_underblock=false) =
 	name == "PHI-1005-IU" ? make_phi_with_underblock("PHI-1005", include_connector_holes=true) :
 	name == "PHI-1006-IU" ? make_phi_with_underblock("PHI-1006", include_connector_holes=false) :
 	name == "PHI-1007-IU" ? make_phi_with_underblock("PHI-1007", include_connector_holes=true) :
+	name == "PHI-1008-sub" ? make_underblock(connector_hole=underblock_straight_hole) :
+	name == "underhook" ? make_underhook() :
 	integrated_underblock ? make_phi_with_underblock(name) : make_phi(name);
 
 thing = make_thing(style);
