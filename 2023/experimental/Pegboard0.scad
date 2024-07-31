@@ -1,7 +1,12 @@
-// Pegboard0.1
+// Pegboard0.2
+// 
+// Changes:
+// v0.2:
+// - Options for gridbeam hole styles: straight, countersunk, counterbored
 // 
 // TODO:
 // - A variation where top/bottom are French cleats
+// - Countersink gridbeam holes?
 
 thickness       = 19.05;
 board_thickness = 3.175;
@@ -13,12 +18,13 @@ double_pegboard_holes = true;
 peg_cavity_width = 9.5; // Enough for a #6 hex nut
 wall_thickness = 3.175;
 outer_corner_radius = 6.35;
-counterbore_depth = 0;
+gridbeam_hole_style = "straight"; // ["straight","THL-1002","THL-1006"]
 $fn = 24;
 
 module __pegboard0__end_params() { }
 
 use <../lib/TOGComplexLib1.scad>
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
@@ -55,14 +61,17 @@ peg_cavity_column_2d = togmod1_make_rounded_rect([peg_cavity_width, peg_cavity_c
 gridbeam_hole_2d = togmod1_make_circle(d=gridbeam_hole_diameter);
 gridbeam_column_2d = togmod1_make_rounded_rect([gridbeam_hole_diameter+1.6, gridbeam_hole_diameter+6], r=gridbeam_hole_diameter/2);
 
-gridbeam_counterbore = counterbore_depth <= 0 ? ["union"] :
-	togmod1_linear_extrude_z([-counterbore_depth,counterbore_depth], togmod1_make_circle(d=inch*7/8));
+gridbeam_hole_inset =
+	gridbeam_hole_style == "THL-1002" ? 0.8 :
+	gridbeam_hole_style == "THL-1006" ? 2.5 :
+	0.1;
+gridbeam_hole = gridbeam_hole_style == "straight" ? ["union"] : tog_holelib2_hole(gridbeam_hole_style, depth=thickness*2, inset=gridbeam_hole_inset);
 
 panel_2d = ["difference",
 	togmod1_make_rounded_rect(size, r=outer_corner_radius),
 	
 	for( p=pegboard_hole_positions ) ["translate", p, pegboard_hole_2d],
-	for( p=gridbeam_hole_positions ) ["translate", p, gridbeam_hole_2d],
+	if(gridbeam_hole_style == "straight") for( p=gridbeam_hole_positions ) ["translate", p, gridbeam_hole_2d],
 ];
 
 hollow_back_cutout_2d = ["difference",
@@ -75,7 +84,7 @@ minimal_back_cutout_2d = ["difference",
 	["union",
 		for( p=pegboard_hole_column_positions ) ["translate", [p,0], peg_cavity_column_2d],
 	],
-	for( p=gridbeam_hole_positions ) ["translate", p, gridbeam_column_2d],
+	for( p=gridbeam_hole_positions ) ["translate", p, gridbeam_column_2d],	
 ];
 
 back_cutout_2d = minimal_back_cutout_2d;
@@ -83,7 +92,7 @@ back_cutout_2d = minimal_back_cutout_2d;
 panel = ["difference",
 	togmod1_linear_extrude_z([  0, thickness                ],       panel_2d),
 	togmod1_linear_extrude_z([-10, thickness-board_thickness], back_cutout_2d),
-	for( p=gridbeam_hole_positions ) ["translate", [p[0],p[1],thickness], gridbeam_counterbore],	
+	for( p=gridbeam_hole_positions ) ["translate", [p[0],p[1],thickness], gridbeam_hole],	
 ];
 
 togmod1_domodule(panel);
