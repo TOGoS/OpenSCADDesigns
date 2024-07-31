@@ -1,6 +1,13 @@
-// PegboardHook0.1
+// PegboardHook0.2
+//
+// v0.2:
+// - Reorder line raths to reduce some stickey-outies
+// - Replace 'angle' option with simple 'what'
+// 
+// TODO:
+// - Round the convex polyline corners
 
-angle = 36.9; // 0.1
+what = "j-hook"; // ["j-hook", "shelf-holder", "angled-shelf-holder"]
 
 module __pbh0__end_params() { }
 
@@ -80,10 +87,10 @@ j_hook = ["union",
 ];
 
 function make_square_hook(size,angle=0) =
-let( pivot_pos = [ 1*u, -16*u-size[1]] )
 let( floor_vec = tcplx1_rotate([size[0], 0], angle) )
 let( front_vec = tcplx1_rotate([0, size[1]], angle) )
 let( blunt_vec = tcplx1_rotate([0, size[1] * tan(angle)], angle - 90) )
+let( pivot_pos = [ 1*u, -8*u-size[1]] )
 ["union",
 	each pbh0_normal_bits(floor(-(pivot_pos[1] + floor_vec[1])/inch)),
 	
@@ -91,7 +98,7 @@ let( blunt_vec = tcplx1_rotate([0, size[1] * tan(angle)], angle - 90) )
 		["togpath1-rathnode", [ 1*u,     0]],
 		["togpath1-rathnode", pivot_pos],
 		["togpath1-rathnode", pivot_pos + floor_vec],
-		["togpath1-rathnode", pivot_pos + floor_vec + front_vec],
+		if( angle == 0 ) ["togpath1-rathnode", pivot_pos + floor_vec + front_vec],
 	]],
 	
 	if( angle != 0 ) ["open-path", ["togpath1-rath", 
@@ -100,11 +107,18 @@ let( blunt_vec = tcplx1_rotate([0, size[1] * tan(angle)], angle - 90) )
 		["togpath1-rathnode", pivot_pos],
 		["togpath1-rathnode", pivot_pos + [0, floor_vec[1]]],
 		["togpath1-rathnode", pivot_pos + floor_vec],
+		["togpath1-rathnode", pivot_pos + floor_vec + front_vec],
 	]],
 ];
 
 echo(atan2(3,4));
 
-shape = make_square_hook([28*u, 12*u], angle=0-angle);
+shelf_holder        = make_square_hook([28*u, 12*u], angle=0);
+angled_shelf_holder = make_square_hook([28*u, 12*u], angle=-36.9);
+
+shape =
+	what == "j-hook" ? j_hook :
+	what == "angled-shelf-holder" ? angled_shelf_holder :
+	shelf_holder;
 
 togmod1_domodule(togmod1_linear_extrude_z([0, line_depth], pbh0_render_shape(shape, line_width=3.175)));
