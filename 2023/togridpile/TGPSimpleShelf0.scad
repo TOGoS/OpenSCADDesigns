@@ -1,4 +1,4 @@
-// TGPSimpleShelf0.3
+// TGPSimpleShelf0.4
 // 
 // Shelf intended to be mounted on DiagBrack0 brackets
 // 
@@ -8,6 +8,8 @@
 // - Slots now have fixed width, regardless of wall thickness
 // - Make the whole thing more TOGridPilish if
 //   if specified dimensions allow for it
+// v0.4:
+// - Adjust defaults so that preview doesn't crash OpenSCAD
 // 
 // TODO:
 // - Option to make end walls, similar to side walls
@@ -21,7 +23,7 @@ wall_thickness = 3.175;
 interior_offset = -0.15;
 $tgx11_offset = -0.1;
 
-length_chunks = 8;
+length_chunks = 2;
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
@@ -32,7 +34,10 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGVecLib0.scad>
 
-$fn = 24;
+$fn = $preview ? 8 : 24;
+magnet_hole_fn = $preview ? 8 : 48;
+screw_hole_fn = $preview ? 8 : 24;
+
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
 inch  = togridlib3_decode([1, "inch" ]);
@@ -44,9 +49,9 @@ length = togridlib3_decode([length_chunks, "chunk"]);
 width  = chunk + wall_thickness*2;
 slot_spacing = inch;
 
-magnet_hole = tphl1_make_z_cylinder(zrange=[-2.2,2.2], d=6.2, $fn=48);
-hole1 = tog_holelib2_hole("THL-1001", depth=floor_thickness+1, inset=1, $fn=24);
-hole2 = tog_holelib2_hole("THL-1002", depth=floor_thickness+1, inset=1, $fn=24);
+magnet_hole = tphl1_make_z_cylinder(zrange=[-2.2,2.2], d=6.2, $fn=magnet_hole_fn);
+hole1 = tog_holelib2_hole("THL-1001", depth=floor_thickness+1, inset=1, $fn=screw_hole_fn);
+hole2 = tog_holelib2_hole("THL-1002", depth=floor_thickness+1, inset=1, $fn=screw_hole_fn);
 
 slot =
 	let(y0 = -chunk/2 - wall_thickness - u + $tgx11_offset)
