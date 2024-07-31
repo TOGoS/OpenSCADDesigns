@@ -1,5 +1,7 @@
 function tcplx1_multiply(a, b) =
 	[a[0]*b[0] - a[1]*b[1], a[0]*b[1] + a[1]*b[0]];
+function tcplx1_rotate(vec, angle) =
+	tcplx1_multiply(vec, [cos(angle),sin(angle)]);
 function tcplx1_divide(a, b) =
 	let(bot = (b[0]*b[0] + b[1]*b[1]))
 	[
