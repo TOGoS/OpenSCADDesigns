@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p1524": {
+			"$fn": "24",
+			"board_thickness": "3.175",
+			"double_pegboard_holes": "true",
+			"gridbeam_hole_diameter": "8",
+			"gridbeam_hole_style": "THL-1002",
+			"outer_corner_radius": "6.35",
+			"peg_cavity_width": "9.5",
+			"pegboard_hole_diameter": "4.8",
+			"pegboard_hole_spacing_u": "[16, 16]",
+			"size_inches": "[6, 6]",
+			"thickness": "19.05",
+			"togbeam_hole_style": "THL-1001",
+			"wall_thickness": "6.35"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
