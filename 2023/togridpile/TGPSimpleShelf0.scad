@@ -1,11 +1,15 @@
-// TGPSimpleShelf0.1
+// TGPSimpleShelf0.2
 // 
 // Shelf intended to be mounted on DiagBrack0 brackets
+// 
+// v0.2:
+// - Add slots
 
 floor_thickness = 6.35;
 height = 25.4;
 floor_segmentation = "chunk"; // ["atom","chatom","chunk","block","none"]
 bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
+slots_enabled = true;
 wall_thickness = 3.175;
 interior_offset = -0.15;
 $tgx11_offset = -0.1;
@@ -29,9 +33,31 @@ u     = togridlib3_decode([1, "u"    ]);
 chunk = togridlib3_decode([1, "chunk"]);
 atom  = togridlib3_decode([1, "atom"]);
 
+length = togridlib3_decode([length_chunks, "chunk"]);
+slot_spacing = inch;
+
 magnet_hole = tphl1_make_z_cylinder(zrange=[-2.2,2.2], d=6.2, $fn=48);
 hole1 = tog_holelib2_hole("THL-1001", depth=floor_thickness+1, inset=1, $fn=24);
 hole2 = tog_holelib2_hole("THL-1002", depth=floor_thickness+1, inset=1, $fn=24);
+
+slot =
+	let(y0 = -chunk/2 - wall_thickness - u + $tgx11_offset)
+	let(y1 = -chunk/2 - wall_thickness + u - $tgx11_offset)
+	let(y2 = -y1)
+	let(y3 = -y0)
+	let(z0 = -u + $tgx11_offset )
+	let(z1 =  u - $tgx11_offset )
+	let(z2 =  height + 1 )
+	togmod1_linear_extrude_x([-u+$tgx11_offset, u-$tgx11_offset], togmod1_make_polygon([
+		[y3, z0],
+		[y3, z2],
+		[y2, z2],
+		[y2, z1],
+		[y1, z1],
+		[y1, z2],
+		[y0, z2],
+		[y0, z0],
+	]));
 
 togmod1_domodule(["difference",
 	["intersection",
@@ -74,5 +100,9 @@ togmod1_domodule(["difference",
 			["translate", [cx*chunk + apos[0]*atom, apos[1]*atom, floor_thickness], hole1],
 		for( apos=[[0,0]] )
 			["translate", [cx*chunk + apos[0]*atom, apos[1]*atom, floor_thickness], hole2],
-	]
+	],
+
+	if( slots_enabled )	
+	for( sx=[-round(length/slot_spacing)/2+0.5 : 1 : round(length/slot_spacing)/2-0.4] )
+	["translate", [sx*slot_spacing, 0, 0], slot],
 ]);
