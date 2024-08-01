@@ -1,4 +1,4 @@
-// Pegboard0.4
+// Pegboard0.5
 // 
 // Changes:
 // v0.2:
@@ -9,10 +9,11 @@
 // - Option for THL-1002-9/32 gridbeam holes, which are just
 //   slightly narrower than the regular 5/16
 // - Increase height of cavity behind peg holes
+// v0.5:
+// - Fix inset of countersunk holes
 // 
 // TODO:
 // - A variation where top/bottom are French cleats
-// - Countersink gridbeam holes?
 
 thickness       = 19.05;
 board_thickness = 3.175;
@@ -81,14 +82,14 @@ gridbeam_column_2d = togmod1_make_rounded_rect([gridbeam_hole_diameter+1.6, grid
 togbeam_column_2d  = togmod1_make_circle(d=6.35);
 
 function pegboard0_hole( style, depth, inset ) =
-	style == "THL-1002-9/32" ? tog_holelib2_hole("THL-1002", depth, inset, bore_d=9/32*inch) :
-	tog_holelib2_hole(style, depth, inset);
+	style == "THL-1002-9/32" ? tog_holelib2_hole("THL-1002", depth, inset=inset, bore_d=9/32*inch) :
+	tog_holelib2_hole(style, depth, inset=inset);
 
 togbeam_hole_inset =
 	togbeam_hole_style == "THL-1001" ? 0.5 :
 	0.1;
 gridbeam_hole_inset =
-	gridbeam_hole_style == "THL-1002" ? 0.8 :
+	gridbeam_hole_style == "THL-1002" || gridbeam_hole_style == "THL-1002-9/32" ? 0.8 :
 	gridbeam_hole_style == "THL-1006" ? 2.5 :
 	0.1;
 
