@@ -1,4 +1,4 @@
-// TGPSimpleShelf0.4
+// TGPSimpleShelf0.5
 // 
 // Shelf intended to be mounted on DiagBrack0 brackets
 // 
@@ -10,6 +10,11 @@
 //   if specified dimensions allow for it
 // v0.4:
 // - Adjust defaults so that preview doesn't crash OpenSCAD
+// v0.5:
+// - Don't treat 'chatom' bottoms as TGPish
+// - Don't put mounting holes in TGPish bottoms,
+//   since the grids won't line up
+// - Bevel slot corners
 // 
 // TODO:
 // - Option to make end walls, similar to side walls
@@ -61,20 +66,23 @@ slot =
 	let(z0 = -u + $tgx11_offset )
 	let(z1 =  u - $tgx11_offset )
 	let(z2 =  height + 15 )
+	let(b  =  u) // Interior corner bevel
 	togmod1_linear_extrude_x([-u+$tgx11_offset, u-$tgx11_offset], togmod1_make_polygon([
-		[y3, z0],
-		[y3, z2],
-		[y2, z2],
-		[y2, z1],
-		[y1, z1],
-		[y1, z2],
-		[y0, z2],
-		[y0, z0],
+		[y3  , z0  ],
+		[y3  , z2  ],
+		[y2  , z2  ],
+		[y2  , z1+u],
+		[y2-u, z1  ],
+		[y1+u, z1  ],
+		[y1  , z1+u],
+		[y1  , z2  ],
+		[y0  , z2  ],
+		[y0  , z0  ],
 	]));
 
 tgp_width_ca =
 	bottom_segmentation == "atom" ? [round(width/atom), "atom"] :
-	bottom_segmentation == "chunk" ? [round(width/chunk), "chunk"] :
+	bottom_segmentation == "chunk" || bottom_segmentation == "chatom" ? [round(width/chunk), "chunk"] :
 	[width, "mm"];
 
 // Can the TOGridPile block itself serve as the hull?
@@ -125,9 +133,9 @@ togmod1_domodule(["difference",
 	for (cx=[-length_chunks/2+0.5 : 1 : length_chunks/2]) each [
 		for( ax=[-1,1] ) for( ay=[-1,1] )
 			["translate", [cx*chunk + ax*atom, ay*atom, floor_thickness], magnet_hole],
-		for( apos=[[0,1],[-1,0],[1,0],[0,-1]] )
+		if( !is_tgpish ) for( apos=[[0,1],[-1,0],[1,0],[0,-1]] )
 			["translate", [cx*chunk + apos[0]*atom, apos[1]*atom, floor_thickness], hole1],
-		for( apos=[[0,0]] )
+		if( !is_tgpish ) for( apos=[[0,0]] )
 			["translate", [cx*chunk + apos[0]*atom, apos[1]*atom, floor_thickness], hole2],
 	],
 
