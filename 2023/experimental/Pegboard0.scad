@@ -1,10 +1,14 @@
-// Pegboard0.3
+// Pegboard0.4
 // 
 // Changes:
 // v0.2:
 // - Options for gridbeam hole styles: straight, countersunk, counterbored
 // v0.3:
 // - Options for togbeam holes
+// v0.4:
+// - Option for THL-1002-9/32 gridbeam holes, which are just
+//   slightly narrower than the regular 5/16
+// - Increase height of cavity behind peg holes
 // 
 // TODO:
 // - A variation where top/bottom are French cleats
@@ -20,7 +24,7 @@ double_pegboard_holes = true;
 peg_cavity_width = 9.5; // Enough for a #6 hex nut
 wall_thickness = 3.175;
 outer_corner_radius = 6.35;
-gridbeam_hole_style = "straight"; // ["none","straight","THL-1002","THL-1006"]
+gridbeam_hole_style = "straight"; // ["none","straight","THL-1002","THL-1002-9/32","THL-1006"]
 togbeam_hole_style  = "none";     // ["none","THL-1001"]
 $fn = 24;
 
@@ -61,7 +65,9 @@ pegboard_hole_positions = rcp(pegboard_hole_column_positions, pegboard_hole_row_
 gridbeam_hole_positions = gridin_2d(size, gridbeam_hole_spacing);
 togbeam_hole_positions = gridin_2d(size, togbeam_hole_spacing);
 
-peg_cavity_column_height = pegboard_hole_row_positions[len(pegboard_hole_row_positions)-1]-pegboard_hole_row_positions[0] + peg_cavity_width;
+peg_cavity_column_height =
+	// pegboard_hole_row_positions[len(pegboard_hole_row_positions)-1]-pegboard_hole_row_positions[0] + peg_cavity_width);
+	size[1] - wall_thickness*2;
 
 pegboard_hole_2d = togmod1_make_circle(d=pegboard_hole_diameter);
 peg_cavity_2d = togmod1_make_rounded_rect([peg_cavity_width, 19.05], r=pegboard_hole_diameter/2);
@@ -74,6 +80,10 @@ gridbeam_hole_2d = togmod1_make_circle(d=gridbeam_hole_diameter);
 gridbeam_column_2d = togmod1_make_rounded_rect([gridbeam_hole_diameter+1.6, gridbeam_hole_diameter+6], r=gridbeam_hole_diameter/2);
 togbeam_column_2d  = togmod1_make_circle(d=6.35);
 
+function pegboard0_hole( style, depth, inset ) =
+	style == "THL-1002-9/32" ? tog_holelib2_hole("THL-1002", depth, inset, bore_d=9/32*inch) :
+	tog_holelib2_hole(style, depth, inset);
+
 togbeam_hole_inset =
 	togbeam_hole_style == "THL-1001" ? 0.5 :
 	0.1;
@@ -84,10 +94,10 @@ gridbeam_hole_inset =
 
 togbeam_hole  =
 	togbeam_hole_style  == "straight" ? ["union"] :
-	["render", tog_holelib2_hole( togbeam_hole_style, depth=thickness*2, inset=togbeam_hole_inset)];
+	["render", pegboard0_hole( togbeam_hole_style, depth=thickness*2, inset= togbeam_hole_inset)];
 gridbeam_hole =
 	gridbeam_hole_style == "straight" ? ["union"] :
-	["render", tog_holelib2_hole(gridbeam_hole_style, depth=thickness*2, inset=gridbeam_hole_inset)];
+	["render", pegboard0_hole(gridbeam_hole_style, depth=thickness*2, inset=gridbeam_hole_inset)];
 
 panel_2d = ["difference",
 	togmod1_make_rounded_rect(size, r=outer_corner_radius),

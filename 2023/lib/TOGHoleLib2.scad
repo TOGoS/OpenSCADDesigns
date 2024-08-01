@@ -1,4 +1,4 @@
-// TOGHoleLib2.12
+// TOGHoleLib2.13
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -35,6 +35,8 @@
 // - Add THL-1007, counterbored-for-hex-nut with 'hole remedy'
 // v2.12:
 // - Adjust the hole remedy technique somewhat
+// v2.13:
+// - Allow bore_d to be overridden for THL-1002 holes
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -113,10 +115,11 @@ function tog_holelib2_hole1001(depth, overhead_bore_height=1, inset=undef) =
 	tog_holelib2_countersunk_hole(7.5, 3.5, 1.7, depth, 4.5, 0, overhead_bore_height, inset=_inset);
 
 // Suitable for 1/4" flatheads
-function tog_holelib2_hole1002(depth, overhead_bore_height=1, overhead_bore_d=undef, inset=undef) =
+function tog_holelib2_hole1002(depth, overhead_bore_height=1, overhead_bore_d=undef, inset=undef, bore_d=undef) =
 	let(inch = 25.4)
 	let(_inset = tog_holelib2__coalesce(inset, 0.1))
-	tog_holelib2_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, 5/16*inch,
+	let(_bore_d = is_undef(bore_d) ? 5/16*inch : bore_d)
+	tog_holelib2_countersunk_hole(1/2*inch, 1/4*inch, 1/8*inch, depth, _bore_d,
 		overhead_bore_d, overhead_bore_height, inset=_inset);
 
 function tog_holelib2_hole1003(depth, overhead_bore_height=1, inset=undef) =
@@ -193,11 +196,13 @@ function tog_holelib2_hole(
 	// (for counterbores, this is the depth of the counterbore)
 	inset=undef,
 	// For certain counterbored shapes that support rounding the top edge
-	flange_radius=undef
+	flange_radius=undef,
+	// Overridable for some styles
+	bore_d=undef
 ) =
 	type_name == "none" ? ["union"] :
 	type_name == "THL-1001" ? tog_holelib2_hole1001(depth, overhead_bore_height, inset=inset) :
-	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset, bore_d=bore_d) :
 	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	type_name == "THL-1005" ? tog_holelib2_hole1005(depth, overhead_bore_height, inset=inset) :
