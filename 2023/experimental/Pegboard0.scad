@@ -22,6 +22,7 @@
 // 
 // TODO:
 // - A variation where top/bottom are French cleats
+// - Allow offsetting pegboard and connector holes by 1/4"
 
 thickness       = 19.05;
 board_thickness = 3.175;
