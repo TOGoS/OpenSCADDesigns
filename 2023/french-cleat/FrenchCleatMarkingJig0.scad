@@ -1,7 +1,11 @@
-// FrenchCleatMarkingJig0.1
+// FrenchCleatMarkingJig0.2
 // 
 // To help mark WSTYPE-4114-H4.5Ts
 // (and maybe later other profiles)
+// 
+// Versions:
+// v0.2:
+// - Added beveled fence thing
 
 panel_thickness = 3.175;
 router_hole1_diameter = 12;
@@ -76,7 +80,7 @@ the_panel_2d = ["difference",
 	for( ym=[-1.5, 0.5] ) for( xm=[-1,0,1] ) ["translate", [xm*chunk,ym*chunk], router_hole2_2d],
 ];
 
-thing = ["difference",
+panel = ["difference",
 	togmod1_linear_extrude_z([0,panel_thickness], the_panel_2d),
 	
 	each panel_mounting_holes,
@@ -85,6 +89,40 @@ thing = ["difference",
 	for( ym=[-0.5,  1.5] ) ["translate", [0, ym*chunk], router_hole1_troff],
 	for( ym=[-0.5,  1.5] ) for( xm=[-1.5 : 1 : 1.5] ) ["translate", [xm*chunk, ym*chunk],
 		["rotate", togfdmod(floor(xm)+floor(ym/2),2) == 0 ? [0,0,90] : [0,0,0], panel_mounting_hole]],
+];
+
+function beveled_edge_fence_rath(proff) = let(u=inch/16) ["togpath1-rath",
+	["togpath1-rathnode", [-6*u,  6*u], ["offset", proff], ["round", max(0.5, 1     + proff),  4]],
+	["togpath1-rathnode", [-6*u, -6*u], ["offset", proff], ["round", max(0.5, 1     + proff),  4]],
+	["togpath1-rathnode", [ 0*u, -6*u], ["offset", proff], ["round", max(0.5, 3.175 + proff),  6]],
+	["togpath1-rathnode", [12*u,  6*u], ["offset", proff], ["round", max(0.5, 3.175 + proff), 12]],
+];
+
+beveled_edge_fence_hull = tphl1_make_polyhedron_from_layer_function([
+	[ panel_size[1]/2  , -1],
+	[ panel_size[1]/2-1,  0],
+	[-panel_size[1]/2+1,  0],
+	[-panel_size[1]/2  , -1],
+], function(yo)
+	let( y=yo[0], off=yo[1] ) [
+		for( p=togpath1_rath_to_polypoints(beveled_edge_fence_rath(off)))
+		[p[0], y, p[1]]
+	]
+);
+
+fence_hole1 = tphl1_make_z_cylinder(d=3, zrange=[-20,20] );
+fence_hole2 = tphl1_make_z_cylinder(d=5, zrange=[-20,20] );
+
+beveled_edge_fence = ["difference",
+	beveled_edge_fence_hull,
+	
+	for( ym=[-panel_size_atoms[1]/2+0.5 : 1 : panel_size_atoms[1]/2-0.5] )
+	["translate", [-3.175, ym*atom, 0], togfdmod(floor(ym), 2) == 0 ? fence_hole1 : fence_hole2]
+];
+
+thing = ["union",
+	["translate", [0,0], panel],
+	["translate", [panel_size[0],0,3*inch/8], ["rotate", [0,180,0], beveled_edge_fence]],
 ];
 
 togmod1_domodule(thing);
