@@ -10,6 +10,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGRez1.scad>
+use <../lib/TOGFDMod.scad>
 use <../lib/TOGVecLib0.scad>
 
 function polymorph_morphic_polyhedron_layer_points( shapes, index, position ) =
@@ -41,21 +42,8 @@ togpath1_rath_to_polypoints(["togpath1-rath",
 	["togpath1-rathnode", [-38.1     , +38.1-12.7], each eops],
 ]);
 
-function fdmod(a, b) = a - (b * floor(a / b));
-
-assert( fdmod( 0,  5) == 0 );
-assert( fdmod( 3,  5) == 3 );
-assert( fdmod( 5,  5) == 0 );
-assert( fdmod(-3,  5) == 2 );
-assert( fdmod(-5,  5) == 0 );
-assert( fdmod(-6,  5) == 4 );
-
-assert( fdmod( 5, -5) ==  0 );
-assert( fdmod( 1, -5) == -4 );
-assert( fdmod(-6, -5) == -1 );
-
 function shift(list, by) = [
-	for( i=[0 : 1 : len(list)-1] ) list[fdmod(i+by, len(list))]
+	for( i=[0 : 1 : len(list)-1] ) list[togfdmod(i+by, len(list))]
 ];
 
 function make_diamond(offset=0) =

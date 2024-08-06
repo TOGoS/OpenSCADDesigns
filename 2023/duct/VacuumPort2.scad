@@ -5,6 +5,7 @@
 
 tube_wall_thickness = 3.175;
 
+use <../lib/TOGFDMod.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -82,21 +83,8 @@ polypoints;
 
 function make_circle(diameter, offset=0) = togmod1_circle_points(r=diameter/2+offset);
 
-function fdmod(a, b) = a - (b * floor(a / b));
-
-assert( fdmod( 0,  5) == 0 );
-assert( fdmod( 3,  5) == 3 );
-assert( fdmod( 5,  5) == 0 );
-assert( fdmod(-3,  5) == 2 );
-assert( fdmod(-5,  5) == 0 );
-assert( fdmod(-6,  5) == 4 );
-
-assert( fdmod( 5, -5) ==  0 );
-assert( fdmod( 1, -5) == -4 );
-assert( fdmod(-6, -5) == -1 );
-
 function shift(list, by) = [
-	for( i=[0 : 1 : len(list)-1] ) list[fdmod(i+by, len(list))]
+	for( i=[0 : 1 : len(list)-1] ) list[togfdmod(i+by, len(list))]
 ];
 
 function get_max_pointcount(shapes, index=0) =
