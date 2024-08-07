@@ -1,4 +1,4 @@
-// FrenchCleatMarkingJig0.2
+// FrenchCleatMarkingJig0.3
 // 
 // To help mark WSTYPE-4114-H4.5Ts
 // (and maybe later other profiles)
@@ -6,6 +6,8 @@
 // Versions:
 // v0.2:
 // - Added beveled fence thing
+// v0.3:
+// - Alternate axes of edge mounting holes
 
 panel_thickness = 3.175;
 router_hole1_diameter = 12;
@@ -52,7 +54,7 @@ panel_mounting_hole_positions = [
 
 panel_mounting_holes = [
 	for( pos=panel_mounting_hole_positions )
-	["translate", pos, panel_mounting_hole],
+	["translate", pos, ["rotate", [0, 0, togfdmod(round(pos[0]/12.7+pos[1]/12.7),2) == 0 ? 0 : 90], panel_mounting_hole]],
 ];
 
 pencil_groove_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(["togpath1-rath",
