@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.15
+// TGx11.1Lib - v11.1.16
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -33,9 +33,10 @@
 // v11.1.15:
 // - Support segmentation = "chunk"
 // - Support v6hc_style = "none"
-// 
-// TODO: 'chunk' bottom style
-// (currently can hack it by making chunk=atom, but that's kinda ugly)
+// v11.1.16:
+// - Refactor a couple of expressions to use temporary variables
+//   (this can help with debugging, sometimes)
+// - Remove an echo
 
 module __tgx11lib_end_params() { }
 
@@ -148,7 +149,8 @@ function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = togpath1_zath_to
  */
 function tgx11_chunk_xs_points(size, gender="m", offset=0) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
-	togpath1_qath_to_polypoints(tgx11_chunk_xs_qath(size, gender=gender, offset=offset));
+	let( qath = tgx11_chunk_xs_qath(size, gender=gender, offset=offset) )
+	togpath1_qath_to_polypoints(qath);
 
 // v6 atom foot cross-section
 function tgx11_v6c_polygon(atom_size, gender="m", offset=0) = // tgx11_ath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
@@ -182,7 +184,8 @@ function tgx11_v6c_flatright_polygon(atom_size, gender="m", offset=0) =
 function tgx11__chunk_footlike(layer_keys, size) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
 	tphl1_make_polyhedron_from_layer_function(layer_keys, function(zo)
-		[for (p=tgx11_chunk_xs_points(size, gender=$tgx11_gender, offset=zo[1])) [p[0], p[1], zo[0]]]
+		let( points = tgx11_chunk_xs_points(size, gender=$tgx11_gender, offset=zo[1]) )
+		[for (p=points) [p[0], p[1], zo[0]]]
 	);
 
 function tgx11_chunk_foot(size) =
@@ -197,7 +200,6 @@ function tgx11_chunk_foot(size) =
 	], size=size);
 
 function tgx11_chunk_unifoot(size) =
-	echo("tgx11_chunk_unifoot", size=size)
 	let( u = togridlib3_decode([1,"u"]) )
 	let( offset=$tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
