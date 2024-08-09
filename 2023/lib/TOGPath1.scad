@@ -84,7 +84,7 @@ function togpath1__pointlist_normalized_relative_edge_vectors(points) =
 //// Qath - Path defined by center and radius of each corner arc
 
 // Qath = ["togpath1-qath", ...QuathSeg...]
-// QathSeg = ["togpath1-qathseg", point, angle0, angle1, radius]
+// QathSeg = ["togpath1-qathseg", point, angle0, angle1, radius, pointcount=$fn*angle/360]
 // 
 // Positive angle difference means a counter-clockwise turn around
 // the point, negative means a clockwise turn around the point.
@@ -109,13 +109,14 @@ assert(["invalid", undef, ["An error"]] == togpath1_merge_qath_info(
 
 function togpath1_qathseg_info(seg) =
 	!is_list(seg) ? ["invalid", undef, [str("Segment is not a list: ", seg)]] :
-	len(seg) != 5 ? ["invalid", undef, [str("Segment is not a list of length 5: ", seg)]] :
+	(len(seg) < 5 || len(seg) > 6) ? ["invalid", undef, [str("Segment is not a list of length 5 or 6: ", seg)]] :
 	seg[0] != "togpath1-qathseg" ? ["invalid", undef, [str("Segment[0] != \"togpath1-qathseg\": ", seg)]] :
 	!is_list(seg[1]) || len(seg[1]) != 2 || !is_num(seg[1][0]) || !is_num(seg[1][1]) ?
 		["invalid", undef, [str("Segment[1] is not [number,number]: ", seg)]] :
 	!is_num(seg[2]) ? ["invalid", undef, [str("Segment[2] (angle 0) is not a number: ", seg)]] :
 	!is_num(seg[3]) ? ["invalid", undef, [str("Segment[3] (angle 1) is not a number: ", seg)]] :
 	!is_num(seg[4]) ? ["invalid", undef, [str("Segment[4] (radius) is not a number: ", seg)]] :
+	(!is_undef(seg[5]) && !is_num(seg[5])) ? ["invalid", undef, [str("Segment[5] (vertex count) is neither undef nor a number: ", seg)]] :
 	["togpath1-qath-info", seg[4], []];
 
 assert(["togpath1-qath-info", 3, []] == togpath1_qathseg_info(["togpath1-qathseg", [0,0], 0, 90, 3]));
@@ -161,22 +162,17 @@ function togpath1__qathseg_to_polypoints(seg, offset=0) =
 	let( a1 = seg[3] )
 	let( rad = seg[4] )
 	let( rad1 = rad + (a1>a0?1:-1)*offset )
+	let( vcount = !is_undef(seg[5]) ? seg[5] : max(2, round(abs(a1 - a0) * max($fn,1) / 360)) )
 	assert( rad >= 0 )
 	assert( abs(a1 - a0) > 0 )
-	// fcount = face count = just 'at least one, or $fn / (angle/360)'
-	// vertex count is face count + 1
-	// 
-	// For polyhedron generation, it may be useful to allow fcount
-	// to be overridden to a constant value, and allow a1-a0 = 0.
-	// Until then, keep it simple:
-	let( fcount = max(1, ceil(abs(a1 - a0) * max($fn,1) / 360)) )
+	let( fcount = vcount-1 )
 	assert( fcount >= 1 )
-[
-	for( vi = [0:1:fcount] )
-	// Calculate angles in such a way that first and last are exact
-	let( a = a0 * (fcount-vi)/fcount + a1 * vi/fcount )
-	[seg[1][0] + cos(a) * rad1, seg[1][1] + sin(a) * rad1]
-];
+	[
+		for( vi = [0:1:fcount] )
+		// Calculate angles in such a way that first and last are exact
+		let( a = a0 * (fcount-vi)/fcount + a1 * vi/fcount )
+		[seg[1][0] + cos(a) * rad1, seg[1][1] + sin(a) * rad1]
+	];
 
 function togpath1_qath_to_polypoints(qath, offset=0) =
 let(qathinfo = togpath1_qath_info(qath))
