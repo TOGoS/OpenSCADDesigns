@@ -1,4 +1,4 @@
-// Pegboard0.6
+// Pegboard0.7
 // 
 // Changes:
 // v0.2:
@@ -19,6 +19,8 @@
 // - Don't add columns for nonexistent holes
 // - Remove `gridbeam_hole_diameter` option,
 //   hardcode at 9/32" (this applies only to 'straight' holes)
+// v0.7:
+// - Option of double-ended TOGBeam holes!  (THL-1001-double-ended)
 // 
 // TODO:
 // - A variation where top/bottom are French cleats
@@ -34,7 +36,7 @@ peg_cavity_width = 9.5; // Enough for a #6 hex nut
 wall_thickness = 3.175;
 outer_corner_radius = 6.35;
 gridbeam_hole_style = "straight"; // ["none","straight","THL-1002","THL-1002-9/32","THL-1006"]
-togbeam_hole_style  = "none";     // ["none","THL-1001"]
+togbeam_hole_style  = "none";     // ["none","THL-1001","THL-1001-double-ended"]
 connector_hole_style = "none";    // ["none","straight-4.5mm"]
 $fn = 24;
 
@@ -45,6 +47,7 @@ use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
+use <../lib/TOGPolyhedronLib1.scad>
 
 function gridin(area, cellsize, iter=1) = [
 	for( xm=[ -round(area/cellsize)/2 + 0.5 : iter : round(area/cellsize)/2-0.4 ] )
@@ -97,14 +100,34 @@ function pegboard0_hole( style, depth, inset ) =
 
 togbeam_hole_inset =
 	togbeam_hole_style == "THL-1001" ? 0.5 :
+	togbeam_hole_style == "THL-1001-double-ended" ? 0.5 :
 	0.1;
 gridbeam_hole_inset =
 	gridbeam_hole_style == "THL-1002" || gridbeam_hole_style == "THL-1002-9/32" ? 0.8 :
 	gridbeam_hole_style == "THL-1006" ? 2.5 :
 	0.1;
 
+function reversey(doit, list) =
+	doit ? [for(i=[len(list)-1 : -1 : 0]) list[i]] : list;
+
+thl_1001_sym =
+let( hh = 1.7 )
+let( dd_dz = 2.35 )
+let( inset = togbeam_hole_inset )
+tphl1_make_z_cylinder(zds=[
+	for( od=[[-thickness,1],[0,-1]] ) each reversey(od[1] == -1, [
+	// rad/z slope = (/ (- 7.5 3.5) (* 2 1.7)) = 1.1764705882352942
+	// dz/dd = 0.425
+	// head height is 1.7
+		[od[0] - od[1]*1                                     , 7.5],
+		[od[0] + od[1]*(inset                               ), 7.5],
+		[od[0] + od[1]*(inset + hh * (7.5 - 4.0)/(7.5 - 3.5)), 4.0],
+	])
+]);
+
 togbeam_hole  =
 	togbeam_hole_style  == "straight" ? ["union"] :
+	togbeam_hole_style  == "THL-1001-double-ended" ? thl_1001_sym :
 	["render", pegboard0_hole( togbeam_hole_style, depth=thickness*2, inset= togbeam_hole_inset)];
 gridbeam_hole =
 	gridbeam_hole_style == "straight" ? ["union"] :
