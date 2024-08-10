@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p1532": {
+			"fan_holder_filter_seat_depth": "3.2",
+			"inner_margin": "0.2",
+			"lip_height": "1.6",
+			"outer_margin": "0.1",
+			"what": "fan-holder"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
