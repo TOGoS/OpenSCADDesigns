@@ -1,13 +1,18 @@
-// PegboardHook0.2
+// PegboardHook0.3
 //
 // v0.2:
 // - Reorder line raths to reduce some stickey-outies
 // - Replace 'angle' option with simple 'what'
+// v0.3:
+// - Hook depth is configurable
 // 
 // TODO:
 // - Round the convex polyline corners
+// - Some minimum bracing on bottom
 
 what = "j-hook"; // ["j-hook", "shelf-holder", "angled-shelf-holder"]
+// 28 = 1+3/4", 30=1+7/8"
+hook_inner_depth_u = 30;
 
 module __pbh0__end_params() { }
 
@@ -26,8 +31,6 @@ function raths_to_hook(shapes, w=3.175, d=3.175) =
 		for( r=raths )
 	];
 */
-
-$fn = 48;
 
 function pbh0_render_shape(shape, line_width) =
 	shape[0] == "translate" || shape[0] == "rotate" ?
@@ -54,10 +57,14 @@ triangle_rath = ["togpath1-rath",
 	["togpath1-rathnode", [0,0]],
 ];
 
+thickness_u = 2;
+$fn = 48;
+
 inch = 25.4;
 u = inch/16;
 line_width = 2*u;
-line_depth = 2*u;
+line_hwid  = 1*u;
+hook_inner_depth = hook_inner_depth_u*u;
 
 function pbh0_normal_bits(length_inches) =
 	echo(length_inches=length_inches)
@@ -73,16 +80,20 @@ function pbh0_normal_bits(length_inches) =
 	]]]
 ];
 
-j_hook = ["union",
+j_hook =
+let( x0 = line_hwid )
+let( x1 = line_width + hook_inner_depth )
+let( rr = min(6*u, hook_inner_depth/2) )
+["union",
 	each pbh0_normal_bits(1),
 	
 	// The hook/interesting part:
 	["open-path", ["togpath1-rath", 
-		["togpath1-rathnode", [ 1*u,     0]],
-		["togpath1-rathnode", [ 1*u, -16*u]],
-		["togpath1-rathnode", [ 1*u, -24*u], ["round", 6*u]],
-		["togpath1-rathnode", [17*u, -24*u], ["round", 6*u]],
-		["togpath1-rathnode", [17*u, -16*u]],
+		["togpath1-rathnode", [x0,     0]],
+		["togpath1-rathnode", [x0, -16*u]],
+		["togpath1-rathnode", [x0, -24*u], ["round", rr]],
+		["togpath1-rathnode", [x1, -24*u], ["round", rr]],
+		["togpath1-rathnode", [x1, -16*u]],
 	]],
 ];
 
@@ -113,12 +124,12 @@ let( pivot_pos = [ 1*u, -8*u-size[1]] )
 
 echo(atan2(3,4));
 
-shelf_holder        = make_square_hook([28*u, 12*u], angle=0);
-angled_shelf_holder = make_square_hook([28*u, 12*u], angle=-36.9);
+shelf_holder        = make_square_hook([hook_inner_depth, 12*u], angle=0);
+angled_shelf_holder = make_square_hook([hook_inner_depth, 12*u], angle=-36.9);
 
 shape =
 	what == "j-hook" ? j_hook :
 	what == "angled-shelf-holder" ? angled_shelf_holder :
 	shelf_holder;
 
-togmod1_domodule(togmod1_linear_extrude_z([0, line_depth], pbh0_render_shape(shape, line_width=3.175)));
+togmod1_domodule(togmod1_linear_extrude_z([0, thickness_u*u], pbh0_render_shape(shape, line_width=3.175)));
