@@ -1,8 +1,12 @@
-// ChunkBeam2.0
+// ChunkBeam2.1
 // 
 // Based on AutoOffsetPolyhedron0.
 // Uses it, even.  Something should be librarified, obviously.
 // Probably that stuff should be made into a library.
+// 
+// Versions:
+// v2.1:
+// - Fix that Z hole didn't go all the way through
 
 height_chunks = 2;
 
@@ -72,7 +76,7 @@ chunk_z_hole = make_nice_hole(chunk_pitch                , shaft_d=hole_diameter
 togmod1_domodule(["difference",
 	aop0_make_polyhedron_from_profile_rath( tgp_profile, tgp_rath, offset=offset ),
 	
-	block_z_hole,
+	["translate", [0,0,height_chunks*chunk_pitch/2], block_z_hole],
 	for( c=[0.5 : 1 : height_chunks-0.5] ) ["translate", [0,0,c*chunk_pitch], ["union",
 		["rotate", [90,0,0], chunk_z_hole],
 		["rotate", [0,90,0], chunk_z_hole],
