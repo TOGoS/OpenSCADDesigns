@@ -34,6 +34,11 @@
 // - Add 'spacer' mode
 // v0.13:
 // - Add 2mm hole mode, which is kinda weird
+// 
+// Notes:
+// - As of v0.13, the clips do not take rail_thickness_u or rail_width_u into account.
+//   They may as well be a totally separate design.
+//   For this reason I strip out the rail-specific stuff from the clip presets.
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip"]
@@ -47,6 +52,7 @@ notch_width = 6.35;
 rail_thickness_u =  4;
 rail_width_u     = 12;
 
+// Offset around the rail
 offset = -0.1;
 
 use <../lib/TOGHoleLib2.scad>

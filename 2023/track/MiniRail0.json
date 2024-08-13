@@ -32,6 +32,11 @@
 			"mode": "notch-clip",
 			"notch_width": "6.15",
 			"offset": "-0.3"
+		},
+		"p1536": {
+			"mode": "miniclip",
+			"clip_width": "3.1",
+			"offset": "-0.2"
 		}
 	},
 	"fileFormatVersion": "1"
