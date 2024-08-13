@@ -37,6 +37,11 @@
 			"mode": "miniclip",
 			"clip_width": "3.1",
 			"offset": "-0.2"
+		},
+		"p1537": {
+			"mode": "spacer",
+			"clip_width": "6.3",
+			"offset": "-0.2"
 		}
 	},
 	"fileFormatVersion": "1"
