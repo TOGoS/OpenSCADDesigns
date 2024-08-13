@@ -2,6 +2,10 @@
 // Automatically offset polyhedron faces in two dimensions
 // by first calculating 
 
+// Note: `use`d by ChunkBeam2.scad.
+// Probably should be moved to its own library
+// or maybe become part of TOGPolyhedronLib1.
+
 offset = -1;
 $fn = 32;
 
@@ -25,7 +29,6 @@ function aop0_offset_polypoints(points0, offset) =
 	let(rath = ["togpath1-rath",
 		for( p=points0 ) ["togpath1-rathnode", p, ["offset", offset]]
 	])
-	echo(rath=rath)
 	assert(rath[0] == "togpath1-rath")
 	togpath1_rath_to_polypoints(rath);
 
@@ -66,7 +69,6 @@ function aop0_calculate_layer_xz_offset_factors_from_profile( profile ) =
 
 function aop0_make_polyhedron_from_profile_rath( profile, rath, offset=0 ) =
 	let( layer_xz_offset_factors = aop0_calculate_layer_xz_offset_factors_from_profile(profile) )
-	echo( layer_xz_offset_factors=layer_xz_offset_factors )
 	let( params = [for( i=[0 : 1 : len(profile)-1] ) [profile[i], layer_xz_offset_factors[i]]] )
 	tphl1_make_polyhedron_from_layer_function(params, function(param)
 		let( pvec = param[0] )
