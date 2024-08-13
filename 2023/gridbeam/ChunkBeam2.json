@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p1541": {
+			"height_chunks": "1",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1542": {
+			"height_chunks": "2",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
