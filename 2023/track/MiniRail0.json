@@ -57,6 +57,11 @@
 			"mode": "spacer",
 			"clip_width": "12.7",
 			"offset": "-0.3"
+		},
+		"p1561": {
+			"mode": "miniclip",
+			"clip_width": "6.4",
+			"offset": "-0.3"
 		}
 	},
 	"fileFormatVersion": "1"
