@@ -9,6 +9,41 @@
 			"height_chunks": "2",
 			"hole_diameter": "8",
 			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1543": {
+			"height_chunks": "3",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1544": {
+			"height_chunks": "4",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1545": {
+			"height_chunks": "5",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1546": {
+			"height_chunks": "6",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1547": {
+			"height_chunks": "7",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1548": {
+			"height_chunks": "8",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
+		},
+		"p1549": {
+			"height_chunks": "9",
+			"hole_diameter": "8",
+			"hole_style": "beveled+rounded-2mm"
 		}
 	},
 	"parameterSets": "",
