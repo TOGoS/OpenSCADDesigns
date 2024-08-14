@@ -52,6 +52,11 @@
 			"mode": "spacer",
 			"clip_width": "25.4",
 			"offset": "-0.2"
+		},
+		"p1560": {
+			"mode": "spacer",
+			"clip_width": "12.7",
+			"offset": "-0.3"
 		}
 	},
 	"fileFormatVersion": "1"
