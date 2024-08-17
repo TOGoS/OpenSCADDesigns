@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.16
+// TGx11.1Lib - v11.1.17
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -37,6 +37,8 @@
 // - Refactor a couple of expressions to use temporary variables
 //   (this can help with debugging, sometimes)
 // - Remove an echo
+// v11.1.17:
+// - tgx11_block_bottom will assume gender="m", same as tgx11_block does
 
 module __tgx11lib_end_params() { }
 
@@ -291,17 +293,21 @@ let(body_z1 = block_size[2]+1+1/32)
 	if( segmentation == "chunk" ) for(xm=chunk_xms) for(ym=chunk_yms) ["translate", [xm*chunk, ym*chunk, 0], chunk_foot],
 ];
 
+function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : $tgx11_gender;
+function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
+
 function tgx11_block_bottom(
 	block_size_ca,
 	bottom_shape = "footed",
 	segmentation = "atom",
 	v6hc_style = "v6.1"
 ) =
-	segmentation == "block" ? tgx11_chunk_unifoot(togridlib3_decode_vector(block_size_ca)) :
+	let($tgx11_gender = tgx11__get_gender())
+	segmentation == "block" ? (
+		bottom_shape == "footed" ? tgx11_chunk_unifoot(togridlib3_decode_vector(block_size_ca)) :
+		tgx11_chunk_foot(togridlib3_decode_vector(block_size_ca))
+	) :
 	tgx11_atomic_block_bottom(block_size_ca, bottom_shape=bottom_shape, segmentation=segmentation, v6hc_style=v6hc_style);
-
-function tgx11__get_gender() = is_undef($tgx11_gender) ? "m" : $tgx11_gender;
-function tgx11__invert_gender(g) = g == "m" ? "f" : "m";
 
 function tgx11_block(
 	block_size_ca, bottom_shape="footed",
