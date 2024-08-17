@@ -1,0 +1,21 @@
+{
+	"fileFormatVersion": "1",
+	"parameterSets": {
+		"p1563": {
+			"$tgx11_offset": "-0.1",
+			"back_segmentation": "atom",
+			"block_size_atoms": "[6, 6, 12]",
+			"bottom_segmentation": "atom",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "atom",
+			"inner_offset": "-0.2",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "atom",
+			"top_cord_slot_depth": "25.4",
+			"top_cord_slot_diameter": "19.05",
+			"top_segmentation": "chatom"
+		}
+	}
+}
