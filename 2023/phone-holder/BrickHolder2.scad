@@ -1,5 +1,4 @@
-// BrickHolder2.0
-// 
+// BrickHolder2.1
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -17,10 +16,16 @@
 //   this design is just the holder, for now.
 // - Inner corners are 2mm rounded, which should accomodate
 //   TOGridPile bevels and feet just fine.
+// v2.1:
+// - Bottom hole, front slot, and mounting holes are optional
 
 /* [General] */
 
 block_size_atoms = [6,6,12];
+
+bottom_hole_style = "standard"; // ["none","standard"]
+front_slot_style = "standard"; // ["none","standard"]
+back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
 
 // mode = "holder"; // ["holder", "spacer"]
 
@@ -119,7 +124,7 @@ front_slot = tphl1_make_polyhedron_from_layer_function([
 
 bottom_hole = tphl1_make_rounded_cuboid([bottom_hole_actual_size[0], bottom_hole_actual_size[1], block_size[2]*3], [2,2,0]);
 
-mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [90,0,0], tog_holelib2_hole("THL-1003", depth=block_size[1]-cavity_actual_size[1])]);
+mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [90,0,0], tog_holelib2_hole(back_mounting_hole_style, depth=block_size[1]-cavity_actual_size[1])]);
 mounting_holes = ["union",
 	for( xm=[round(-block_size[0]/atom)/2 + 0.5 : 1 : round(block_size[0]/atom)/2] )
 	let( x = xm*atom )
@@ -154,14 +159,27 @@ top_cord_slot =
 
 use <../lib/TOGMod1.scad>
 
-brick_holder_ = ["difference",
+features = []; // Might make configurable as an 'escape hatch' of sorts
+               // to allow further customization than enable/disable/style
+               // options can represent.
+
+effective_features = [
+	each features,
+	if(bottom_hole_style == "standard") "bottom-hole",
+	if(front_slot_style == "standard") "front-slot",
+];
+
+unsegmented_brick_holder = ["difference",
 	block_hull,
 	
 	cavity,
-	maybedebug(debug_front_slot_enabled, front_slot),
-	bottom_hole,
+	for( f=effective_features )
+		f == "" ? ["union"] :
+		f == "bottom-hole" ? bottom_hole :
+		f == "front-slot" ? maybedebug(debug_front_slot_enabled, front_slot) :
+		f == "cord-slot" ? top_cord_slot :
+		assert(false, str("Unrecognized feature: '", f, "'")),
 	mounting_holes,
-	top_cord_slot
 ];
 
 left_side_intersection = side_segmentation != "none" ? ["translate", [-block_size[0]/2, 0, block_size[2]/2], ["rotate", [0,90,0],
@@ -174,7 +192,8 @@ left_side_intersection = side_segmentation != "none" ? ["translate", [-block_siz
 ]] : undef;
 
 brick_holder = ["intersection",
-	brick_holder_,
+	unsegmented_brick_holder,
+	
 	if( side_segmentation != "none" ) ["intersection",
 		for( xs=[-1,1] ) ["scale", [xs,1,1], left_side_intersection]
 	],
