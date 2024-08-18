@@ -1,4 +1,4 @@
-// BrickHolder2.1
+// BrickHolder2.3
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -18,6 +18,14 @@
 //   TOGridPile bevels and feet just fine.
 // v2.1:
 // - Bottom hole, front slot, and mounting holes are optional
+// v2.2:
+// - Experimental 'shift feet around a bit' version
+//   to see if that improves STL exports (it did not)
+// v2.3:
+// - Apply 'randomization' to $tgx11_offset
+// 
+// TODO: actually apply top_segmentation!
+// TODO: horizontal-only atomic segmentation modes?
 
 /* [General] */
 
@@ -195,14 +203,15 @@ brick_holder = ["intersection",
 	unsegmented_brick_holder,
 	
 	if( side_segmentation != "none" ) ["intersection",
-		for( xs=[-1,1] ) ["scale", [xs,1,1], left_side_intersection]
+		for( xs=[-1,1] ) ["scale", [xs,1,1], ["translate", [0,0,0], left_side_intersection]]
 	],
 	if( back_segmentation != "none" ) ["translate", [0, block_size[1]/2, block_size[2]/2], ["rotate", [90,0,0],
 		["render", tgx11_block_bottom(
 			[block_size_ca[0], block_size_ca[2], block_size_ca[1]],
 			segmentation = back_segmentation,
 			bottom_shape = "beveled", // No overhangs allowed
-			$tgx11_gender = "m"
+			$tgx11_gender = "m",
+			$tgx11_offset = $tgx11_offset + 1/1024
 		)]
 	]],
 	if( front_segmentation != "none" ) ["translate", [0, -block_size[1]/2, block_size[2]/2], ["rotate", [-90,0,0],
@@ -210,7 +219,8 @@ brick_holder = ["intersection",
 			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
 			segmentation = front_segmentation,
 			bottom_shape = "beveled", // No overhangs allowed
-			$tgx11_gender = "m"
+			$tgx11_gender = "m",
+			$tgx11_offset = $tgx11_offset + 2/1024
 		)]
 	]],
 	if( bottom_segmentation != "none" ) ["translate", [0, 0, 0], ["rotate", [0,0,0],
@@ -218,7 +228,8 @@ brick_holder = ["intersection",
 			[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2], "mm"]],
 			segmentation = bottom_segmentation,
 			bottom_shape = "footed",
-			$tgx11_gender = "m"
+			$tgx11_gender = "m",
+			$tgx11_offset = $tgx11_offset - 1/1024
 		)]
 	]],
 ];

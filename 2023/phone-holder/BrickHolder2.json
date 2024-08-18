@@ -39,12 +39,32 @@
 		},
 		"p1565": {
 			"_comments": [
-				"No holes!  And just big enough for one gridbeam."
+				"No holes!  And just big enough for one gridbeam.  6\" tall."
 			],
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
 			"back_segmentation": "atom",
 			"block_size_atoms": "[4, 4, 12]",
+			"bottom_hole_style": "none",
+			"bottom_segmentation": "atom",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "atom",
+			"front_slot_style": "none",
+			"inner_offset": "-0.5",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "atom",
+			"top_segmentation": "block"
+		},
+		"p1566": {
+			"_comments": [
+				"No holes!  And just big enough for one gridbeam.  4+1/2\" tall."
+			],
+			"$tgx11_offset": "-0.1",
+			"back_mounting_hole_style": "none",
+			"back_segmentation": "atom",
+			"block_size_atoms": "[4, 4, 9]",
 			"bottom_hole_style": "none",
 			"bottom_segmentation": "atom",
 			"debug_front_slot_enabled": "false",
