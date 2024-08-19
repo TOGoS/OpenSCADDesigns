@@ -76,6 +76,24 @@
 			"render_fn": "24",
 			"side_segmentation": "atom",
 			"top_segmentation": "block"
+		},
+		"p1567": {
+			"bottom_hole_style": "none",
+			"front_slot_style": "none",
+			"$tgx11_offset": "-0.1",
+			"back_segmentation": "atom",
+			"block_size_atoms": "[6, 6, 12]",
+			"bottom_segmentation": "atom",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "atom",
+			"inner_offset": "-0.2",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "atom",
+			"top_cord_slot_depth": "25.4",
+			"top_cord_slot_diameter": "25.4",
+			"top_segmentation": "block"
 		}
 	}
 }

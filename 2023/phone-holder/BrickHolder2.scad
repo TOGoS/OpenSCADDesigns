@@ -1,4 +1,4 @@
-// BrickHolder2.3
+// BrickHolder2.4
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -23,6 +23,8 @@
 //   to see if that improves STL exports (it did not)
 // v2.3:
 // - Apply 'randomization' to $tgx11_offset
+// v2.4:
+// - Fix to enable top cord slot
 // 
 // TODO: actually apply top_segmentation!
 // TODO: horizontal-only atomic segmentation modes?
@@ -175,6 +177,7 @@ effective_features = [
 	each features,
 	if(bottom_hole_style == "standard") "bottom-hole",
 	if(front_slot_style == "standard") "front-slot",
+	if(top_cord_slot_diameter > 0 && top_cord_slot_depth > 0) "top-cord-slot",
 ];
 
 unsegmented_brick_holder = ["difference",
@@ -185,7 +188,7 @@ unsegmented_brick_holder = ["difference",
 		f == "" ? ["union"] :
 		f == "bottom-hole" ? bottom_hole :
 		f == "front-slot" ? maybedebug(debug_front_slot_enabled, front_slot) :
-		f == "cord-slot" ? top_cord_slot :
+		f == "top-cord-slot" ? top_cord_slot :
 		assert(false, str("Unrecognized feature: '", f, "'")),
 	mounting_holes,
 ];
