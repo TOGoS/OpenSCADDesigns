@@ -1,4 +1,4 @@
-// BrickHolder2.4
+// BrickHolder2.5
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -25,6 +25,8 @@
 // - Apply 'randomization' to $tgx11_offset
 // v2.4:
 // - Fix to enable top cord slot
+// v2.5:
+// - Add can subtraction
 // 
 // TODO: actually apply top_segmentation!
 // TODO: horizontal-only atomic segmentation modes?
@@ -33,13 +35,12 @@
 
 block_size_atoms = [6,6,12];
 
+// Diameter of cylinder to additionally subtract from main cavity, e.g. for a soda can.  Set to 0 to skip it.
+can_diameter = 0;
+
 bottom_hole_style = "standard"; // ["none","standard"]
 front_slot_style = "standard"; // ["none","standard"]
 back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
-
-// mode = "holder"; // ["holder", "spacer"]
-
-/* [Holder] */
 
 top_cord_slot_depth    = 0; // 0.01
 top_cord_slot_diameter = 0; // 0.01
@@ -121,7 +122,17 @@ echo(str("Block size = ", dimstr(block_size, "mm"), ", or ", dimstr(block_size/2
 $fn = $preview ? preview_fn : render_fn;
 
 block_hull = ["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid(block_size, 3)];
-cavity = ["translate", [0,0,block_size[2]], tphl1_make_rounded_cuboid([cavity_actual_size[0], cavity_actual_size[1], cavity_actual_size[2]*2], [2,2,0])];
+
+cavity_2d = ["union",
+	togmod1_make_rounded_rect(cavity_actual_size, r=2),
+	if( can_diameter > 0 ) togmod1_make_circle(d=can_diameter, $fn=max($fn,48))
+];
+
+cavity = //["translate", [0,0,block_size[2]], tphl1_make_rounded_cuboid([cavity_actual_size[0], cavity_actual_size[1], cavity_actual_size[2]*2], [2,2,0])];
+	togmod1_linear_extrude_z([block_size[2]-cavity_actual_size[2], block_size[2]*2],
+		cavity_2d
+	);
+
 function widthcurve(t) = t <= 0 ? 0 : t >= 1 ? 1 : 0.5 - 0.5*cos(t*180);
 front_slot = tphl1_make_polyhedron_from_layer_function([
 	//[-100             , [bottom_hole_size[0], block_size[1]+bottom_hole_size[1]]],
@@ -237,14 +248,6 @@ brick_holder = ["intersection",
 	]],
 ];
 
-spacer = ["difference",
-	tphl1_make_rounded_cuboid([cavity_actual_size[0]-1, cavity_actual_size[1]-1, spacer_thickness], [3,3,min(spacer_thickness/2,3)]),
-	front_slot
-];
-
-thing =
-	mode == "holder" ? brick_holder :
-	mode == "spacer" ? spacer :
-	assert(false, str("Invalid mode: '", mode, "'"));
+thing = brick_holder;
 
 togmod1_domodule(thing);
