@@ -168,6 +168,18 @@
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1568": {
+			"_comments": [
+				"Similar to p1456, but with less restrictive lip shape"
+			],
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[6, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
 		}
 	},
 	"parameterSets": "",

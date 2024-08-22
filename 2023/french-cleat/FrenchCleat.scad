@@ -1,4 +1,4 @@
-// FrenchCleat-v1.7
+// FrenchCleat-v1.8
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -21,6 +21,9 @@
 // - Provide some different THL-* hole types
 // v1.7:
 // - THL-1005-5u option (5/16" deep countersunk holes instead of only 1/8"ish)
+// v1.8:
+// - Add experimental 'atom-rows-f' backside texture, which is supposed to
+//   give some of the grippy benefit of tgx11-atom-f but in a less restrictive way.
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -35,7 +38,7 @@ mode = "X"; // ["X", "Z", "tester"]
 /* [Experimental] */
 
 // Can use tgx11-atom-f only when -C/-B edge styles are selected and mode = "X"
-backside_texture = "flat"; // ["flat", "tgx11-atom-f"]
+backside_texture = "flat"; // ["flat", "tgx11-atom-f", "atom-rows-f"]
 $tgx11_offset = -0.1;
 
 assert(backside_texture == "flat" || (mating_edge_style == "S-trimmed-C" && opposite_edge_style == "FFS-trimmed-B" && mode == "X"));
@@ -185,8 +188,26 @@ hole_rows = [0];
 inch = togridlib3_decode([1,"inch"]);
 tester_hull = tphl1_make_rounded_cuboid([3*inch, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
 
+function fc_atomic_rows_foot(size_ca) =
+let(size = togridlib3_decode_vector(size_ca))
+["union",
+	["translate", [0,   0  , size[2]/2], togmod1_make_cuboid([size[0], size[1]*2, size[2]-inch/8+$tgx11_offset*2])],
+	["translate", [0, -25.4, size[2]/2], togmod1_make_cuboid([size[0], 38.1-inch/8+$tgx11_offset*2, size[2]+$tgx11_offset*2])],
+	["translate", [0,   0  , size[2]/2], togmod1_make_cuboid([size[0], 12.7-inch/8+$tgx11_offset*2, size[2]+$tgx11_offset*2])],
+	["translate", [0,  12.7, size[2]/2], togmod1_make_cuboid([size[0], 12.7-inch/8+$tgx11_offset*2, size[2]+$tgx11_offset*2])],
+];
+
 function make_textured_fc_hull(direction, length, backside_texture) =
 	let(h = make_fc_hull(direction, length))
+	backside_texture == "atom-rows-f" ? ["difference", h,
+		["translate", [0,0,zn], ["rotate", [180,0,0],
+			fc_atomic_rows_foot(
+				[[length+25.4, "mm"], [5, "atom"], [20, "mm"]],
+				$tgx11_offset = -$tgx11_offset,
+				$tgx11_gender = "f"
+			)
+		]]
+	] :
 	backside_texture == "tgx11-atom-f" ? ["difference", h,
 		["translate", [0,0,zn], ["rotate", [180,0,0],
 			// Extend pattern one atom beyond actual extent of cleat
