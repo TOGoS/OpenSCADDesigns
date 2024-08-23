@@ -6,6 +6,12 @@
 			"lip_height": "1.6",
 			"outer_margin": "0.1",
 			"what": "fan-holder"
+		},
+		"p1571": {
+			"inner_margin": "0.2",
+			"lip_height": "1.6",
+			"outer_margin": "0.1",
+			"what": "filter-holder"
 		}
 	},
 	"parameterSets": "",

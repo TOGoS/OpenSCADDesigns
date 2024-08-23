@@ -1,6 +1,8 @@
-// FanPanel1.0
+// FanPanel1.2
 // 
 // Various fan-related parts
+// Based on FanPanel0, but replacing the 'cxtor' stuff
+// with regular block-segmented TOGridPile stuff.
 //
 // Versions:
 // v1.0:
@@ -8,10 +10,12 @@
 // v1.1:
 // - fan-panel only for now; not sure what I want to do with other parts
 // - based on a TGx11 block-segmented block
+// v1.2:
+// - Add 'filter-holder', with height fixed at 1.5".
 
 // TODO
 //	- [X] Get rid of the cxtor bits, replace with block-segmented TOGridPile lips
-//	- [/] Have single lip_height parameter for all the parts
+//	- [X] Have single lip_height parameter for all the parts
 //	- [/] all 5" parts should allow for both 4.5" and 100mm-spaced holes
 // 
 // Parts:
@@ -30,7 +34,7 @@
 //   (120mm x 120mm x 25mm), so the fan is a little smaller.
 // - Hole spacing for 120mm fans is a 105mm square
 
-what = "fan-holder"; // ["fan-holder"]
+what = "fan-holder"; // ["fan-holder","filter-holder"]
 inner_margin = 0.2;
 // Also negative rgx11_offset
 outer_margin = 0.1;
@@ -227,12 +231,12 @@ the_filter_holder_bottom_panel = ["difference",
 ];
 
 the_filter_holder =
-	let( height = panel_thickness + wall_height )
+	let( height = 38.1 )
 	//let( hull_rath = togpath1_offset_rath(wall_rath, wall_thickness/2-outer_margin) )
 	let( interior_rath = togpath1_offset_rath(wall_rath, -wall_thickness/2+inner_margin) )
 	["difference",
 	   //togmod1_linear_extrude_z([0,height], togmod1_make_polygon(togpath1_rath_to_polypoints(hull_rath))),
-		tgx11_block([[5, "inch"], [5, "inch"], [height, "mm"]], bottom_segmentation="block", top_segmentation="block", lip_height=1.5),
+		tgx11_block([[5, "inch"], [5, "inch"], [height, "mm"]], bottom_segmentation="block", top_segmentation="block", lip_height=lip_height),
 		
 		togmod1_linear_extrude_z([panel_thickness,height+1], togmod1_make_polygon(togpath1_rath_to_polypoints(interior_rath))),
 		togmod1_linear_extrude_z([-1, height+1], center_cutout_2d),
