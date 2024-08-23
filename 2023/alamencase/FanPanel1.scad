@@ -1,4 +1,4 @@
-// FanPanel1.2
+// FanPanel1.2.1
 // 
 // Various fan-related parts
 // Based on FanPanel0, but replacing the 'cxtor' stuff
@@ -12,6 +12,8 @@
 // - based on a TGx11 block-segmented block
 // v1.2:
 // - Add 'filter-holder', with height fixed at 1.5".
+// v1.2.1:
+// - filter holder definition based on block_size_ca
 
 // TODO
 //	- [X] Get rid of the cxtor bits, replace with block-segmented TOGridPile lips
@@ -231,12 +233,13 @@ the_filter_holder_bottom_panel = ["difference",
 ];
 
 the_filter_holder =
-	let( height = 38.1 )
+	let( block_size_ca = [[5, "inch"], [5, "inch"], [1.5, "inch"]] )
+	let( height = togridlib3_decode(block_size_ca[2]) )
 	//let( hull_rath = togpath1_offset_rath(wall_rath, wall_thickness/2-outer_margin) )
 	let( interior_rath = togpath1_offset_rath(wall_rath, -wall_thickness/2+inner_margin) )
 	["difference",
 	   //togmod1_linear_extrude_z([0,height], togmod1_make_polygon(togpath1_rath_to_polypoints(hull_rath))),
-		tgx11_block([[5, "inch"], [5, "inch"], [height, "mm"]], bottom_segmentation="block", top_segmentation="block", lip_height=lip_height),
+		tgx11_block(block_size_ca, bottom_segmentation="block", top_segmentation="block", lip_height=lip_height),
 		
 		togmod1_linear_extrude_z([panel_thickness,height+1], togmod1_make_polygon(togpath1_rath_to_polypoints(interior_rath))),
 		togmod1_linear_extrude_z([-1, height+1], center_cutout_2d),
