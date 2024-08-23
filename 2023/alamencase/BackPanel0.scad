@@ -1,4 +1,4 @@
-// BackPanel0.4
+// BackPanel0.5
 // 
 // 5"x7.5" panel for the back of the AlamenCase.
 // You should be able to mount a 120mm fan behind it.
@@ -13,6 +13,8 @@
 //   and I might want 'fan-panel' to be just a panel.
 // v0.4:
 // - Add 'spacer' mode
+// v0.5:
+// - Make spacer more like how it needs to be
 
 style = "frame+fan-panel"; // ["frame+fan-panel","frame","spacer"]
 
@@ -69,16 +71,16 @@ frame = ["difference",
 
 spacer =
 let( vhole_positions=[
-	for( xm=[-4.5,4.5] ) for( ym=[-6 : 1 : 6] ) [xm*atom, ym*atom],
+	for( xm=[-4.5,4.5] ) for( ym=[-6, -5, each[-3 : 1 : 3], 5, 6] ) [xm*atom, ym*atom],
 	for( xm=[-4.5 : 1 : 4.5] ) for( ym=[-6,6] ) [xm*atom, ym*atom],
 ])
 let( hole_post = togmod1_make_circle(d=9, $fn=16) )
 ["difference",
-	togmod1_linear_extrude_z([0    ,atom], ["difference",
+	togmod1_linear_extrude_z([0    ,atom/2], ["difference",
 		togmod1_make_rounded_rect([10*atom, 13*atom], r=3*u, $fn=24),
 		
 		["difference",
-			togmod1_make_rounded_rect([8.67*atom, 11.67*atom], r=2*u, $fn=16),
+			togmod1_make_rounded_rect([9*atom, 12*atom], r=2*u, $fn=16),
 			
 			for( pos=vhole_positions ) ["translate", pos, hole_post],
 		]
