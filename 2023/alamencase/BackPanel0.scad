@@ -1,4 +1,4 @@
-// BackPanel0.3
+// BackPanel0.4
 // 
 // 5"x7.5" panel for the back of the AlamenCase.
 // You should be able to mount a 120mm fan behind it.
@@ -11,8 +11,10 @@
 //   not 7.5", the height of the whole case.
 // - Rename frame+fan-panel style, because it does include a frame,
 //   and I might want 'fan-panel' to be just a panel.
+// v0.4:
+// - Add 'spacer' mode
 
-style = "frame+fan-panel"; // ["frame+fan-panel","frame"]
+style = "frame+fan-panel"; // ["frame+fan-panel","frame","spacer"]
 
 module __bp0__end_params() { }
 
@@ -65,4 +67,32 @@ frame = ["difference",
 	for( ym=[-5,each [-5:1:5],5] ) ["translate", [0, ym*atom, atom/2], ["rotate", [0,90,0], 5mm_hole]],
 ];
 
-togmod1_domodule(style == "frame+fan-panel" ? fan_panel : frame);
+spacer =
+let( vhole_positions=[
+	for( xm=[-4.5,4.5] ) for( ym=[-6 : 1 : 6] ) [xm*atom, ym*atom],
+	for( xm=[-4.5 : 1 : 4.5] ) for( ym=[-6,6] ) [xm*atom, ym*atom],
+])
+let( hole_post = togmod1_make_circle(d=9, $fn=16) )
+["difference",
+	togmod1_linear_extrude_z([0    ,atom], ["difference",
+		togmod1_make_rounded_rect([10*atom, 13*atom], r=3*u, $fn=24),
+		
+		["difference",
+			togmod1_make_rounded_rect([8.67*atom, 11.67*atom], r=2*u, $fn=16),
+			
+			for( pos=vhole_positions ) ["translate", pos, hole_post],
+		]
+	]),
+	
+	for( pos=vhole_positions ) ["translate", pos, 5mm_hole],
+	
+	//for( xm=[-3.5 : 1 : 3.5] ) ["translate", [xm*atom, 0, atom/2], ["rotate", [90,0,0], 5mm_hole]],
+	//for( ym=[-5,each [-5:1:5],5] ) ["translate", [0, ym*atom, atom/2], ["rotate", [0,90,0], 5mm_hole]],
+];
+
+thing =
+	style == "frame+fan-panel" ? fan_panel :
+	style == "spacer" ? spacer :
+	frame;
+
+togmod1_domodule(thing);
