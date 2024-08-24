@@ -94,6 +94,26 @@
 			"top_cord_slot_depth": "25.4",
 			"top_cord_slot_diameter": "25.4",
 			"top_segmentation": "block"
+		},
+		"p1572": {
+			"$tgx11_offset": "-0.1",
+			"back_mounting_hole_style": "THL-1003",
+			"back_segmentation": "atom",
+			"block_size_atoms": "[6, 6, 9]",
+			"bottom_hole_style": "standard",
+			"bottom_segmentation": "atom",
+			"can_diameter": "68",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "atom",
+			"front_slot_style": "standard",
+			"inner_offset": "-0.2",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "atom",
+			"top_cord_slot_depth": "25.4",
+			"top_cord_slot_diameter": "25.4",
+			"top_segmentation": "block"
 		}
 	}
 }
