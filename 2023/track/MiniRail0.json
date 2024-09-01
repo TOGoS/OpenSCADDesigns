@@ -1,5 +1,6 @@
 {
 	"parameterSets": {
+		"-- Rails --": "",
 		"p1379 - 7.5in rail": {
 			"alt_hole_type": "THL-1001",
 			"hole_type": "THL-1002",
@@ -8,20 +9,93 @@
 			"notches_enabled": "false",
 			"offset": "-0.1"
 		},
-		"p1380 - jammer": {
-			"mode": "jammer",
-			"offset": "0.1"
-		},
-		"p1381 - notch clip": {
-			"mode": "notch-clip",
-			"offset": "-0.1"
-		},
 		"p1382 - 7.5in notched rail": {
 			"alt_hole_type": "THL-1001",
 			"hole_type": "THL-1002",
 			"length_chunks": "5",
 			"mode": "rail",
 			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1581": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "1",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1582": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "2",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1583": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "3",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1584": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "4",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1585": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "5",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1586": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "6",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1587": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "7",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1588": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "8",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"p1589": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "9",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
+		"-- Clips --": "",
+		"p1380 - jammer": {
+			"mode": "jammer",
+			"offset": "0.1"
+		},
+		"p1381 - notch clip": {
+			"mode": "notch-clip",
 			"offset": "-0.1"
 		},
 		"p1387 - clip w/ -0.3mm offset": {
