@@ -1,4 +1,4 @@
-// MiniRail0.13
+// MiniRail0.14
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -34,13 +34,15 @@
 // - Add 'spacer' mode
 // v0.13:
 // - Add 2mm hole mode, which is kinda weird
+// v0.14:
+// - Allow half-chunk lengths
 // 
 // Notes:
 // - As of v0.13, the clips do not take rail_thickness_u or rail_width_u into account.
 //   They may as well be a totally separate design.
 //   For this reason I strip out the rail-specific stuff from the clip presets.
 
-length_chunks = 3;
+length_chunks = 3; // 0.5
 mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip"]
 hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002","2mm"]
 alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002","2mm"]
@@ -125,7 +127,7 @@ alt_mhole = ["rotate", [180,0,0], mekhole(alt_hole_type)];
 function make_minirail(length) =
 let( mhole_pitch = hole_pattern == "chunk" ? chunk_pitch : atom_pitch )
 let( xm0offset   = hole_pattern == "chunk" ? 0.5 : 0.25 )
-let( length_mholes = round(length/mhole_pitch) )
+let( length_mholes = round(length*2/mhole_pitch)/2 )
 ["difference",
 	["translate", [0, 0, 2*u], make_minirail_hull(
 		length,

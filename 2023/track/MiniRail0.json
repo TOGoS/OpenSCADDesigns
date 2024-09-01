@@ -17,6 +17,14 @@
 			"notches_enabled": "true",
 			"offset": "-0.1"
 		},
+		"p1574": {
+			"alt_hole_type": "THL-1001",
+			"hole_type": "THL-1002",
+			"length_chunks": "7.5",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
 		"p1581": {
 			"alt_hole_type": "THL-1001",
 			"hole_type": "THL-1002",
