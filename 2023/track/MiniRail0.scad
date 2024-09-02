@@ -1,4 +1,4 @@
-// MiniRail0.14
+// MiniRail0.15
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -36,6 +36,9 @@
 // - Add 2mm hole mode, which is kinda weird
 // v0.14:
 // - Allow half-chunk lengths
+// v0.15:
+// - Add notch-pin, which is similar to notch-clip, but simplified
+//   and hopefully works a bit better
 // 
 // Notes:
 // - As of v0.13, the clips do not take rail_thickness_u or rail_width_u into account.
@@ -43,7 +46,7 @@
 //   For this reason I strip out the rail-specific stuff from the clip presets.
 
 length_chunks = 3; // 0.5
-mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip"]
+mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip", "notch-pin"]
 hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002","2mm"]
 alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002","2mm"]
 hole_pattern = "chunk"; // ["chunk", "atom"]
@@ -250,6 +253,27 @@ let( q = u/2 )
 	["togpath1-rathnode", [  0*u,  -3*u], ["round", 1*u]],
 ];
 
+function make_notch_pin_rath() =
+let( f = $tgx11_offset )
+let( f2 = (sqrt(2)-1)*f )
+let( f3 = sqrt(2)*f )
+let( q = u/2 )
+let( p = 0.3 ) // protrusion
+["togpath1-rath",
+	["togpath1-rathnode", [  4*u, - 1*u + p], ["round", 1*u]],
+	["togpath1-rathnode", [  2*u, - 1*u + p], ["round", 1*u]],
+	["togpath1-rathnode", [  1*u, - 2*u]],
+	["togpath1-rathnode", [- 5*u, - 2*u]],
+	["togpath1-rathnode", [- 8*u + f3 + q  , - 1*u  - q], ["round", q/2]],
+	["togpath1-rathnode", [- 8*u + f3      , - 1*u     ]],
+	["togpath1-rathnode", [- 6*u + f3      ,   1*u     ]],
+	["togpath1-rathnode", [  9*u,   1*u], ["round", 0.9*u]],
+	["togpath1-rathnode", [  9*u,   3*u], ["round", 0.9*u]],
+	["togpath1-rathnode", [- 7*u,   3*u], ["round", 2*u]],
+	["togpath1-rathnode", [-13*u,  -3*u], ["round", 2*u]],
+	["togpath1-rathnode", [  4*u,  -3*u], ["round", 1*u]],
+];
+
 function make_cliplike(rath, width) = tphl1_extrude_polypoints([0, width], togpath1_rath_to_polypoints(rath));
 
 rail_length = length_chunks*chunk_pitch;
@@ -263,5 +287,6 @@ togmod1_domodule(
 	mode == "spacer"     ? make_cliplike(make_spacer_rath(), clip_width) :
 	mode == "jammer"     ? make_cliplike(make_jammer_rath()    , notch_width) :
 	mode == "notch-clip" ? make_cliplike(make_notch_clip_rath(), notch_width) :
+	mode == "notch-pin"  ? make_cliplike(make_notch_pin_rath() , notch_width) :
 	assert(false, str("Unrecognized mode: '", mode, "'"))
 );

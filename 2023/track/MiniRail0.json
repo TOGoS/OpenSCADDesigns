@@ -144,6 +144,11 @@
 			"mode": "miniclip",
 			"clip_width": "6.4",
 			"offset": "-0.3"
+		},
+		"p1577": {
+			"mode": "notch-pin",
+			"notch_width": "6.35",
+			"offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"
