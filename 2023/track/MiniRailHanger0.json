@@ -4,6 +4,22 @@
 			"mode": "spacer",
 			"rail_offset": "-0.1",
 			"width": "25.4"
+		},
+		"p1590": {
+			"mode": "sided-hanger",
+			"hanger_depth": "38.1",
+			"hanger_lip_height": "25.4",
+			"hanger_lip_thickness": "3.2",
+			"rail_offset": "-0.1",
+			"width": "25.4"
+		},
+		"p1591": {
+			"mode": "open-hanger",
+			"hanger_depth": "38.1",
+			"hanger_lip_height": "25.4",
+			"hanger_lip_thickness": "3.2",
+			"rail_offset": "-0.1",
+			"width": "25.4"
 		}
 	},
 	"parameterSets": "",
