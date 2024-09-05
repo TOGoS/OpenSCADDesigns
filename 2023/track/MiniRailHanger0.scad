@@ -1,4 +1,4 @@
-// MiniRailHanger0.4
+// MiniRailHanger0.5
 // 
 // Can I use a MiniRail as a tiny French cleat?
 // This hanger is designed to hold one corner
@@ -15,6 +15,10 @@
 // - Add 'open-hanger' mode
 // - Rename 'hanger' to 'sided-hanger'
 // - Automatically choose along-the-rail spacing for holes
+// v0.5:
+// - Adjustments to allow lip to be as tall as the full block
+// - Side is now a bit lower than the lip
+// - Overhead bores for the holes through lip
 
 mode = "sided-hanger"; // ["sided-hanger", "open-hanger", "spacer"]
 // Surface offset of rail-facing surfaces; negative to give more space
@@ -66,20 +70,24 @@ function kinja_make_back_nodes() = [
 function lerp(r, v0, v1) = (r*v1) + (1-r)*v0;
 
 function make_front_nodes(sideishness=0) =
-let( ybot =  y0 + lerp(sideishness,2*u,hanger_lip_height) )
+// Top of block = 0, bottom = y0
 let( yl = y0 + hanger_lip_height )
-let( xli0  = hanger_depth - hanger_lip_thickness )
-let( xli1  = xli0 - sideishness * 4*u ) // 4*u is kinda arbitrary
-let( xbi  = 6*u + 1*sideishness )
-let( dep  = hanger_depth )
+let( y0i   = lerp(sideishness, y0+2*u, max(y0+2*u,min(0,yl)-2*u)) )
+let( xbi   = 6*u ) // x back inner (before messing with it to make side)
+let( xli   = hanger_depth - hanger_lip_thickness ) // x lip inner (pre-messing)
+let( xlti  = xli ) // x lip top inner
+let( xbti  = xbi + sideishness * 1*u ) // x back top inner
+let( xlbi  = xli - sideishness * (xlti-xbti)*1/3 ) // x lip bottom inner
+let( xbbi  = lerp(min(1,max(0,10-abs(y0i))), xbti, xbti + (xlti-xbti)*1/3) ) // x back bottom inner
+let( dep   = hanger_depth )
 [
 	//["togpath1-rathnode", [    6*u, -114.3]],
-	["togpath1-rathnode", [   dep    , y0   ], corner_ops],
-	["togpath1-rathnode", [   dep    , yl   ], tc_ops    ],
-	["togpath1-rathnode", [   xli0   , yl   ], tc_ops    ],
-	["togpath1-rathnode", [   xli1   , ybot ], tc_ops    ],
-	["togpath1-rathnode", [   xbi    , ybot ], tc_ops    ],
-	["togpath1-rathnode", [   xbi    ,  0   ], corner_ops],
+	["togpath1-rathnode", [   dep    , y0  ], corner_ops],
+	["togpath1-rathnode", [   dep    , yl  ], tc_ops    ],
+	["togpath1-rathnode", [   xlti   , yl  ], tc_ops    ],
+	["togpath1-rathnode", [   xlbi   , y0i ], tc_ops    ],
+	["togpath1-rathnode", [   xbbi   , y0i ], tc_ops    ],
+	["togpath1-rathnode", [   xbti   ,  0  ], corner_ops],
 ];
 
 function kinja_make_spacer_rath(sideishness) = ["togpath1-rath",
@@ -119,7 +127,7 @@ open_hanger_zses = [
 	[width, 0],
 ];
 
-vole = tog_holelib2_hole("THL-1001");
+vole = tog_holelib2_hole("THL-1001", overhead_bore_height=hanger_depth*2);
 rvole = ["rotate", [0, 90, 0], vole];
 
 // A crappy algorithm for picking
