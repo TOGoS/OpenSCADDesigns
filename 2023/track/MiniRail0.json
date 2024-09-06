@@ -97,29 +97,24 @@
 			"notches_enabled": "true",
 			"offset": "-0.1"
 		},
-		"-- Clips --": "",
-		"p1380 - jammer": {
-			"mode": "jammer",
-			"offset": "0.1"
-		},
-		"p1381 - notch clip": {
-			"mode": "notch-clip",
-			"offset": "-0.1"
-		},
-		"p1387 - clip w/ -0.3mm offset": {
-			"mode": "notch-clip",
-			"offset": "-0.3"
-		},
-		"p1403": {
-			"mode": "notch-clip",
-			"notch_width": "6.15",
-			"offset": "-0.3"
-		},
+		
+		"-- Hooks --": "",
 		"p1536": {
 			"mode": "miniclip",
 			"clip_width": "3.1",
 			"offset": "-0.2"
 		},
+		"p1561": {
+			"mode": "miniclip",
+			"clip_width": "6.4",
+			"offset": "-0.3"
+		},
+		"p1400": {
+			"mode": "miniclip",
+			"clip_width": "12.7",
+			"offset": "-0.1"
+		},
+		"-- Spacers --": "",
 		"p1537": {
 			"mode": "spacer",
 			"clip_width": "6.3",
@@ -140,9 +135,22 @@
 			"clip_width": "12.7",
 			"offset": "-0.3"
 		},
-		"p1561": {
-			"mode": "miniclip",
-			"clip_width": "6.4",
+		"-- Stoppers --": "",
+		"p1380 - jammer": {
+			"mode": "jammer",
+			"offset": "0.1"
+		},
+		"p1381 - notch clip": {
+			"mode": "notch-clip",
+			"offset": "-0.1"
+		},
+		"p1387 - clip w\/ -0.3mm offset": {
+			"mode": "notch-clip",
+			"offset": "-0.3"
+		},
+		"p1403": {
+			"mode": "notch-clip",
+			"notch_width": "6.15",
 			"offset": "-0.3"
 		},
 		"p1577": {

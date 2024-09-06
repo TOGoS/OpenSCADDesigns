@@ -1,4 +1,4 @@
-// MiniRail0.15
+// MiniRail0.10
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -25,39 +25,13 @@
 // v0.10:
 // - Clip thickness configurable, defaults to 1/2" instead of 3/4",
 //   to fit between notch clips
-// v0.11:
-// - For notch clips, $tgx11_offset applies only to width of trapezoid
-// - Additional cutout in lower-left corner of notch clip trapezoid
-// v0.11.1:
-// - Minor refactoring to make it easier to experiment with different rail sizes
-// v0.12:
-// - Add 'spacer' mode
-// v0.13:
-// - Add 2mm hole mode, which is kinda weird
-// v0.14:
-// - Allow half-chunk lengths
-// v0.15:
-// - Add notch-pin, which is similar to notch-clip, but simplified
-//   and hopefully works a bit better
-// 
-// Notes:
-// - As of v0.13, the clips do not take rail_thickness_u or rail_width_u into account.
-//   They may as well be a totally separate design.
-//   For this reason I strip out the rail-specific stuff from the clip presets.
 
-length_chunks = 3; // 0.5
-mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip", "notch-pin"]
-hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002","2mm"]
-alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002","2mm"]
-hole_pattern = "chunk"; // ["chunk", "atom"]
+length_chunks = 3;
+mode = "rail"; // ["rail", "clip", "miniclip", "jammer", "notch-clip"]
+hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002"]
+alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
 clip_width = 12.7;
-notch_width = 6.35;
-
-rail_thickness_u =  4;
-rail_width_u     = 12;
-
-// Offset around the rail
 offset = -0.1;
 
 use <../lib/TOGHoleLib2.scad>
@@ -68,37 +42,25 @@ use <../lib/TOGPolyhedronLib1.scad>
 
 module ___edasdkn123und_end_params() { }
 
-u_num = 25.4;
-u_den = 16;
-
-u = u_num / u_den;
+u = 25.4/16;
 chunk_pitch = 38.1;
-atom_pitch  = 12.7;
-notch_spacing = chunk_pitch/2;
+mhole_pitch = chunk_pitch;
 $fn = $preview ? 12 : 48;
 $tgx11_offset = offset;
 
-function make_minirail_profile_rath(
-	tap = 0,
-	notch = 0,
-	off = 0,
-	w = rail_width_u    *u_num/u_den,
-	h = rail_thickness_u*u_num/u_den
-) =
-let( hw = w/2 )
-let( hh = h/2 )
+function make_minirail_profile_rath(tap=0, notch=0, off=0) =
 ["togpath1-rath",
-	["togpath1-rathnode", [-hw-hh, -hh + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
-	["togpath1-rathnode", [+hw+hh, -hh + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
-	["togpath1-rathnode", [+hw-hh + notch*hh, +hh + tap - notch*hh], ["offset", off+tap]],
-	["togpath1-rathnode", [-hw+hh - notch*hh, +hh + tap - notch*hh], ["offset", off+tap]],
+	["togpath1-rathnode", [-8*u, -2*u + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
+	["togpath1-rathnode", [+8*u, -2*u + tap], ["offset", off+tap], ["round", 0.6, $fn*3/8]],
+	["togpath1-rathnode", [+4*u + notch*2*u, +2*u + tap - notch*2*u], ["offset", off+tap]],
+	["togpath1-rathnode", [-4*u - notch*2*u, +2*u + tap - notch*2*u], ["offset", off+tap]],
 ];
 
 function make_minirail_hull(
 	length,
 	taper_length = 4,
 	offset = $tgx11_offset,
-	notch_width = notch_width,
+	notch_width = 6.35,
 	notch_spacing = 19.05
 ) =
 let( length_notches = round(length/notch_spacing) )
@@ -120,25 +82,19 @@ tphl1_make_polyhedron_from_layer_function([
 	[ for(yz=yzpoints) [lon[0], yz[0], yz[1]] ]
 );
 
-function mekhole(hole_type) =
-	hole_type == "2mm" ? tphl1_make_z_cylinder(d=2, zrange=[-10, 10]) :
-	tog_holelib2_hole(hole_type, inset=2);
-
-mhole = ["rotate", [180,0,0], mekhole(hole_type)];
-alt_mhole = ["rotate", [180,0,0], mekhole(alt_hole_type)];
+mhole = ["rotate", [180,0,0], tog_holelib2_hole(hole_type, inset=2)];
+alt_mhole = ["rotate", [180,0,0], tog_holelib2_hole(alt_hole_type, inset=2)];
 
 function make_minirail(length) =
-let( mhole_pitch = hole_pattern == "chunk" ? chunk_pitch : atom_pitch )
-let( xm0offset   = hole_pattern == "chunk" ? 0.5 : 0.25 )
-let( length_mholes = round(length*2/mhole_pitch)/2 )
+let( length_mholes = round(length/mhole_pitch) )
 ["difference",
 	["translate", [0, 0, 2*u], make_minirail_hull(
 		length,
 		notch_width = notches_enabled ? 6.35 : 0,
-		notch_spacing = notch_spacing
+		notch_spacing = mhole_pitch / 2
 	)],
-	for( xm=[-length_mholes/2+xm0offset     : 1 : length_mholes/2-xm0offset+0.1] ) ["translate", [xm*mhole_pitch, 0, 0], mhole],
-	for( xm=[-length_mholes/2+xm0offset+0.5 : 1 : length_mholes/2-xm0offset+0.1] ) ["translate", [xm*mhole_pitch, 0, 0], alt_mhole],
+	for( xm=[-length_mholes/2+0.5 : 1 : length_mholes/2-0.4] ) ["translate", [xm*mhole_pitch, 0, 0], mhole],
+	for( xm=[-length_mholes/2+1   : 1 : length_mholes/2-0.9] ) ["translate", [xm*mhole_pitch, 0, 0], alt_mhole],
 ];
 
 outer_rad=4*u;
@@ -214,36 +170,20 @@ function make_miniclip_rath() = ["togpath1-rath",
 	["togpath1-rathnode", [-10*u, -12*u], each iops],
 ];
 
-function make_spacer_rath() = ["togpath1-rath",
-	["togpath1-rathnode", [ 13*u,  -6*u], each lops],
-	["togpath1-rathnode", [  7*u,   0*u], each cops],
-	
-	["togpath1-rathnode", [  4*u,   0*u], each oops, each cops],
-	["togpath1-rathnode", [  8*u,  -4*u], each oops           ],
-	["togpath1-rathnode", [- 8*u,  -4*u], each oops           ],
-	["togpath1-rathnode", [- 4*u,   0*u], each oops, each cops],
-
-	["togpath1-rathnode", [- 7*u,   0*u], each cops],
-	["togpath1-rathnode", [-13*u,  -6*u], each lops],
-];
-
-function make_notch_clip_rath() =
+function notch_clip_rath() =
 let( f = $tgx11_offset )
 let( f2 = (sqrt(2)-1)*f )
 let( f3 = sqrt(2)*f )
-let( q = u/2 )
 ["togpath1-rath",
 	["togpath1-rathnode", [  0*u, - 1*u], ["round", 1*u]],
 	["togpath1-rathnode", [- 2*u, - 1*u], ["round", 1*u]],
 	["togpath1-rathnode", [- 3*u, - 2*u]],
 	["togpath1-rathnode", [- 5*u, - 2*u]],
 	["togpath1-rathnode", [- 6*u, - 1*u], ["round", 1*u]],
-	["togpath1-rathnode", [- 8*u + f3 + 2*q, - 1*u     ], ["round", q/2]],
-	["togpath1-rathnode", [- 8*u + f3 + q  , - 1*u  - q], ["round", q/2]],
-	["togpath1-rathnode", [- 8*u + f3      , - 1*u     ]],
-	["togpath1-rathnode", [- 6*u + f3      ,   1*u     ]],
-	["togpath1-rathnode", [  4*u - f3      ,   1*u     ]],
-	["togpath1-rathnode", [  5*u - f3      ,   0*u     ], ["round", 1*u]],
+	["togpath1-rathnode", [- 8*u + f3, - 1*u]],
+	["togpath1-rathnode", [- 6*u + f2, 1*u - f]],
+	["togpath1-rathnode", [  4*u - f2, 1*u - f]],
+	["togpath1-rathnode", [  5*u - f3,   0*u], ["round", 1*u]],
 	["togpath1-rathnode", [  7*u,   1*u], ["round", 0.5*u]],
 	["togpath1-rathnode", [  6*u,   2*u], ["round", 0.5*u]],
 	["togpath1-rathnode", [  0*u,   2*u], ["round", 0.5*u]],
@@ -253,40 +193,20 @@ let( q = u/2 )
 	["togpath1-rathnode", [  0*u,  -3*u], ["round", 1*u]],
 ];
 
-function make_notch_pin_rath() =
-let( f = $tgx11_offset )
-let( f2 = (sqrt(2)-1)*f )
-let( f3 = sqrt(2)*f )
-let( q = u/2 )
-let( p = 0.3 ) // protrusion
-["togpath1-rath",
-	["togpath1-rathnode", [  4*u, - 1*u + p], ["round", 1*u]],
-	["togpath1-rathnode", [  2*u, - 1*u + p], ["round", 1*u]],
-	["togpath1-rathnode", [  1*u, - 2*u]],
-	["togpath1-rathnode", [- 5*u, - 2*u]],
-	["togpath1-rathnode", [- 8*u + f3 + q  , - 1*u  - q], ["round", q/2]],
-	["togpath1-rathnode", [- 8*u + f3      , - 1*u     ]],
-	["togpath1-rathnode", [- 6*u + f3      ,   1*u     ]],
-	["togpath1-rathnode", [  9*u,   1*u], ["round", 0.9*u]],
-	["togpath1-rathnode", [  9*u,   3*u], ["round", 0.9*u]],
-	["togpath1-rathnode", [- 7*u,   3*u], ["round", 2*u]],
-	["togpath1-rathnode", [-13*u,  -3*u], ["round", 2*u]],
-	["togpath1-rathnode", [  4*u,  -3*u], ["round", 1*u]],
-];
+function make_cliplike(rath) = tphl1_extrude_polypoints([0, clip_width], togpath1_rath_to_polypoints(rath));
 
-function make_cliplike(rath, width) = tphl1_extrude_polypoints([0, width], togpath1_rath_to_polypoints(rath));
+the_jammer     = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(make_jammer_rath()));
+the_notch_clip = tphl1_extrude_polypoints([0, 6.35], togpath1_rath_to_polypoints(notch_clip_rath()));
 
 rail_length = length_chunks*chunk_pitch;
 
 the_rail = make_minirail(rail_length);
 
 togmod1_domodule(
-	mode == "rail"       ? the_rail :
-	mode == "clip"       ? make_cliplike(make_clip_rath(), clip_width) :
-	mode == "miniclip"   ? make_cliplike(make_miniclip_rath(), clip_width) :
-	mode == "spacer"     ? make_cliplike(make_spacer_rath(), clip_width) :
-	mode == "jammer"     ? make_cliplike(make_jammer_rath()    , notch_width) :
-	mode == "notch-clip" ? make_cliplike(make_notch_clip_rath(), notch_width) :
-	mode == "notch-pin"  ? make_cliplike(make_notch_pin_rath() , notch_width) :
+	mode == "rail" ? the_rail :
+	mode == "clip" ? make_cliplike(make_clip_rath()) :
+	mode == "miniclip" ? make_cliplike(make_miniclip_rath()) :
+	mode == "jammer" ? the_jammer :
+	mode == "notch-clip" ? the_notch_clip :
 	assert(false, str("Unrecognized mode: '", mode, "'"))
 );
