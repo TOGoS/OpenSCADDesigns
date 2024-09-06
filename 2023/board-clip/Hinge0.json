@@ -1,0 +1,20 @@
+{
+	"parameterSets": {
+		"p1594": {
+			"$fn": "32",
+			"height": "15.9",
+			"mounting_hole_height": "6u",
+			"pin_hole_diameter": "7",
+			"style": "one-legged"
+		},
+		"p1595": {
+			"$fn": "32",
+			"height": "18",
+			"mounting_hole_height": "center",
+			"pin_hole_diameter": "7",
+			"style": "two-legged"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
