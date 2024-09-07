@@ -14,10 +14,21 @@
 			"barrel_height": "5",
 			"barrel_offset": "-12",
 			"bolt_hole_diameter": "8",
-			"bottom_text": "No bab      ",
+			"bottom_text": "No bab	  ",
 			"connector_length": "50.8",
 			"connector_thickness": "4.7625",
 			"connector_width": "20"
+		},
+		"p1596": {
+			"barrel_diameter": "19.05",
+			"barrel_height": "0",
+			"barrel_offset": "0",
+			"bolt_hole_diameter": "8",
+			"bolt_hole_spacing": "19.05",
+			"bottom_text": "",
+			"connector_length": "114.3",
+			"connector_thickness": "4.7625",
+			"connector_width": "19"
 		}
 	},
 	"fileFormatVersion": "1"

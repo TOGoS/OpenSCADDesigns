@@ -1,4 +1,4 @@
-// PanelConnector-v1.4
+// PanelConnector-v1.5
 //
 // Changes:
 // v1.1:
@@ -9,9 +9,14 @@
 // - Option for FUN TEXT on the bottom
 // v1.4:
 // - barrel_offset
+// v1.5:
+// - bolt_hole_spacing
 
 // Bolt hole diameter, in mm; 11 ~= 7/16", 8mm ~= 5/16"
 bolt_hole_diameter  = 11;
+
+// If non-zero, bolt holes will be repeated along the length
+bolt_hole_spacing   = 0; // 0.01
 
 connector_length    = 76.2;
 connector_width     = 25.4;
@@ -53,8 +58,14 @@ intersection() {
 	difference() {
 		linear_extrude((connector_thickness+barrel_height)*2) difference() {
 			tog_shapelib_rounded_square([connector_length, connector_width], 1/4*inch);
-			
-			translate([barrel_offset, 0, 0]) circle(d=bolt_hole_diameter);
+
+			// This might be less than ideal.
+			// Holes will be 'wrong' if there's an offset!
+			// Maybe better to always put a hole at barrel_offset,
+			// and just move outward towards the edges
+			holecount = bolt_hole_spacing == 0 ? 1 : round((connector_length-bolt_hole_diameter*2)/bolt_hole_spacing);
+			for( xm=[-holecount/2 + 0.5 : 1 : holecount/2-0.5] )
+				translate([barrel_offset + xm*bolt_hole_spacing, 0, 0]) circle(d=bolt_hole_diameter);
 		}
 
 		if( len(bottom_text) > 0 ) linear_extrude(1, center=true) scale([-1,1]) text(bottom_text, halign="center", valign="center", font="Arial", size=7);
