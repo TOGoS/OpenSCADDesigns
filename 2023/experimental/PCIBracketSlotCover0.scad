@@ -1,4 +1,4 @@
-// PCIBracketSlotCover0.4
+// PCIBracketSlotCover0.5
 // 
 // See
 // - [OC] https://web.archive.org/web/20221220092125/https://www.overclock.net/threads/guide-to-drawing-pci-e-and-atx-mitx-rear-io-bracket-for-a-custom-case.1589018/
@@ -25,6 +25,8 @@
 // - Remove "_make" prefixes from function names
 // v0.4 (p1600):
 // - Oval instead of circular holes in the clip
+// v0.5 (p1601):
+// - Start the lineup post at y=-1mm instead of right at 0
 
 module __pcibsc0__end_params() { }
 
@@ -239,7 +241,7 @@ function pcibsc0_top_clip(back_depth, thickness) = let(
 	["intersection",
 		["union",
 			togmod1_linear_extrude_z([0, thickness+1], togmod1_make_polygon(togpath1_rath_to_polypoints(pcibsc0_top_rath(back_depth)))),
-			["translate", [cx,0,0], togmod1_linear_extrude_y([-back_depth, 0], pcibsc0_lineup_post_2d(0.1))],
+			["translate", [cx,0,0], togmod1_linear_extrude_y([-back_depth, -1], pcibsc0_lineup_post_2d(0.1))],
 		],
 		togmod1_linear_extrude_z([-50, thickness], togmod1_make_rect([100,100])),
 	],
