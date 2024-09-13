@@ -1,4 +1,4 @@
-// PCIBracketSlotCover0.1
+// PCIBracketSlotCover0.2
 // 
 // See
 // - [OC] https://web.archive.org/web/20221220092125/https://www.overclock.net/threads/guide-to-drawing-pci-e-and-atx-mitx-rear-io-bracket-for-a-custom-case.1589018/
@@ -16,13 +16,39 @@
 // - 1mm thick bracket
 // - stickey-outey bit to test if it actually fits in the 'connector opening'
 //   (it does, at least in the AlamenCase)
+// v0.2 (p1598):
+// - 'buzpwr flacket' - bracket without top clip for holding
+//   a momentary button (one of Jon's smaller ones because I ran out of my usual bulky ones)
+//   and a round 11.7mm-diameter buzzer
+
+module __pcibsc0__end_params() { }
+
+use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
+use <../lib/TOGPath1.scad>
+use <../lib/TOGPolyhedronLib1.scad>
+
+$fn = 32;
+
+
+pcibsc0_default_z1 = 64.13 - 59.05; /* front of bracket to center of hole; see [OEM] p73 */
+pcibsc0_default_thickness = 0.9;
+pcibsc0_default_body_width = 18.42; /* main body width */
+
+//pcibsc0_visible_hole_positions = [-15.875, -92.075]; // -5/8 and -3-5/8
+//pcibsc0_alt_hole_positions = [-15.875, -79.375]; // -5/8 and -2-5/8
+
+function pcibsc0_z_hole_positions( atoms ) = [for(a=atoms) a*12.7 - 9.525];
+
+pcibsc0_visible_hole_positions = pcibsc0_z_hole_positions([-0.5, -6.5]);
+pcibsc0_alt_hole_positions = pcibsc0_z_hole_positions([-0.5, -4.5]);
 
 // Makes the shape as seen from inside the computer
-function make_back_rath(
+function pcibsc0_make_back_rath(
 	w0 =  21.59 /* width from right edge to left of top */,
 	h1 = 112.75 /* about 4+7/16 * inch */,
 	b1 =   4.12 /* left bottom bevel */,
-	w2 =  18.42 /* main body width */,
+	w2 = pcibsc0_default_body_width,
 	w1 =  10.19 /* bottom stickey-outey bit */,
 	h2 =   7.14 /* about 9/32" */,
 	h3 =   4.56 /* height of top right stickey-outey bit */,
@@ -49,7 +75,7 @@ let( b2 = w2 - w1 - b1 /* right bottom bevel, 4.11mm */ )
 	["togpath1-rathnode", [0 + w0          , 0 + h9       ], ["round", er]],
 ];
 
-function make_side_rath(
+function pcibsc0_make_side_rath(
 	z2 = 11.43 /* Overhang; [OEM] p75 */,
 	z3 =  1 /* Thickness */,
 	h9 =  3 /* thickness of top */,
@@ -63,18 +89,11 @@ function make_side_rath(
 	["togpath1-rathnode", [-200, 0 ]],
 ];
 
-use <../lib/TOGMod1.scad>
-use <../lib/TOGMod1Constructors.scad>
-use <../lib/TOGPath1.scad>
-use <../lib/TOGPolyhedronLib1.scad>
-
-$fn = 32;
-
-function make_bracket(
-	z1 = 64.13 - 59.05 /* front of bracket to center of hole; see [OEM] p73 */,
+function pcibsc0_make_bracket(
+	z1 = pcibsc0_default_z1,
 	z2 = 11.43 /* Overhang */,
 	w0 = 21.59,
-	w2 =  18.42 /* main body width */,
+	w2 = pcibsc0_default_body_width,
 	h9 = 3,
 // k... are all for the little square hole.
 // I'm not bothering to fold it in for pinching the rail.
@@ -86,16 +105,101 @@ let( kd = k2-k1 )
 ["difference",
 	["union",
 		["intersection",
-			togmod1_linear_extrude_z([-50,50], togmod1_make_polygon(togpath1_rath_to_polypoints(make_back_rath(h9=100)))),
-			togmod1_linear_extrude_x([-50,50], togmod1_make_polygon(togpath1_rath_to_polypoints(make_side_rath(z2=z2, h9=3)))),
+			togmod1_linear_extrude_z([-50,50], togmod1_make_polygon(togpath1_rath_to_polypoints(pcibsc0_make_back_rath(h9=100)))),
+			togmod1_linear_extrude_x([-50,50], togmod1_make_polygon(togpath1_rath_to_polypoints(pcibsc0_make_side_rath(z2=z2, h9=3)))),
 		],
 		if( connector_bump_height > 0 ) ["translate", [w2/2, (0 - 100.36 - 10.46)/2, -connector_bump_height/2 + 0.1], togmod1_make_cuboid([11,100.36 - 10.46, connector_bump_height+0.2])]
 	],
 	["translate", [w0, 0, -z1], togmod1_linear_extrude_y([-10,10], togmod1_make_rounded_rect([(w0-18.42+2.21)*2, 4.42], r=2.2))],
 	["translate", [(k1+k2)/2, 0, -z2], togmod1_linear_extrude_y([-10,10], togmod1_make_rect([kd, kz*2]))],
 
-	["translate", [w2/2, -15.875, 0], lineup_circle],
-	["translate", [w2/2, -92.075, 0], lineup_circle],
+	for( y=pcibsc0_visible_hole_positions ) ["translate", [w2/2, y, 0], lineup_circle],
 ];
 
-togmod1_domodule(make_bracket());
+// Flacket = bracket not including the overhang
+
+function pcibsc0_make_flacket_side_rath(
+	body_thickness,
+	bottom_tab_thickness = 0.9,
+	bottom_tab_y0 = -200 /* Bottom of bottom tab; large negative number because this will be intersected */,
+	bottom_tab_y1 = -100 /* Top of bottom tab, below whick thickness = bottom_tab_thickness */,
+	bt_bevel_size = 8 /* Bevel between tab and body */,
+	lr =  6,  // Large radius
+	er =  1,  // Extra radius
+) = let(
+	btt = bottom_tab_thickness,
+	bdt = body_thickness,
+	btb = min(bt_bevel_size, bdt - btt - er*2 - 0.1),
+	bty0 = bottom_tab_y0,
+	bty1 = bottom_tab_y1,
+	bty2 = bty1 + bdt - btt
+) ["togpath1-rath",
+	["togpath1-rathnode", [    0      , 0            ]],
+	["togpath1-rathnode", [    0      , 0 + bdt      ]],
+	//["togpath1-rathnode", [ bty1 + btb, 0 + bdt      ], ["round", er]],
+	//["togpath1-rathnode", [ bty1 + btb, 0 + btt + btb], ["round", er]],
+	["togpath1-rathnode", [ bty2      , 0 + bdt      ], ["round", lr]],
+	["togpath1-rathnode", [ bty1      , 0 + btt      ], ["round", lr]],
+	["togpath1-rathnode", [ bty0      , 0 + btt      ]],
+	["togpath1-rathnode", [ bty0      , 0            ]],
+];
+
+function pcibsc0_pseudohex_rath( xmin, xmaj, ymaj, offset=0) =
+let(
+	ops = offset > 0 ? [["offset", offset]] : []
+) ["togpath1-rath",
+	["togpath1-rathnode", [ xmaj/2, 0     ], each ops],
+	["togpath1-rathnode", [ xmin/2, ymaj/2], each ops],
+	["togpath1-rathnode", [-xmin/2, ymaj/2], each ops],
+	["togpath1-rathnode", [-xmaj/2, 0     ], each ops],
+	["togpath1-rathnode", [-xmin/2,-ymaj/2], each ops],
+	["togpath1-rathnode", [ xmin/2,-ymaj/2], each ops],
+];
+
+function pcibsc0_make_pseudohex( xmin, xmaj, ymaj, offset=0) =
+	togmod1_make_polygon(togpath1_rath_to_polypoints(pcibsc0_pseudohex_rath(xmin, xmaj, ymaj, offset=offset)));
+
+function pcibsc0_make_lineup_post_2d(offset=0) =
+	pcibsc0_make_pseudohex(6.35, 7.9375, 3.175, offset=offset);
+
+function pcibsc0_make_flacket(
+	thickness = pcibsc0_default_thickness,
+	w2 = pcibsc0_default_body_width,
+	hs_hole = togmod1_linear_extrude_y([-10,10], togmod1_make_circle(d=5))
+) = let(
+	clip_lineup_hole = togmod1_linear_extrude_z([-1,thickness+1], togmod1_make_circle(d=4.5)),
+	clip_lineup_profile = pcibsc0_make_lineup_post_2d(offset=0.1),
+	clip_lineup_slot = togmod1_linear_extrude_z([-1,thickness+1], clip_lineup_profile)
+) ["difference",
+	["intersection",
+		togmod1_linear_extrude_z([0,thickness*2], togmod1_make_polygon(togpath1_rath_to_polypoints(pcibsc0_make_back_rath(h9=0)))),
+		togmod1_linear_extrude_x([-50,50], togmod1_make_polygon(togpath1_rath_to_polypoints(pcibsc0_make_flacket_side_rath(thickness)))),
+	],
+	
+	for( z=[ 6.35 : 12.7 : thickness-3.175] )	["translate", [w2/2, 0, z], hs_hole],
+	
+	["translate", [w2/2, 0, 0], clip_lineup_slot],
+	
+	for( y=pcibsc0_alt_hole_positions ) ["translate", [w2/2, y, 0], clip_lineup_hole],
+];
+
+function pcibsc0_make_buzpwr_flacket(
+	thickness = 19.05
+) = let(
+	w2 = pcibsc0_default_body_width
+) ["difference",
+	pcibsc0_make_flacket(thickness),
+		
+	// Underside rack, which is hard to print and also too tight:
+	//["translate", [w2/2, (-1.5-3/8)*25.4, 0], togmod1_make_cuboid([12.7 + 0.4, 76.2 + 0.4, 12.7])],
+	//["translate", [w2/2, (-1.5-3/8)*25.4, 0], togmod1_make_cuboid([12.7 + 0.2, 50.8 + 0.4, thickness*3])],
+	
+	// Power button hole
+	["translate", [w2/2, 25.4 * (-9/8), 0], tphl1_make_z_cylinder(zds=[[-1, 12.7], [14,12.7], [16,8.5], [thickness+1, 8.5]])],
+	
+	// Buzzer hole
+	["translate", [w2/2, 25.4 * (-17/8), 0], tphl1_make_z_cylinder(zds=[[-1, 6.35], [6.35,6.35], [6.35,12.7], [thickness+1,12.7]])]
+];
+
+//togmod1_domodule(pcibsc0_make_bracket());
+togmod1_domodule(pcibsc0_make_buzpwr_flacket());
