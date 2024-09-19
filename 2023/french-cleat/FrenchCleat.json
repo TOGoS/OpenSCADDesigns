@@ -124,7 +124,7 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
 		},
-		"1455": {
+		"p1455": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "THL-1005-5u",
@@ -133,7 +133,7 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-		"1456": {
+		"p1456": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "THL-1005-5u",
@@ -142,7 +142,7 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-		"1457": {
+		"p1457": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "THL-1005-5u",
@@ -151,7 +151,7 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-		"1458": {
+		"p1458": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "THL-1005-5u",
@@ -160,7 +160,7 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-		"1459": {
+		"p1459": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "THL-1005-5u",
