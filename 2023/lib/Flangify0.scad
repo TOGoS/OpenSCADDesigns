@@ -27,8 +27,6 @@ function flangify0_extrude_z(zrs, shape="point", r0=0) =
 	// TODO: Support polylines?
 	assert(false, str("Unsupported shape: ", shape));
 
-$fn = 24;
-
 function flangify0__spec_to_zrs1(zropses, idx=1, rfac=1) =
 	let(rath = ["togpath1-rath",
 		for(p=[idx:1:len(zropses)-1])
@@ -45,13 +43,13 @@ let(zd0 = spec[1   ][1])
 let(zdN = spec[last][1])
 [spec[0],
 	if( extra_depth > 0 ) each [
-		["zdops", [zd0[0] - extra_depth - zd0[1]*rfac, 0    ]],
+//		["zdops", [zd0[0] - extra_depth - zd0[1]*rfac, 0.1    ]],
 		["zdops", [zd0[0] - extra_depth              , zd0[1]]],
 	],
 	for( i=[1:1:len(spec)-1] ) spec[i],
 	if( extra_height > 0 ) each [
-		["zdops", [zdN[0] + extra_depth              , zdN[1]]],
-		["zdops", [zdN[0] + extra_depth + zdN[1]*rfac, 0    ]]
+		["zdops", [zdN[0] + extra_height              , zdN[1]]],
+//		["zdops", [zdN[0] + extra_height + zdN[1]*rfac, 0.1    ]]
 	],
 ];
 
@@ -68,4 +66,4 @@ togmod1_domodule(flangify0_extrude_z(flangify0_spec_to_zrs(flangify0_extend(10, 
 	["zdops", [  5,10], ["bevel", 3]],
 	["zdops", [  5,20]],
 	["zdops", [ 10,20]],
-]))));
+]))), $fn = 24);
