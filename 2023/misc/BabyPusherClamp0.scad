@@ -1,9 +1,15 @@
-// BabyPusherClamp0.2
+// BabyPusherClamp0.3
 // 
 // Clamp for Marilla's tricycle thing
 // for WSPROJECT-201202.
 // 
 // Post diameter is 19.3mm to 19.4mm (it's got a groove in one side, so not perfectly circular).
+// 
+// v0.2:
+// - Flange the holes
+// v0.3:
+// - Change rounded corners assuming the thing will be printed
+//   rotated [90,0,0]
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -22,7 +28,7 @@ bhd1 = 5/16 * inch;
 gap_width = 1/8 * inch;
 
 half_body_thickness = (ty - gap_width)/2;
-half_bahdy = tphl1_make_rounded_cuboid([3*inch, half_body_thickness, tz], r=[2,2,0]);
+half_bahdy = tphl1_make_rounded_cuboid([3*inch, half_body_thickness, tz], r=[4,0,4]);
 bahdy = ["union",
 	["translate", [0, -gap_width/2 - half_body_thickness/2, 0], half_bahdy],
 	["translate", [0,  gap_width/2 + half_body_thickness/2, 0], half_bahdy],
