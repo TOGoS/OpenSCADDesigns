@@ -1,4 +1,4 @@
-// TGx9.5.29 - Full-featured-but-getting-crufty TOGRidPile shape w/ option of rounded beveled corners
+// TGx9.5.30 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -175,6 +175,9 @@
 // - Add 'gencase_brick_size' option, which, if nonzero, alters
 //   the gencase0 subtraction and adds a brick to the preview
 // - Hack for certain gencases (e.g. p1509) to give them more mounting holes
+// v9.5.30:
+// - Add cr2032-holder cavity mode
+// - Change default margin from 0.075mm to 0.1mm
 
 /* [Atom/chunk/block size] */
 
@@ -225,7 +228,7 @@ bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
 
-cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder","gencase1"]
+cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder","gencase1","cr2032-holder"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
@@ -275,7 +278,7 @@ gencase_brick_size = [0,0,0];
 /* [Detail] */
 
 // Margin for TOGridPile mating surfaces
-margin = 0.075; // 0.001
+margin = 0.10; // 0.01
 // Margin for bowtie cutouts; Since they are supposed to be tight, I usually leave this zero and rely on Slic3r X/Y compenation.
 bowtie_margin = 0.000; // 0.001
 
@@ -584,6 +587,29 @@ function make_gencase1_subtraction(block_size, floor_thickness, open_sides=[0,0,
 		["translate", [0,0,-block_size[2]/2+floor_thickness-0.1], tphl1_make_rounded_cuboid([brick_size[0],brick_size[1],block_size[2]], r=[1,1,0])],
 	];
 
+function make_cr2032_subtraction(block_size, cell_size=[22, 4.0]) =
+let( overcav_size = [block_size[0]-wall_thickness*2, block_size[1]-wall_thickness*2, 6.35] )
+let( spacing = cell_size[1] + 2 )
+let( count = floor(overcav_size[1] / spacing) )
+// 33 is enough for the modules; 36 should be enough for the uSD card
+// and maybe something another mm deeper, in case the need arises
+let( finger_notch_width = 16 )
+let( xq = (cell_size[0] - finger_notch_width)/2 )
+let( finger_notch_depth = cell_size[0]-xq )
+["union",
+	tphl1_make_rounded_cuboid([overcav_size[0], overcav_size[1], overcav_size[2]*2], r=[9.5, 9.5, 0]),
+	for( ym=[-count/2 + 0.5 : 1 : count/2] )
+		["translate", [0, spacing*ym, 0], ["union",
+			tphl1_make_rounded_cuboid([cell_size[0], cell_size[1], cell_size[0]*2], r=[cell_size[0]/2-0.1, 0, cell_size[0]/2-0.1], $fn=max($fn, 48)),
+		]],
+	["translate", [0,0,0],
+		tphl1_make_rounded_cuboid(
+			[finger_notch_width, overcav_size[1]-0.1, finger_notch_depth*2],
+			r=[finger_notch_width/2, 0, finger_notch_width/2],
+			$fn=max($fn, 24)
+		)]
+];
+
 // Operations to be done on the block from the top center
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
@@ -597,6 +623,7 @@ cavity_ops = [
 	if( cavity_style == "earrings-holder" ) ["subtract", make_earrings_holder_cutout(block_size)],
 	if( cavity_style == "gencase1" ) ["subtract", make_gencase1_subtraction(
 		block_size, floor_thickness=floor_thickness, open_sides=gencase_open_sides, brick_size=gencase_brick_size)],
+	if( cavity_style == "cr2032-holder" ) ["subtract", make_cr2032_subtraction(block_size)],
 ];
 
 //// Magnet hole precalculations
