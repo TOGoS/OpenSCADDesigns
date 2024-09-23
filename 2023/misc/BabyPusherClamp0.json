@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p1604": {
+			"bolt_counterbore_depth": "0",
+			"gap_width": "3.2",
+			"post_hole_diameter": "20"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
