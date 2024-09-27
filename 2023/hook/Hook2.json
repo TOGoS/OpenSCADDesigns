@@ -15,6 +15,15 @@
 			"thickness_u": "2",
 			"total_height_u": "48",
 			"width_u": "40"
+		},
+		"p1609": {
+			"back_curve_radius_u": "999",
+			"front_curve_radius_u": "999",
+			"front_height_u": "32",
+			"outer_depth_u": "16",
+			"thickness_u": "2",
+			"total_height_u": "32",
+			"width_u": "12"
 		}
 	},
 	"parameterSets": "",

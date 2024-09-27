@@ -1,4 +1,4 @@
-// Hook2.2
+// Hook2.3
 //
 // Changes:
 // v2.1
@@ -7,6 +7,10 @@
 // - Front tips rounded
 // - Front and back tips' rounding will be limited
 //   to keep the shape valid even when hook is very short
+// v2.3:
+// - Changes to hole position calculation;
+//   should be the same for wide hooks (like p1418 and p1419)
+//   but work better for narrow hooks (like p1609)
 
 total_height_u = 48;
 front_height_u = 16;
@@ -80,9 +84,12 @@ body = tphl1_make_polyhedron_from_layer_function([
 
 hole = ["rotate", [0,90,0], tphl1_make_z_cylinder(zrange=[-thickness, +thickness], d=hole_diameter)];
 
-holes = ["union", for(zm=[round(-width/2/hole_spacing)+1 : 1 : width/2/hole_spacing-0.4])
-	echo(zm)
-	["translate", [-thickness/2, y3-hole_spacing, width/2 + zm*hole_spacing], hole]];
+// Old logic; gives 'wrong' result when width is small:
+//z_hole_positions_hs = [round(-width/2/hole_spacing)+1 : 1 : width/2/hole_spacing-0.4];
+z_hole_positions_hs = [round(-width/hole_spacing)/2+0.5 : 1 : width/hole_spacing/2-0.4];
+z_hole_positions = [for(zm=z_hole_positions_hs) hole_spacing*zm];
+holes = ["union", for(z=z_hole_positions)
+	["translate", [-thickness/2, y3-min(width/2, hole_spacing), width/2 + z], hole]];
 
 thing = ["difference", body, ["x-debug", holes]];
 
