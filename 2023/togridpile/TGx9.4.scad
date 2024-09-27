@@ -1,4 +1,4 @@
-// TGx9.5.30 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
+// TGx9.5.31 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -178,6 +178,8 @@
 // v9.5.30:
 // - Add cr2032-holder cavity mode
 // - Change default margin from 0.075mm to 0.1mm
+// v9.5.31:
+// - Reduce width and corner radius of overcav[ity]
 
 /* [Atom/chunk/block size] */
 
@@ -588,7 +590,7 @@ function make_gencase1_subtraction(block_size, floor_thickness, open_sides=[0,0,
 	];
 
 function make_cr2032_subtraction(block_size, cell_size=[22, 4.0]) =
-let( overcav_size = [block_size[0]-wall_thickness*2, block_size[1]-wall_thickness*2, 6.35] )
+let( overcav_size = [min(cell_size[0]+8, block_size[0]-wall_thickness*4), block_size[1]-wall_thickness*2, 6.35] )
 let( spacing = cell_size[1] + 2 )
 let( count = floor(overcav_size[1] / spacing) )
 // 33 is enough for the modules; 36 should be enough for the uSD card
@@ -597,7 +599,7 @@ let( finger_notch_width = 16 )
 let( xq = (cell_size[0] - finger_notch_width)/2 )
 let( finger_notch_depth = cell_size[0]-xq )
 ["union",
-	tphl1_make_rounded_cuboid([overcav_size[0], overcav_size[1], overcav_size[2]*2], r=[9.5, 9.5, 0]),
+	tphl1_make_rounded_cuboid([overcav_size[0], overcav_size[1], overcav_size[2]*2], r=[6.35, 6.35, 0]),
 	for( ym=[-count/2 + 0.5 : 1 : count/2] )
 		["translate", [0, spacing*ym, 0], ["union",
 			tphl1_make_rounded_cuboid([cell_size[0], cell_size[1], cell_size[0]*2], r=[cell_size[0]/2-0.1, 0, cell_size[0]/2-0.1], $fn=max($fn, 48)),
