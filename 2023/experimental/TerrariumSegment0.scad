@@ -8,6 +8,11 @@
 // or dynamically adapt to avoid mounting hole positions.
 // 
 // v0.1: Add inner flanges
+// 
+// TODO
+// - [ ] Wave flanges
+//   - can use algorithm from AvoydeYePoynce.scad to generate shape
+//     from a list of screw hole points
 
 size_atoms = [9,9,9];
 
