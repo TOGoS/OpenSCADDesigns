@@ -1,4 +1,4 @@
-// TerrariumSegment0.3
+// TerrariumSegment0.4
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -14,6 +14,8 @@
 // v0.3:
 // - Mostly working using the avoyde stuff,
 //   hole positioning is a little off
+// v0.4:
+// - Fix the hole placement algorithm.
 // 
 // TODO
 // - [ ] Wave flanges
@@ -37,15 +39,29 @@ $fn = 16;
 function is_divisible(num, den) =
 	num / den == round(num/den);
 
-function find_divisor(number, divisor=3, max_divisor=9999) =
-	assert(divisor <= number)
-	divisor > max_divisor ? number / max_divisor :
-	is_divisible(number, divisor) ? divisor :
-	find_divisor(number, divisor+1, max_divisor);
+/**
+ * Find the greatest integer factor less than max_factor,
+ * or, if there isn't one, the largest number <= max_factor
+ * that evenly divides `number`.
+ */
+function find_factor(number, min_factor=3, max_factor=9999) =
+	assert(min_factor <= number)
+	min_factor > max_factor ? number / ceil(number / max_factor) :
+	is_divisible(number, min_factor) ? min_factor :
+	find_factor(number, min_factor+1, max_factor);
 
-function generate_edge_hole_positions(length, atom, max_distance=9999) =
+/**
+ * Generate hole X positions along an edge X = -length/2 to length/2,
+ * where each hole is centered on an atom-sized cell.
+ * Try to place holes at least min_distance apart,
+ * but never more than max_distance apart.
+ */
+function generate_edge_hole_positions(length, atom, min_distance, max_distance=9999) =
+	assert(is_num(length))
+	assert(is_num(atom))
+	assert(is_num(min_distance))
 	let(length_atoms = round(length/atom))
-	let(hole_spacing_atoms = find_divisor(length_atoms - 1, 3, max_distance/atom))
+	let(hole_spacing_atoms = find_factor(length_atoms - 1, round(min_distance/atom), max_distance/atom))
 	// TODO: If divisor is too large, use fractional and round position for every hole
 	[
 		for(i=[0.5 : hole_spacing_atoms : length_atoms-0.5])
@@ -56,10 +72,11 @@ module assert_equals(expected, actual) {
 	assert(expected == actual, str("Expected ", expected, " but got ", actual));
 }
 
-assert_equals([-30, 0, 30], generate_edge_hole_positions(70, 10));
-assert_equals([-45, -15, 15, 45], generate_edge_hole_positions(100, 10));
-assert_equals([-40, 0, 40], generate_edge_hole_positions( 90, 10));
-assert_equals([-40, -10, 10, 40], generate_edge_hole_positions( 90, 10, 30)); 
+assert_equals([-30, 0, 30], generate_edge_hole_positions(70, 10, 30));
+assert_equals([-45, -15, 15, 45], generate_edge_hole_positions(100, 10, 30));
+assert_equals([-40, 0, 40], generate_edge_hole_positions( 90, 10, 30));
+assert_equals([-40, -10, 10, 40], generate_edge_hole_positions( 90, 10, 30, 30));
+assert_equals([-55, -15, 15, 55], generate_edge_hole_positions( 120, 10, 30, 45));
 
 
 
@@ -158,8 +175,8 @@ function make_terrarium_section(
 	wall_thickness = 2,
 	atom = 12.7,
 ) =
-	let(x_hole_positions = generate_edge_hole_positions(size[0], atom, 7*atom))
-	let(y_hole_positions = generate_edge_hole_positions(size[1], atom, 7*atom))
+	let(x_hole_positions = generate_edge_hole_positions(size[0], atom, 3*atom, 7*atom))
+	let(y_hole_positions = generate_edge_hole_positions(size[1], atom, 3*atom, 7*atom))
 	let(squavoiden = [size, y_hole_positions, x_hole_positions, y_hole_positions, x_hole_positions])
 	let(screw_hole_positions = squavoiden_to_hole_positions(squavoiden, atom/2))
 	let(corners = [[-1,-1],[1,-1],[1,1],[-1,1]])
@@ -235,7 +252,7 @@ function make_terrarium_section(
 
 atom = 12.7;
 
-squavoiden_1 = [[100,50], [-20,+20], generate_edge_hole_positions(100,10), [-20,+20], [-45,0,+45]];
+squavoiden_1 = [[100,50], [-20,+20], generate_edge_hole_positions(100,10,30), [-20,+20], [-45,0,+45]];
 
 thing_1 = make_terrarium_section(size_atoms * atom);
 
