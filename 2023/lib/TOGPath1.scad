@@ -379,6 +379,14 @@ function togpath1__round(pa, pb, pc, radius, force_fn=undef) =
 		[fulc[0] + cos(a) * radius, fulc[1] + sin(a) * radius]
 	];
 
+// Note!  ["offset", x], ["round", r] will currently give
+// not the results you expect, because the offsetting and
+// rounding is done independently for each point.
+// The whole rathnode_to_polypoints should probably
+// apply all offsets first before applying other ops.
+// 
+// As long as you only apply offset *last*, all should be well.
+
 function togpath1__rathnode_apply_op(pa, pb, pc, op) =
 	op[0] == "bevel" ? togpath1__bevel(pa, pb, pc, op[1]) :
 	op[0] == "round" ? togpath1__round(pa, pb, pc, op[1], force_fn=op[2]) :
