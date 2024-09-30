@@ -1,4 +1,4 @@
-// TerrariumSegment0.5
+// TerrariumSegment0.6
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -18,11 +18,13 @@
 // - Fix the hole placement algorithm.
 // v0.5:
 // - Fix the inner wall rath
+// v0.6:
+// - Render $fn = 48
+// - Change wall generation to start from center and offset outwards
 // 
 // TODO
-// - [ ] Wave flanges
-//   - can use algorithm from AvoydeYePoynce.scad to generate shape
-//     from a list of screw hole points
+// - [ ] Define wall from center so that rounding
+//  is more symmetrical front and back
 
 size_atoms = [9,9,9];
 
@@ -36,7 +38,7 @@ use <../lib/AvoydeYePoynce0.scad>
 
 module __terrariumsegment0__end_params() { }
 
-$fn = 16;
+$fn = $preview ? 16 : 48;
 
 function is_divisible(num, den) =
 	num / den == round(num/den);
@@ -179,11 +181,13 @@ function make_terrarium_section(
 	wall_thickness = 2,
 	atom = 12.7,
 ) =
+	// TODO: Improve hole placement to prefer some 'standard' positions
 	let(x_hole_positions = generate_edge_hole_positions(size[0], atom, 3*atom, 7*atom))
 	let(y_hole_positions = generate_edge_hole_positions(size[1], atom, 3*atom, 7*atom))
 	let(squavoiden = [size, y_hole_positions, x_hole_positions, y_hole_positions, x_hole_positions])
 	let(screw_hole_positions = squavoiden_to_hole_positions(squavoiden, atom/2))
 	let(corners = [[-1,-1],[1,-1],[1,1],[-1,1]])
+	
 	let(flangdat = let(
 		sh = flange_straight_height,
 		fd = flange_depth
@@ -202,14 +206,6 @@ function make_terrarium_section(
 		]),
 		zo[0]
 	)))
-	let( outer_wall_basic_rath = ["togpath1-rath",
-		for( p = squavoiden_to_foil_polypoints(squavoiden, atom/4, atom*7/8-0.1, 1, atom/4, atom/4) )
-			["togpath1-rathnode", p]
-	])
-	let( outer_wall_rounded_rath = ["togpath1-rath",
-		for( n=cdr(outer_wall_basic_rath) ) [each n, ["round", 4, $fn/4]]
-	])
-	let( outer_wall = tphl1_extrude_polypoints([-size[2]/2,size[2]/2], togpath1_rath_to_polypoints(outer_wall_rounded_rath)))
 	let(iflangdat = let(
 		sh = flange_straight_height,
 		fd = inner_flange_depth
@@ -228,9 +224,20 @@ function make_terrarium_section(
 		]),
 		zo[0]
 	)))
-	let( cavity_walled = tphl1_extrude_polypoints([-size[2],size[2]], togpath1_rath_to_polypoints(
-		togpath1_offset_rath(outer_wall_rounded_rath, -wall_thickness))) )
+
+	let( wall_center_polypoints = squavoiden_to_foil_polypoints(
+		squavoiden,
+		atom/4 + wall_thickness/2,
+		atom*7/8 + wall_thickness/2 - 0.1,
+		1, atom/4, atom/4
+	) )
+	let( wall_center_rounded_rath = ["togpath1-rath", for( p=wall_center_polypoints ) ["togpath1-rathnode", p, ["round", 4, $fn/4]]] )
+	let( outer_wall_polypoints = togpath1_rath_to_polypoints(togpath1_offset_rath(wall_center_rounded_rath, +wall_thickness/2)) )
+	let( inner_wall_polypoints = togpath1_rath_to_polypoints(togpath1_offset_rath(wall_center_rounded_rath, -wall_thickness/2)) )
+	let( outer_wall = tphl1_extrude_polypoints([-size[2]/2,size[2]/2], outer_wall_polypoints) )
+	let( cavity_walled = tphl1_extrude_polypoints([-size[2],size[2]], inner_wall_polypoints) )
 	let( cavity = ["intersection", cavity_walled, cavity_flanged] )
+	
 	let( screw_hole = tog_holelib2_hole("THL-1005", depth=30, overhead_bore_height=10) )
 	let( screw_holes = [
 		for( zm=[-1, 1] )
