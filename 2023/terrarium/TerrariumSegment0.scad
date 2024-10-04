@@ -1,4 +1,4 @@
-// TerrariumSegment0.7.1
+// TerrariumSegment0.8
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -28,8 +28,17 @@
 // - Refactoring towards formalizing the APIs a bit
 //   - make_terrarium_section can accept complex amounts for the size
 //   - squavoiden[0] == "squavoiden", to make it clear what's up
+// v0.8:
+// - Expose parameters for floor_thickness, wall_inset, wall_thickness,
+//   and inner_flange_depth
+//   - This allows generating water tanks
 
 size_atoms = [9,9,9];
+floor_thickness = 0;
+wall_inset = 3.2;
+wall_thickness = 2;
+// 12.7 is a good minimum; 22.2 to allow something rest on top
+inner_flange_depth = 12.7;
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -182,6 +191,8 @@ function make_terrarium_section(
 	flange_straight_height = 3.175,
 	flange_depth = 25.4,
 	inner_flange_depth = 12.7,
+	floor_thickness = 0,
+	wall_inset = 3.175,
 	wall_thickness = 2
 ) =
 	let(size = togridlib3_decode_vector(size_ca))
@@ -213,11 +224,13 @@ function make_terrarium_section(
 	)))
 	let(iflangdat = let(
 		sh = flange_straight_height,
-		fd = inner_flange_depth
+		fd = inner_flange_depth,
+		floor_z = floor_thickness <= 0 ? -size[2] : -size[2]/2+floor_thickness,
+		bb_z    = -size[2]/2 + max(sh, floor_thickness)
 	) [
-		[-size[2]        , -fd ],
-		[-size[2]/2+sh   , -fd ],
-		[-size[2]/2+sh+fd,  0  ],
+		if( floor_z < bb_z ) [floor_z, -fd],
+		[ bb_z           , -fd ],
+		[ bb_z + fd      ,  0  ],
 		[ size[2]/2-sh-fd,  0  ],
 		[ size[2]/2-sh   , -fd ],
 		[ size[2]        , -fd ]
@@ -232,7 +245,8 @@ function make_terrarium_section(
 
 	let( wall_center_polypoints = squavoiden_to_foil_polypoints(
 		squavoiden,
-		atom/4 + wall_thickness/2,
+		// Inset by at least 0.01 to avoid CGAL errors `_`
+		max(0.01, togridlib3_decode(wall_inset)) + wall_thickness/2,
 		atom*7/8 + wall_thickness/2 - 0.1,
 		1, atom/4, atom/4
 	) )
@@ -265,7 +279,13 @@ atom = 12.7;
 
 squavoiden_1 = ["squavoiden", [100,50], [-20,+20], generate_edge_hole_positions(10,3)*10, [-20,+20], [-45,0,+45]];
 
-thing_1 = make_terrarium_section([for(dim=size_atoms) [dim, "atom"]]);
+thing_1 = make_terrarium_section(
+	size_ca = [for(dim=size_atoms) [dim, "atom"]],
+	floor_thickness = floor_thickness,
+	wall_inset = wall_inset,
+	wall_thickness = wall_thickness,
+	inner_flange_depth = inner_flange_depth
+);
 
 thing_3 = render_squavoiden(squavoiden_1);
 
