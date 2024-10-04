@@ -1,4 +1,4 @@
-// TerrariumSegment0.7
+// TerrariumSegment0.7.1
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -24,6 +24,10 @@
 // v0.7:
 // - Change hole placement to center of every non-corner chunk
 //   when edge length is a multiple of 3 atoms
+// v0.7.1:
+// - Refactoring towards formalizing the APIs a bit
+//   - make_terrarium_section can accept complex amounts for the size
+//   - squavoiden[0] == "squavoiden", to make it clear what's up
 
 size_atoms = [9,9,9];
 
@@ -34,6 +38,8 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGVecLib0.scad>
 use <../lib/AvoydeYePoynce0.scad>
+use <../lib/TOGridLib3.scad>
+use <../lib/TOGArrayLib1.scad>
 
 module __terrariumsegment0__end_params() { }
 
@@ -72,8 +78,11 @@ function round_polypoints(polypoints, rad) = togpath1_rath_to_polypoints(["togpa
 
 
 
-// sidepoints :: [[x,y],rot,points]
-function transform_sidepointses(sidepointses) = [
+// Sidepoints = [[x,y],rot,points]
+
+// Transform a list of sidepointses to one big list of points.
+// Useful for generating hole positions.
+function sidepointses_to_point_positions(sidepointses) = [
 	for( side=sidepointses ) each
 		let( off = side[0] )
 		let( ang = side[1] )
@@ -99,11 +108,41 @@ function cdr(list) = [for(i=[1:1:len(list)-1]) list[i]];
 function skip_ends(arr, skip_begin=0, skip_end=0) =
 	[for(i=[skip_begin:1:len(arr)-skip_end-1]) arr[i]];
 
+
+// Sqavoiden = [
+//   "squavoiden",
+//   [width, height],
+//   left_hole_positions,
+//   top_hole_positions,
+//   right_hole_positions,
+//   bottom_hole_positions
+// ]
+// where hole positions are a list of numbers indicating position from the center of the side, counter-clockwise
+
+function squavoiden_is_valid(squavoiden) =
+	squavoiden[0] == "squavoiden" &&
+	tal1_is_vec_of_num(squavoiden[1], 2) &&
+	tal1_is_vec_of_num(squavoiden[2]) &&
+	tal1_is_vec_of_num(squavoiden[3]) &&
+	tal1_is_vec_of_num(squavoiden[4]);
+
+function squavoiden_to_hole_positions(squavoiden, inset) =
+	assert(squavoiden_is_valid(squavoiden))
+	assert(is_num(inset))
+	let( halfw=squavoiden[1][0]/2, halfh=squavoiden[1][1]/2 )
+	sidepointses_to_point_positions([
+		[[ halfw,     0],  90, [for(x=squavoiden[2]) [x,inset]]],
+		[[     0, halfh], 180, [for(x=squavoiden[3]) [x,inset]]],
+		[[-halfw,     0], 270, [for(x=squavoiden[4]) [x,inset]]],
+		[[     0,-halfh],   0, [for(x=squavoiden[5]) [x,inset]]],
+	]);
+
 function squavoiden_to_foil_polypoints(squavoiden, reg_y, point_y, slope_dx, point_dx, min_dx) =
-	let(size = squavoiden[0])
+	assert(squavoiden_is_valid(squavoiden))
+	let(size = squavoiden[1])
 	let(sidepointspointses = [
 		for( i=[0:1:3] )
-			let( side_hole_x_positions = squavoiden[i+1] )
+			let( side_hole_x_positions = squavoiden[2+i] )
 			//let( middle_side_hole_x_positions = [for(i=[1:1:len(side_hole_x_positions)-2]) side_hole_x_positions[i]] )
 			let( points = [
 				//[side_hole_x_positions[0]+10, reg_y], // TODO: calculate right
@@ -114,7 +153,7 @@ function squavoiden_to_foil_polypoints(squavoiden, reg_y, point_y, slope_dx, poi
 			])
 			skip_ends(points, 3, 3)
 	])
-	transform_sidepointses([
+	sidepointses_to_point_positions([
 		[[ size[0]/2,       0  ],  90, sidepointspointses[0]],
 		[[       0  , size[1]/2], 180, sidepointspointses[1]],
 		[[-size[0]/2,       0  ], 270, sidepointspointses[2]],
@@ -123,7 +162,7 @@ function squavoiden_to_foil_polypoints(squavoiden, reg_y, point_y, slope_dx, poi
 
 // Demo render with sharp corners
 function render_squavoiden(squavoiden) =
-let(size = squavoiden[0])
+let(size = squavoiden[1])
 let(hole = tphl1_make_z_cylinder(zrange=[-10,10], d=5))
 ["difference",
 	["union",
@@ -137,35 +176,20 @@ let(hole = tphl1_make_z_cylinder(zrange=[-10,10], d=5))
 
 
 
-
-// Sqavoiden = [[width, height], left_hole_positions, top_hole_positions, right_hole_positions, bottom_hole_positions]
-// where hole positions are a list of numbers indicating position from the center of the side, counter-clockwise
-
-function squavoiden_to_hole_positions(squavoiden, inset) =
-	assert(is_num(inset))
-	let( halfw=squavoiden[0][0]/2, halfh=squavoiden[0][1]/2 )
-	transform_sidepointses([
-		[[ halfw,     0],  90, [for(x=squavoiden[1]) [x,inset]]],
-		[[     0, halfh], 180, [for(x=squavoiden[2]) [x,inset]]],
-		[[-halfw,     0], 270, [for(x=squavoiden[3]) [x,inset]]],
-		[[     0,-halfh],   0, [for(x=squavoiden[4]) [x,inset]]],
-	]);
-
-
-
 function make_terrarium_section(
-	size = [114.3, 114.3, 114.3],
+	size_ca = [[9, "atom"], [9, "atom"], [9, "atom"]],
 	flange_corner_radius = 6.35,
 	flange_straight_height = 3.175,
 	flange_depth = 25.4,
 	inner_flange_depth = 12.7,
-	wall_thickness = 2,
-	atom = 12.7,
+	wall_thickness = 2
 ) =
+	let(size = togridlib3_decode_vector(size_ca))
+	let(atom = togridlib3_decode([1, "atom"]))
 	// TODO: Improve hole placement to prefer some 'standard' positions
 	let(x_hole_positions = generate_edge_hole_positions(round(size[0]/atom))*atom)
 	let(y_hole_positions = generate_edge_hole_positions(round(size[1]/atom))*atom)
-	let(squavoiden = [size, y_hole_positions, x_hole_positions, y_hole_positions, x_hole_positions])
+	let(squavoiden = ["squavoiden", size, y_hole_positions, x_hole_positions, y_hole_positions, x_hole_positions])
 	let(screw_hole_positions = squavoiden_to_hole_positions(squavoiden, atom/2))
 	let(corners = [[-1,-1],[1,-1],[1,1],[-1,1]])
 	
@@ -239,9 +263,9 @@ function make_terrarium_section(
 
 atom = 12.7;
 
-squavoiden_1 = [[100,50], [-20,+20], generate_edge_hole_positions(10,3)*10, [-20,+20], [-45,0,+45]];
+squavoiden_1 = ["squavoiden", [100,50], [-20,+20], generate_edge_hole_positions(10,3)*10, [-20,+20], [-45,0,+45]];
 
-thing_1 = make_terrarium_section(size_atoms * atom);
+thing_1 = make_terrarium_section([for(dim=size_atoms) [dim, "atom"]]);
 
 thing_3 = render_squavoiden(squavoiden_1);
 
