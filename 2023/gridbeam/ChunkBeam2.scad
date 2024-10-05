@@ -1,4 +1,4 @@
-// ChunkBeam2.2
+// ChunkBeam2.2.1
 // 
 // Based on AutoOffsetPolyhedron0.
 // Uses it, even.  Something should be librarified, obviously.
@@ -9,6 +9,8 @@
 // - Fix that Z hole didn't go all the way through
 // v2.2:
 // - Options for hole style
+// v2.2.1:
+// - Librarify the hull-making functions into ChunkBeam2Lib
 
 height_chunks = 2;
 
@@ -24,29 +26,20 @@ $fn = 32;
 
 module __chunkbeam2__end_params() { }
 
-use <../experimental/AutoOffsetPolyhedron0.scad>
-
-use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
-use <../lib/TOGVecLib0.scad>
+use <../lib/ChunkBeam2Lib.scad>
+use <../lib/TGx11.1Lib.scad>
+use <../lib/TOGridLib3.scad>
 
-u = 25.4/16;
-chunk_pitch = 38.1;
-bevel_size = 3.175;
+$tgx11_offset = offset;
+$togridlib3_unit_table = tgx11_get_default_unit_table();
 
-function tgp_chunky_profile(chunk_count, chunk_height=38.1, bevel_size=3.175, ep=0.0001) = [
-	for( c=[0:1:chunk_count-1] ) each let(cy0=chunk_height*c) [
-		[-bevel_size,  cy0                             + ep],
-		[          0,  cy0                + bevel_size     ],
-		[          0,  cy0 + chunk_height - bevel_size     ],
-		[-bevel_size,  cy0 + chunk_height              - ep],
-	]
-];
-
-cc_cube = ["translate", [30,-30,0], togmod1_make_cuboid([60,60,60])];
+u           = togridlib3_decode([1, "u"                 ]);
+chunk_pitch = togridlib3_decode([1, "chunk"             ]);
+bevel_size  = togridlib3_decode([1, "tgp-standard-bevel"]);
 
 function make_rathy_hole(length, shaft_d, corner_ops, inset=-0.1) =
 let(zrs = togpath1_rath_to_polypoints(["togpath1-rath",
@@ -61,19 +54,6 @@ tphl1_make_z_cylinder(zds=[for(zr=zrs) [zr[0], zr[1]*2]]);
 
 function make_nice_hole(length, shaft_d, corner_ops) = make_rathy_hole(length, shaft_d, corner_ops);
 
-tgp_profile = tgp_chunky_profile(height_chunks, chunk_pitch, bevel_size);
-// Note: Subtracting offset from rounding radius
-// (which actually increases the radius) is necessary to prevent
-// <0 radius invalid corners.
-// This maybe shows a limitation of the
-// "just offset each layer" approach.
-tgp_rath = let(x1=chunk_pitch/2, y1=chunk_pitch/2, cops = [["bevel", bevel_size], ["round", 3.175-offset]]) ["togpath1-rath",
-	["togpath1-rathnode", [ x1, -y1], each cops],
-	["togpath1-rathnode", [ x1,  y1], each cops],
-	["togpath1-rathnode", [-x1,  y1], each cops],
-	["togpath1-rathnode", [-x1, -y1], each cops],
-];
-
 function make_a_hole(length) =
 	hole_style == "rounded-2mm" ? make_nice_hole(length, shaft_d=hole_diameter, corner_ops=[["round", 2]]) :
 	hole_style == "beveled-2mm" ? make_nice_hole(length, shaft_d=hole_diameter, corner_ops=[["bevel", 2]]) :
@@ -84,7 +64,7 @@ block_z_hole = make_a_hole(chunk_pitch * height_chunks);
 chunk_z_hole = make_a_hole(chunk_pitch);
 
 togmod1_domodule(["difference",
-	aop0_make_polyhedron_from_profile_rath( tgp_profile, tgp_rath, offset=offset ),
+	chunkbeam2_make_chunkbeam_hull(height_chunks),
 	
 	["translate", [0,0,height_chunks*chunk_pitch/2], block_z_hole],
 	for( c=[0.5 : 1 : height_chunks-0.5] ) ["translate", [0,0,c*chunk_pitch], ["union",
