@@ -1,4 +1,4 @@
-// ChunkBeam2.2.1
+// ChunkBeam2.2.2
 // 
 // Based on AutoOffsetPolyhedron0.
 // Uses it, even.  Something should be librarified, obviously.
@@ -11,6 +11,8 @@
 // - Options for hole style
 // v2.2.1:
 // - Librarify the hull-making functions into ChunkBeam2Lib
+// v2.2.2:
+// - Chunk is centered at z=0
 
 height_chunks = 2;
 
@@ -66,8 +68,8 @@ chunk_z_hole = make_a_hole(chunk_pitch);
 togmod1_domodule(["difference",
 	chunkbeam2_make_chunkbeam_hull(height_chunks),
 	
-	["translate", [0,0,height_chunks*chunk_pitch/2], block_z_hole],
-	for( c=[0.5 : 1 : height_chunks-0.5] ) ["translate", [0,0,c*chunk_pitch], ["union",
+	block_z_hole,
+	for( c=[-height_chunks/2+0.5 : 1 : height_chunks/2-0.5] ) ["translate", [0,0,c*chunk_pitch], ["union",
 		["rotate", [90,0,0], chunk_z_hole],
 		["rotate", [0,90,0], chunk_z_hole],
 	]],

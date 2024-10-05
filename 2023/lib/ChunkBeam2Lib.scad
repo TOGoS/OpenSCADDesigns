@@ -1,4 +1,7 @@
-// ChunkBeam2Lib, v2.1
+// ChunkBeam2Lib, v2.2
+// 
+// v2.2:
+// - Center the beam at z=0
 // 
 // TODO:
 // - [ ] Librarify 'nice hole'-making functions from ChunkBeam2.scad
@@ -9,8 +12,9 @@ use <../experimental/AutoOffsetPolyhedron0.scad>
 function chunkbeam2__make_chunky_profile(chunk_count, ep=0.0001) =
 let( chunk_pitch = togridlib3_decode([1,"chunk"]) )
 let( bevel_size = togridlib3_decode([1, "tgp-standard-bevel"]) )
+let( y0 = -chunk_count*chunk_pitch / 2 )
 [
-	for( c=[0:1:chunk_count-1] ) each let(cy0=chunk_pitch*c) [
+	for( c=[0:1:chunk_count-1] ) each let(cy0 = y0 + chunk_pitch*c) [
 		[-bevel_size,  cy0                            + ep],
 		[          0,  cy0               + bevel_size     ],
 		[          0,  cy0 + chunk_pitch - bevel_size     ],
