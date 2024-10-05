@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p1622": {
+			"$fn": "32",
+			"bar_hole_diameter": "19.2"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
