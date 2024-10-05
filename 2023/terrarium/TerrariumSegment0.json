@@ -15,6 +15,13 @@
 			"inner_flange_depth": "22.2",
 			"wall_inset": "0",
 			"wall_thickness": "3"
+		},
+		"p1623": {
+			"size_atoms": "[12, 24, 9]",
+			"floor_thickness": "3",
+			"inner_flange_depth": "22.2",
+			"wall_inset": "0",
+			"wall_thickness": "3"
 		}
 	},
 	"parameterSets": "",
