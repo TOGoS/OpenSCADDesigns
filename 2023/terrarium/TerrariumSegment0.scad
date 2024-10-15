@@ -1,4 +1,4 @@
-// TerrariumSegment0.8
+// TerrariumSegment0.8.1
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -32,6 +32,9 @@
 // - Expose parameters for floor_thickness, wall_inset, wall_thickness,
 //   and inner_flange_depth
 //   - This allows generating water tanks
+// v0.8.1:
+// - Factor out terrariumsegment0_make_squavoiden
+// - squavoiden_to_hole_positions assumes 1/2 atom for hole inset if undefined
 
 size_atoms = [9,9,9];
 floor_thickness = 0;
@@ -135,15 +138,16 @@ function squavoiden_is_valid(squavoiden) =
 	tal1_is_vec_of_num(squavoiden[3]) &&
 	tal1_is_vec_of_num(squavoiden[4]);
 
-function squavoiden_to_hole_positions(squavoiden, inset) =
+function squavoiden_to_hole_positions(squavoiden, inset=undef) =
+	let(_inset = is_undef(inset) ? togridlib3_decode([1/2, "atom"]) : inset)
 	assert(squavoiden_is_valid(squavoiden))
-	assert(is_num(inset))
+	assert(is_num(_inset))
 	let( halfw=squavoiden[1][0]/2, halfh=squavoiden[1][1]/2 )
 	sidepointses_to_point_positions([
-		[[ halfw,     0],  90, [for(x=squavoiden[2]) [x,inset]]],
-		[[     0, halfh], 180, [for(x=squavoiden[3]) [x,inset]]],
-		[[-halfw,     0], 270, [for(x=squavoiden[4]) [x,inset]]],
-		[[     0,-halfh],   0, [for(x=squavoiden[5]) [x,inset]]],
+		[[ halfw,     0],  90, [for(x=squavoiden[2]) [x,_inset]]],
+		[[     0, halfh], 180, [for(x=squavoiden[3]) [x,_inset]]],
+		[[-halfw,     0], 270, [for(x=squavoiden[4]) [x,_inset]]],
+		[[     0,-halfh],   0, [for(x=squavoiden[5]) [x,_inset]]],
 	]);
 
 function squavoiden_to_foil_polypoints(squavoiden, reg_y, point_y, slope_dx, point_dx, min_dx) =
@@ -180,10 +184,16 @@ let(hole = tphl1_make_z_cylinder(zrange=[-10,10], d=5))
 			squavoiden_to_foil_polypoints(squavoiden, atom/4, atom*3/4, 1, atom/4, atom/4)
 		)),
 	],
-	for( hp = squavoiden_to_hole_positions(squavoiden, 5) ) ["translate", hp, hole],
+	for( hp = squavoiden_to_hole_positions(squavoiden) ) ["translate", hp, hole],
 ];
 
-
+function terrariumsegment0_make_squavoiden(size_ca) = 
+	let(size = togridlib3_decode_vector(size_ca))
+	let(atom = togridlib3_decode([1, "atom"]))
+	// TODO: Improve hole placement to prefer some 'standard' positions
+	let(x_hole_positions = generate_edge_hole_positions(round(size[0]/atom))*atom)
+	let(y_hole_positions = generate_edge_hole_positions(round(size[1]/atom))*atom)
+	["squavoiden", size, y_hole_positions, x_hole_positions, y_hole_positions, x_hole_positions];
 
 function make_terrarium_section(
 	size_ca = [[9, "atom"], [9, "atom"], [9, "atom"]],
@@ -197,11 +207,8 @@ function make_terrarium_section(
 ) =
 	let(size = togridlib3_decode_vector(size_ca))
 	let(atom = togridlib3_decode([1, "atom"]))
-	// TODO: Improve hole placement to prefer some 'standard' positions
-	let(x_hole_positions = generate_edge_hole_positions(round(size[0]/atom))*atom)
-	let(y_hole_positions = generate_edge_hole_positions(round(size[1]/atom))*atom)
-	let(squavoiden = ["squavoiden", size, y_hole_positions, x_hole_positions, y_hole_positions, x_hole_positions])
-	let(screw_hole_positions = squavoiden_to_hole_positions(squavoiden, atom/2))
+	let(squavoiden = terrariumsegment0_make_squavoiden(size_ca) )
+	let(screw_hole_positions = squavoiden_to_hole_positions(squavoiden))
 	let(corners = [[-1,-1],[1,-1],[1,1],[-1,1]])
 	
 	let(flangdat = let(
