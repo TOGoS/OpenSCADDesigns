@@ -1,0 +1,17 @@
+{
+	"parameterSets": {
+		"p1630": {
+			"size_atoms": "[9, 9]",
+			"thickness": "3.175",
+			"component_hole_positioning": "none",
+			"$fn": "64"
+		},
+		"p1631": {
+			"size_atoms": "[9, 9]",
+			"thickness": "3.175",
+			"component_hole_positioning": "center",
+			"$fn": "64"
+		}
+	},
+	"fileFormatVersion": "1"
+}
