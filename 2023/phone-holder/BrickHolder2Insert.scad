@@ -1,4 +1,7 @@
-// BrickHolder2Insert v2.0
+// BrickHolder2Insert v2.1
+// 
+// v2.1:
+// - Fix offsets by multiplying by 2 and by u where appropriate
 
 outer_offset = -0.1;
 $fn = 64;
@@ -21,9 +24,9 @@ togmod1_domodule(["difference",
 		let(atom = togridlib3_decode([1,"atom"]))
 		let(u = togridlib3_decode([1,"u"]))
 		let(rath = togpath1_make_rectangle_rath(
-			[5*atom + zo[1]*u + outer_offset*2, 5*atom + zo[1]*u + outer_offset*2],
+			[5*atom + zo[1]*2*u + outer_offset*2, 5*atom + zo[1]*2*u + outer_offset*2],
 			corner_ops = [["round", 4*u]]
 		))
-		togvec0_offset_points(togpath1_rath_to_polypoints(rath), zo[0])
+		togvec0_offset_points(togpath1_rath_to_polypoints(rath), zo[0]*u)
 	)
 ]);
