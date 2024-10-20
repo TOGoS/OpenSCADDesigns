@@ -1,4 +1,4 @@
-// BrickHolder2.5
+// BrickHolder2.6
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -27,9 +27,9 @@
 // - Fix to enable top cord slot
 // v2.5:
 // - Add can subtraction
-// 
-// TODO: actually apply top_segmentation!
-// TODO: horizontal-only atomic segmentation modes?
+// v2.6:
+// - 'hatom' segmentation (probably buggy lmao)
+// - actually apply top_segmentation!
 
 /* [General] */
 
@@ -47,9 +47,9 @@ top_cord_slot_diameter = 0; // 0.01
 
 bottom_segmentation = "none"; // ["none","block","chunk","chatom","atom"]
 top_segmentation    = "none"; // ["none","block","chunk","chatom","atom"]
-side_segmentation   = "none"; // ["none","block","chunk","chatom","atom"]
-back_segmentation   = "none"; // ["none","block","chunk","chatom","atom"]
-front_segmentation  = "none"; // ["none","block","chunk","chatom","atom"]
+side_segmentation   = "none"; // ["none","block","chunk","chatom","atom","hatom"]
+back_segmentation   = "none"; // ["none","block","chunk","chatom","atom","hatom"]
+front_segmentation  = "none"; // ["none","block","chunk","chatom","atom","hatom"]
 
 /* [Detail] */
 
@@ -74,6 +74,7 @@ use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGridLib3.scad>
+use <../lib/TOGVecLib0.scad>
 
 function maybedebug(db=false, item) = db ? ["x-debug", item] : item;
 
@@ -101,7 +102,8 @@ bottom_hole_size_ca = [
 
 bottom_hole_actual_size = [for(d=togridlib3_decode_vector(bottom_hole_size_ca)) d - inner_offset*2];
 
-atom  = togridlib3_decode([1, "atom"]);
+u     = togridlib3_decode([1, "u"    ]);
+atom  = togridlib3_decode([1, "atom" ]);
 chunk = togridlib3_decode([1, "chunk"]);
 
 top_slot_width = cavity_actual_size[0] - 6;
@@ -121,7 +123,45 @@ echo(str("Block size = ", dimstr(block_size, "mm"), ", or ", dimstr(block_size/2
 
 $fn = $preview ? preview_fn : render_fn;
 
-block_hull = ["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid(block_size, 3)];
+catapiller_hull =
+let(
+	x0 = -block_size[0]/2 + ( side_segmentation == "hatom" ? 0 : -20),
+	x1 =  block_size[0]/2 + ( side_segmentation == "hatom" ? 0 :  20),
+	y0 = -block_size[1]/2 + (front_segmentation == "hatom" ? 0 : -20),
+	y1 =  block_size[1]/2 + ( back_segmentation == "hatom" ? 0 :  20)
+)
+let(layer_rath_offsets = [0+$tgx11_offset, -1*u+$tgx11_offset])
+let(layer_pointses = [for(off=layer_rath_offsets)
+	togpath1_rath_to_polypoints(
+		togpath1_polypoints_to_rath(
+			[[x0,y0],[x1,y0],[x1,y1],[x0,y1]],
+			[["bevel", 2*u], ["round", 2*u], ["offset", off]]
+		)
+	)
+])
+let( z2off = $tgx11_offset*(sqrt(2)-1) )
+tphl1_make_polyhedron_from_layer_function([
+	[   0*u, 1],
+	for(c=[0:1:block_size[2]/atom-1]) each [
+		// TODO: sqrt(2)-1 or whatever for the z offset
+		[   c *atom + 1*u - z2off, 1],
+		[   c *atom + 2*u - z2off, 0],
+		[(c+1)*atom - 2*u + z2off, 0],
+		[(c+1)*atom - 1*u + z2off, 1],
+		[(c+1)*atom - 0*u        , 1],
+	]
+], function(zo) togvec0_offset_points(
+	// Temporary solution
+	// TODO: rath based on the cube with appropriate offsets
+	//togmod1_rounded_rect_points([catapiller_size[0]+zo[1]*2, catapiller_size[1]+zo[1]*2], r=3.175),
+	layer_pointses[zo[1]],
+	zo[0]
+));
+
+block_hull = ["intersection",
+	["translate", [0,0,block_size[2]/2], tphl1_make_rounded_cuboid(block_size, 3)],
+	catapiller_hull
+];
 
 cavity_2d = ["union",
 	togmod1_make_rounded_rect(cavity_actual_size, r=2),
@@ -191,7 +231,7 @@ effective_features = [
 	if(top_cord_slot_diameter > 0 && top_cord_slot_depth > 0) "top-cord-slot",
 ];
 
-unsegmented_brick_holder = ["difference",
+pre_tgx_segmented_brick_holder = ["difference",
 	block_hull,
 	
 	cavity,
@@ -213,13 +253,25 @@ left_side_intersection = side_segmentation != "none" ? ["translate", [-block_siz
 	)]
 ]] : undef;
 
+function is_tgx_segmentation(seg) =
+	seg != "none" && seg != "hatom";
+
 brick_holder = ["intersection",
-	unsegmented_brick_holder,
+	pre_tgx_segmented_brick_holder,
 	
-	if( side_segmentation != "none" ) ["intersection",
+	if( is_tgx_segmentation(top_segmentation) ) ["translate", [0, 0, block_size[2]], ["rotate", [180,0,0],
+		["render", tgx11_atomic_block_bottom(
+			[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2]+10, "mm"]],
+			segmentation = top_segmentation,
+			bottom_shape = "footed",
+			$tgx11_gender = "m",
+			$tgx11_offset = $tgx11_offset - 1/1024
+		)]
+	]],
+	if( is_tgx_segmentation(side_segmentation) ) ["intersection",
 		for( xs=[-1,1] ) ["scale", [xs,1,1], ["translate", [0,0,0], left_side_intersection]]
 	],
-	if( back_segmentation != "none" ) ["translate", [0, block_size[1]/2, block_size[2]/2], ["rotate", [90,0,0],
+	if( is_tgx_segmentation(back_segmentation) ) ["translate", [0, block_size[1]/2, block_size[2]/2], ["rotate", [90,0,0],
 		["render", tgx11_block_bottom(
 			[block_size_ca[0], block_size_ca[2], block_size_ca[1]],
 			segmentation = back_segmentation,
@@ -228,7 +280,7 @@ brick_holder = ["intersection",
 			$tgx11_offset = $tgx11_offset + 1/1024
 		)]
 	]],
-	if( front_segmentation != "none" ) ["translate", [0, -block_size[1]/2, block_size[2]/2], ["rotate", [-90,0,0],
+	if( is_tgx_segmentation(front_segmentation) ) ["translate", [0, -block_size[1]/2, block_size[2]/2], ["rotate", [-90,0,0],
 		["render", tgx11_atomic_block_bottom(
 			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
 			segmentation = front_segmentation,
@@ -237,9 +289,9 @@ brick_holder = ["intersection",
 			$tgx11_offset = $tgx11_offset + 2/1024
 		)]
 	]],
-	if( bottom_segmentation != "none" ) ["translate", [0, 0, 0], ["rotate", [0,0,0],
+	if( is_tgx_segmentation(bottom_segmentation) ) ["translate", [0, 0, 0], ["rotate", [0,0,0],
 		["render", tgx11_atomic_block_bottom(
-			[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2], "mm"]],
+			[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2]+10, "mm"]],
 			segmentation = bottom_segmentation,
 			bottom_shape = "footed",
 			$tgx11_gender = "m",
