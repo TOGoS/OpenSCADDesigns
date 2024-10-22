@@ -3,13 +3,25 @@
 		"p1630": {
 			"size_atoms": "[9, 9]",
 			"thickness": "3.175",
+			"outer_offset": "0",
 			"component_hole_positioning": "none",
 			"$fn": "64"
 		},
 		"p1631": {
 			"size_atoms": "[9, 9]",
 			"thickness": "3.175",
+			"outer_offset": "0",
 			"component_hole_positioning": "center",
+			"$fn": "64"
+		},
+		"p1638": {
+			"size_atoms": "[24, 12]",
+			"thickness": "3.175",
+			"component_hole_positioning": "back-corners",
+			"outer_offset": "-0.1",
+			"ridge_height": "3.2",
+			"ridge_inset_atoms": "1",
+			"ridge_extra_inset": "0.5",
 			"$fn": "64"
 		}
 	},
