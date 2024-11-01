@@ -1,36 +1,59 @@
 // New screw threads library
 
+use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 $fn = 32;
-threading = "1+1/4-7-UNC"; // ["test", "1/4-20-UNC", "1+1/4-7-UNC", "1+1/4-3.5-UNC"]
+threading = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1+1/4-7-UNC"]
+total_height = 20;
+head_height  = 6.35;
 handedness = "right"; // ["right","left"]
+head_surface_offset = -0.1;
+thread_radius_offset = -0.2;
 
 module __threads2_end_params() { }
 
 side = "external"; // ["external", "internal"]
 
-function togthreads2_mkthreads( zrange, pitch, radius_function, direction="right", taper_function=function(z) 1 ) =
+// [[z, param], ...] -> [[z, angle, param], ...]
+// Also supports just [z0, ..., zn] as input
+// Interpolating param for each actual layer.
+// TODO: Actually calculate that third parameter!
+function togthreads2_layer_params( zparams, pitch ) =
+	let( layer_height = pitch/$fn )
+	let( zparams1 = [
+		for( zp = zparams )
+			is_num(zp) ? [zp,zp] :
+			is_list(zp) ? zp :
+			assert(false, str("Expected number or list for Z parameters, got ", zp))
+	] )
+	[
+		for( z=[zparams1[0][0] : layer_height : zparams1[len(zparams1)-1][0]] ) [z, z*360/pitch, undef] // TODO: calculate that extra parammeter
+	];
+
+// TODO: Instead of just accepting a z range,
+// accept a list of [z, param],
+// and interpolate param values between Zs.
+// TODO: Remove taper_function
+function togthreads2_mkthreads( zparams, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0 ) =
 	let( $fn = max(3, $fn) )
 	let( $tphl1_quad_split_direction = direction )
-	let( layer_height = pitch/$fn )
-	tphl1_make_polyhedron_from_layer_function([
-		// TODO: evenly divide zrange
-		for( z=[zrange[0] : layer_height : zrange[1]] ) [z, (z-zrange[0])*360/pitch]
-	], function(za)
-		togvec0_offset_points(
-			[
-				for( j = [0:1:$fn-1] )
-				let( a = 360 * j / $fn )
-				let( t_raw = (za[1] + a * (direction == "right" ? -1 : 1)) / 360 )
-				let( t = t_raw - floor(t_raw) )
-				let( r = radius_function(t, taper_function(za[0])) )
-				[r * cos(a), r * sin(a)]
-			],
-			za[0]
-		)
+	tphl1_make_polyhedron_from_layer_function(
+		togthreads2_layer_params(zparams, pitch),
+		function(za)
+			togvec0_offset_points(
+				[
+					for( j = [0:1:$fn-1] )
+					let( a = 360 * j / $fn )
+					let( t_raw = (za[1] + a * (direction == "right" ? -1 : 1)) / 360 )
+					let( t = t_raw - floor(t_raw) )
+					let( r = radius_function(t, taper_function(za[0])) + r_offset )
+					[r * cos(a), r * sin(a)]
+				],
+				za[0]
+			)
 	);
 
 function togthreads2__clamp(x, lower, upper) = min(upper, max(lower, x));
@@ -84,7 +107,6 @@ threads2_thread_types = [
 
 function threads2__get_thread_spec(name, index=0) =
 	assert(len(threads2_thread_types) > index, str("Didn't find '", name, "' in thread types list"))
-	echo(name=name, current=threads2_thread_types[index][0])
 	threads2_thread_types[index][0] == name ? threads2_thread_types[index][1] :
 	threads2__get_thread_spec(name, index+1);
 
@@ -97,14 +119,23 @@ function threads2__get_thread_pitch(spec) =
 function threads2__get_thread_radius_function(spec) =
 	is_string(spec) ? threads2__get_thread_radius_function(threads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_external_thread_radius_function(spec[1], spec[2]) :
-	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(specs[1], spec[2]) :
+	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-togmod1_domodule(
+togmod1_domodule(["union",
 	let( specs = threads2__get_thread_spec(threading) )
 	let( pitch = threads2__get_thread_pitch(specs) )
 	let( rfunc = threads2__get_thread_radius_function(specs) )
-	togthreads2_mkthreads([0, 20], pitch, rfunc,
-		taper_function = function(z) 1 - max(0, (z - 18)/2)
-	)
-);
+	let( top_z = total_height )
+	let( taper_length = 2 )
+	togthreads2_mkthreads([head_height-1, top_z], pitch, rfunc,
+		taper_function = function(z) 1 - max(0, (z - (top_z - taper_length))/taper_length),
+		r_offset = thread_radius_offset
+	),
+	
+	["translate", [0,0,head_height/2], tphl1_make_rounded_cuboid([
+		38.1 + head_surface_offset*2,
+		38.1 + head_surface_offset*2,
+		head_height + head_surface_offset*2
+	], 2)],
+]);
