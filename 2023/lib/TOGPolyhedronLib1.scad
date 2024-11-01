@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.8
+// TOGPolyhedronLib1.9
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -29,6 +29,12 @@
 // v1.8:
 // - Fix `tphl1_faces` to mind `cap_top` and `cap_bottom`,
 //   so you can make e.g. toruses.
+// v1.9:
+// - $tphl1_quad_split_direction can be set to "right" or "left"
+//   to indicate whether quads should be split from lower-left to
+//   upper-right ("right") or lower-right to upper-left ("left").
+//   This may be useful when generating right or left-handed screw
+//   threads, respectively.  Default is "right".
 
 // Winding order:
 // 
@@ -48,25 +54,47 @@ function tphl1_cap_faces( layers, layerspan, li, reverse=false ) = [
 	[for( vi=reverse ? [0 : 1 : layerspan-1] : [layerspan-1 : -1 : 0] ) (vi%layerspan)+layerspan*li]
 ];
 
+// $tphl1_quad_split_direction determines whether
+// quads are split from lower-left to upper-right ("right")
+// or lower-right to upper-left ("left").
+
+function tphl1__get_quad_split_direction() =
+	is_undef($tphl1_quad_split_direction) ? "right" : $tphl1_quad_split_direction;
+
 function tphl1_layer_faces( layers, layerspan, i ) =
 assert(is_list(layers))
 assert(is_num(layerspan))
 assert(is_num(i))
 let( l0 = i*layerspan )
 let( l1 = (i+1)*layerspan )
-[
+tphl1__get_quad_split_direction() == "right" ? [
 	for( vi=[0 : 1 : len(layers[i])-1] ) each [
 		// By making triangles instead of quads,
 		// we can avoid some avoidable 'non-planar face' warnings.
 		[
 			l0 + vi,
 			l1 + (vi+1)%layerspan,
-			l0 + (vi+1) % layerspan,
+			l0 + (vi+1)%layerspan,
 		],
 		[
 			l0 + vi,
 			l1 + vi,
 			l1 + (vi+1)%layerspan,
+		],
+	]
+] : [
+	for( vi=[0 : 1 : len(layers[i])-1] ) each [
+		// By making triangles instead of quads,
+		// we can avoid some avoidable 'non-planar face' warnings.
+		[
+			l0 + (vi+1)%layerspan,
+			l1 + (vi+1)%layerspan,
+			l1 + vi,
+		],
+		[
+			l0 + (vi+1)%layerspan,
+			l0 + vi,
+			l1 + vi,
 		],
 	]
 ];
