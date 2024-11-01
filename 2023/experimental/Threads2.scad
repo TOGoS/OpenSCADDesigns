@@ -5,8 +5,11 @@ use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 $fn = 32;
-threading = "1+1/4-7-UNC"; // ["test", "1+1/4-7-UNC"]
+threading = "1+1/4-7-UNC"; // ["test", "1/4-20-UNC", "1+1/4-7-UNC", "1+1/4-3.5-UNC"]
 handedness = "right"; // ["right","left"]
+
+module __threads2_end_params() { }
+
 side = "external"; // ["external", "internal"]
 
 function togthreads2_mkthreads( zrange, pitch, radius_function, direction="right", taper_function=function(z) 1 ) =
@@ -40,7 +43,7 @@ function togthreads2__ridge(t) =
 
 // basic_diameter = inches
 // pitch = threads per inch
-function togthreads2_unc_external_thread_radius_function(basic_diameter, pitch, side="external", meth="orig") =
+function togthreads2_unc_external_thread_radius_function(basic_diameter, tpi, side="external", meth="orig") =
 	// Based on
 	// https://www.machiningdoctor.com/charts/unified-inch-threads-charts/#formulas-for-basic-dimensions
 	// https://www.machiningdoctor.com/wp-content/uploads/2022/07/Unfied-Thread-Basic-Dimensions-External.png?ezimgfmt=ng:webp/ngcb1
@@ -50,7 +53,7 @@ function togthreads2_unc_external_thread_radius_function(basic_diameter, pitch, 
 	// 
 	// TODO: This seems like it might be wrong.  Figure out and fix.
 	let( d = basic_diameter*25.4 )
-	let( P = 25.4/pitch )
+	let( P = 25.4/tpi )
 	let( H = P * sqrt(3)/2 ) // difference in radius between unclamped min and max
 	let( hs = H*5/8 )
 	let( has = H*3/8 )
@@ -68,13 +71,40 @@ function togthreads2_unc_external_thread_radius_function(basic_diameter, pitch, 
 			rmin, rmax
 		);
 
-demo_thread_radius_function = function(t, trat=1) max(9, min(10, 9 + trat * (0.5 + 2 * ((2*abs(t-0.5))-0.5)) ));;
+function togthreads2_demo_thread_radius_function(diam,pitch) =
+	function(t, trat=1) max(9, min(10, 9 + trat * (0.5 + 2 * ((2*abs(t-0.5))-0.5)) ));;
+
+threads2_thread_types = [
+	["threads2-demo", ["demo", 10, 5]],
+	["#6-32-UNC", ["unc", 0.138, 32]],
+	["#8-32-UNC", ["unc", 0.168, 32]],
+	["1/4-20-UNC", ["unc", 0.25, 20]],
+	["1+1/4-7-UNC", ["unc", 1.25, 7]],
+];
+
+function threads2__get_thread_spec(name, index=0) =
+	assert(len(threads2_thread_types) > index, str("Didn't find '", name, "' in thread types list"))
+	echo(name=name, current=threads2_thread_types[index][0])
+	threads2_thread_types[index][0] == name ? threads2_thread_types[index][1] :
+	threads2__get_thread_spec(name, index+1);
+
+function threads2__get_thread_pitch(spec) =
+	is_string(spec) ? threads2__get_thread_radius_function(threads2__get_thread_spec(spec)) :
+	is_list(spec) && spec[0] == "unc" ? 25.4 / spec[2] :
+	is_list(spec) && spec[0] == "demo" ? spec[2] :
+	assert(false, str("Unrecognized thread spec: ", spec));
+
+function threads2__get_thread_radius_function(spec) =
+	is_string(spec) ? threads2__get_thread_radius_function(threads2__get_thread_spec(spec)) :
+	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_external_thread_radius_function(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(specs[1], spec[2]) :
+	assert(false, str("Unrecognized thread spec: ", spec));
 
 togmod1_domodule(
-	togthreads2_mkthreads([0, 20], 5,
-		threading == "demo" ? demo_thread_radius_function : 
-		threading == "1+1/4-7-UNC" ? togthreads2_unc_external_thread_radius_function(1, 7, side) :
-		assert(false, str("Unknown threading: ", threading)),
+	let( specs = threads2__get_thread_spec(threading) )
+	let( pitch = threads2__get_thread_pitch(specs) )
+	let( rfunc = threads2__get_thread_radius_function(specs) )
+	togthreads2_mkthreads([0, 20], pitch, rfunc,
 		taper_function = function(z) 1 - max(0, (z - 18)/2)
 	)
 );
