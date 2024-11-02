@@ -1,4 +1,4 @@
-// Threads2.0
+// Threads2.1
 // 
 // New screw threads proto-library
 
@@ -9,7 +9,7 @@ use <../lib/TOGPolyhedronLib1.scad>
 
 $fn = 32;
 threading = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "1+1/4-7-UNC"]
-total_height = 20;
+total_height = 19.05;
 head_height  = 6.35;
 handedness = "right"; // ["right","left"]
 head_surface_offset = -0.1;
