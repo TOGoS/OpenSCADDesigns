@@ -123,12 +123,12 @@ function togthreads2_unc_external_thread_radius_function(basic_diameter, tpi, si
 	function(t, trat=1)
 		let( x = t*2 )
 		togthreads2__clamp(
-		   r0 + trat*H*togthreads2__ridge(t),
+		   r0 + trat*H/2 + H*togthreads2__ridge(t),
 			rmin, rmax
 		);
 
 function togthreads2_demo_thread_radius_function(diam,pitch) =
-	function(t, trat=1) max(9, min(10, 9 + trat * (0.5 + 2 * ((2*abs(t-0.5))-0.5)) ));;
+	function(t, trat=0) max(9, min(10, 9 + trat + (0.5 + 2 * ((2*abs(t-0.5))-0.5)) ));;
 
 threads2_thread_types = [
 	["threads2-demo", ["demo", 10, 5]],
@@ -162,7 +162,7 @@ togmod1_domodule(["union",
 	let( top_z = total_height )
 	let( taper_length = 2 )
 	togthreads2_mkthreads([head_height-1, top_z], pitch, rfunc,
-		taper_function = function(z) 1 - max(0, (z - (top_z - taper_length))/taper_length),
+		taper_function = function(z) 0 - max(0, (z - (top_z - taper_length))/taper_length),
 		r_offset = thread_radius_offset
 	),
 	
