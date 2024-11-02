@@ -1,4 +1,6 @@
-// New screw threads library
+// Threads2.0
+// 
+// New screw threads proto-library
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -6,7 +8,7 @@ use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 $fn = 32;
-threading = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1+1/4-7-UNC"]
+threading = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "1+1/4-7-UNC"]
 total_height = 20;
 head_height  = 6.35;
 handedness = "right"; // ["right","left"]
@@ -14,8 +16,6 @@ head_surface_offset = -0.1;
 thread_radius_offset = -0.2;
 
 module __threads2_end_params() { }
-
-side = "external"; // ["external", "internal"]
 
 // [[z, param], ...] -> [[z, angle, param], ...]
 // Also supports just [z0, ..., zn] as input
@@ -135,6 +135,8 @@ threads2_thread_types = [
 	["#6-32-UNC", ["unc", 0.138, 32]],
 	["#8-32-UNC", ["unc", 0.168, 32]],
 	["1/4-20-UNC", ["unc", 0.25, 20]],
+	["1/2-13-UNC", ["unc", 0.5, 13]],
+	["7/16-14-UNC", ["unc", 7/16, 14]],
 	["1+1/4-7-UNC", ["unc", 1.25, 7]],
 ];
 
@@ -155,20 +157,38 @@ function threads2__get_thread_radius_function(spec) =
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-togmod1_domodule(["union",
+the_threads =
+	let( top_z = total_height )
+	let( taper_length = 2 )
 	let( specs = threads2__get_thread_spec(threading) )
 	let( pitch = threads2__get_thread_pitch(specs) )
 	let( rfunc = threads2__get_thread_radius_function(specs) )
-	let( top_z = total_height )
-	let( taper_length = 2 )
 	togthreads2_mkthreads([head_height-1, top_z], pitch, rfunc,
 		taper_function = function(z) 0 - max(0, (z - (top_z - taper_length))/taper_length),
 		r_offset = thread_radius_offset
-	),
-	
+	);
+
+the_cavity =
+	let( top_z = total_height )
+	let( taper_length = 4 )
+	let( pitch = threads2__get_thread_pitch("1/2-13-UNC") )
+	let( rfunc = threads2__get_thread_radius_function("1/2-13-UNC") )
+	togthreads2_mkthreads([-1, top_z+1], pitch, rfunc,
+		taper_function = function(z) max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
+		r_offset = -thread_radius_offset
+	);
+
+the_cap =
 	["translate", [0,0,head_height/2], tphl1_make_rounded_cuboid([
 		38.1 + head_surface_offset*2,
 		38.1 + head_surface_offset*2,
 		head_height + head_surface_offset*2
-	], 2)],
+	], 2)];
+
+togmod1_domodule(["difference",
+	["union",
+		the_threads,
+		the_cap
+	],
+	the_cavity
 ]);
