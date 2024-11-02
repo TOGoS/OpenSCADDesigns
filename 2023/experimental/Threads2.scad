@@ -33,11 +33,26 @@ function togthreads2_layer_params( zparams, pitch ) =
 		for( z=[zparams1[0][0] : layer_height : zparams1[len(zparams1)-1][0]] ) [z, z*360/pitch, undef] // TODO: calculate that extra parammeter
 	];
 
+// rfunc :: z -> phase (0...1) -> r|[x,y]|[x,y,z]
+function togthreads2_zp_to_layers(zs, rfunc) =
+	let($fn = max(3, $fn))
+	let(fixpoint = function(n, p, z)
+		is_num(n) ? [cos(p*360)*n, sin(p*360)*n, z] :
+		is_list(n) && len(n) == 1 ? fixpoint(n[0], p, z) :
+		is_list(n) && len(n) == 2 ? [n[0], n[1], z] :
+		is_list(n) && len(n) == 3 ? n :
+		assert(false, str("Rfunc should return 1..3 values, but it returned ", n)))
+	[
+		for( z=zs ) [
+			for( p=[0:1:$fn-1] ) fixpoint(rfunc(z,p/$fn), p/$fn, z)
+		]
+	];
+
 // TODO: Instead of just accepting a z range,
 // accept a list of [z, param],
 // and interpolate param values between Zs.
 // TODO: Remove taper_function
-function togthreads2_mkthreads( zparams, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0 ) =
+togthreads2_mkthreads_v1 = function( zparams, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0 )
 	let( $fn = max(3, $fn) )
 	let( $tphl1_quad_split_direction = direction )
 	tphl1_make_polyhedron_from_layer_function(
@@ -55,6 +70,24 @@ function togthreads2_mkthreads( zparams, pitch, radius_function, direction="righ
 				za[0]
 			)
 	);
+
+function togthreads2_threadradfunc_to_zpfunc(trfunc, pitch, direction="right", taper_function=function(z) 1, r_offset=0) =
+	function(z,p)
+		let(t_raw = p + z * (direction == "right" ? -1 : 1) / pitch)
+		let(t = t_raw - floor(t_raw))
+		trfunc(t, taper_function(z)) + r_offset;
+
+// V2: Based on the idea of using a function like z -> phase -> r
+// to make it simpler to transform r at a given z
+togthreads2_mkthreads_v2 = function( zrange, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0 )
+	let( layer_height = pitch/$fn )
+	let( layers = togthreads2_zp_to_layers(
+		[zrange[0] : layer_height : zrange[1]],
+		togthreads2_threadradfunc_to_zpfunc(radius_function, pitch, direction, taper_function=taper_function, r_offset=r_offset)
+	) )
+	tphl1_make_polyhedron_from_layers(layers);
+
+togthreads2_mkthreads = togthreads2_mkthreads_v2;
 
 function togthreads2__clamp(x, lower, upper) = min(upper, max(lower, x));
 
