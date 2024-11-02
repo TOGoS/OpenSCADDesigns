@@ -144,7 +144,7 @@ function threads2__get_thread_spec(name, index=0) =
 	threads2__get_thread_spec(name, index+1);
 
 function threads2__get_thread_pitch(spec) =
-	is_string(spec) ? threads2__get_thread_radius_function(threads2__get_thread_spec(spec)) :
+	is_string(spec) ? threads2__get_thread_pitch(threads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc" ? 25.4 / spec[2] :
 	is_list(spec) && spec[0] == "demo" ? spec[2] :
 	assert(false, str("Unrecognized thread spec: ", spec));
