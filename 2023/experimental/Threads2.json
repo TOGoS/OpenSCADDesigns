@@ -1,0 +1,26 @@
+{
+	"parameterSets": {
+		"p1646": {
+			"$fn": "32",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_surface_offset": "-0.1",
+			"inner_threads": "1\/2-13-UNC",
+			"outer_threads": "1+1\/4-7-UNC",
+			"thread_radius_offset": "-0.2",
+			"total_height": "19.05"
+		},
+		"p1647": {
+			"$fn": "32",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_surface_offset": "-0.1",
+			"inner_threads": "1+1\/4-7-UNC",
+			"outer_threads": "1+1\/4-7-UNC",
+			"thread_radius_offset": "-0.2",
+			"total_height": "6.35"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}

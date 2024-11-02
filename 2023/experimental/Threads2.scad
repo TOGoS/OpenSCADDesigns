@@ -1,4 +1,4 @@
-// Threads2.1
+// Threads2.2
 // 
 // New screw threads proto-library
 
@@ -8,7 +8,8 @@ use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 $fn = 32;
-threading = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "1+1/4-7-UNC"]
+outer_threads = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "1+1/4-7-UNC"]
+inner_threads = "1/2-13-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "1+1/4-7-UNC"]
 total_height = 19.05;
 head_height  = 6.35;
 handedness = "right"; // ["right","left"]
@@ -157,10 +158,11 @@ function threads2__get_thread_radius_function(spec) =
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-the_threads =
+the_post =
+	total_height <= head_height ? ["union"] :
 	let( top_z = total_height )
 	let( taper_length = 2 )
-	let( specs = threads2__get_thread_spec(threading) )
+	let( specs = threads2__get_thread_spec(outer_threads) )
 	let( pitch = threads2__get_thread_pitch(specs) )
 	let( rfunc = threads2__get_thread_radius_function(specs) )
 	togthreads2_mkthreads([head_height-1, top_z], pitch, rfunc,
@@ -168,11 +170,12 @@ the_threads =
 		r_offset = thread_radius_offset
 	);
 
-the_cavity =
+the_hole =
 	let( top_z = total_height )
 	let( taper_length = 4 )
-	let( pitch = threads2__get_thread_pitch("1/2-13-UNC") )
-	let( rfunc = threads2__get_thread_radius_function("1/2-13-UNC") )
+	let( specs = threads2__get_thread_spec(inner_threads) )
+	let( pitch = threads2__get_thread_pitch(specs) )
+	let( rfunc = threads2__get_thread_radius_function(specs) )
 	togthreads2_mkthreads([-1, top_z+1], pitch, rfunc,
 		taper_function = function(z) max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
 		r_offset = -thread_radius_offset
@@ -183,12 +186,12 @@ the_cap =
 		38.1 + head_surface_offset*2,
 		38.1 + head_surface_offset*2,
 		head_height + head_surface_offset*2
-	], 2)];
+	], [3,3,0.6], corner_shape="ovoid1")];
 
 togmod1_domodule(["difference",
 	["union",
-		the_threads,
+		the_post,
 		the_cap
 	],
-	the_cavity
+	the_hole
 ]);
