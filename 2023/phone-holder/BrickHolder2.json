@@ -134,6 +134,30 @@
 			"top_cord_slot_depth": "25.4",
 			"top_cord_slot_diameter": "25.4",
 			"top_segmentation": "none"
+		},
+		"p1648": {
+			"_comments": [
+				"1.5mm margins (so cavity is extra 3mm in width/depth)",
+				"to accommodate some power supplies that are *just* over 1\"x2\"."
+			],
+			"$tgx11_offset": "-0.1",
+			"back_mounting_hole_style": "THL-1003",
+			"back_segmentation": "hatom",
+			"block_size_atoms": "[5, 3, 9]",
+			"bottom_hole_style": "standard",
+			"bottom_segmentation": "none",
+			"can_diameter": "0",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "hatom",
+			"front_slot_style": "standard",
+			"inner_offset": "-1.5",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "hatom",
+			"top_cord_slot_depth": "25.4",
+			"top_cord_slot_diameter": "19.05",
+			"top_segmentation": "none"
 		}
 	}
 }
