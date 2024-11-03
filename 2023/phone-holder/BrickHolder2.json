@@ -158,6 +158,30 @@
 			"top_cord_slot_depth": "25.4",
 			"top_cord_slot_diameter": "19.05",
 			"top_segmentation": "none"
+		},
+		"p1660": {
+			"_comments": [
+				"3\"x2\"x4.5\" outside.",
+				"2.5\"x1.5\" + 3mm margins inside."
+			],
+			"$tgx11_offset": "-0.1",
+			"back_mounting_hole_style": "THL-1003",
+			"back_segmentation": "hatom",
+			"block_size_atoms": "[6, 4, 9]",
+			"bottom_hole_style": "standard",
+			"bottom_segmentation": "none",
+			"can_diameter": "0",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "hatom",
+			"front_slot_style": "standard",
+			"inner_offset": "-1.5",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "hatom",
+			"top_cord_slot_depth": "25.4",
+			"top_cord_slot_diameter": "19.05",
+			"top_segmentation": "none"
 		}
 	}
 }
