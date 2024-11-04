@@ -1,4 +1,4 @@
-// TGx9.5.31 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
+// TGx9.5.32 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -180,6 +180,8 @@
 // - Change default margin from 0.075mm to 0.1mm
 // v9.5.31:
 // - Reduce width and corner radius of overcav[ity]
+// v9.5.32:
+// - Cup holder becomes an array of cup holders if cup_holder_wall_thickness is positive
 
 /* [Atom/chunk/block size] */
 
@@ -258,6 +260,8 @@ cavity_corner_radius = -1;
 cup_holder_diameters = [];
 // Depths of cup holder cutouts, from innermost to outermost
 cup_holder_depths = [];
+// Space between 'cup holders'; if >= 0, an array of cup holders will be made
+cup_holder_wall_thickness = -1;
 
 mug_handle_cutout_depth = 0;
 mug_handle_cutout_width = 0;
@@ -612,12 +616,38 @@ let( finger_notch_depth = cell_size[0]-xq )
 		)]
 ];
 
+
+
+use <../lib/TOGArrayLib1.scad>
+
+cup_holder_max_diameter = tal1_reduce(0, cup_holder_diameters, function(a,b) max(a,b));
+cup_holder_array_cell_size = cup_holder_max_diameter+cup_holder_wall_thickness;
+cup_holder_array_size =
+	cup_holder_max_diameter <= 0 ? [0,0] :
+	cup_holder_wall_thickness < 0 ? [1,1] :
+	[
+		floor((block_size[0] - wall_thickness*2 + cup_holder_wall_thickness) / cup_holder_array_cell_size),
+		floor((block_size[1] - wall_thickness*2 + cup_holder_wall_thickness) / cup_holder_array_cell_size),
+	];
+
+cup_holder_cutout = ["union",
+	for(i=[0 : 1 : len(cup_holder_diameters)-1])
+		if(cup_holder_diameters[i] > 0 && cup_holder_depths[i] > 0)
+			["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]
+];
+
+cup_holder_array_cutout = ["union",
+	for( xm=[-cup_holder_array_size[0]/2+0.5 : 1 : cup_holder_array_size[0]/2-0.5] )
+	for( ym=[-cup_holder_array_size[1]/2+0.5 : 1 : cup_holder_array_size[1]/2-0.5] )
+	["translate", [xm, ym]*cup_holder_array_cell_size, cup_holder_cutout]
+];
+
+
+
 // Operations to be done on the block from the top center
 cavity_ops = [
 	if( cavity_style == "cup" ) if( floor_thickness < block_size[2]) ["subtract",["the_cup_cavity"]],
-	if( cavity_style == "cup" ) for(i=[0 : 1 : len(cup_holder_diameters)-1])
-		if(cup_holder_diameters[i] > 0 && cup_holder_depths[i] > 0)
-			["subtract",["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]],
+	if( cavity_style == "cup" ) ["subtract", cup_holder_array_cutout],
 	if( mug_handle_cutout_width > 0 && mug_handle_cutout_depth > 0 )
 		["subtract", make_mug_handle_cutout(mug_handle_cutout_width, mug_handle_cutout_depth, [block_size[0]/2-wall_thickness, block_size[1]/2-wall_thickness])],
 	if( cavity_style == "tograck" ) ["subtract", tograck_cavity_sshape()],
