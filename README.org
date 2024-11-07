@@ -1,19 +1,23 @@
 #+TITLE: TOGoS's OpenSCAD designs
 
-** Testing
+** Testing / Automation
 
 As of [2023-07-09], `test.bat` will use `find` (location specified by `%UNIX_FIND_EXE%`)
 to find all `.scad` files and attempt to evaluate them.
 
 A nicer system would cache results and pass in every defined preset for each OpenSCAD design.
-For some reason I decided to use Janet for that system.
-It is in progress and not yet functional.
+
+STLs and renders can be generated from the command-line, like
+
+#+begin_src bat
+"C:\Program Files\OpenSCAD\openscad.com" -p 2023\experimental\Threads2.json -P p1664 --render 2023\experimental\Threads2.scad -o p1664.png --colorscheme "Tomorrow Night" --imgsize 1536,1536
+#+end_src
 
 *** [2023-07-09] Thoughts on improved testing system
 
-Principles:
-- Unix-style: Small programs that operate on text streams
+Process (may be pipelined, unix-style, if you want):
 
-Parts:
 - List files (basically 'find')
 - Hash files, list out filename + hash ('ccouch3 id -show-inputs' may already do this!)
+- Parse files, list dependencies
+- Recursively generate hashes for each file based on hash + hash of dependencies

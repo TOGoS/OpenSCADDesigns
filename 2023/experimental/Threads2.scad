@@ -1,4 +1,4 @@
-// Threads2.3
+// Threads2.4
 // 
 // New screw threads proto-library
 // 
@@ -6,17 +6,23 @@
 // - Add 3/4-10-UNC to thread options
 // - Separate inner/outer thread radius offsets,
 //   with the inner one by default +0.3 and the outer -0.1.
+// v2.4:
+// - Add options for TOGridPile and hex cap
+// - Add 3/8-16-UNC thread options
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TGx11.1Lib.scad>
 
 $fn = 32;
-outer_threads = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "3/4-10-UNC", "1+1/4-7-UNC"]
-inner_threads = "1/2-13-UNC"; // ["threads2-demo", "1/4-20-UNC", "1/2-13-UNC", "3/4-10-UNC", "1+1/4-7-UNC"]
+outer_threads = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1+1/4-7-UNC"]
+inner_threads = "1/2-13-UNC"; // ["threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1+1/4-7-UNC"]
 total_height = 19.05;
-head_height  = 6.35;
+head_width   = 38.1;
+head_height  =  6.35;
+head_shape = "square"; // ["square","hexagon","togridpile-chunk"]
 handedness = "right"; // ["right","left"]
 head_surface_offset = -0.1;
 outer_thread_radius_offset = -0.1;
@@ -142,6 +148,7 @@ threads2_thread_types = [
 	["#6-32-UNC", ["unc", 0.138, 32]],
 	["#8-32-UNC", ["unc", 0.168, 32]],
 	["1/4-20-UNC", ["unc", 0.25, 20]],
+	["3/8-16-UNC", ["unc", 3/8, 16]],
 	["1/2-13-UNC", ["unc", 0.5, 13]],
 	["7/16-14-UNC", ["unc", 7/16, 14]],
 	["3/4-10-UNC", ["unc", 3/4, 10]],
@@ -188,12 +195,40 @@ the_hole =
 		r_offset = inner_thread_radius_offset
 	);
 
-the_cap =
-	["translate", [0,0,head_height/2], tphl1_make_rounded_cuboid([
-		38.1 + head_surface_offset*2,
-		38.1 + head_surface_offset*2,
-		head_height + head_surface_offset*2
-	], [3,3,0.6], corner_shape="ovoid1")];
+use <../lib/TOGVecLib0.scad>
+use <../lib/TOGPath1.scad>
+
+$togridlib3_unit_table = tgx11_get_default_unit_table();
+$tgx11_offset = head_surface_offset;
+
+function make_rath_base(rath, height, r=0.6) =
+	let(quarterfn=ceil($fn/4))
+	let(r3=r+$tgx11_offset)
+	tphl1_make_polyhedron_from_layer_function([
+		for( a=[0:1:quarterfn] ) [     0 + r + r3 * sin(270 + a*90/quarterfn), -r + r3 * cos(270 + a*90/quarterfn)],
+		for( a=[0:1:quarterfn] ) [height - r + r3 * sin(  0 + a*90/quarterfn), -r + r3 * cos(  0 + a*90/quarterfn)],
+	], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(rath, zo[1])), zo[0]));
+
+// r to chord = cos(angle/2) * r to point
+// so r to point = r to chord / cos(angle/2)
+
+function make_polygon_base(sidecount, width, height) =
+	let( r1 = min(3, width/10) )
+	let( r2 = min(0.6, r1/2) )
+	let( c_to_c_r = width/2 / cos(360/sidecount/2) )
+	echo(str("corner-to-center = ", c_to_c_r))
+	make_rath_base(
+		togpath1_make_polygon_rath(r=c_to_c_r, $fn=sidecount, corner_ops=[["round", r1]]),
+		height, r=r2
+	);
+
+function make_base(shape, width, height) =
+	shape == "square" ? make_polygon_base(4,width,height) :
+	shape == "hexagon" ? make_polygon_base(6,width,height) :
+	shape == "togridpile-chunk" ? tgx11_block([[width,"mm"],[width,"mm"],[height,"mm"]], lip_height=0, bottom_segmentation = "chunk") :
+	assert(false, str("Unsupported head shape: '", shape, "'"));
+
+the_cap = make_base(head_shape, head_width, head_height);
 
 togmod1_domodule(["difference",
 	["union",

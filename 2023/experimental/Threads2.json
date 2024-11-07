@@ -63,6 +63,34 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "1+1\/4-7-UNC",
 			"total_height": "6.35"
+		},
+		"p1666": {
+			"_comments": [
+                        	"A 1/4\"-inch thick 1/4\"-20 hex nut."
+                        ],
+			"$fn": "64",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "11.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "1\/4-20-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1\/4-7-UNC",
+			"total_height": "6.35"
+		},
+		"p1667": {
+			"$fn": "64",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "togridpile-chunk",
+			"head_surface_offset": "-0.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3\/8-16-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1\/4-7-UNC",
+			"total_height": "19.05"
 		}
 	},
 	"parameterSets": "",
