@@ -41,6 +41,28 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "1+1\/4-7-UNC",
 			"total_height": "6.35"
+		},
+		"p1664": {
+			"$fn": "64",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_surface_offset": "-0.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3\/4-10-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1\/4-7-UNC",
+			"total_height": "19.05"
+		},
+		"p1665": {
+			"$fn": "64",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_surface_offset": "-0.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "1+1\/4-7-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1\/4-7-UNC",
+			"total_height": "6.35"
 		}
 	},
 	"parameterSets": "",
