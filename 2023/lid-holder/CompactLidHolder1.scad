@@ -1,4 +1,4 @@
-// CompactLidHolder1.10
+// CompactLidHolder1.11
 // 
 // this design based on pairs of 'combs'
 // to be connected with 2+3/4" spacers of some sort.
@@ -21,6 +21,8 @@
 // - Small holes in spacer2, spacer3, spacer4
 // v1.10:
 // - Add 'sidepanel' mode
+// v1.11:
+// - Put a notch every chunk on the combs
 
 comb_length_chunks = 4;
 mode = "combs"; // ["combs", "spacer", "spacer2", "spacer3", "spacer4", "sidepanel"]
@@ -62,12 +64,28 @@ comb_corner_ops = [["bevel", 2*u], ["round", 2*u]];
 comb_inner_ops = [["round", 2]];
 comb_tip_ops = [["round", 1]];
 
+/*
+// If you want fewer notches, you could do it this way
+comb_big_notch_positions_u = [-comb_length_u/2 + 12, if(comb_length_chunks%2==1) 0, comb_length_u/2 - 12];
+
+function in_array(needle, haystack, index=0) =
+	len(haystack) > index && (
+		haystack[index] == needle || in_array(needle, haystack, index+1)
+	);
+
+function comb_has_notch_at_u( u ) =
+	in_array(u, comb_big_notch_positions_u);
+*/
+
+function comb_has_notch_at_u( u ) =
+	(u + comb_length_chunks*12)%24 == 12;
+
 function make_comb_rath_u(depth_u) =
 ["togpath1-rath",
 	for( x=[-comb_length_u/2 + 8 : 8 : comb_length_u/2-8] ) each
 	let( mode =
-		comb_big_notches_enabled && (x == -comb_length_u/2+8  || x == comb_length_u/2-16) ? "up" :
-		comb_big_notches_enabled && (x == -comb_length_u/2+16 || x == comb_length_u/2- 8) ? "down" :
+		comb_big_notches_enabled && comb_has_notch_at_u(x + 4) ? "up"   :
+		comb_big_notches_enabled && comb_has_notch_at_u(x - 4) ? "down" :
 		comb_little_notches_enabled ? "notch" : "flat"
 	)
 	mode == "notch" ? [
