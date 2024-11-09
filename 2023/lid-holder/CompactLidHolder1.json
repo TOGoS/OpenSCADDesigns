@@ -6,6 +6,17 @@
 			"comb_depth_u": "34",
 			"comb_big_notches_enabled": "true",
 			"comb_little_notches_enabled": "true"
+		},
+		"p1641": {
+			"mode": "combs",
+			"comb_length_chunks": "7",
+			"comb_big_notches_enabled": "true",
+			"comb_depth_u": "28",
+			"comb_little_notches_enabled": "true"
+		},
+		"p1642": {
+			"mode": "sidepanel",
+			"comb_length_chunks": "7"
 		}
 	},
 	"parameterSets": "",
