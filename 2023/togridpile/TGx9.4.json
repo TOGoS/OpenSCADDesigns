@@ -1694,6 +1694,41 @@
 			"v6hc_subtraction_style": "legacy",
 			"wall_thickness": "2",
 			"x_tograck_conduit_diameter": "0"
+		},
+		"p1643": {
+			"_comments": [
+				"1x1 chunk x 1/4\" 'anchor block'.",
+				"Intended to be screwed down to anchor a minimal baseplate in place."
+			],
+			"$tgx9_force_bevel_rounded_corners": "true",
+			"atom_pitch_u": "8",
+			"bevel_size_u": "2",
+			"block_height_u": "4",
+			"block_size_chunks": "[1, 1]",
+			"bottom_magnet_holes_enabled": "true",
+			"bowtie_edges": "[0, 0, 0, 0]",
+			"bowtie_margin": "0",
+			"cavity_style": "none",
+			"chatomic_foot_column_style": "v6.0",
+			"chunk_center_screw_hole_style": "THL-1002",
+			"chunk_edge_screw_hole_style": "THL-1001",
+			"chunk_pitch_atoms": "3",
+			"foot_segmentation": "chatom",
+			"lip_height": "1.58",
+			"lip_segmentation": "block",
+			"magnet_hole_depth": "2.4",
+			"magnet_hole_diameter": "6.2",
+			"margin": "0.075",
+			"preview_fn": "12",
+			"render_fn": "36",
+			"screw_hole_style": "none",
+			"simplify_foot_for_preview": "false",
+			"top_magnet_holes_enabled": "true",
+			"trim_front_sublip": "false",
+			"u": "1.5875",
+			"v6hc_style": "none",
+			"v6hc_subtraction_enabled": "false",
+			"v6hc_subtraction_style": "none"
 		}
 	},
 	"fileFormatVersion": "1"
