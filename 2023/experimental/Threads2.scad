@@ -1,4 +1,4 @@
-// Threads2.5
+// Threads2.6
 // 
 // New screw threads proto-library
 // 
@@ -14,6 +14,8 @@
 //   conceptually simple, but results in much fewer polygons
 // - For now, the v3 threads don't taper, but togthreads2_mkthreads_v3
 //   does have the option to make 'blunt' or 'flush' thread ends.
+// v2.6:
+// - outer_threads = "none" means no post
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -261,7 +263,7 @@ function threads2__get_thread_type23(spec) =
 	assert(false, str("Unrecognized thread spec: ", spec));	
 
 function make_the_post_v2() =
-	total_height <= head_height ? ["union"] :
+	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
 	let( taper_length = 2 )
 	let( specs = threads2__get_thread_spec(outer_threads) )
@@ -273,7 +275,7 @@ function make_the_post_v2() =
 	);
 
 function make_the_post_v3() =
-	total_height <= head_height ? ["union"] :
+	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
 	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
 	let( type23 = threads2__get_thread_type23(outer_threads) )
