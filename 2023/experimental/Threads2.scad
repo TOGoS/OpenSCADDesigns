@@ -1,4 +1,4 @@
-// Threads2.4
+// Threads2.5
 // 
 // New screw threads proto-library
 // 
@@ -9,6 +9,11 @@
 // v2.4:
 // - Add options for TOGridPile and hex cap
 // - Add 3/8-16-UNC thread options
+// v2.5:
+// - Add 'v3' polyhedron generation algorithm, which is less
+//   conceptually simple, but results in much fewer polygons
+// - For now, the v3 threads don't taper, but togthreads2_mkthreads_v3
+//   does have the option to make 'blunt' or 'flush' thread ends.
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -17,8 +22,8 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TGx11.1Lib.scad>
 
 $fn = 32;
-outer_threads = "1+1/4-7-UNC"; // ["threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1+1/4-7-UNC"]
-inner_threads = "1/2-13-UNC"; // ["threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1+1/4-7-UNC"]
+outer_threads = "1+1/4-7-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1-8-UNC", "1+1/4-7-UNC"]
+inner_threads = "1/2-13-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1-8-UNC", "1+1/4-7-UNC"]
 total_height = 19.05;
 head_width   = 38.1;
 head_height  =  6.35;
@@ -27,6 +32,7 @@ handedness = "right"; // ["right","left"]
 head_surface_offset = -0.1;
 outer_thread_radius_offset = -0.1;
 inner_thread_radius_offset =  0.3;
+thread_polyhedron_algorithm = "v2"; // ["v2", "v3"]
 
 module __threads2_end_params() { }
 
@@ -143,8 +149,83 @@ function togthreads2_unc_external_thread_radius_function(basic_diameter, tpi, si
 function togthreads2_demo_thread_radius_function(diam,pitch) =
 	function(t, trat=0) max(9, min(10, 9 + trat + (0.5 + 2 * ((2*abs(t-0.5))-0.5)) ));;
 
+////
+
+// Type23 = ["togthreads2.3-type", pitch, cross_section_polypoints, post_radius]
+
+// zrange: [z0, z1]
+// type23: a Type23 thread spec
+// direction: "right" or "left"-handed threads
+// r_offset: radial vertex offset
+// end_mode:
+// - "blunt" to have threads end abruptly when the center reaches the end of the zrange
+//   - You probably want this for outer threads
+// - "flush" to have threads continue all the way to the end
+//   - You probably want this for inner threads
+function togthreads2_mkthreads_v3(zrange, type23, direction="right", r_offset=0, end_mode="flush") =
+	assert( !is_undef(r_offset) )
+	assert( zrange[1] > zrange[0] )
+	assert( is_num(type23[1]) )
+	assert( is_list(type23[2]) )
+	assert( is_num(type23[3]) )
+	assert( is_list(type23) && type23[0] == "togthreads2.3-type" )
+	let( reverse = function(arr) [ for(i=[len(arr)-1 : -1 : 0]) arr[i]] )
+	let( pitch = type23[1] )
+	let( xspolypoints = direction == "right" ? reverse(type23[2]) : type23[2] )
+	let( post_radius = type23[3] )
+	echo( ceil(zrange[1]-zrange[0])*$fn/pitch )
+	let( thread_zrange = end_mode == "blunt" ? zrange : [zrange[0]-pitch/2, zrange[1]+pitch/2] )
+	let( layer_count = ceil(thread_zrange[1]-thread_zrange[0])*$fn/pitch + 1 )
+	["intersection",
+		tphl1_make_z_cylinder(d=post_radius*4, zrange=zrange, $fn=4),
+		["union",
+			tphl1_make_polyhedron_from_layer_function(
+				[
+					for( i=[0 : 1 : layer_count-1] ) let( z=thread_zrange[0] + (thread_zrange[1]-thread_zrange[0])*i/layer_count )
+					[ z, (direction == "right" ? 1 : -1) * 360 * z/pitch ] // For 'v2 compatibility', subtract 180
+				],
+				function( za ) let(ang=za[1]) let(sina = sin(ang), cosa = cos(ang)) [
+					for( pp=xspolypoints ) let( ppx = pp[0] + r_offset, ppy = za[0] + pp[1] ) [cosa*ppx, sina*ppx, ppy]
+				]
+			),
+			if(post_radius > 0) tphl1_make_z_cylinder(d=(post_radius+r_offset)*2, zrange=[zrange[0]-10, zrange[1]+10]),
+		]
+	];
+
+function togthreads2_demo_to_type23(diam, pitch) =
+	let( outer_r = diam/2 )
+	let( bev = pitch/3 )
+	let( inner_r = outer_r - bev )
+	["togthreads2.3-type", pitch, [[outer_r,pitch/8], [inner_r,pitch/8+bev], [inner_r,-pitch/8-bev], [outer_r,-pitch/8]], outer_r-pitch/4];
+
+function togthreads2_unc_to_type23(basic_diameter, tpi) =
+	// Based on
+	// https://www.machiningdoctor.com/charts/unified-inch-threads-charts/#formulas-for-basic-dimensions
+	// https://www.machiningdoctor.com/wp-content/uploads/2022/07/Unfied-Thread-Basic-Dimensions-External.png?ezimgfmt=ng:webp/ngcb1
+	// 
+	// It looks like the formulas for internal/external threads are the same
+	// except that the inner/outer flattening is inverted.
+	// 
+	// TODO: This seems like it might be wrong.  Figure out and fix.
+	let( d = basic_diameter*25.4 )
+	let( P = 25.4/tpi )
+	let( H = P * sqrt(3)/2 ) // difference in radius between unclamped min and max
+	let( hs = H*5/8 )
+	let( has = H*3/8 )
+	let( han = H*1/4 )
+	let( r = d/2 )
+	let( r2 = r - has ) // Mid point
+	let( r0 = r2 - H/2 ) // unclamped min radius
+	// let( r1 = r - hs )
+	let( rmint= r2 - has )
+	let( rmin = r2 - han )
+	let( rmax = r2 + has )
+	["togthreads2.3-type", P, [[rmax, P/16], [rmint, P*7/16], [rmint, -P*7/16], [rmax, -P/16]], rmin];
+
+////
+
 threads2_thread_types = [
-	["threads2-demo", ["demo", 10, 5]],
+	["threads2-demo", ["demo", 20, 5]],
 	["#6-32-UNC", ["unc", 0.138, 32]],
 	["#8-32-UNC", ["unc", 0.168, 32]],
 	["1/4-20-UNC", ["unc", 0.25, 20]],
@@ -152,6 +233,7 @@ threads2_thread_types = [
 	["1/2-13-UNC", ["unc", 0.5, 13]],
 	["7/16-14-UNC", ["unc", 7/16, 14]],
 	["3/4-10-UNC", ["unc", 3/4, 10]],
+	["1-8-UNC", ["unc", 1, 8]],
 	["1+1/4-7-UNC", ["unc", 1.25, 7]],
 ];
 
@@ -172,7 +254,13 @@ function threads2__get_thread_radius_function(spec) =
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-the_post =
+function threads2__get_thread_type23(spec) = 
+	is_string(spec) ? threads2__get_thread_type23(threads2__get_thread_spec(spec)) :
+	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_to_type23(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_to_type23(spec[1], spec[2]) :
+	assert(false, str("Unrecognized thread spec: ", spec));	
+
+function make_the_post_v2() =
 	total_height <= head_height ? ["union"] :
 	let( top_z = total_height )
 	let( taper_length = 2 )
@@ -184,15 +272,30 @@ the_post =
 		r_offset = outer_thread_radius_offset
 	);
 
-the_hole =
+function make_the_post_v3() =
+	total_height <= head_height ? ["union"] :
 	let( top_z = total_height )
-	let( taper_length = 4 )
+	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
+	let( type23 = threads2__get_thread_type23(outer_threads) )
+	togthreads2_mkthreads_v3([head_height-1, top_z], type23, r_offset = outer_thread_radius_offset, end_mode="blunt");
+
+the_post = thread_polyhedron_algorithm == "v2" ? make_the_post_v2() : make_the_post_v3();
+
+the_hole =
+	inner_threads == "none" ? ["union"] :
 	let( specs = threads2__get_thread_spec(inner_threads) )
-	let( pitch = threads2__get_thread_pitch(specs) )
-	let( rfunc = threads2__get_thread_radius_function(specs) )
-	togthreads2_mkthreads([-1, top_z+1], pitch, rfunc,
-		taper_function = function(z) max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
-		r_offset = inner_thread_radius_offset
+	let( top_z = total_height )
+	thread_polyhedron_algorithm == "v2" ? (
+		let( taper_length = 4 )
+		let( pitch = threads2__get_thread_pitch(specs) )
+		let( rfunc = threads2__get_thread_radius_function(specs) )
+		togthreads2_mkthreads([-1, top_z+1], pitch, rfunc,
+			taper_function = function(z) max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
+			r_offset = inner_thread_radius_offset
+		)
+	) : (
+		let( type23 = threads2__get_thread_type23(inner_threads) )
+		togthreads2_mkthreads_v3([-1, top_z+1], type23, r_offset = inner_thread_radius_offset)
 	);
 
 use <../lib/TOGVecLib0.scad>
