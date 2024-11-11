@@ -133,6 +133,20 @@
 			"outer_threads": "none",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
+		},
+		"p1671": {
+			"$fn": "64",
+			"handedness": "right",
+			"head_height": "12.7",
+			"head_shape": "togridpile-chunk",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "3\/4-10-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "none",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "25.4"
 		}
 	},
 	"parameterSets": "",

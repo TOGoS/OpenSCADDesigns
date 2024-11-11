@@ -1,4 +1,4 @@
-// Threads2.6
+// Threads2.7
 // 
 // New screw threads proto-library
 // 
@@ -16,6 +16,8 @@
 //   does have the option to make 'blunt' or 'flush' thread ends.
 // v2.6:
 // - outer_threads = "none" means no post
+// v2.7:
+// - Make 'v3' the default algorith, since it's faster
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -34,7 +36,7 @@ handedness = "right"; // ["right","left"]
 head_surface_offset = -0.1;
 outer_thread_radius_offset = -0.1;
 inner_thread_radius_offset =  0.3;
-thread_polyhedron_algorithm = "v2"; // ["v2", "v3"]
+thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 
 module __threads2_end_params() { }
 
