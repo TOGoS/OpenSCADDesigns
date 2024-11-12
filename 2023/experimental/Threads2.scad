@@ -1,4 +1,4 @@
-// Threads2.7
+// Threads2.8
 // 
 // New screw threads proto-library
 // 
@@ -18,6 +18,8 @@
 // - outer_threads = "none" means no post
 // v2.7:
 // - Make 'v3' the default algorith, since it's faster
+// v2.8:
+// - Add 5/8-11-UNC, 7/8-9-UNC, and 1+1/8-7-UNC thread options
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -26,8 +28,8 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TGx11.1Lib.scad>
 
 $fn = 32;
-outer_threads = "1+1/4-7-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1-8-UNC", "1+1/4-7-UNC"]
-inner_threads = "1/2-13-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "3/4-10-UNC", "1-8-UNC", "1+1/4-7-UNC"]
+outer_threads = "1+1/4-7-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "5/8-11-UNC", "3/4-10-UNC", "7/8-9-UNC", "1-8-UNC", "1+1/8-7-UNC", "1+1/4-7-UNC"]
+inner_threads = "1/2-13-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "5/8-11-UNC", "3/4-10-UNC", "7/8-9-UNC", "1-8-UNC", "1+1/8-7-UNC", "1+1/4-7-UNC"]
 total_height = 19.05;
 head_width   = 38.1;
 head_height  =  6.35;
@@ -234,11 +236,14 @@ threads2_thread_types = [
 	["#8-32-UNC", ["unc", 0.168, 32]],
 	["1/4-20-UNC", ["unc", 0.25, 20]],
 	["3/8-16-UNC", ["unc", 3/8, 16]],
-	["1/2-13-UNC", ["unc", 0.5, 13]],
 	["7/16-14-UNC", ["unc", 7/16, 14]],
+	["1/2-13-UNC", ["unc", 0.5, 13]],
+	["5/8-11-UNC", ["unc", 5/8, 11]],
 	["3/4-10-UNC", ["unc", 3/4, 10]],
+	["7/8-9-UNC", ["unc", 7/8, 9]],
 	["1-8-UNC", ["unc", 1, 8]],
-	["1+1/4-7-UNC", ["unc", 1.25, 7]],
+	["1+1/8-7-UNC", ["unc", 1+1/8, 7]],
+	["1+1/4-7-UNC", ["unc", 1+1/4, 7]],
 ];
 
 function threads2__get_thread_spec(name, index=0) =
