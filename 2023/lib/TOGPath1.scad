@@ -439,8 +439,8 @@ function togpath1_polypoints_to_rath(points, corner_ops=[]) = ["togpath1-rath",
 	for(p=points) ["togpath1-rathnode", p, each corner_ops]
 ];
 
-function togpath1_make_polygon_rath(r, corner_ops=[], position=[0,0]) = ["togpath1-rath",
-	for( i=[0:1:$fn-1] ) ["togpath1-rathnode", [position[0]+r*cos(i*360/$fn), position[1]+r*sin(i*360/$fn)], each corner_ops]
+function togpath1_make_polygon_rath(r, corner_ops=[], position=[0,0], rotation=0) = ["togpath1-rath",
+	for( i=[0:1:$fn-1] ) ["togpath1-rathnode", [position[0]+r*cos(rotation+i*360/$fn), position[1]+r*sin(rotation+i*360/$fn)], each corner_ops]
 ];
 
 function togpath1_make_circle_rath(r, position=[0,0]) = togpath1_make_rectangle_rath(
