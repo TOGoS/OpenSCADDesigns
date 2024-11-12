@@ -1,4 +1,4 @@
-// Threads2.9
+// Threads2.10
 // 
 // New screw threads proto-library
 // 
@@ -24,9 +24,13 @@
 // - togthreads2_mkthreads_v3 takes thread_origin_z parameter;
 //   set to pitch/2 to match v2's thread phase
 // - Allow customization of $tphl1_vertex_deduplication_enabled
+// v2.10:
+// - Fix calculation of bottom_z to never be less than zero
+// - Change phase of v2 threads to match v3 (thread sticks out +x at z=origin)
+// - Set thread origin = top of cap, if there is one
 // 
-// TODO: Change v2 to match v3's phase, which is maybe more intuitive,
-// thread sticks out to +x at z=0.
+// TODO: Proper (based on z-parameters, not stupid, hacky taper_function)
+// tapering for v3 threads (and maybe v2 while at it).
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -68,7 +72,7 @@ function togthreads2_layer_params( zparams, pitch ) =
 	];
 
 // rfunc :: z -> phase (0...1) -> r|[x,y]|[x,y,z]
-function togthreads2_zp_to_layers(zs, rfunc) =
+function togthreads2_zp_to_layers(zs, rfunc, thread_origin_z=0) =
 	let($fn = max(3, $fn))
 	let(fixpoint = function(n, p, z)
 		is_num(n) ? [cos(p*360)*n, sin(p*360)*n, z] :
@@ -78,7 +82,7 @@ function togthreads2_zp_to_layers(zs, rfunc) =
 		assert(false, str("Rfunc should return 1..3 values, but it returned ", n)))
 	[
 		for( z=zs ) [
-			for( p=[0:1:$fn-1] ) fixpoint(rfunc(z,p/$fn), p/$fn, z)
+			for( p=[0:1:$fn-1] ) fixpoint(rfunc(z - thread_origin_z, p/$fn), p/$fn, z)
 		]
 	];
 
@@ -113,11 +117,12 @@ function togthreads2_threadradfunc_to_zpfunc(trfunc, pitch, direction="right", t
 
 // V2: Based on the idea of using a function like z -> phase -> r
 // to make it simpler to transform r at a given z
-togthreads2_mkthreads_v2 = function( zrange, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0 )
+togthreads2_mkthreads_v2 = function( zrange, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0, thread_origin_z=0 )
 	let( layer_height = pitch/$fn )
 	let( layers = togthreads2_zp_to_layers(
 		[zrange[0] : layer_height : zrange[1]],
-		togthreads2_threadradfunc_to_zpfunc(radius_function, pitch, direction, taper_function=taper_function, r_offset=r_offset)
+		togthreads2_threadradfunc_to_zpfunc(radius_function, pitch, direction, taper_function=taper_function, r_offset=r_offset),
+		thread_origin_z = thread_origin_z
 	) )
 	tphl1_make_polyhedron_from_layers(layers);
 
@@ -157,7 +162,7 @@ function togthreads2_unc_external_thread_radius_function(basic_diameter, tpi, si
 	function(t, trat=1)
 		let( x = t*2 )
 		togthreads2__clamp(
-		   r0 + trat*H/2 + H*togthreads2__ridge(t),
+		   r0 + trat*H/2 + H*togthreads2__ridge(t - 0.5),
 			rmin, rmax
 		);
 
@@ -281,25 +286,28 @@ function threads2__get_thread_type23(spec) =
 function make_the_post_v2() =
 	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
+	let( bottom_z = max(0, head_height/2) )
 	let( taper_length = 2 )
 	let( specs = threads2__get_thread_spec(outer_threads) )
 	let( pitch = threads2__get_thread_pitch(specs) )
 	let( rfunc = threads2__get_thread_radius_function(specs) )
-	togthreads2_mkthreads([head_height-1, top_z], pitch, rfunc,
+	togthreads2_mkthreads([bottom_z, top_z], pitch, rfunc,
 		taper_function = function(z) 0 - max(0, (z - (top_z - taper_length))/taper_length),
-		r_offset = outer_thread_radius_offset
+		r_offset = outer_thread_radius_offset,
+		thread_origin_z = head_height
 	);
 
 function make_the_post_v3() =
 	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
+	let( bottom_z = max(0, head_height/2) )
 	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
 	let( type23 = threads2__get_thread_type23(outer_threads) )
 	togthreads2_mkthreads_v3(
-		[head_height-1, top_z], type23,
+		[bottom_z, top_z], type23,
 		r_offset = outer_thread_radius_offset,
 		end_mode = "blunt",
-		thread_origin_z = type23[1]/2 // To match phase of v2
+		thread_origin_z = head_height
 	);
 
 the_post = thread_polyhedron_algorithm == "v2" ? make_the_post_v2() : make_the_post_v3();
