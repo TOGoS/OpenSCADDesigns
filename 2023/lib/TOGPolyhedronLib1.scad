@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.9
+// TOGPolyhedronLib1.10
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -35,6 +35,11 @@
 //   upper-right ("right") or lower-right to upper-left ("left").
 //   This may be useful when generating right or left-handed screw
 //   threads, respectively.  Default is "right".
+// v1.10:
+// - $tphl1_vertex_deduplication_enabled, if set to false,
+//   will prevent the usual vertex deduplication from happening.
+//   May be useful if you have a lot of vertexes and know that
+//   they are all unique.
 
 // Winding order:
 // 
@@ -138,9 +143,11 @@ function tphl1_make_polyhedron_from_layers(layers, cap_bottom=true, cap_top=true
 		str("Layers differ in point count, from ", minmax_layer_count[0], " to ", minmax_layer_count[1]))
 	let(points1 = tphl1_points(layers, len(layers[0])))
 	let(faces1  = tphl1_faces(layers, len(layers[0]), cap_bottom=cap_bottom, cap_top=cap_top))
+	let(dedup_enabled = is_undef($tphl1_vertex_deduplication_enabled) || $tphl1_vertex_deduplication_enabled)
+	!dedup_enabled ? ["polyhedron-vf", points1, faces1] :
 	let(vertex_remap_result = tal1_uniq_remap_v2(points1))
 	let(points2 = vertex_remap_result[1])
-	let(faces2 = tphl1__remap_face_vertexes(faces1, vertex_remap_result[2]))
+	let(faces2  = tphl1__remap_face_vertexes(faces1, vertex_remap_result[2]))
 	["polyhedron-vf", points2, faces2];
 
 function tphl1_make_polyhedron_from_layer_function(layer_keys, layer_points_function, cap_bottom=true, cap_top=true) =

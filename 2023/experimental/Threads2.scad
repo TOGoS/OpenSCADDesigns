@@ -1,4 +1,4 @@
-// Threads2.8
+// Threads2.9
 // 
 // New screw threads proto-library
 // 
@@ -20,6 +20,13 @@
 // - Make 'v3' the default algorith, since it's faster
 // v2.8:
 // - Add 5/8-11-UNC, 7/8-9-UNC, and 1+1/8-7-UNC thread options
+// v2.9:
+// - togthreads2_mkthreads_v3 takes thread_origin_z parameter;
+//   set to pitch/2 to match v2's thread phase
+// - Allow customization of $tphl1_vertex_deduplication_enabled
+// 
+// TODO: Change v2 to match v3's phase, which is maybe more intuitive,
+// thread sticks out to +x at z=0.
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -39,6 +46,8 @@ head_surface_offset = -0.1;
 outer_thread_radius_offset = -0.1;
 inner_thread_radius_offset =  0.3;
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
+// This is here so I can see if disabling vertex deduplication speeds things up at all.
+$tphl1_vertex_deduplication_enabled = false;
 
 module __threads2_end_params() { }
 
@@ -168,7 +177,7 @@ function togthreads2_demo_thread_radius_function(diam,pitch) =
 //   - You probably want this for outer threads
 // - "flush" to have threads continue all the way to the end
 //   - You probably want this for inner threads
-function togthreads2_mkthreads_v3(zrange, type23, direction="right", r_offset=0, end_mode="flush") =
+function togthreads2_mkthreads_v3(zrange, type23, direction="right", r_offset=0, end_mode="flush", thread_origin_z=0) =
 	assert( !is_undef(r_offset) )
 	assert( zrange[1] > zrange[0] )
 	assert( is_num(type23[1]) )
@@ -188,7 +197,7 @@ function togthreads2_mkthreads_v3(zrange, type23, direction="right", r_offset=0,
 			tphl1_make_polyhedron_from_layer_function(
 				[
 					for( i=[0 : 1 : layer_count-1] ) let( z=thread_zrange[0] + (thread_zrange[1]-thread_zrange[0])*i/layer_count )
-					[ z, (direction == "right" ? 1 : -1) * 360 * z/pitch ] // For 'v2 compatibility', subtract 180
+					[ z, (direction == "right" ? 1 : -1) * 360 * (z - thread_origin_z)/pitch ]
 				],
 				function( za ) let(ang=za[1]) let(sina = sin(ang), cosa = cos(ang)) [
 					for( pp=xspolypoints ) let( ppx = pp[0] + r_offset, ppy = za[0] + pp[1] ) [cosa*ppx, sina*ppx, ppy]
@@ -286,7 +295,12 @@ function make_the_post_v3() =
 	let( top_z = total_height )
 	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
 	let( type23 = threads2__get_thread_type23(outer_threads) )
-	togthreads2_mkthreads_v3([head_height-1, top_z], type23, r_offset = outer_thread_radius_offset, end_mode="blunt");
+	togthreads2_mkthreads_v3(
+		[head_height-1, top_z], type23,
+		r_offset = outer_thread_radius_offset,
+		end_mode = "blunt",
+		thread_origin_z = type23[1]/2 // To match phase of v2
+	);
 
 the_post = thread_polyhedron_algorithm == "v2" ? make_the_post_v2() : make_the_post_v3();
 
@@ -335,6 +349,7 @@ function make_polygon_base(sidecount, width, height) =
 	);
 
 function make_base(shape, width, height) =
+	height <= 0 || width <= 0 ? ["union"] :
 	shape == "square" ? make_polygon_base(4,width,height) :
 	shape == "hexagon" ? make_polygon_base(6,width,height) :
 	shape == "togridpile-chunk" ? tgx11_block([[width,"mm"],[width,"mm"],[height,"mm"]], lip_height=0, bottom_segmentation = "chunk") :
