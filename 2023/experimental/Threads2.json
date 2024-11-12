@@ -147,6 +147,40 @@
 			"outer_threads": "none",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
+		},
+		"p1673": {
+			"_comments": [
+				"Performance testing - solid"
+			],
+			"$fn": "32",
+			"handedness": "right",
+			"head_height": "0",
+			"head_shape": "square",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "none",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1\/4-7-UNC",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "19.05"
+		},
+		"p1674": {
+			"_comments": [
+				"Performance testing - 3/8\" internal threads"
+			],
+			"$fn": "32",
+			"handedness": "right",
+			"head_height": "0",
+			"head_shape": "square",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3\/4-10-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1\/4-7-UNC",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "19.05"
 		}
 	},
 	"parameterSets": "",
