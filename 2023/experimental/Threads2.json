@@ -251,7 +251,7 @@
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
 		},
-		"p1682": {
+		"p1680": {
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"handedness": "right",
@@ -260,9 +260,9 @@
 			"head_surface_offset": "-0.1",
 			"head_width": "38.1",
 			"inner_thread_radius_offset": "0.3",
-			"inner_threads": "1-8-UNC",
+			"inner_threads": "1/2-13-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "3/4-10-UNC",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
 		},
@@ -281,7 +281,7 @@
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
 		},
-		"p1680": {
+		"p1682": {
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"handedness": "right",
@@ -290,9 +290,9 @@
 			"head_surface_offset": "-0.1",
 			"head_width": "38.1",
 			"inner_thread_radius_offset": "0.3",
-			"inner_threads": "1/2-13-UNC",
+			"inner_threads": "1-8-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "3/4-10-UNC",
+			"outer_threads": "1+1/4-7-UNC",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
 		}
