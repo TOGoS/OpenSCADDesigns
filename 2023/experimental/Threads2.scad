@@ -41,16 +41,19 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TGx11.1Lib.scad>
 
 $fn = 32;
+handedness = "right"; // ["right","left"]
 outer_threads = "1+1/4-7-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "5/8-11-UNC", "3/4-10-UNC", "7/8-9-UNC", "1-8-UNC", "1+1/8-7-UNC", "1+1/4-7-UNC"]
+outer_thread_radius_offset = -0.1;
 inner_threads = "1/2-13-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "5/8-11-UNC", "3/4-10-UNC", "7/8-9-UNC", "1-8-UNC", "1+1/8-7-UNC", "1+1/4-7-UNC"]
+inner_thread_radius_offset =  0.3;
+floor_thickness = 0; // 0.01
+floor_threads = "3/8-16-UNC"; // ["none","threads2-demo", "1/4-20-UNC", "3/8-16-UNC", "1/2-13-UNC", "5/8-11-UNC", "3/4-10-UNC", "7/8-9-UNC", "1-8-UNC", "1+1/8-7-UNC", "1+1/4-7-UNC"]
+floor_thread_radius_offset =  0.3;
 total_height = 19.05;
 head_width   = 38.1;
 head_height  =  6.35;
 head_shape = "square"; // ["square","hexagon","togridpile-chunk"]
-handedness = "right"; // ["right","left"]
 head_surface_offset = -0.1;
-outer_thread_radius_offset = -0.1;
-inner_thread_radius_offset =  0.3;
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 // This is here so I can see if disabling vertex deduplication speeds things up at all.
 $tphl1_vertex_deduplication_enabled = false;
@@ -351,7 +354,7 @@ the_post = thread_polyhedron_algorithm == "v2" ? make_the_post_v2() : make_the_p
 the_hole =
 	inner_threads == "none" ? ["union"] :
 	let( specs = threads2__get_thread_spec(inner_threads) )
-	let( bottom_z = 0 )
+	let( bottom_z = floor_thickness )
 	let( top_z = total_height )
 	let( taper_amt = 1 )
 	thread_polyhedron_algorithm == "v2" ? (
@@ -367,10 +370,39 @@ the_hole =
 		let( pitch = type23[1] )
 		togthreads2_mkthreads_v3(
 			[
-				[bottom_z-1      , taper_amt], [bottom_z, taper_amt], [bottom_z+pitch/2,         0],
+				if( bottom_z == 0 ) [bottom_z-1, taper_amt],
+				                               [bottom_z, taper_amt], [bottom_z+pitch/2,         0],
 				[   top_z-pitch/2,         0], [   top_z, taper_amt], [   top_z+1      , taper_amt]
 			],
 			type23, r_offset = inner_thread_radius_offset
+		)
+	);
+
+the_floor_hole =
+	floor_threads == "none" || floor_thickness == 0 ? ["union"] :
+	let( specs = threads2__get_thread_spec(floor_threads) )
+	let( bottom_z = 0 )
+	let( top_z = floor_thickness )
+	top_z <= bottom_z ? ["union"] :
+	let( taper_amt = 1 )
+	thread_polyhedron_algorithm == "v2" ? (
+		let( taper_length = 4 )
+		let( pitch = threads2__get_thread_pitch(specs) )
+		let( rfunc = threads2__get_thread_radius_function(specs) )
+		togthreads2_mkthreads([bottom_z-1, top_z+1], pitch, rfunc,
+			taper_function = function(z) taper_amt * max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
+			r_offset = floor_thread_radius_offset
+		)
+	) : (
+		let( type23 = threads2__get_thread_type23(floor_threads) )
+		let( pitch = type23[1] )
+		togthreads2_mkthreads_v3(
+			[
+				if( bottom_z == 0 ) [bottom_z-1, taper_amt],
+				                               [bottom_z, taper_amt], [bottom_z+pitch/2,         0],
+				[   top_z-pitch/2,         0], [   top_z, taper_amt], [   top_z+1      , taper_amt]
+			],
+			type23, r_offset = floor_thread_radius_offset
 		)
 	);
 
@@ -415,5 +447,6 @@ togmod1_domodule(["difference",
 		the_post,
 		the_cap
 	],
-	the_hole
+	the_hole,
+	the_floor_hole
 ]);
