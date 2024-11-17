@@ -65,9 +65,7 @@
 			"total_height": "6.35"
 		},
 		"p1666": {
-			"_comments": [
-				"A 1/4\"-inch thick 1/4\"-20 hex nut."
-			],
+			"description": "1/4\"-20 hex nut, 1/4\" thick",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -149,9 +147,7 @@
 			"total_height": "25.4"
 		},
 		"p1673": {
-			"_comments": [
-				"Performance testing - solid"
-			],
+			"description": "3/4\" 1+1/4\"-7 threaded rod for performance testing",
 			"$fn": "32",
 			"handedness": "right",
 			"head_height": "0",
@@ -166,9 +162,7 @@
 			"total_height": "19.05"
 		},
 		"p1674": {
-			"_comments": [
-				"Performance testing - 3/8\" internal threads"
-			],
+			"description": "3/4\" 1+1/4\"-7 threaded rod with 3/4\" internal threads for performance testing",
 			"$fn": "32",
 			"handedness": "right",
 			"head_height": "0",
@@ -183,9 +177,7 @@
 			"total_height": "19.05"
 		},
 		"p1675": {
-			"_comments": [
-				"1\" bolt with 3/4\" internal threads"
-			],
+			"description": "1\" bolt with 3/4\" internal threads",
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"handedness": "right",
@@ -201,9 +193,7 @@
 			"total_height": "25.4"
 		},
 		"p1676": {
-			"_comments": [
-				"1+1/2\" block with 3/4-10-UNC hole through the middle."
-			],
+			"description": "1+1/2\" block with 3/4-10-UNC hole through the middle.",
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"handedness": "right",
@@ -219,9 +209,7 @@
 			"total_height": "38.1"
 		},
 		"p1677": {
-			"_comments": [
-				"Hex nut with 1-8-UNC internal threads."
-			],
+			"description": "Hex nut with 1-8-UNC internal threads.",
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"handedness": "right",
@@ -351,15 +339,50 @@
 			"total_height": "19.05"
 		},
 		"p1688": {
-			"_comments": {
-				"1+1/4-7-UNC bolt with 1mm thick floor with 8mm hole in bottom,",
-				"for holding one of those 2.1mm barrel jacks"
-			],
+			"description": "2.1mm barrel jack holder",
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"floor_thickness": "1",
 			"floor_thread_radius_offset": "0.3",
 			"floor_threads": "straight-8mm",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "square",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "1-8-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1/4-7-UNC",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "19.05"
+		},
+		"p1689": {
+			"description": "GX12 port holder",
+			"$fn": "64",
+			"$tphl1_vertex_deduplication_enabled": "false",
+			"floor_thickness": "1",
+			"floor_thread_radius_offset": "0.2",
+			"floor_threads": "straight-12mm",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "square",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "1-8-UNC",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1/4-7-UNC",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "19.05"
+		},
+		"p1690": {
+			"description": "GX16 port holder",
+			"$fn": "64",
+			"$tphl1_vertex_deduplication_enabled": "false",
+			"floor_thickness": "1",
+			"floor_thread_radius_offset": "0.2",
+			"floor_threads": "straight-16mm",
 			"handedness": "right",
 			"head_height": "6.35",
 			"head_shape": "square",

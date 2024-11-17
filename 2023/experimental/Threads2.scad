@@ -1,4 +1,4 @@
-// Threads2.13
+// Threads2.14
 // 
 // New screw threads proto-library
 // 
@@ -38,6 +38,8 @@
 // - Thread parameters now free-form
 // - Allow arbitrary D-P-UNC and straight-Dmm (or other unit) to be used for floor hole
 // - Outer/inner threads don't yet support straight threads
+// v2.14:
+// - Add 'description' parameter so you have a description that shows in customizer
 // 
 // TODO: Refactor outer/inner threads to use threads2__to_polyhedron
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function
@@ -48,7 +50,9 @@ use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TGx11.1Lib.scad>
 
-$fn = 32;
+// Put your comment about this preset here
+description = "";
+
 handedness = "right"; // ["right","left"]
 // e.g. "straight-5mm", "1+1/4-7-UNC"
 outer_threads = "1+1/4-7-UNC";
@@ -66,6 +70,7 @@ head_surface_offset = -0.1;
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 // This is here so I can see if disabling vertex deduplication speeds things up at all.
 $tphl1_vertex_deduplication_enabled = false;
+$fn = 32;
 
 module __threads2_end_params() { }
 
