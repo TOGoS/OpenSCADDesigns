@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.6.2
+// MonitorMountRouterJig-v1.7
 // 
 // Versions:
 // v1.0:
@@ -32,9 +32,12 @@
 // - Matchfit grooves in the MMP-2315 panel, if thick enough
 // v1.6.2:
 // - Update reference to togpath1_qath_to_polypoints
+// v1.7:
+// - Add MMP-2316, a 7.5" square panel, implemented as a 2312ish
+//   with some special case logic for 5-chunk panels.
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] **/
@@ -90,6 +93,16 @@ function get_alignment_hole_positions(style) =
 function make_2312ish(size) =
 let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
 [size, [
+	// Slots
+	// Special case.
+	// TODO: No special case.  :/
+	// TODO: Avoid hardcoding chunk = 1.5*inch?
+	// TODO: Abstract this to a function, get_2312ish_for_hole_pattern(size_chunks[1])
+	if( size_chunks[1] == 5 )
+	for( ym=[-size_chunks[1]/2+1.33, size_chunks[1]/2-1.33] )
+		["back-counterbored-slot", [[0, (ym-0.67)*1.5*inch], [0, (ym+0.67)*1.5*inch]]],
+	// Ye olde fashioned multiples of 2 chunks
+	if( size_chunks[1] != 5 )
 	for( ym=[-size_chunks[1]/2+2 : 2 : size_chunks[1]/2-2] )
 		["back-counterbored-slot", [[0, (ym-0.5)*1.5*inch], [0, (ym+0.5)*1.5*inch]]],
 	
@@ -134,6 +147,7 @@ function get_panel_info(style) =
 	style == "MMP-2313" ? make_2312ish([4.5*inch, 12*inch]) :
 	style == "MMP-2314" ? make_2312ish([6.0*inch, 12*inch]) :
 	style == "MMP-2315" ? make_2315ish([6.0*inch,  6*inch], [1*inch,3*inch]) :
+	style == "MMP-2316" ? make_2312ish([7.5*inch, 7.5*inch]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGMod1.scad>
