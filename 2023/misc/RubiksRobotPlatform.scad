@@ -151,16 +151,30 @@ module USBSlot()
 };
 
 
+use <../lib/TOGMod1.scad>
+use <../lib/TOGPolyhedronLib1.scad>
+
+// Versions:
+// p1695:
+// - The original!
+// p1696:
+// - Round inner and outer corners a little
+// - Higher $fn
+
+$fn = 64;
+
 rotate([180,0,0])
 union()
 {
 difference()
 {
-  cube([boxLength,boxWidth,boxHeight]);
-  translate([wallThickness, wallThickness,-0.01])
-    cube([boxLength-2*wallThickness,
-          boxWidth-2*wallThickness,
-          boxHeight-floorThickness]);
+  //cube([boxLength,boxWidth,boxHeight]);
+  togmod1_domodule(["translate", [boxLength/2, boxWidth/2, boxHeight/2], tphl1_make_rounded_cuboid([boxLength,boxWidth,boxHeight], r=[6,6,0])]);
+  togmod1_domodule(["translate", [boxLength/2, boxWidth/2, 0], tphl1_make_rounded_cuboid([boxLength-wallThickness*2,boxWidth-wallThickness*2,boxHeight*2-wallThickness*2], r=[3,3,0])]);
+  //translate([wallThickness, wallThickness,-0.01])
+  //  cube([boxLength-2*wallThickness,
+  //        boxWidth-2*wallThickness,
+  //        boxHeight-floorThickness]);
   translate([22,13,ceilingHeight])
     union()
     {  
