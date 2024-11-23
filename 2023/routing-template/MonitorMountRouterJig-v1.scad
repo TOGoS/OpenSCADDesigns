@@ -190,20 +190,6 @@ function make_thl_1002_hole(pos=[0,0,0]) = tphl1_make_polyhedron_from_layers([
 	circle_points_with_z(13/2, [pos[0], pos[1], pos[2]+  10  ])
 ]);
 
-module fat_polyline(diameter, points) {
-	assert(is_list(points))
-	assert(len(points) == 0 || is_list(points[1]))
-	if( len(points) == 0 ) {
-	} else if( len(points) == 1 ) {
-		translate(points[0]) circle(d=diameter);
-	} else {
-		for( i=[0 : 1 : len(points)-2] ) hull() {
-			translate(points[i  ]) circle(d=diameter);
-			translate(points[i+1]) circle(d=diameter);
-		}
-	}
-}
-
 function make_oval(r, p0, p1) = togmod1_make_polygon(togpath1_qath_to_polypoints(togpath1_polyline_to_qath([p0,p1],r)));
 
 function jj_is_pointlist(points, dims=2, offset=0) =
