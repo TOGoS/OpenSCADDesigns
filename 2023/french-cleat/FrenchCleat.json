@@ -264,6 +264,16 @@
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1697": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[5, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
 		}
 	},
 	"parameterSets": "",
