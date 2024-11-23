@@ -1,4 +1,4 @@
-// FrenchCleat-v1.8
+// FrenchCleat-v1.9
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -24,6 +24,8 @@
 // v1.8:
 // - Add experimental 'atom-rows-f' backside texture, which is supposed to
 //   give some of the grippy benefit of tgx11-atom-f but in a less restrictive way.
+// v1.9:
+// - Allow vertical slots for THL-1006 holes by setting slot_height > 0
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
@@ -32,6 +34,7 @@ length_ca = [6, "inch"];
 mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
 opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
 hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u"]
+slot_height = 0;
 
 mode = "X"; // ["X", "Z", "tester"]
 
@@ -167,18 +170,22 @@ function make_fc_hull(direction, length) = tphl1_make_polyhedron_from_layer_func
 	direction == "X" ? [x, point[0], point[1]] : [point[0], point[1], x]
 ]);
 
+/*
 counterbored_hole = tphl1_make_polyhedron_from_layer_function([
 	[zn-1                ,        hole_diameter],
 	[zp-counterbore_depth,        hole_diameter],
 	[zp-counterbore_depth, counterbore_diameter],
 	[zp+1                , counterbore_diameter]
 ], function(params) togmod1_circle_points(d=params[1], pos=[0,0,params[0]]));
+*/
+
+_hole_style = hole_style == "GB-counterbored" ? "THL-1006-3/16in" : hole_style;
 
 hole =
-	hole_style == "GB-counterbored" ? counterbored_hole :
-	hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
-	hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], tog_holelib2_hole("THL-1005", inset=5*25.4/16)] :
-	["translate", [0,0,zp], tog_holelib2_hole(hole_style)];
+	_hole_style == "GB-counterbored" ? counterbored_hole :
+	_hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
+	_hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], tog_holelib2_hole("THL-1005", inset=5*25.4/16)] :
+	["translate", [0,0,zp], tog_holelib2_slot(_hole_style, [-20, 0, 20], slot_height == 0 ? [[0,0]] : [[0,slot_height/2],[0,-slot_height/2]])];
 
 hole_spacing =
 	(hole_style == "GB-counterbored" || hole_style == "THL-1002") ? 38.1 : 12.7;

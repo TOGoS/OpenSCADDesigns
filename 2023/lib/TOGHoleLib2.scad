@@ -1,4 +1,4 @@
-// TOGHoleLib2.13
+// TOGHoleLib2.14
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -37,9 +37,15 @@
 // - Adjust the hole remedy technique somewhat
 // v2.13:
 // - Allow bore_d to be overridden for THL-1002 holes
+// v2.14:
+// - tog_holelib2_slot, which can currently make THL-1006[-3/16in] slots,
+//   and will fall back to using tog_holelib2_hole for any single-point slots
+// - 'THL-1006-3/16in' hole type
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
+use <./TOGPath1.scad>
+use <./TOGVecLib0.scad>
 
 function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
 	assert(bore_d <= neck_d, str("bore_d (", bore_d, ") > neck_d (", neck_d, ")"))
@@ -146,8 +152,8 @@ function tog_holelib2___mkhole1006ish(
 	let(_flangefn = max(1,round(min(_flange,$fn/4)))) // At most one segment per mm
 	let(zds=[
 		[-depth, bore_diam],
-		[-inset, bore_diam],
-		[-inset, counterbore_diam],
+		[-_inset, bore_diam],
+		[-_inset, counterbore_diam],
 		if( _flange > 0 ) each [
 			for( am=[0 : 1 : _flangefn] ) let( a=-90 + 90*am/_flangefn) [(cos(a)-1)*_flange, counterbore_diam + (1 + sin(a))*2*_flange]
 		],
@@ -200,6 +206,7 @@ function tog_holelib2_hole(
 	// Overridable for some styles
 	bore_d=undef
 ) =
+	let(inch = 25.4)
 	type_name == "none" ? ["union"] :
 	type_name == "THL-1001" ? tog_holelib2_hole1001(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset, bore_d=bore_d) :
@@ -207,6 +214,48 @@ function tog_holelib2_hole(
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	type_name == "THL-1005" ? tog_holelib2_hole1005(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1006" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=inset, flange_radius=flange_radius) :
+	type_name == "THL-1006-3/16in" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=3/16*inch, flange_radius=flange_radius) :
 	type_name == "THL-1007" ? tog_holelib2_hole1007(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
+
+// hole_zds = ["tog-holelib2-holezds", [[zbottomfact, zsurfacefactor, ztopfactor, onefactor], diameter], ...]
+function tog_holelib2__decode_holezds(type, inset=undef) =
+	let(inch = 25.4)
+	// TODO: More generically parse the third token as inset, be it 3/16in or 5u
+	type == "THL-1006-3/16in" ? tog_holelib2__decode_holezds("THL-1006", inset=3/16*inch) :
+	is_list(type) && type[0] == "tog-hgolelib2-holezds" ? type :
+	type == "THL-1006" ? let(_inset=is_undef(inset)?3.175:inset) ["tog-holelib2-holezds",
+		[[1, 0, 0, -5/32*inch],    0     ],
+		[[1, 0, 0,  0        ], 5/16*inch],
+		[[0, 1, 0, -_inset   ], 5/16*inch], // 5/16*inch, 7/8*inch, default_counterbore_depth=3.175
+		[[0, 1, 0, -_inset   ],  7/8*inch],
+		[[0, 0, 1,  0        ],  7/8*inch],
+		[[0, 0, 1,  7/16*inch],    0     ],
+	] :
+	assert(false, str("Unrecognized (to decode_holezds) hole type: ", type));
+
+// zs = [z_bottom_of_hole, z_surface, z_top_of_overhead_bore]
+function tog_holelib2_slot(type, zs, points) =
+	// Fall back to the classic implementation
+	// for single-point holes until everything's ported over
+	// to the holezds system:
+	is_string(type) && len(points) == 1 ?
+		["translate", points[0],
+			["translate", [0,0,zs[1]],
+				tog_holelib2_hole(type, depth=-zs[0]-zs[1], overhead_bore_height=zs[2]-zs[1])]] :
+
+	echo(points=points)
+	let( holezds = tog_holelib2__decode_holezds(type) )
+	let( zds = [for(i=[1:1:len(holezds)-1])
+		let(hzd=holezds[i])
+		echo(hzd)
+		[hzd[0][0]*zs[0] + hzd[0][1]*zs[1] + hzd[0][2]*zs[2] + hzd[0][3]*1, hzd[1]]
+	] )
+	tphl1_make_polyhedron_from_layer_function(
+		zds,
+		function(zd) let(z=zd[0], r=max(0.01, zd[1]/2)) echo(z=z, r=r) togvec0_offset_points(
+			let(polypoints=togpath1_rath_to_polypoints(togpath1_polyline_to_rath(points, r, "round"))) echo(polypoints=polypoints) polypoints,
+			z
+		)
+   );
