@@ -1,4 +1,4 @@
-// BucketTableAdapter1.2
+// BucketTableAdapter1.3
 // 
 // Bolt it to the bottom of a 'table top' so that the whole thing can
 // sit relatively securely on top of a 5-gallon bucket.
@@ -8,6 +8,9 @@
 // - Holes in the 'floot' (or 'ceiling')
 // v1.2:
 // - Allow finer adjustments to parameters
+// v1.3:
+// - Add an optional (if inner_rim_height > outer_rim_height) inner rim
+// - Rename 'thickness' parameter to 'outer_rim_height'
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -15,11 +18,13 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGArrayLib1.scad>
 
-thickness           =  12.7;   // 0.01
+outer_rim_height    =  12.7;   // 0.01
+min_rim_width       =   6.35;  // 0.01
 // 311mm = about 12+1/4"
 lid_pocket_diameter = 311;     // 0.1
 lid_pocket_depth    =   9.525; // 0.01
-min_rim_width       =   6.35;  // 0.01
+inner_rim_width     =   3.175;
+inner_rim_height    =   0;     // 0.01
 hole_grid_size      =  38.1;   // 0.01
 $fn = 32;
 
@@ -37,7 +42,10 @@ function bta1__clamp(v, min, max) =
 function bta1__dist(a, b) =
 	sqrt(pow(a[0]-b[0], 2) + pow(a[1]-b[1],2));
 
-gb_hole = tphl1_make_z_cylinder(zrange=[-1, thickness+1], d=5/16*25.4);
+total_height  = max(inner_rim_height, outer_rim_height);
+z_high = total_height+1;
+
+gb_hole = tphl1_make_z_cylinder(zrange=[-1, z_high], d=5/16*25.4);
 gb_ring_2d = togmod1_make_circle(d=25.4);
 
 function generate_grid_positions( ang_to_guess_func, guess_to_grid_func, validity_check ) =
@@ -78,15 +86,22 @@ rim_hole_positions =
 	);
 echo(len(rim_hole_positions));
 
+function bta1__circle(r) =
+	togmod1_make_circle(d=r*2, $fn=bta1__clamp(r, $fn, 365));
+
 togmod1_domodule(["difference",
 	// TODO: Grating instead of solid floor?
-
-	togmod1_linear_extrude_z([0, thickness], ["hull",
-		togmod1_make_circle(d=min_outer_diameter, $fn=bta1__clamp(min_outer_diameter/2, $fn, 365)),
-		for( h=rim_hole_positions ) ["translate", h, gb_ring_2d]
-	]),
+	["union",
+		togmod1_linear_extrude_z([0, outer_rim_height], ["hull",
+		   bta1__circle(min_outer_diameter/2),
+			for( h=rim_hole_positions ) ["translate", h, gb_ring_2d]
+		]),
+		// Inner rim
+		if( inner_rim_height > outer_rim_height )
+		togmod1_linear_extrude_z([0, inner_rim_height], bta1__circle(lid_pocket_diameter/2+inner_rim_width)),
+	],
 	
-	tphl1_make_z_cylinder(zrange=[lid_pocket_depth >= thickness ? -1 : thickness-lid_pocket_depth, thickness+1],
+	tphl1_make_z_cylinder(zrange=[lid_pocket_depth >= total_height ? -1 : total_height-lid_pocket_depth, z_high],
 		d=lid_pocket_diameter, $fn=bta1__clamp(lid_pocket_diameter/2, $fn, 365)),
 	for( h=rim_hole_positions ) ["translate", h, gb_hole],
 	for( h=floor_hole_positions ) ["translate", h, gb_hole],

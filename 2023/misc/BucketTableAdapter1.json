@@ -6,7 +6,17 @@
 			"lid_pocket_depth": "6.35",
 			"lid_pocket_diameter": "311",
 			"min_rim_width": "6.35",
-			"thickness": "6.35"
+			"outer_rim_height": "6.35"
+		},
+		"p1700": {
+			"$fn": "32",
+			"hole_grid_size": "38.1",
+			"inner_rim_height": "12.7",
+			"inner_rim_width": "3.175",
+			"lid_pocket_depth": "12.7",
+			"lid_pocket_diameter": "311",
+			"min_rim_width": "6.35",
+			"outer_rim_height": "3.175"
 		}
 	},
 	"parameterSets": "",
