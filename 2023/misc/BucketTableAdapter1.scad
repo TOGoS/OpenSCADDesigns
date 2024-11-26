@@ -1,4 +1,4 @@
-// BucketTableAdapter1.1
+// BucketTableAdapter1.2
 // 
 // Bolt it to the bottom of a 'table top' so that the whole thing can
 // sit relatively securely on top of a 5-gallon bucket.
@@ -6,6 +6,8 @@
 // Versions:
 // v1.1:
 // - Holes in the 'floot' (or 'ceiling')
+// v1.2:
+// - Allow finer adjustments to parameters
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -13,13 +15,13 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGArrayLib1.scad>
 
-thickness = 12.7;
+thickness           =  12.7;   // 0.01
+// 311mm = about 12+1/4"
+lid_pocket_diameter = 311;     // 0.1
+lid_pocket_depth    =   9.525; // 0.01
+min_rim_width       =   6.35;  // 0.01
+hole_grid_size      =  38.1;   // 0.01
 $fn = 32;
-lid_pocket_diameter = 311; // About 12+1/4"
-lid_pocket_depth = 9.525; // 3/8"
-min_rim_width = 6.35;
-hole_grid_size = 38.1; // 0.01
-// outer_diameter = 342; // Just under 13.5"
 
 module __akjdnweubd__end_params() { }
 
