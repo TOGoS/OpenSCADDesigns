@@ -1663,7 +1663,7 @@
 			"chunk_pitch_atoms": "3",
 			"cup_holder_depths": "[55]",
 			"cup_holder_diameters": "[15.2]",
-			"cup_holder_wall_thickness": "2",
+			"cup_holder_wall_thicknesses": "[2,2]",
 			"fingerslide_radius": "0",
 			"floor_thickness": "38.1",
 			"foot_segmentation": "chunk",

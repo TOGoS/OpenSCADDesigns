@@ -1,4 +1,4 @@
-// TGx9.5.33 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
+// TGx9.5.34 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -183,7 +183,13 @@
 // v9.5.32:
 // - Cup holder becomes an array of cup holders if cup_holder_wall_thickness is positive
 // v9.5.33:
-// - cup_holder_wall_thickness can be [Nmm,Num] for separate X/Y thicknesses
+// - `cup_holder_wall_thickness` can be [Nmm,Num] for separate X/Y thicknesses
+// v9.5.34:
+// - `cup_holder_wall_thickness` replaced entirely with `cup_holder_wall_thicknesses`,
+//   since OpenSCAD didn't respect a scalar value from presets (e.g. p1661),
+//   which means the preset had to be updated, anyway.
+// - cup_holder_bottom_bevel_size is configurable to any value >= 0
+// - Changes to $fn clamping thanks to TGx9.4Lib-v1.30.
 
 /* [Atom/chunk/block size] */
 
@@ -263,7 +269,8 @@ cup_holder_diameters = [];
 // Depths of cup holder cutouts, from innermost to outermost
 cup_holder_depths = [];
 // Space between 'cup holders'; can be Num or [Num,Num]; if >= 0, an array of cup holders will be made
-cup_holder_wall_thickness = [-1,-1];
+cup_holder_wall_thicknesses = [-1,-1];
+cup_holder_bottom_bevel_size = 1.5;
 
 mug_handle_cutout_depth = 0;
 mug_handle_cutout_width = 0;
@@ -628,10 +635,6 @@ function has_any_negative_values(vec, index=0) =
 	has_any_negative_values(vec, index=index+1);
 
 cup_holder_max_diameter = tal1_reduce(0, cup_holder_diameters, function(a,b) max(a,b));
-cup_holder_wall_thicknesses =
-	is_num(cup_holder_wall_thickness) ? [cup_holder_wall_thickness, cup_holder_wall_thickness] :
-	tal1_is_vec_of_num(cup_holder_wall_thickness, 2) ? cup_holder_wall_thickness :
-	assert(false, str("cup_holder_wall_thickness should be Num or [Num,Num]"));
 cup_holder_array_cell_size = [
 	cup_holder_max_diameter + cup_holder_wall_thicknesses[0],
 	cup_holder_max_diameter + cup_holder_wall_thicknesses[1],
@@ -646,8 +649,10 @@ cup_holder_array_size =
 
 cup_holder_cutout = ["union",
 	for(i=[0 : 1 : len(cup_holder_diameters)-1])
-		if(cup_holder_diameters[i] > 0 && cup_holder_depths[i] > 0)
-			["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2,u]
+		let(diam = cup_holder_diameters[i])
+		if(diam > 0 && cup_holder_depths[i] > 0)
+		let(bev = min(cup_holder_bottom_bevel_size, diam))
+			["beveled_cylinder",cup_holder_diameters[i],cup_holder_depths[i]*2, bev]
 ];
 
 cup_holder_array_cutout = ["union",

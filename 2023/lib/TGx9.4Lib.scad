@@ -64,6 +64,10 @@
 // - Add support for block_bottom_ops
 // v1.28:
 // - Fix that lip_segmentation was not a parameter to tgx9_cup or tgx9_cup_top
+// v1.29:
+// - [tgx9_]beveled_cylinder will make a regular cylinder if bevel_size == 0
+// v1.30:
+// - Change how beveled_cylinder calculates effective $fn to clamp between radius and 360
 
 use <../lib/TOGShapeLib-v1.scad>
 use <../lib/TOGridLib3.scad>
@@ -359,16 +363,22 @@ module tgx9_extrude_along_loop(path, rot_epsilon=0) {
 }
 
 module tgx9_beveled_cylinder(d, h, bevel_size) {
-	assert(bevel_size < d/2);
-	assert(bevel_size < h/2);
-	rotate_extrude(angle=360) polygon([
-		[             0,-h/2           ],
-		[d/2-bevel_size,-h/2           ],
-		[d/2           ,-h/2+bevel_size],
-		[d/2           ,-h/2+bevel_size],
-		[d/2-bevel_size,+h/2           ],
-		[             0,+h/2           ]
-	]);
+	assert(bevel_size >= 0);
+	if( bevel_size == 0 ) {
+		cylinder(d=d, h=h, center=true);
+	} else {
+		// Lol I sure did things weird before TOGPolyhedronLib1
+		assert(bevel_size < d/2);
+		assert(bevel_size < h/2);
+		rotate_extrude(angle=360) polygon([
+			[             0,-h/2           ],
+			[d/2-bevel_size,-h/2           ],
+			[d/2           ,-h/2+bevel_size],
+			[d/2           ,-h/2+bevel_size],
+			[d/2-bevel_size,+h/2           ],
+			[             0,+h/2           ]
+		]);
+	}
 }
 
 module tgx9_linear_extrude_x_nicked(h, d, bevel_size=3.175) {
@@ -437,9 +447,9 @@ module tgx9_do_sshape(shape) {
 	} else if( type == "cylinder" ) {
 		cylinder(d=shape[1], h=shape[2], center=true);
 	} else if( type == "beveled_cylinder" ) {
-		// TODO: Calculate $fn based on what it is anyway, and some max based on diameter,
-		// or make a ["fn", 123, [...]] sshape form
-		tgx9_beveled_cylinder($fn=72, d=shape[1], h=shape[2], bevel_size=shape[3]);
+		diam = shape[1];
+		clamp = function(v, v_min, v_max) v < v_min ? v_min : v > v_max ? v_max : v;
+		tgx9_beveled_cylinder($fn=clamp($fn, diam/2, 360), d=diam, h=shape[2], bevel_size=shape[3]);
 	} else if( tog_holelib_is_hole_type(type) ) {
 		tog_holelib_hole(type, depth=shape[1], overhead_bore_height=shape[2]);
 	} else if( type == "tgx9_cavity_cube" ) {
