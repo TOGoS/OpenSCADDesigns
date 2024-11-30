@@ -1,4 +1,4 @@
-// TGx9.5.32 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
+// TGx9.5.33 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -182,6 +182,8 @@
 // - Reduce width and corner radius of overcav[ity]
 // v9.5.32:
 // - Cup holder becomes an array of cup holders if cup_holder_wall_thickness is positive
+// v9.5.33:
+// - cup_holder_wall_thickness can be [Nmm,Num] for separate X/Y thicknesses
 
 /* [Atom/chunk/block size] */
 
@@ -260,8 +262,8 @@ cavity_corner_radius = -1;
 cup_holder_diameters = [];
 // Depths of cup holder cutouts, from innermost to outermost
 cup_holder_depths = [];
-// Space between 'cup holders'; if >= 0, an array of cup holders will be made
-cup_holder_wall_thickness = -1;
+// Space between 'cup holders'; can be Num or [Num,Num]; if >= 0, an array of cup holders will be made
+cup_holder_wall_thickness = [-1,-1];
 
 mug_handle_cutout_depth = 0;
 mug_handle_cutout_width = 0;
@@ -620,14 +622,26 @@ let( finger_notch_depth = cell_size[0]-xq )
 
 use <../lib/TOGArrayLib1.scad>
 
+function has_any_negative_values(vec, index=0) =
+	index >= len(vec) ? false :
+	vec[index] < 0 ? true :
+	has_any_negative_values(vec, index=index+1);
+
 cup_holder_max_diameter = tal1_reduce(0, cup_holder_diameters, function(a,b) max(a,b));
-cup_holder_array_cell_size = cup_holder_max_diameter+cup_holder_wall_thickness;
+cup_holder_wall_thicknesses =
+	is_num(cup_holder_wall_thickness) ? [cup_holder_wall_thickness, cup_holder_wall_thickness] :
+	tal1_is_vec_of_num(cup_holder_wall_thickness, 2) ? cup_holder_wall_thickness :
+	assert(false, str("cup_holder_wall_thickness should be Num or [Num,Num]"));
+cup_holder_array_cell_size = [
+	cup_holder_max_diameter + cup_holder_wall_thicknesses[0],
+	cup_holder_max_diameter + cup_holder_wall_thicknesses[1],
+];
 cup_holder_array_size =
 	cup_holder_max_diameter <= 0 ? [0,0] :
-	cup_holder_wall_thickness < 0 ? [1,1] :
+	has_any_negative_values(cup_holder_wall_thicknesses) ? [1,1] :
 	[
-		floor((block_size[0] - wall_thickness*2 + cup_holder_wall_thickness) / cup_holder_array_cell_size),
-		floor((block_size[1] - wall_thickness*2 + cup_holder_wall_thickness) / cup_holder_array_cell_size),
+		floor((block_size[0] - wall_thickness*2 + cup_holder_wall_thicknesses[0]) / cup_holder_array_cell_size[0]),
+		floor((block_size[1] - wall_thickness*2 + cup_holder_wall_thicknesses[1]) / cup_holder_array_cell_size[1]),
 	];
 
 cup_holder_cutout = ["union",
@@ -639,7 +653,7 @@ cup_holder_cutout = ["union",
 cup_holder_array_cutout = ["union",
 	for( xm=[-cup_holder_array_size[0]/2+0.5 : 1 : cup_holder_array_size[0]/2-0.5] )
 	for( ym=[-cup_holder_array_size[1]/2+0.5 : 1 : cup_holder_array_size[1]/2-0.5] )
-	["translate", [xm, ym]*cup_holder_array_cell_size, cup_holder_cutout]
+	["translate", [xm*cup_holder_array_cell_size[0], ym*cup_holder_array_cell_size[1]], cup_holder_cutout]
 ];
 
 
