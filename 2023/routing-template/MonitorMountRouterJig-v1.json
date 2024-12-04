@@ -169,6 +169,24 @@
 			"template_slot_bit_diameter": "8",
 			"template_slot_bushing_diameter": "12",
 			"template_thickness": "3.175"
+		},
+		"p1704": {
+			"alignment_hole_countersink_inset": "1",
+			"counterbore_depth": "4.7625",
+			"counterbore_diameter": "22.225",
+			"gridbeam_hole_countersink_inset": "-3",
+			"mode": "panel-printable",
+			"panel_corner_radius": "19.05",
+			"panel_thickness": "19.05",
+			"preview_fn": "42",
+			"render_fn": "72",
+			"slot_diameter": "8",
+			"style": "MMP-2316",
+			"template_counterbore_bit_diameter": "8",
+			"template_counterbore_bushing_diameter": "12",
+			"template_slot_bit_diameter": "8",
+			"template_slot_bushing_diameter": "12",
+			"template_thickness": "3.175"
 		}
 	},
 	"parameterSets": "",

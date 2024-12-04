@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.7
+// MonitorMountRouterJig-v1.8
 // 
 // Versions:
 // v1.0:
@@ -35,6 +35,10 @@
 // v1.7:
 // - Add MMP-2316, a 7.5" square panel, implemented as a 2312ish
 //   with some special case logic for 5-chunk panels.
+// v1.8:
+// - Add gridbeam_hole_countersink_inset parameter, which can be set
+//   to a negative number to skip countersinking of the gridbeam holes
+//   on panel-printables.
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316"]
@@ -49,6 +53,8 @@ counterbore_diameter = 22.225;
 // 8mm being a close approximation of 5/16"
 slot_diameter       = 8;
 
+// Inset for gridbeam hole countersinks, used when mode = "panel-printable" instead of counterbores.  Set to -3 or lower to not (really) countersink them.
+gridbeam_hole_countersink_inset = 1; // 0.01
 alignment_hole_countersink_inset = 1; // 0.01
 
 /* [Router Template] */
@@ -271,7 +277,7 @@ function decode_cut_for_panel(
 	)
 	let( make_thl_1002_slot = function(points)
 		assert(is_list(points) && len(points) == 1)
-		make_thl_1002_hole([points[0][0], points[0][1], panel_thickness-alignment_hole_countersink_inset])
+		make_thl_1002_hole([points[0][0], points[0][1], panel_thickness-gridbeam_hole_countersink_inset])
 	)
 	cutdesc[0] == "front-counterbored-slot" ? (
 		front_gridbeam_hole_style == "counterbored" ?
