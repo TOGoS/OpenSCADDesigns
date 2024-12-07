@@ -1,0 +1,17 @@
+{
+	"parameterSets": {
+		"p1705": {
+			"$fn": "64",
+			"atom_pitch": "12.7",
+			"bottom_hole_size": "[43, 24]",
+			"cavity_size": "[53, 33]",
+			"description": "Insert for Dellie power brick",
+			"floor_thickness": "3.2",
+			"front_slot_width": "36",
+			"outer_offset": "-0.1",
+			"size_atoms": "[5, 3, 4]"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
