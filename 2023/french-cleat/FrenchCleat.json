@@ -182,7 +182,27 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-
+		"p1659": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[9, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1697": {
+			"_comment": "Same as p1715",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[5, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		
 		"-- p165x series: atom row backs in atom length increments": "",
 		"p1651": {
 			"$tgx11_offset": "-0.1",
@@ -256,20 +276,93 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-		"p1659": {
+		
+		"-- p171x series: wide slots for gridbeam bolts:": "",
+		"p1711": {
 			"$tgx11_offset": "-0.1",
-			"backside_texture": "atom-rows-f",
-			"hole_style": "THL-1005-5u",
-			"length_ca": "[9, \"atom\"]",
-			"mating_edge_style": "S-trimmed-C",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[1, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
 			"mode": "X",
-			"opposite_edge_style": "FFS-trimmed-B"
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
 		},
-		"p1697": {
+		"p1712": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[2, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1713": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[3, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1714": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[4, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1715": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "flat",
 			"hole_style": "GB-counterbored",
 			"length_ca": "[5, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1716": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[6, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1717": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[7, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1718": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[8, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p1719": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[9, \"chunk\"]",
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed",
