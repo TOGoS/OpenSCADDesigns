@@ -4,7 +4,7 @@
 		"TGA221": {
 			"_comments": [
 				"TGA series are named TGA<x><y><z> and are the indicated block size, and otherwise identical, defined as TGx9.5.6,",
-				"as defined by https:\/\/github.com\/TOGoS\/OpenSCADDesigns\/blob\/435f9a2e3aa609d2466f98deacb64663dfd1c8b3\/2023\/togridpile\/TGx9.4.scad"
+				"as defined by https://github.com/TOGoS/OpenSCADDesigns/blob/435f9a2e3aa609d2466f98deacb64663dfd1c8b3/2023/togridpile/TGx9.4.scad"
 			],
 			"$tgx9_force_bevel_rounded_corners": "true",
 			"atom_pitch_u": "8",
