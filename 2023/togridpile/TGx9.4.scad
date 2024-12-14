@@ -1,4 +1,4 @@
-// TGx9.5.34 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
+// TGx9.5.35 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -190,6 +190,12 @@
 //   which means the preset had to be updated, anyway.
 // - cup_holder_bottom_bevel_size is configurable to any value >= 0
 // - Changes to $fn clamping thanks to TGx9.4Lib-v1.30.
+// v9.5.34:
+// - Add thumb notch option, an additional subtraction orthogonal to cavity type;
+//   parameters: thumb_notch_width, thumb_notch_depth, thumb_notch_axis
+// - Add description field
+
+description = "";
 
 /* [Atom/chunk/block size] */
 
@@ -289,6 +295,12 @@ x_tograck_conduit_diameter = 0;
 gencase_open_sides = [0,0,0,0];
 // Size of brick to be subtracted and shown in preview, if non-zero
 gencase_brick_size = [0,0,0];
+
+/* [Additional Cutouts] */
+
+thumb_notch_width = 25.4; // 0.1
+thumb_notch_depth = 0;    // 0.1
+thumb_notch_axis  = "x";  // ["x", "y"]
 
 /* [Detail] */
 
@@ -777,6 +789,12 @@ module tgx9_main_cup() tgx9_cup(
 				]
 			]
 		]],
+		if( thumb_notch_width > 0 && thumb_notch_depth > 0 ) ["subtract",
+			let( r=min(thumb_notch_width,thumb_notch_depth*2)/2.01 )
+			thumb_notch_axis == "x" ? tphl1_make_rounded_cuboid([block_size[0]*2, thumb_notch_width, thumb_notch_depth*2], r=[0,r,r]) :
+			thumb_notch_axis == "y" ? tphl1_make_rounded_cuboid([thumb_notch_width, block_size[0]*2, thumb_notch_depth*2], r=[r,0,r]) :
+			assert(false, str("Bad thumb_notch_axis: '", thumb_notch_axis, "'"))
+		],
 	],
 	lip_chunk_ops = [
 		// if( top_magnet_hole_positions == "all" ) ["subtract", ["union", for(pos=chunk_magnet_hole_positions) ["translate", pos, magnet_hole_sshape]]],
