@@ -1,3 +1,10 @@
+// Versions:
+//
+// v1.100:
+// - Started tracking changes
+// - Fix togpath1_rath_to_polypoints to more properly handle
+//   op lists with consecutive offsets, by merging them.
+
 use <./TOGComplexLib1.scad>
 
 //// Assertion helpers
@@ -403,8 +410,21 @@ function togpath1__rathnode_to_polypoints(pa, pb, pc, rathnode, opindex) =
 	let( newpoints = [pa, each togpath1__rathnode_apply_op(pa, pb, pc, rathnode[opindex]), pc] )
 	[ for( i=[1:1:len(newpoints)-2] ) each togpath1__rathnode_to_polypoints(newpoints[i-1], newpoints[i], newpoints[i+1], rathnode, opindex+1) ];
 
-function togpath1_rath_to_polypoints(rath) =
-	assert(rath[0] == "togpath1-rath")
+
+function togpath1__merge_offsets(oplist, index, curoff=0) =
+	len(oplist) == index ? [["offset", curoff]] :
+	oplist[index][0] == "offset" ? togpath1__merge_offsets(oplist, index+1, curoff+oplist[index][1]) :
+	[if(curoff != 0) ["offset", curoff], oplist[index], each togpath1__merge_offsets(oplist, index+1)];
+
+// 'offset' ops anywhere except for the end of the op lists causes problems for togpath1_rath_to_polypoints.
+// This function is to rewrite op lists to avoid that situation.
+function togpath1__fix_rath(rath) =
+	// TODO: After merging offsets, apply any leading ones.
+	["togpath1-rath",
+		for( i=[1 : 1 : len(rath)-1] ) let(node=rath[i]) ["togpath1-rathnode", node[1], each togpath1__merge_offsets(node, 2)]
+	];
+
+function togpath1__rath_to_polypoints(rath) =
 	let(points = [ for(i=[1:1:len(rath)-1]) rath[i][1] ])
 [
 	for(i=[0:1:len(points)-1])
@@ -413,6 +433,11 @@ function togpath1_rath_to_polypoints(rath) =
 	let( pc = points[ (i+1            )%len(points) ] )
 	each togpath1__rathnode_to_polypoints(pa, pb, pc, rath[i+1], 2)
 ];
+
+function togpath1_rath_to_polypoints(rath) =
+	assert(rath[0] == "togpath1-rath")
+	let(fixed = togpath1__fix_rath(rath))
+	togpath1__rath_to_polypoints(fixed);
 
 // Deprecated name for togpath1_rath_to_polypoints
 function togpath1_rath_to_points(rath) = togpath1_rath_to_polypoints(rath);
