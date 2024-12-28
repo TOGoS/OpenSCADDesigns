@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p1709": {
+			"$fn": "40",
+			"alternate_slot_direction": "true",
+			"chunk_pitch": "20",
+			"size_chunks": "[3, 3]",
+			"slot_size": "[12, 4]",
+			"thickness": "4"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
