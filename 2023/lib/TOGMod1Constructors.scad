@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.6
+// TOGMod1Constructors-v1.7
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -25,6 +25,8 @@
 // v1.6:
 // - togmod1_make_rect makes a simple rectangle
 // - togmod1_make_rounded_rect will defer to togmod1_make_rect when r=0
+// v1.7:
+// - togmod1_make_circle will return empty shape (["union"]) when d=0
 
 use <./TOGArrayLib1.scad>
 
@@ -105,6 +107,7 @@ function togmod1_circle_points(r, pos=[0,0], d=undef) =
 	[for(i=[0 : 1 : fn-1]) finalizepos([r_*cos(i*360/fn), r_*sin(i*360/fn)])];
 
 function togmod1_make_circle(r, pos=[0,0], d=undef) =
+	r == 0 || d == 0 ? ["union"] :
 	togmod1_make_polygon(togmod1_circle_points(r=r, pos=pos, d=d));
 
 function togmod1_make_cylinder(d, zrange=[0,1], r=undef, pos=[0,0]) =
