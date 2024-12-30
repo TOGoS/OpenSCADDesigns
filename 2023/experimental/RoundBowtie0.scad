@@ -1,9 +1,12 @@
-// RoundBowtie0.1
+// RoundBowtie0.2
 // 
 // A curvier 'bowtie' piece.
 // 
 // diamond_r is the distance from the center of the bowtie
 // to the center of one of the 'circles'.
+// 
+// v0.2:
+// - Factor out roundbowtie0_make_bowtie_2d
 
 thickness = 6.35;
 diamond_r = 6.35;
@@ -62,13 +65,16 @@ let(corner_ops = [["round", actual_rounding_r], ["offset", offset]])
 	])	["togpath1-rathnode", v * diamond_r, each corner_ops]
 ];
 
-togmod1_domodule(
+function roundbowtie0_make_bowtie_2d(diamond_r, offset=0, center_hole_d=0) =
    let( hole = togmod1_make_circle(d=center_hole_d) )
-	togmod1_linear_extrude_z([0, thickness], ["difference",
+	["difference",
 		togmod1_make_polygon(togpath1_rath_to_polypoints(
 			roundbowtie0_make_bowtie_rath(diamond_r, offset)
 		)),
 		
 		for( xm=[-1,1] ) ["translate", [xm*diamond_r,0,0], hole],
-	])
+	];
+
+togmod1_domodule(
+	togmod1_linear_extrude_z([0, thickness], roundbowtie0_make_bowtie_2d(diamond_r, offset=offset, center_hole_d=center_hole_d))
 );
