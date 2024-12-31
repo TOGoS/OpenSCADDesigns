@@ -160,6 +160,7 @@
 			"top_segmentation": "none"
 		},
 		"p1660": {
+			"description": "3\"x2\"x4.5\" holder with large inner margins",
 			"_comments": [
 				"3\"x2\"x4.5\" outside.",
 				"2.5\"x1.5\" + 3mm margins inside."
@@ -182,6 +183,31 @@
 			"top_cord_slot_depth": "25.4",
 			"top_cord_slot_diameter": "19.05",
 			"top_segmentation": "none"
+		},
+		"p1724": {
+			"description": "4.5\"-tall gridbeam dunker",
+			"_comments": [
+				"This exists to show that tgx11_block_bottom does something interesting",
+				"(and that I did not expect) when asked to make 'chatom'-segmented sides.",
+			],
+			"$tgx11_offset": "-0.1",
+			"back_mounting_hole_style": "none",
+			"back_segmentation": "hatom",
+			"block_size_atoms": "[4, 4, 9]",
+			"bottom_hole_style": "none",
+			"bottom_segmentation": "block",
+			"can_diameter": "0",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "hatom",
+			"front_slot_style": "none",
+			"inner_offset": "-1",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "chatom",
+			"top_cord_slot_depth": "0",
+			"top_cord_slot_diameter": "0",
+			"top_segmentation": "block"
 		}
 	}
 }

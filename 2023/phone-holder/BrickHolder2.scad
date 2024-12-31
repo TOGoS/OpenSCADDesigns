@@ -35,6 +35,8 @@
 //   (tgx11_atomic_block_bottom doesn't handle 'block' segmentation properly;
 //   it should probably throw an error instead of doing it wrong)
 
+description = "";
+
 /* [General] */
 
 block_size_atoms = [6,6,12];
