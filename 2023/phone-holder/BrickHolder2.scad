@@ -1,4 +1,4 @@
-// BrickHolder2.6
+// BrickHolder2.7
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -30,6 +30,10 @@
 // v2.6:
 // - 'hatom' segmentation (probably buggy lmao)
 // - actually apply top_segmentation!
+// v2.7:
+// - Use tgx11_block_bottom instead of tgx11_atomic_block_bottom
+//   (tgx11_atomic_block_bottom doesn't handle 'block' segmentation properly;
+//   it should probably throw an error instead of doing it wrong)
 
 /* [General] */
 
@@ -260,7 +264,7 @@ brick_holder = ["intersection",
 	pre_tgx_segmented_brick_holder,
 	
 	if( is_tgx_segmentation(top_segmentation) ) ["translate", [0, 0, block_size[2]], ["rotate", [180,0,0],
-		["render", tgx11_atomic_block_bottom(
+		["render", tgx11_block_bottom(
 			[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2]+10, "mm"]],
 			segmentation = top_segmentation,
 			bottom_shape = "footed",
@@ -281,7 +285,7 @@ brick_holder = ["intersection",
 		)]
 	]],
 	if( is_tgx_segmentation(front_segmentation) ) ["translate", [0, -block_size[1]/2, block_size[2]/2], ["rotate", [-90,0,0],
-		["render", tgx11_atomic_block_bottom(
+		["render", tgx11_block_bottom(
 			[[block_size[0], "mm"], [block_size[2], "mm"], [block_size[1], "mm"]],
 			segmentation = front_segmentation,
 			bottom_shape = "beveled", // No overhangs allowed
@@ -290,7 +294,7 @@ brick_holder = ["intersection",
 		)]
 	]],
 	if( is_tgx_segmentation(bottom_segmentation) ) ["translate", [0, 0, 0], ["rotate", [0,0,0],
-		["render", tgx11_atomic_block_bottom(
+		["render", tgx11_block_bottom(
 			[[block_size[0], "mm"], [block_size[1], "mm"], [block_size[2]+10, "mm"]],
 			segmentation = bottom_segmentation,
 			bottom_shape = "footed",
