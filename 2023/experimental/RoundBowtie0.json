@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p1725": {
+			"$fn": "32",
+			"base_size": "[25.4, 12.7, 3.1]",
+			"center_hole_d": "4.5",
+			"diamond_r": "6.35",
+			"offset": "-0.07",
+			"thickness": "34.97"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
