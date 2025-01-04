@@ -188,7 +188,7 @@
 			"description": "4.5\"-tall gridbeam dunker",
 			"_comments": [
 				"This exists to show that tgx11_block_bottom does something interesting",
-				"(and that I did not expect) when asked to make 'chatom'-segmented sides.",
+				"(and that I did not expect) when asked to make 'chatom'-segmented sides."
 			],
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
