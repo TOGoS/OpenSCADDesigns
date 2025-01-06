@@ -18,9 +18,7 @@
 			"top_segmentation": "chatom"
 		},
 		"p1564": {
-			"_comments": [
-				"No holes!  Might be used for dipping or something!"
-			],
+			"description" "3\"x3\"x6\" dunker with atomic sides and 0.2mm inner margin",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
 			"back_segmentation": "atom",
@@ -38,9 +36,7 @@
 			"top_segmentation": "block"
 		},
 		"p1565": {
-			"_comments": [
-				"No holes!  And just big enough for one gridbeam.  6\" tall."
-			],
+			"description" "2\"x2\"x6\" dunker with atomic sides and 0.5mm inner margin",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
 			"back_segmentation": "atom",
@@ -58,9 +54,7 @@
 			"top_segmentation": "block"
 		},
 		"p1566": {
-			"_comments": [
-				"No holes!  And just big enough for one gridbeam.  4+1/2\" tall."
-			],
+			"description": "2\"x2\"x4.5\" dunker with atomic sides and 0.5mm inner margin",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
 			"back_segmentation": "atom",
@@ -78,6 +72,7 @@
 			"top_segmentation": "block"
 		},
 		"p1567": {
+			"description": "3\"x3\"x6\" dunker with thumb slots, atomic sides, and 0.2mm inner margin",
 			"bottom_hole_style": "none",
 			"front_slot_style": "none",
 			"$tgx11_offset": "-0.1",
@@ -96,6 +91,7 @@
 			"top_segmentation": "block"
 		},
 		"p1572": {
+			"description": "WARNING: extremely thin walls! 3\"x3\"x4.5\" brick holder with atomic sides and 0.2mm inner margin|68mm can cutout",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "THL-1003",
 			"back_segmentation": "atom",
@@ -116,6 +112,7 @@
 			"top_segmentation": "block"
 		},
 		"p1636": {
+			"description": "3\"x3\"x4.5\" brick holder with hatomic sides and 0.2mm inner margin|68mm can cutout",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "THL-1003",
 			"back_segmentation": "hatom",
@@ -136,6 +133,7 @@
 			"top_segmentation": "none"
 		},
 		"p1648": {
+			"description": "2.5\"x1.5\"x4.5\" brick holder with hatomic sides and 1.5mm inner margin",
 			"_comments": [
 				"1.5mm margins (so cavity is extra 3mm in width/depth)",
 				"to accommodate some power supplies that are *just* over 1\"x2\"."
