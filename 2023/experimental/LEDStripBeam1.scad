@@ -1,4 +1,4 @@
-// LEDStripBeam1.0
+// LEDStripBeam1.1
 // 
 // Gridrail with:
 // - One flat edge
@@ -11,13 +11,12 @@ hull_offset = -0.05;
 bowtie_offset = -0.075;
 $fn = 24;
 
+use <../lib/RoundBowtie0.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
-
-use <./RoundBowtie0.scad>
 
 $togridlib2_unit_table = tgx11_get_default_unit_table();
 

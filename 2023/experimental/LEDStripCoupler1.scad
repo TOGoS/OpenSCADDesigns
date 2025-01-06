@@ -1,4 +1,4 @@
-// LEDStripBeam1.0
+// LEDStripBeam1.1
 // 
 // Gridrail with:
 // - One flat edge
@@ -11,18 +11,12 @@ hull_offset = -0.05;
 bowtie_offset = -0.075;
 $fn = 24;
 
+use <../lib/RoundBowtie0.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
-
-use <./RoundBowtie0.scad>
-
-// RoundBowtie specifies its own $fn,
-// and this [surprisingly, to me] overrides our $fn
-// even before roundbowtie0_make_bowtie_2d is called!
-fn = $fn;
 
 $togridlib2_unit_table = tgx11_get_default_unit_table();
 
@@ -31,7 +25,7 @@ togmod1_domodule(
 	let( size_ca = [[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [1, "chunk"]] )
 	let( size = togridlib3_decode_vector(size_ca) )
 	let( bowtie_cutout = ["union",
-		togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(6.35, offset=-bowtie_offset, $fn=fn)),
+		togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(6.35, offset=-bowtie_offset)),
 		["translate", [0,0,size[2]/2], tphl1_make_rounded_cuboid([25.4-bowtie_offset*2,12.7-bowtie_offset*2,6.35], r=[1,1,0])],
 	])
 	let( gridbeam_hole = tphl1_make_z_cylinder(zrange=[-size[2], size[2]], d=8) )
