@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.10
+// TOGPolyhedronLib1.11
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -40,6 +40,8 @@
 //   will prevent the usual vertex deduplication from happening.
 //   May be useful if you have a lot of vertexes and know that
 //   they are all unique.
+// v1.11:
+// - tphl1_make_z_cylinder: Option to not cap_bottom and/or cap_top
 
 // Winding order:
 // 
@@ -242,11 +244,16 @@ function tphl1_make_rounded_cuboid(size, r, corner_shape="ellipsoid") =
 			]*/, pos=[0,0,z_za[0]])
 	);
 
-function tphl1_make_z_cylinder(d=undef, zrange=undef, zds=undef) =
+function tphl1_make_z_cylinder(d=undef, zrange=undef, zds=undef, cap_bottom=true, cap_top=true) =
 	let( _zds = !is_undef(zds) ? zds :
 		assert(!is_undef(d))
 		assert(!is_undef(zrange))
 		[ for( z=zrange ) [z, d] ]
 	)
 	assert(!is_undef(_zds))
-	tphl1_make_polyhedron_from_layer_function(_zds, function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]));
+	tphl1_make_polyhedron_from_layer_function(
+		_zds,
+		function(zd) togmod1_circle_points(d=zd[1], pos=[0,0,zd[0]]),
+		cap_bottom=cap_bottom,
+		cap_top=cap_top
+	);
