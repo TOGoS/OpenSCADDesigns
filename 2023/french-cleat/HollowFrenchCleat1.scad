@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.2
+// HollowFrenchCleat1.3
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -10,6 +10,8 @@
 //   - At least dydz = 0 works, now.
 // v1.2:
 // - Fix the math for vector offsetting to dx = tan(a/2)
+// v1.3:
+// - Add option for 'solid' style
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -21,6 +23,7 @@ bottom_dydz   = -1; // [-1, 0, 1]
 end_offset    = -0.03;
 outer_offset  = -0.00;
 bowtie_offset = -0.03;
+body_style = "hollow"; // ["hollow","solid"]
 
 $fn = 32;
 
@@ -78,7 +81,11 @@ size = [length_chunks*chunk_pitch, height_chunks*chunk_pitch, chunk_pitch/2];
 outer_hull = hfc1_shell(size, top_dydz, bottom_dydz, offset=outer_offset, end_offset=end_offset);
 
 atom_hollow = hfc1_shell([atom_pitch, size[1], size[2]], top_dydz, bottom_dydz, offset=outer_offset-outer_wall_thickness, front_offset=outer_wall_thickness*2);
-atom_hole = tphl1_make_z_cylinder(zrange=[-size[2], +size[2]], d=4.5);
+
+atom_hole_d    = 4.5;
+atom_hole_cb_d = 8;
+
+atom_hole = tphl1_make_z_cylinder(zds=[[-size[2], atom_hole_d], [0, atom_hole_d], [0, atom_hole_cb_d], [+size[2], atom_hole_cb_d]]);
 
 bowtie_border = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=outer_wall_thickness-bowtie_offset));
 bowtie_cutout = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=-bowtie_offset));
@@ -106,7 +113,7 @@ togmod1_domodule(["difference",
 	
 	["difference",
 		["union",
-			hollow,
+			if(body_style == "hollow") hollow,
 			//for( xm=[-size[0]/atom_pitch/2 + 0.5 : 1 : size[0]/atom_pitch/2] )
 			//	["translate", [xm*atom_pitch, 0, 0], atom_hollow],
 			
