@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.3
+// HollowFrenchCleat1.4
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -12,6 +12,8 @@
 // - Fix the math for vector offsetting to dx = tan(a/2)
 // v1.3:
 // - Add option for 'solid' style
+// v1.4:
+// - Add 'hollow2' style, which has more tightly-spaced x-wise walls
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -23,7 +25,7 @@ bottom_dydz   = -1; // [-1, 0, 1]
 end_offset    = -0.03;
 outer_offset  = -0.00;
 bowtie_offset = -0.03;
-body_style = "hollow"; // ["hollow","solid"]
+body_style = "hollow"; // ["hollow","solid","hollow2"]
 
 $fn = 32;
 
@@ -96,7 +98,7 @@ bowtie_positions = [
 	[xm * size[0]/2, ym*chunk_pitch, 0]
 ];
 
-hollow =
+function hfc1_make_hollow(xwall_spacing=chunk_pitch) =
 let(ywall = togmod1_make_cuboid([inner_wall_thickness, size[1]*2, size[2]*2]))
 let(xwall = togmod1_make_cuboid([size[0]*2, inner_wall_thickness, size[2]*2]))
 ["difference",
@@ -104,16 +106,21 @@ let(xwall = togmod1_make_cuboid([size[0]*2, inner_wall_thickness, size[2]*2]))
 	
 	for( xm=[-size[0]/atom_pitch/2 + 1 : 1 : size[0]/atom_pitch/2 - 1] )
 		["translate", [xm*atom_pitch, 0, 0], ywall],
-	for( ym=[-size[1]/chunk_pitch/2 + 1 : 1 : size[1]/chunk_pitch/2 - 1] )
-		["translate", [0, ym*chunk_pitch, 0], xwall],
+	for( ym=[-size[1]/xwall_spacing/2 + 1 : 1 : size[1]/xwall_spacing/2 - 1] )
+		["translate", [0, ym*xwall_spacing, 0], xwall],
 ];
+
+the_hollow =
+	body_style == "hollow"  ? hfc1_make_hollow(xwall_spacing=chunk_pitch) :
+	body_style == "hollow2" ? hfc1_make_hollow(xwall_spacing= atom_pitch) :
+	["union"];
 
 togmod1_domodule(["difference",
 	outer_hull,
 	
 	["difference",
 		["union",
-			if(body_style == "hollow") hollow,
+			the_hollow,
 			//for( xm=[-size[0]/atom_pitch/2 + 0.5 : 1 : size[0]/atom_pitch/2] )
 			//	["translate", [xm*atom_pitch, 0, 0], atom_hollow],
 			

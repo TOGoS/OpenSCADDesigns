@@ -2,6 +2,17 @@
 	"parameterSets": {
 		"p1734": {
 			"body_style": "solid"
+		},
+		"p1735": {
+			"body_style": "hollow2"
+		},
+		"p1736": {
+			"body_style": "hollow",
+			"inner_wall_thickness": "1.2"
+		},
+		"p1737": {
+			"body_style": "hollow2",
+			"inner_wall_thickness": "1.2"
 		}
 	},
 	"fileFormatVersion": "1"
