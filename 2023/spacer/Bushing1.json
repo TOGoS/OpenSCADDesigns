@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p1740": {
+			"$fn": "72",
+			"barrel_diameter": "7.9",
+			"flange_diameter": "19.05",
+			"flange_height": "0",
+			"inner_diameter": "6.4",
+			"total_height": "12.7"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
