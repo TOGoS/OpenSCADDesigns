@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.1
+// HollowFrenchCleat1.2
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -8,6 +8,8 @@
 // - Attempt to properly calculate y offsets for given slopes.
 //   - Currently works approximately for -1, 0, and 1
 //   - At least dydz = 0 works, now.
+// v1.2:
+// - Fix the math for vector offsetting to dx = tan(a/2)
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -36,17 +38,11 @@ module assert_equals(expected, actual) {
 // TOGPath1 does this properly for vertex offsets.
 // I should make a diagram and put it on nuke24.net or something.
 
-function hfc1_van(dydz) =
-	// TODO: atan2 something something
-	// something to do with 'miter limit'?
-	dydz > 0  ? 0.404 :
-	dydz == 0 ? 1 :
-	dydz < 0  ? 2.4 :
-	assert(false);
+function hfc1_van(dydz) = tan(atan2(1,dydz)/2);
 
-assert_equals(1, hfc1_van(0));
-assert_equals(0.404, hfc1_van(1));
-assert_equals(2.4, hfc1_van(-1)); // TODO what should it actually be lmao
+assert_equals(0.414, hfc1_van(+1));
+assert_equals(1    , hfc1_van( 0));
+assert_equals(2.414, hfc1_van(-1));
 
 function hfc1_shell( size, top_dydz, bottom_dydz, offset=0, front_offset=0, end_offset=0 ) =
 	echo( offset=offset, shell_y1_van = hfc1_van(top_dydz) )
