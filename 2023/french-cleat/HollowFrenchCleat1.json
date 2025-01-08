@@ -18,6 +18,12 @@
 			"body_style": "hollow",
 			"inner_wall_thickness": "1.2",
 			"bowtie_style": "round-with-base"
+		},
+		"p1744": {
+			"body_style": "hollow",
+			"inner_wall_thickness": "1.2",
+			"bowtie_style": "round-with-base",
+			"bevel_size": "2.0"
 		}
 	},
 	"fileFormatVersion": "1"

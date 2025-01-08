@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.5
+// HollowFrenchCleat1.6
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -16,6 +16,9 @@
 // - Add 'hollow2' style, which has more tightly-spaced x-wise walls
 // v1.5:
 // - Add 'round-with-base' and 'none' bowtie connector styles
+// v1.6:
+// - Allow beveling of the pointy corners,
+//   which implicitly does a little bit of rounding, also
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -27,8 +30,9 @@ bottom_dydz   = -1; // [-1, 0, 1]
 end_offset    = -0.03;
 outer_offset  = -0.00;
 bowtie_offset = -0.03;
-body_style = "hollow"; // ["hollow","solid","hollow2"]
-bowtie_style = "round"; // ["none","round", "round-with-base"]
+body_style    = "hollow"; // ["hollow","solid","hollow2"]
+bowtie_style  = "round"; // ["none","round", "round-with-base"]
+bevel_size    =  0.0;
 
 $fn = 32;
 
@@ -36,6 +40,7 @@ use <../lib/RoundBowtie0.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGPath1.scad>
 
 module assert_equals(expected, actual) {
 	assert(abs(expected - actual) < 0.01, str("Expected ", expected, "; got ", actual));
@@ -52,41 +57,44 @@ assert_equals(0.414, hfc1_van(+1));
 assert_equals(1    , hfc1_van( 0));
 assert_equals(2.414, hfc1_van(-1));
 
-function hfc1_shell( size, top_dydz, bottom_dydz, offset=0, front_offset=0, end_offset=0 ) =
-	echo( offset=offset, shell_y1_van = hfc1_van(top_dydz) )
-	let( length=size[0], height=size[1], thickness=size[2] )
-	let(
-		x0 = -length/2 - offset - end_offset,
-		x1 =  length/2 + offset + end_offset,
-		// y0, y1 refer to at the bottom
-		y0 = -height/2 - bottom_dydz*thickness/2 - offset * hfc1_van(-bottom_dydz),
-		y1 =  height/2 -    top_dydz*thickness/2 + offset * hfc1_van(    top_dydz),
-		z0 = -thickness/2 - offset,
-		z1 =  thickness/2 + offset + front_offset
-	)
-	tphl1_make_polyhedron_from_layers([
-		[
-			[x1, y0, z0],
-			[x1, y1, z0],
-			[x0, y1, z0],
-			[x0, y0, z0],
-		],
-		[
-			[x1, y0 + (z1-z0)*bottom_dydz, z1],
-			[x1, y1 + (z1-z0)*   top_dydz, z1],
-			[x0, y1 + (z1-z0)*   top_dydz, z1],
-			[x0, y0 + (z1-z0)*bottom_dydz, z1],
-		]
-	]);
+function hfc1_shell( size, top_dydz, bottom_dydz, offset=0, front_offset=0, end_offset=0, bevel_size=0 ) =
+	let( bf_bev = bottom_dydz < 0 ? bevel_size : 0 )
+	let( tf_bev =    top_dydz > 0 ? bevel_size : 0 )
+	let( bb_bev = bottom_dydz > 0 ? bevel_size : 0 )
+	let( tb_bev =    top_dydz < 0 ? bevel_size : 0 )
+	let( ops = [["offset", offset]] )
+	let( mops = [["offset", offset], if(bevel_size > 0 ) ["round", bevel_size/2]] )
+	togmod1_linear_extrude_x(
+		[-size[0]/2 - offset - end_offset, size[0]/2 + offset + end_offset],
+		togmod1_make_polygon(togpath1_rath_to_polypoints(["togpath1-rath",
+			["togpath1-rathnode", [ size[1]/2 -    top_dydz*size[2]/2 - tb_bev, -size[2]/2               ], each ops],
+			
+			if( tb_bev > 0 )
+			["togpath1-rathnode", [ size[1]/2 -    top_dydz*size[2]/2 - tb_bev, -size[2]/2 + tb_bev      ], each mops],
+			
+			if( tf_bev > 0 || front_offset > 0 )
+			["togpath1-rathnode", [ size[1]/2 +    top_dydz*size[2]/2 - tf_bev,  size[2]/2 - tf_bev      ], each mops],
+
+			["togpath1-rathnode", [ size[1]/2 +    top_dydz*size[2]/2 - tf_bev,  size[2]/2 + front_offset], each mops],
+			["togpath1-rathnode", [-size[1]/2 + bottom_dydz*size[2]/2 + bf_bev,  size[2]/2 + front_offset], each mops],
+			
+			if( bf_bev > 0 || front_offset > 0 )
+			["togpath1-rathnode", [-size[1]/2 + bottom_dydz*size[2]/2 + bf_bev,  size[2]/2 - bf_bev      ], each mops],
+
+			if( bb_bev > 0 )
+			["togpath1-rathnode", [-size[1]/2 - bottom_dydz*size[2]/2 + bb_bev, -size[2]/2 + bb_bev      ], each mops],
+			
+			["togpath1-rathnode", [-size[1]/2 - bottom_dydz*size[2]/2 + bb_bev, -size[2]/2               ], each ops],
+		])));
 
 inch = 25.4;
 chunk_pitch = 38.1;
 atom_pitch = 12.7;
 size = [length_chunks*chunk_pitch, height_chunks*chunk_pitch, chunk_pitch/2];
 
-outer_hull = hfc1_shell(size, top_dydz, bottom_dydz, offset=outer_offset, end_offset=end_offset);
+outer_hull = hfc1_shell(size, top_dydz, bottom_dydz, offset=outer_offset, end_offset=end_offset, bevel_size=bevel_size);
 
-atom_hollow = hfc1_shell([atom_pitch, size[1], size[2]], top_dydz, bottom_dydz, offset=outer_offset-outer_wall_thickness, front_offset=outer_wall_thickness*2);
+atom_hollow = hfc1_shell([atom_pitch, size[1], size[2]], top_dydz, bottom_dydz, offset=outer_offset-outer_wall_thickness, front_offset=outer_wall_thickness*2, bevel_size=bevel_size);
 
 atom_hole_d    = 4.5;
 atom_hole_cb_d = 8;
@@ -122,7 +130,12 @@ function hfc1_make_hollow(xwall_spacing=chunk_pitch) =
 let(ywall = togmod1_make_cuboid([inner_wall_thickness, size[1]*2, size[2]*2]))
 let(xwall = togmod1_make_cuboid([size[0]*2, inner_wall_thickness, size[2]*2]))
 ["difference",
-	hfc1_shell(size, top_dydz, bottom_dydz, offset=outer_offset-outer_wall_thickness, front_offset=outer_wall_thickness*2, end_offset=end_offset),
+	hfc1_shell(size, top_dydz, bottom_dydz,
+	   offset = outer_offset-outer_wall_thickness,
+		front_offset = outer_wall_thickness*2,
+		end_offset = end_offset,
+		bevel_size = bevel_size
+	),
 	
 	for( xm=[-size[0]/atom_pitch/2 + 1 : 1 : size[0]/atom_pitch/2 - 1] )
 		["translate", [xm*atom_pitch, 0, 0], ywall],
@@ -152,4 +165,6 @@ togmod1_domodule(["difference",
 		for( pos=bowtie_positions ) ["translate", pos, bowtie_border],
 	],
 	for( pos=bowtie_positions ) ["translate", pos, bowtie_cutout],
+	
+	// ["translate", [size[0]/2, 0, 0], togmod1_make_cuboid([size[0], 100, 100])],
 ]);
