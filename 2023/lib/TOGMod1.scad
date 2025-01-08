@@ -53,6 +53,8 @@ module togmod1_domodule(mod) {
 		}
 	} else if( mod[0] == "x-debug" ) {
 		# togmod1_domodule(mod[1]);
+	} else if( mod[0] == "x-color" ) {
+		color(mod[1]) togmod1_domodule(mod[2]);
 	} else {
 		assert(false, str("Unrecognized shape: ", mod[0]));
 	}
