@@ -23,6 +23,14 @@
 			"diamond_r": "6.35",
 			"offset": "-0.03",
 			"thickness": "19.05"
+		},
+		"p1742": {
+			"$fn": "32",
+			"base_size": "[25.4, 12.7, 3.1]",
+			"center_hole_d": "4.5",
+			"diamond_r": "6.35",
+			"offset": "-0.03",
+			"thickness": "19.05"
 		}
 	},
 	"parameterSets": "",
