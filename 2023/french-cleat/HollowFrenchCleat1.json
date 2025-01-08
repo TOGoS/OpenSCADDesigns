@@ -13,6 +13,11 @@
 		"p1737": {
 			"body_style": "hollow2",
 			"inner_wall_thickness": "1.2"
+		},
+		"p1741": {
+			"body_style": "hollow",
+			"inner_wall_thickness": "1.2",
+			"bowtie_style": "round-with-base"
 		}
 	},
 	"fileFormatVersion": "1"

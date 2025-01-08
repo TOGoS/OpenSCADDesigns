@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.4
+// HollowFrenchCleat1.5
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -14,6 +14,8 @@
 // - Add option for 'solid' style
 // v1.4:
 // - Add 'hollow2' style, which has more tightly-spaced x-wise walls
+// v1.5:
+// - Add 'round-with-base' and 'none' bowtie connector styles
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -26,6 +28,7 @@ end_offset    = -0.03;
 outer_offset  = -0.00;
 bowtie_offset = -0.03;
 body_style = "hollow"; // ["hollow","solid","hollow2"]
+bowtie_style = "round"; // ["none","round", "round-with-base"]
 
 $fn = 32;
 
@@ -76,6 +79,7 @@ function hfc1_shell( size, top_dydz, bottom_dydz, offset=0, front_offset=0, end_
 		]
 	]);
 
+inch = 25.4;
 chunk_pitch = 38.1;
 atom_pitch = 12.7;
 size = [length_chunks*chunk_pitch, height_chunks*chunk_pitch, chunk_pitch/2];
@@ -89,8 +93,24 @@ atom_hole_cb_d = 8;
 
 atom_hole = tphl1_make_z_cylinder(zds=[[-size[2], atom_hole_d], [0, atom_hole_d], [0, atom_hole_cb_d], [+size[2], atom_hole_cb_d]]);
 
-bowtie_border = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=outer_wall_thickness-bowtie_offset));
-bowtie_cutout = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=-bowtie_offset));
+basic_bowtie_border = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=outer_wall_thickness-bowtie_offset));
+basic_bowtie_cutout = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=-bowtie_offset));
+
+bowtie_base_cutout_r = 2;
+
+bowtie_border =
+	bowtie_style == "none" ? ["union"] :
+	bowtie_style == "round" ? basic_bowtie_border :
+	let(r=bowtie_base_cutout_r+outer_wall_thickness)
+	tphl1_make_rounded_cuboid([1*inch+outer_wall_thickness*2, 0.5*inch+outer_wall_thickness*2, size[2]*2], r=[r,r,0]);
+bowtie_cutout =
+	bowtie_style == "none" ? ["union"] :
+	bowtie_style == "round" ? basic_bowtie_cutout :
+	let(r=bowtie_base_cutout_r)
+	["union",
+		basic_bowtie_cutout,
+		["translate", [0,0,size[2]/2], tphl1_make_rounded_cuboid([1*inch-bowtie_offset*2, 0.5*inch-bowtie_offset*2, 0.25*inch], r=[r,r,0])]
+	];
 
 bowtie_positions = [
 	for( ym=[-size[1]/chunk_pitch/2 + 0.5 : 1 : size[1]/chunk_pitch/2 - 0.4] )
