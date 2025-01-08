@@ -1,9 +1,17 @@
-// Versions:
+// TOGPath1.101
 //
+// Functions for transforming 2D paths
+// 
 // v1.100:
 // - Started tracking changes
 // - Fix togpath1_rath_to_polypoints to more properly handle
 //   op lists with consecutive offsets, by merging them.
+// v1.101:
+// - 'fixing' a rath (as is done before turning it into polypoints)
+//   now includes applying leading offset ops for the entire rath
+//   before any other ops are considered, so that raths like
+//   ["togpath1-rath", ["togpath1-rathnode", [x,y], ["offset", 1], ["round", 1]], ...]
+//   should now work as you would expect.
 
 use <./TOGComplexLib1.scad>
 
@@ -416,13 +424,32 @@ function togpath1__merge_offsets(oplist, index, curoff=0) =
 	oplist[index][0] == "offset" ? togpath1__merge_offsets(oplist, index+1, curoff+oplist[index][1]) :
 	[if(curoff != 0) ["offset", curoff], oplist[index], each togpath1__merge_offsets(oplist, index+1)];
 
+// rath -> rath with leading ["offset",x] baked into point positions.
+// I'm thinking this is all a hack due to offsets should really be applied to lines, not points.
+// Offsetting lines would preserve all the angles without having to 'pre'-offset things.
+function togpath1__apply_leading_offsets(rath) =
+	let(points = [ for(i=[1:1:len(rath)-1]) rath[i][1] ])
+["togpath1-rath",
+	for(i=[0:1:len(points)-1])
+	each
+		let( node = rath[i+1] )
+			len(node) > 2 && node[2][0] == "offset" ? (
+				let( pa = points[ (i-1+len(points))%len(points) ] )
+				let( pb = points[ (i              )           ] )
+				let( pc = points[ (i+1            )%len(points) ] )
+				[for(p=togpath1__rathnode_apply_op(pa,pb,pc,node[2])) ["togpath1-rathnode", p, for(j=[3:1:len(node)-1]) node[j]]]
+			):
+			[node]
+];
+
+
 // 'offset' ops anywhere except for the end of the op lists causes problems for togpath1_rath_to_polypoints.
 // This function is to rewrite op lists to avoid that situation.
 function togpath1__fix_rath(rath) =
-	// TODO: After merging offsets, apply any leading ones.
-	["togpath1-rath",
+	let( rath_with_offsets_merged = ["togpath1-rath",
 		for( i=[1 : 1 : len(rath)-1] ) let(node=rath[i]) ["togpath1-rathnode", node[1], each togpath1__merge_offsets(node, 2)]
-	];
+	])
+	togpath1__apply_leading_offsets(rath_with_offsets_merged);
 
 function togpath1__rath_to_polypoints(rath) =
 	let(points = [ for(i=[1:1:len(rath)-1]) rath[i][1] ])
