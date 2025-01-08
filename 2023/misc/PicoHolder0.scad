@@ -1,4 +1,4 @@
-// PicoHolder0.3
+// PicoHolder0.4
 // 
 // MiniRail-mounted holder for Pi Pico [W]
 // 
@@ -7,9 +7,12 @@
 // v0.3:
 // - Fix effect of margins (was half of what it should have been in 0.1)
 // - Increase default margins even more
+// v0.4:
+// - outer_offset = -0.1
 
 board_margin = [0.5, 0.2, 0.1];
 minirail_margin = 0.1;
+outer_offset = -0.1;
 usb_cutout_depth = 2;
 $fn = 48;
 
@@ -65,9 +68,12 @@ togmod1_linear_extrude_z([-500,500], togmod1_make_polygon(togpath1_rath_to_polyp
 board_pos = [0, 3/8*inch, 3/8*inch];
 hull_size = [1.25*inch, 0.5*inch, 2*inch];
 
+expanded_hull_size = [hull_size[0]+outer_offset*2, hull_size[1]+outer_offset*2, hull_size[2]];
+hull_r = expanded_hull_size[1]*0.495;
+
 if( $preview ) togmod1_domodule(["x-color", "green", ["translate", board_pos + [0, pico_board_size[1]/2, 0], togmod1_make_cuboid(pico_board_size)]]);
 togmod1_domodule(["difference",
-	["translate", [0,hull_size[1]/2,0], tphl1_make_rounded_cuboid(hull_size, r=[6,6,0])],
+	["translate", [0,hull_size[1]/2,0], tphl1_make_rounded_cuboid(expanded_hull_size, r=[hull_r,hull_r,0])],
 	
 	["translate", board_pos, pico_cutout],
 	minirail_cutout,
