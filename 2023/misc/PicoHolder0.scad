@@ -1,12 +1,14 @@
-// PicoHolder0.2
+// PicoHolder0.3
 // 
 // MiniRail-mounted holder for Pi Pico [W]
 // 
 // v0.2:
-// - Fix effect of margins (was half of what it should have been in 0.1)
 // - Allow x, y, z board margins to be specified separately
+// v0.3:
+// - Fix effect of margins (was half of what it should have been in 0.1)
+// - Increase default margins even more
 
-board_margin = [0.4, 0.1, 0.1];
+board_margin = [0.5, 0.2, 0.1];
 minirail_margin = 0.1;
 usb_cutout_depth = 2;
 $fn = 48;
@@ -25,7 +27,7 @@ overhead_cutout_width = 15;
 usb_plug_cutout_width = 12;
 
 pico_cutout =
-let( expanded_board_size = [for(i=[0,1,2]) pico_board_size[i]+board_margin[i]] )
+let( expanded_board_size = [for(i=[0,1,2]) pico_board_size[i]+board_margin[i]*2] )
 let( xxpanded_board_size = [expanded_board_size[0], expanded_board_size[1], 500] )
 let( overhead_cutout_size = [overhead_cutout_width, 40, 100] )
 let( board_end_z = -pico_board_size[2]/2 )
