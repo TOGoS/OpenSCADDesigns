@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p1748": {
+			"$fn": "48",
+			"board_margin": "[0.5, 0.2, 0.1]",
+			"hull_z0_u": "-16",
+			"hull_z1_u": "24",
+			"minirail_margin": "0.1",
+			"outer_offset": "-0.1",
+			"usb_cutout_depth": "2",
+			"usb_groove_ext_u": "12"
+		}
+	},
+	"fileFormatVersion": "1"
+}

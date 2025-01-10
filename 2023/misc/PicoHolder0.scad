@@ -1,4 +1,4 @@
-// PicoHolder0.4
+// PicoHolder0.5
 // 
 // MiniRail-mounted holder for Pi Pico [W]
 // 
@@ -9,11 +9,16 @@
 // - Increase default margins even more
 // v0.4:
 // - outer_offset = -0.1
+// v0.5:
+// - options to extend board and USB plug groove
 
 board_margin = [0.5, 0.2, 0.1];
 minirail_margin = 0.1;
 outer_offset = -0.1;
 usb_cutout_depth = 2;
+hull_z0_u = -16;
+hull_z1_u = +16;
+usb_groove_ext_u = 0;
 $fn = 48;
 
 use <../lib/TOGMod1.scad>
@@ -38,7 +43,7 @@ let( ucd = usb_cutout_depth )
 ["union",
 	["translate", [0,      pico_board_size[1]/2, board_end_z + 0 + xxpanded_board_size[2]/2], togmod1_make_cuboid(xxpanded_board_size)],
 	["translate", [0, overhead_cutout_size[1]/2, board_end_z + 5 + overhead_cutout_size[2]/2], togmod1_make_cuboid(overhead_cutout_size)],
-	["translate", [0, 0,                         board_end_z], togmod1_linear_extrude_x(
+	["translate", [0, 0,                         board_end_z + usb_groove_ext_u * inch/16], togmod1_linear_extrude_x(
 		[-usb_plug_cutout_width/2, usb_plug_cutout_width/2],
 		togmod1_make_polygon([
 			[- ucd,     0  ],
@@ -66,14 +71,15 @@ togmod1_linear_extrude_z([-500,500], togmod1_make_polygon(togpath1_rath_to_polyp
 ])));
 
 board_pos = [0, 3/8*inch, 3/8*inch];
-hull_size = [1.25*inch, 0.5*inch, 2*inch];
+hull_size = [1.25*inch, 0.5*inch];
+hull_zrange = [hull_z0_u * inch/16, hull_z1_u * inch/16];
 
-expanded_hull_size = [hull_size[0]+outer_offset*2, hull_size[1]+outer_offset*2, hull_size[2]];
+expanded_hull_size = [hull_size[0]+outer_offset*2, hull_size[1]+outer_offset*2];
 hull_r = expanded_hull_size[1]*0.495;
 
 if( $preview ) togmod1_domodule(["x-color", "green", ["translate", board_pos + [0, pico_board_size[1]/2, 0], togmod1_make_cuboid(pico_board_size)]]);
 togmod1_domodule(["difference",
-	["translate", [0,hull_size[1]/2,0], tphl1_make_rounded_cuboid(expanded_hull_size, r=[hull_r,hull_r,0])],
+	 ["translate", [0,hull_size[1]/2,0], togmod1_linear_extrude_z(hull_zrange, togmod1_make_rounded_rect(expanded_hull_size, r=[hull_r,hull_r]))],
 	
 	["translate", board_pos, pico_cutout],
 	minirail_cutout,
