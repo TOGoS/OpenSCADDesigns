@@ -1,4 +1,4 @@
-// TGx9.5.35 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
+// TGx9.5.36 - Full-featured-but-getting-crufty TOGridPile shape w/ option of rounded beveled corners
 //
 // Version numbering:
 // M.I.C.R
@@ -194,6 +194,11 @@
 // - Add thumb notch option, an additional subtraction orthogonal to cavity type;
 //   parameters: thumb_notch_width, thumb_notch_depth, thumb_notch_axis
 // - Add description field
+// v9.5.36:
+// - Add 'button-cell-holder' cavity style, which is like cr2032-holder but
+//   button size is customizable
+// - Button cell holders may get multiple columns, if there's space
+// - This subtly changes the shape of cr2032-holder, also
 
 description = "";
 
@@ -246,7 +251,7 @@ bowtie_edges = [0,0,0,0];
 
 /* [Cavity] */
 
-cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder","gencase1","cr2032-holder"]
+cavity_style = "cup"; // ["none","cup","tograck","framework-module-holder","earrings-holder","gencase1","cr2032-holder","button-cell-holder"]
 
 wall_thickness     =  2;    // 0.1
 floor_thickness    =  6.35; // 0.0001
@@ -295,6 +300,11 @@ x_tograck_conduit_diameter = 0;
 gencase_open_sides = [0,0,0,0];
 // Size of brick to be subtracted and shown in preview, if non-zero
 gencase_brick_size = [0,0,0];
+
+/* [Cavity (button cell holder)] */
+
+button_cell_diameter = 12.2;
+button_cell_height   =  5.1;
 
 /* [Additional Cutouts] */
 
@@ -614,27 +624,33 @@ function make_gencase1_subtraction(block_size, floor_thickness, open_sides=[0,0,
 		["translate", [0,0,-block_size[2]/2+floor_thickness-0.1], tphl1_make_rounded_cuboid([brick_size[0],brick_size[1],block_size[2]], r=[1,1,0])],
 	];
 
-function make_cr2032_subtraction(block_size, cell_size=[22, 4.0]) =
-let( overcav_size = [min(cell_size[0]+8, block_size[0]-wall_thickness*4), block_size[1]-wall_thickness*2, 6.35] )
+function make_button_cell_subtraction(block_size, cell_size=[22, 4.0]) =
+let( column_margin = 2 )
+let( column_spacing = cell_size[0] + column_margin )
+let( overcav_size = [block_size[0]-wall_thickness*4, block_size[1]-wall_thickness*4, min(cell_size[0]/3,6.35)] )
+let( column_count = floor((overcav_size[0]+column_margin) / column_spacing) )
 let( spacing = cell_size[1] + 2 )
 let( count = floor(overcav_size[1] / spacing) )
 // 33 is enough for the modules; 36 should be enough for the uSD card
 // and maybe something another mm deeper, in case the need arises
-let( finger_notch_width = 16 )
+let( finger_notch_width = cell_size[0]*2/3 )
 let( xq = (cell_size[0] - finger_notch_width)/2 )
 let( finger_notch_depth = cell_size[0]-xq )
+let( finger_notch = tphl1_make_rounded_cuboid(
+	[finger_notch_width, overcav_size[1]-0.1, finger_notch_depth*2],
+	r=[finger_notch_width/2, 0, finger_notch_width/2],
+	$fn=max($fn, 24)
+))
+let( cell_cutout = tphl1_make_rounded_cuboid([cell_size[0], cell_size[1], cell_size[0]*2], r=[cell_size[0]*0.49, 0, cell_size[0]*0.49], $fn=max($fn, 48)) )
 ["union",
 	tphl1_make_rounded_cuboid([overcav_size[0], overcav_size[1], overcav_size[2]*2], r=[6.35, 6.35, 0]),
+	
+	for( xm=[-column_count/2 + 0.5 : 1 : column_count/2] )
 	for( ym=[-count/2 + 0.5 : 1 : count/2] )
-		["translate", [0, spacing*ym, 0], ["union",
-			tphl1_make_rounded_cuboid([cell_size[0], cell_size[1], cell_size[0]*2], r=[cell_size[0]/2-0.1, 0, cell_size[0]/2-0.1], $fn=max($fn, 48)),
-		]],
-	["translate", [0,0,0],
-		tphl1_make_rounded_cuboid(
-			[finger_notch_width, overcav_size[1]-0.1, finger_notch_depth*2],
-			r=[finger_notch_width/2, 0, finger_notch_width/2],
-			$fn=max($fn, 24)
-		)]
+		["translate", [xm*column_spacing, spacing*ym, 0], cell_cutout],
+	
+	for( xm=[-column_count/2 + 0.5 : 1 : column_count/2] )
+	["translate", [xm*column_spacing,0,0], finger_notch]
 ];
 
 
@@ -686,7 +702,8 @@ cavity_ops = [
 	if( cavity_style == "earrings-holder" ) ["subtract", make_earrings_holder_cutout(block_size)],
 	if( cavity_style == "gencase1" ) ["subtract", make_gencase1_subtraction(
 		block_size, floor_thickness=floor_thickness, open_sides=gencase_open_sides, brick_size=gencase_brick_size)],
-	if( cavity_style == "cr2032-holder" ) ["subtract", make_cr2032_subtraction(block_size)],
+	if( cavity_style == "cr2032-holder" ) ["subtract", make_button_cell_subtraction(block_size, cell_size=[22, 4.0])],
+	if( cavity_style == "button-cell-holder" ) ["subtract", make_button_cell_subtraction(block_size, cell_size=[button_cell_diameter, button_cell_height])],
 ];
 
 //// Magnet hole precalculations
