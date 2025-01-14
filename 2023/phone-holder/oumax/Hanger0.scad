@@ -1,4 +1,4 @@
-// [Oumax]Hanger0.2
+// [Oumax]Hanger0.3
 // 
 // v0.1:
 // - Based on testing with BottomSizeTester0.1 and SideSizeTester0.1,
@@ -8,6 +8,8 @@
 // - Scoop out the front
 // - Make side holes less wide
 // - Add 'large' backside mounting holes
+// v0.3:
+// - Subdivide side holes
 
 outer_margin = 0.1;
 inner_margin = 1.0;
@@ -37,9 +39,10 @@ let( large_back_hole = ["rotate", [90,0,0], ["render", tog_holelib2_hole("THL-10
 	togmod1_linear_extrude_z([-5*inch, 0], togmod1_make_rounded_rect([3.75*inch, (1+7/16)*inch], r=3.175)),
 	
 	// Side holes
-	let( w = (1+1/4)*inch, h = 4.5*inch )
+	let( w = (1+1/4)*inch, h = 2.125*inch )
 	let( r = min(w,h)*0.49 )
-	togmod1_linear_extrude_x([-5*inch, 5*inch], togmod1_make_rounded_rect([w, h], r=r)),
+	for( z=[-(1+3/16)*inch, (1+3/16)*inch] )
+	["translate", [0,0,z], togmod1_linear_extrude_x([-5*inch, 5*inch], togmod1_make_rounded_rect([w, h], r=r))],
 
 	// Small mounting holes
 	for( xm=[-3.5 : 1 : 3.5] ) for( zm=[-3.5 : 1 : 4.5] )
