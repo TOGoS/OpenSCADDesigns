@@ -1,37 +1,51 @@
 {
-    "fileFormatVersion": "1",
-    "parameterSets": {
-        "p1514": {
-            "$tgx11_offset": "-0.1",
-            "bottom_segmentation": "none",
-            "floor_segmentation": "chunk",
-            "floor_thickness": "6.35",
-            "height": "25.4",
-            "interior_offset": "-0.15",
-            "length_chunks": "8",
-            "wall_thickness": "3.175"
-        },
-        "p1523": {
-            "$tgx11_offset": "-0.1",
-            "bottom_segmentation": "atom",
-            "floor_segmentation": "chunk",
-            "floor_thickness": "6.35",
-            "height": "25.4",
-            "interior_offset": "-0.15",
-            "length_chunks": "2",
-            "slots_enabled": "true",
-            "wall_thickness": "6.35"
-        },
-        "p1525": {
-            "$tgx11_offset": "-0.1",
-            "bottom_segmentation": "atom",
-            "floor_segmentation": "chunk",
-            "floor_thickness": "6.35",
-            "height": "25.4",
-            "interior_offset": "-0.15",
-            "length_chunks": "8",
-            "slots_enabled": "true",
-            "wall_thickness": "6.35"
-        }
-    }
+	"fileFormatVersion": "1",
+	"parameterSets": {
+		"p1514": {
+			"$tgx11_offset": "-0.1",
+			"bottom_segmentation": "none",
+			"floor_segmentation": "chunk",
+			"floor_thickness": "6.35",
+			"height": "25.4",
+			"interior_offset": "-0.15",
+			"length_chunks": "8",
+			"wall_thickness": "3.175"
+		},
+		"p1523": {
+			"description": "2-chunk WSTYPE-4144",
+			"$tgx11_offset": "-0.1",
+			"bottom_segmentation": "atom",
+			"floor_segmentation": "chunk",
+			"floor_thickness": "6.35",
+			"height": "25.4",
+			"interior_offset": "-0.15",
+			"length_chunks": "2",
+			"slots_enabled": "true",
+			"wall_thickness": "6.35"
+		},
+		"p1525": {
+			"description": "8-chunk WSTYPE-4144",
+			"$tgx11_offset": "-0.1",
+			"bottom_segmentation": "atom",
+			"floor_segmentation": "chunk",
+			"floor_thickness": "6.35",
+			"height": "25.4",
+			"interior_offset": "-0.15",
+			"length_chunks": "8",
+			"slots_enabled": "true",
+			"wall_thickness": "6.35"
+		},
+		"p1756": {
+			"description": "4-chunk WSTYPE-4145",
+			"length_chunks": "4",
+			"bottom_segmentation": "atom",
+			"floor_segmentation": "chunk",
+			"floor_thickness": "6.35",
+			"height": "25.4",
+			"interior_offset": "-0.15",
+			"slot_style": "WSTYPE-4145",
+			"wall_thickness": "6.35",
+			"$tgx11_offset": "-0.1"
+		}
+	}
 }

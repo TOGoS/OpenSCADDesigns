@@ -1,4 +1,4 @@
-// TGPSimpleShelf0.5
+// TGPSimpleShelf0.6
 // 
 // Shelf intended to be mounted on DiagBrack0 brackets
 // 
@@ -15,20 +15,27 @@
 // - Don't put mounting holes in TGPish bottoms,
 //   since the grids won't line up
 // - Bevel slot corners
+// v0.6:
+// - Option for WSTYPE-4145 slots
+// - Add description parameter
 // 
 // TODO:
 // - Option to make end walls, similar to side walls
+// - A simplified rounded-rect-based floor cutouts (floor_segmentation = 'simple-chunk' or somesuch)
 
+description = "";
+
+length_chunks = 2;
 floor_thickness = 6.35;
 height = 25.4;
 floor_segmentation = "chunk"; // ["atom","chatom","chunk","block","none"]
 bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
-slots_enabled = true;
+slot_style = "WSTYPE-4144"; // ["none", "WSTYPE-4144", "WSTYPE-4145"]
 wall_thickness = 3.175;
 interior_offset = -0.15;
 $tgx11_offset = -0.1;
 
-length_chunks = 2;
+module tgpsimpleshelf0__end_params() { }
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
@@ -58,9 +65,10 @@ magnet_hole = tphl1_make_z_cylinder(zrange=[-2.2,2.2], d=6.2, $fn=magnet_hole_fn
 hole1 = tog_holelib2_hole("THL-1001", depth=floor_thickness+1, inset=1, $fn=screw_hole_fn);
 hole2 = tog_holelib2_hole("THL-1002", depth=floor_thickness+1, inset=1, $fn=screw_hole_fn);
 
-slot =
+function make_slot(inner_width) =
 	let(y0 = -chunk/2 - wall_thickness - u + $tgx11_offset)
-	let(y1 = -chunk/2 -                  u - $tgx11_offset)
+	// Old [WSTYPE-4144] formula: let(y1 = -chunk/2 -                  u - $tgx11_offset)
+	let(y1 = -inner_width/2 - $tgx11_offset)
 	let(y2 = -y1)
 	let(y3 = -y0)
 	let(z0 = -u + $tgx11_offset )
@@ -79,6 +87,15 @@ slot =
 		[y0  , z2  ],
 		[y0  , z0  ],
 	]));
+
+eff_slot_style = is_undef(slots_enabled) || slots_enabled == false ? slot_style : "none";
+
+slot = eff_slot_style == "none" ? ["union"] :
+	make_slot(
+		eff_slot_style == "WSTYPE-4144" ? chunk + 2*u :
+		eff_slot_style == "WSTYPE-4145" ? chunk + 4*u :
+		assert(false, str("Unrecognized slot style: '", eff_slot_style, "'"))
+	);
 
 tgp_width_ca =
 	bottom_segmentation == "atom" ? [round(width/atom), "atom"] :
@@ -138,8 +155,7 @@ togmod1_domodule(["difference",
 		if( !is_tgpish ) for( apos=[[0,0]] )
 			["translate", [cx*chunk + apos[0]*atom, apos[1]*atom, floor_thickness], hole2],
 	],
-
-	if( slots_enabled )	
+	
 	for( sx=[-round(length/slot_spacing)/2+0.5 : 1 : round(length/slot_spacing)/2-0.4] )
 	["translate", [sx*slot_spacing, 0, 0], slot],
 ]);
