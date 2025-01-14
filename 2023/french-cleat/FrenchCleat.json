@@ -384,6 +384,15 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed",
 			"slot_height": "6"
+		},
+		"p1755": {
+			"description": "10-atom flat-backed FC",
+			"$tgx11_offset": "-0.1",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[10, \"atom\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
 		}
 	},
 	"parameterSets": "",
