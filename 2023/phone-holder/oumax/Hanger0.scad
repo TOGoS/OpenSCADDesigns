@@ -1,4 +1,4 @@
-// [Oumax]Hanger0.4
+// [Oumax]Hanger0.5
 // 
 // v0.1:
 // - Based on testing with BottomSizeTester0.1 and SideSizeTester0.1,
@@ -13,6 +13,8 @@
 // v0.4:
 // - One smaller hole per side
 // - Shrink bottom hole Y-wise
+// v0.5
+// - Even slightly narrower side holes
 
 outer_margin = 0.1;
 inner_margin = 1.0;
@@ -42,7 +44,7 @@ let( large_back_hole = ["rotate", [90,0,0], ["render", tog_holelib2_hole("THL-10
 	togmod1_linear_extrude_z([-5*inch, 0], togmod1_make_rounded_rect([3.75*inch, (1+1/4)*inch], r=3.175)),
 	
 	// Side holes
-	let( w = (1+1/4)*inch, h = 3*inch )
+	let( w = (1+1/8)*inch, h = 3*inch )
 	let( r = min(w,h)*0.49 )
 	// for( z=[-(1+3/16)*inch, (1+3/16)*inch] )
 	for( z=[0] )
