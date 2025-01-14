@@ -1,24 +1,31 @@
 {
 	"parameterSets": {
 		"p1270": {
+			"description": "3-chunk FC",
 			"mode": "X",
 			"length_ca": "[4.5, \"inch\"]",
 			"mating_edge_style": "S-trimmed",
 			"opposite_edge_style": "FFS-trimmed"
 		},
 		"p1271": {
+			"description": "WSTYPE-4114-H1.5FFS-L0.75 cross-section",
 			"mode": "Z",
 			"length_ca": "[0.75, \"inch\"]",
 			"mating_edge_style": "S-trimmed",
 			"opposite_edge_style": "FFS-trimmed"
 		},
 		"p1272": {
+			"description": "WSTYPE-4114-H1.5FFS external sizer",
 			"length_ca": "[0.75, \"inch\"]",
 			"mating_edge_style": "S",
 			"mode": "tester",
 			"opposite_edge_style": "FS"
 		},
 		"p1296": {
+			"description": "9-atom FC with shallow countersunk holes for #6 flatheads",
+			"_comments": [
+				"Don't bother with the shallow coutnersunk holes; go with the THL-1005-5u ones."
+			],
 			"hole_style": "coutnersnuk",
 			"length_ca": "[3, \"inch\"]",
 			"mating_edge_style": "S-trimmed",
@@ -26,6 +33,10 @@
 			"opposite_edge_style": "FFS-trimmed"
 		},
 		"p1301": {
+			"description": "5-atom atom-backed FC with shallow countersunk holes for #6 flatheads",
+			"_comments": [
+				"Don't bother with the shallow coutnersunk holes; go with the THL-1005-5u ones."
+			],
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "coutnersnuk",
@@ -35,6 +46,10 @@
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
 		"p1308": {
+			"description": "12-atom atom-backed FC with shallow countersunk holes for #6 flatheads",
+			"_comments": [
+				"Don't bother with the shallow coutnersunk holes; go with the THL-1005-5u ones."
+			],
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
 			"hole_style": "coutnersnuk",
@@ -124,6 +139,32 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
 		},
+		"p1568": {
+			"_comments": [
+				"Similar to p1456, but with less restrictive lip shape.",
+				"Identical to p1656"
+			],
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[6, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1697": {
+			"_comment": "Same as p1715",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[5, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		
+		"-- p145{5-9} series: atom backs in atom length increments": "",
 		"p1455": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "tgx11-atom-f",
@@ -168,39 +209,6 @@
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
-		},
-		"p1568": {
-			"_comments": [
-				"Similar to p1456, but with less restrictive lip shape.",
-				"Identical to p1656"
-			],
-			"$tgx11_offset": "-0.1",
-			"backside_texture": "atom-rows-f",
-			"hole_style": "THL-1005-5u",
-			"length_ca": "[6, \"atom\"]",
-			"mating_edge_style": "S-trimmed-C",
-			"mode": "X",
-			"opposite_edge_style": "FFS-trimmed-B"
-		},
-		"p1659": {
-			"$tgx11_offset": "-0.1",
-			"backside_texture": "atom-rows-f",
-			"hole_style": "THL-1005-5u",
-			"length_ca": "[9, \"atom\"]",
-			"mating_edge_style": "S-trimmed-C",
-			"mode": "X",
-			"opposite_edge_style": "FFS-trimmed-B"
-		},
-		"p1697": {
-			"_comment": "Same as p1715",
-			"$tgx11_offset": "-0.1",
-			"backside_texture": "flat",
-			"hole_style": "GB-counterbored",
-			"length_ca": "[5, \"chunk\"]",
-			"mating_edge_style": "S-trimmed",
-			"mode": "X",
-			"opposite_edge_style": "FFS-trimmed",
-			"slot_height": "6"
 		},
 		
 		"-- p165x series: atom row backs in atom length increments": "",
@@ -272,6 +280,15 @@
 			"backside_texture": "atom-rows-f",
 			"hole_style": "THL-1005-5u",
 			"length_ca": "[8, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1659": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[9, \"atom\"]",
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"

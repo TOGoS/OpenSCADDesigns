@@ -1,4 +1,4 @@
-// FrenchCleat-v1.9
+// FrenchCleat-v1.10
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -26,6 +26,10 @@
 //   give some of the grippy benefit of tgx11-atom-f but in a less restrictive way.
 // v1.9:
 // - Allow vertical slots for THL-1006 holes by setting slot_height > 0
+// v1.10:
+// - Add 'description' parameter, to help organize presets.
+
+description = "";
 
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
