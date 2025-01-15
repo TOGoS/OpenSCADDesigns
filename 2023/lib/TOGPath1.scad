@@ -1,4 +1,4 @@
-// TOGPath1.102
+// TOGPath1.103
 //
 // Functions for transforming 2D paths
 // 
@@ -17,6 +17,8 @@
 //   even when applied to otherwise-impossible-to-offset corners.
 //   This is important for some designs that [ab]use Raths
 //   to generate polylines, such as PegboardHook0.scad.
+// v1.103:
+// - togpath1__merge_offsets to omit trailing ["offset", 0] ops.
 
 use <./TOGComplexLib1.scad>
 
@@ -449,11 +451,9 @@ function togpath1__rathnode_to_polypoints(pa, pb, pc, rathnode, opindex) =
 
 function togpath1__merge_offsets(oplist, index, curoff=0) =
 	// Whether or not we include a trailing ["offset", 0] shouldn't matter,
-	// but for some reason it does.
-	// Evidence: x-git-commit:8d391050d1baab058ceea2428db064ca9f2ec14a#2023/experimental/PegboardHook0.scad, what="angled-shelf-holder"
-	// Using this 'smart' version 'fixes' it, but shouldn't:
-	// len(oplist) == index ? (curoff == 0 ? [] : [["offset", curoff]]) :
-	len(oplist) == index ? [["offset", curoff]] :
+	// But maybe they should be removed for 'normalization' purposes?
+	len(oplist) == index ? (curoff == 0 ? [] : [["offset", curoff]]) :
+	// len(oplist) == index ? [["offset", curoff]] :
 	oplist[index][0] == "offset" ? togpath1__merge_offsets(oplist, index+1, curoff+oplist[index][1]) :
 	[if(curoff != 0) ["offset", curoff], oplist[index], each togpath1__merge_offsets(oplist, index+1)];
 
