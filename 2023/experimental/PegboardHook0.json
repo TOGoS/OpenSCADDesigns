@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p1519": {
+			"what": "angled-shelf-holder",
+			"hook_inner_depth_u": "26"
+		},
+		"p1757": {
+			"what": "angled-shelf-holder",
+			"hook_inner_depth_u": "28"
+		}
+	},
+	"fileFormatVersion": "1"
+}
