@@ -1,18 +1,24 @@
-// PegboardHook0.3
+// PegboardHook0.4
 //
 // v0.2:
 // - Reorder line raths to reduce some stickey-outies
 // - Replace 'angle' option with simple 'what'
 // v0.3:
 // - Hook depth is configurable
+// v0.4:
+// - hook_inner_depth is now interpreted as the distance between inner
+//   surfaces of the hook or shelf holder.
+// - Adjust default hook_inner_depth_u to 26 so that angled-shelf-holder
+//   with default values matches what it was for p1519
+//   (http://wherever-files.nuke24.net/uri-res/raw/urn:bitprint:MLHVFWLZ5QDQSS4DF2MPUPNXWCYJMHNG.ZKVOTYBL7B6RT6AEMNQE42EP3P7G22MGHQNFC2A/p1519-PegboardHook0.1-angled-shelf-holder.stl)
 // 
 // TODO:
 // - Round the convex polyline corners
 // - Some minimum bracing on bottom
 
 what = "j-hook"; // ["j-hook", "shelf-holder", "angled-shelf-holder"]
-// 28 = 1+3/4", 30=1+7/8"
-hook_inner_depth_u = 30;
+// Space between front/back 'prongs'; 26 = 1+5/8", 28 = 1+3/4", 30=1+7/8"
+hook_inner_depth_u = 26;
 
 module __pbh0__end_params() { }
 
@@ -82,7 +88,7 @@ function pbh0_normal_bits(length_inches) =
 
 j_hook =
 let( x0 = line_hwid )
-let( x1 = line_width + hook_inner_depth )
+let( x1 = line_hwid + line_width + hook_inner_depth )
 let( rr = min(6*u, hook_inner_depth/2) )
 ["union",
 	each pbh0_normal_bits(1),
@@ -124,8 +130,8 @@ let( pivot_pos = [ 1*u, -8*u-size[1]] )
 
 echo(atan2(3,4));
 
-shelf_holder        = make_square_hook([hook_inner_depth, 12*u], angle=0);
-angled_shelf_holder = make_square_hook([hook_inner_depth, 12*u], angle=-36.9);
+shelf_holder        = make_square_hook([hook_inner_depth + line_width, 12*u], angle=0);
+angled_shelf_holder = make_square_hook([hook_inner_depth + line_width, 12*u], angle=-36.9);
 
 shape =
 	what == "j-hook" ? j_hook :
