@@ -1,4 +1,4 @@
-// TOGPath1.101
+// TOGPath1.102
 //
 // Functions for transforming 2D paths
 // 
@@ -12,6 +12,11 @@
 //   before any other ops are considered, so that raths like
 //   ["togpath1-rath", ["togpath1-rathnode", [x,y], ["offset", 1], ["round", 1]], ...]
 //   should now work as you would expect.
+// v1.102:
+// - Fix so that applying zero offsets will not result in NaNs,
+//   even when applied to otherwise-impossible-to-offset corners.
+//   This is important for some designs that [ab]use Raths
+//   to generate polylines, such as PegboardHook0.scad.
 
 use <./TOGComplexLib1.scad>
 
@@ -177,7 +182,7 @@ function togpath1__qathseg_to_polypoints(seg, offset=0) =
 	let( a1 = seg[3] )
 	let( rad = seg[4] )
 	let( rad1 = rad + (a1>a0?1:-1)*offset )
-	let( vcount = !is_undef(seg[5]) ? seg[5] : max(2, round(abs(a1 - a0) * max($fn,1) / 360)) )
+	let( vcount = !is_undef(seg[5]) ? seg[5] : max(2, 1 + round(abs(a1 - a0) * max($fn,1) / 360)) )
 	assert( rad >= 0 )
 	assert( abs(a1 - a0) > 0 )
 	let( fcount = vcount-1 )
@@ -236,6 +241,13 @@ togpath1__assert_equals(
 		["togpath1-qathseg", [ 2,0], -90,  90, 1],
 	],
 	togpath1_polyline_to_qath([[-2,0],[2,0]], r=1)
+);
+togpath1__assert_equals(
+	[[-2,1],[-3,0],[-2,-1],[2,-1],[3,0],[2,1]],
+	togpath1_qath_to_polypoints(["togpath1-qath",
+		["togpath1-qathseg", [-2,0],  90, 270, 1],
+		["togpath1-qathseg", [ 2,0], -90,  90, 1],
+	], $fn=4)
 );
 togpath1__assert_equals(
 	[[-2,1],[-3,0],[-2,-1],[2,-1],[3,0],[2,1]],
@@ -362,14 +374,30 @@ function togpath1__bevel(pa, pb, pc, bevel_size) =
 // Given 3 points: pa,pb,pc, determine an offset vector
 // that when added to pb, will be `dist` from both pa-pb and pb-pc.
 function togpath1__offset_vector(pa, pb, pc, dist) =
+	dist == 0 ? [0,0] : // Special case to allow handling cases that would otherwise result in NaNs
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
 	let( ov_forward = tan(turn/2) )
 	let( ovec = tcplx1_multiply(ab_normalized, [0,-1]) + tcplx1_multiply(ab_normalized, [ov_forward,0]) )
 	ovec*dist;
 
+togpath1__assert_equals([-1, 1], togpath1__offset_vector([-1,0], [0,0], [0,1], -1));
+togpath1__assert_equals([ 0, 0], togpath1__offset_vector([-1,0], [0,0], [0,1],  0));
+togpath1__assert_equals([ 1,-1], togpath1__offset_vector([-1,0], [0,0], [0,1],  1));
+
+// Normally impossible cases can be handled when offset=0
+// (this is important for some [ab]uses of raths for polyline purposes,
+// e.g. by PegboardHook0.scad):
+togpath1__assert_equals([ 0, 0], togpath1__offset_vector([-1,0], [0,0], [-1,0], 0));
+
 function togpath1__offset(pa, pb, pc, dist) =
-	[pb + togpath1__offset_vector(pa, pb, pc, dist)];
+	let( ovec = togpath1__offset_vector(pa, pb, pc, dist) )
+	assert( is_num(ovec[0]), "Ope, offset_vector returned NaN")
+	assert( is_num(ovec[1]), "Ope, offset_vector returned NaN" )
+	[pb + ovec];
+
+togpath1__assert_equals([[-0.5, 0.5]], togpath1__offset([-1,0], [0,0], [0,1], -0.5));
+togpath1__assert_equals([[ 0  , 0  ]], togpath1__offset([-1,0], [0,0], [0,1],  0  ));
 
 // Rounds a corner using `force_fn` (or `ceil($fn * angle/360)`) points.
 // If point count is 1, will return `[pb]`.
@@ -420,6 +448,11 @@ function togpath1__rathnode_to_polypoints(pa, pb, pc, rathnode, opindex) =
 
 
 function togpath1__merge_offsets(oplist, index, curoff=0) =
+	// Whether or not we include a trailing ["offset", 0] shouldn't matter,
+	// but for some reason it does.
+	// Evidence: x-git-commit:8d391050d1baab058ceea2428db064ca9f2ec14a#2023/experimental/PegboardHook0.scad, what="angled-shelf-holder"
+	// Using this 'smart' version 'fixes' it, but shouldn't:
+	// len(oplist) == index ? (curoff == 0 ? [] : [["offset", curoff]]) :
 	len(oplist) == index ? [["offset", curoff]] :
 	oplist[index][0] == "offset" ? togpath1__merge_offsets(oplist, index+1, curoff+oplist[index][1]) :
 	[if(curoff != 0) ["offset", curoff], oplist[index], each togpath1__merge_offsets(oplist, index+1)];
@@ -468,6 +501,12 @@ function togpath1_rath_to_polypoints(rath) =
 
 // Deprecated name for togpath1_rath_to_polypoints
 function togpath1_rath_to_points(rath) = togpath1_rath_to_polypoints(rath);
+
+togpath1__assert_equals([[-1,0], [1,0]], togpath1_rath_to_polypoints(["togpath1-rath",
+	["togpath1-rathnode", [-1,0]],
+	["togpath1-rathnode", [ 1,0]],
+]));
+
 
 function togpath1_map_rath_nodes(rath, func) = [
 	rath[0],
