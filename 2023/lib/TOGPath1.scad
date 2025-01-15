@@ -231,6 +231,13 @@ togpath1__assert_equals(
 );
 togpath1__assert_equals(
 	[[-2,1],[-3,0],[-2,-1],[2,-1],[3,0],[2,1]],
+	togpath1_qath_to_polypoints(["togpath1-qath",
+		["togpath1-qathseg", [-2,0],  90, 270, 1],
+		["togpath1-qathseg", [ 2,0], -90,  90, 1],
+	], $fn=4)
+);
+togpath1__assert_equals(
+	[[-2,1],[-3,0],[-2,-1],[2,-1],[3,0],[2,1]],
 	togpath1_qath_to_polypoints(togpath1_polyline_to_qath([[-2,0],[2,0]], r=1), $fn=4)
 );
 
@@ -360,8 +367,15 @@ function togpath1__offset_vector(pa, pb, pc, dist) =
 	let( ovec = tcplx1_multiply(ab_normalized, [0,-1]) + tcplx1_multiply(ab_normalized, [ov_forward,0]) )
 	ovec*dist;
 
+togpath1__assert_equals([-1, 1], togpath1__offset_vector([-1,0], [0,0], [0,1], -1));
+togpath1__assert_equals([ 0, 0], togpath1__offset_vector([-1,0], [0,0], [0,1],  0));
+togpath1__assert_equals([ 1,-1], togpath1__offset_vector([-1,0], [0,0], [0,1],  1));
+
 function togpath1__offset(pa, pb, pc, dist) =
 	[pb + togpath1__offset_vector(pa, pb, pc, dist)];
+
+togpath1__assert_equals([[-0.5, 0.5]], togpath1__offset([-1,0], [0,0], [0,1], -0.5));
+togpath1__assert_equals([[ 0  , 0  ]], togpath1__offset([-1,0], [0,0], [0,1],  0  ));
 
 // Rounds a corner using `force_fn` (or `ceil($fn * angle/360)`) points.
 // If point count is 1, will return `[pb]`.
@@ -412,6 +426,11 @@ function togpath1__rathnode_to_polypoints(pa, pb, pc, rathnode, opindex) =
 
 
 function togpath1__merge_offsets(oplist, index, curoff=0) =
+	// Whether or not we include a trailing ["offset", 0] shouldn't matter,
+	// but for some reason it does.
+	// Evidence: x-git-commit:8d391050d1baab058ceea2428db064ca9f2ec14a#2023/experimental/PegboardHook0.scad, what="angled-shelf-holder"
+	// Using this 'smart' version 'fixes' it, but shouldn't:
+	// len(oplist) == index ? (curoff == 0 ? [] : [["offset", curoff]]) :
 	len(oplist) == index ? [["offset", curoff]] :
 	oplist[index][0] == "offset" ? togpath1__merge_offsets(oplist, index+1, curoff+oplist[index][1]) :
 	[if(curoff != 0) ["offset", curoff], oplist[index], each togpath1__merge_offsets(oplist, index+1)];
