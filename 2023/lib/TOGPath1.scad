@@ -1,4 +1,4 @@
-// TOGPath1.101
+// TOGPath1.102
 //
 // Functions for transforming 2D paths
 // 
@@ -12,6 +12,11 @@
 //   before any other ops are considered, so that raths like
 //   ["togpath1-rath", ["togpath1-rathnode", [x,y], ["offset", 1], ["round", 1]], ...]
 //   should now work as you would expect.
+// v1.102:
+// - Fix so that applying zero offsets will not result in NaNs,
+//   even when applied to otherwise-impossible-to-offset corners.
+//   This is important for some designs that [ab]use Raths
+//   to generate polylines, such as PegboardHook0.scad.
 
 use <./TOGComplexLib1.scad>
 
@@ -369,6 +374,7 @@ function togpath1__bevel(pa, pb, pc, bevel_size) =
 // Given 3 points: pa,pb,pc, determine an offset vector
 // that when added to pb, will be `dist` from both pa-pb and pb-pc.
 function togpath1__offset_vector(pa, pb, pc, dist) =
+	dist == 0 ? [0,0] : // Special case to allow handling cases that would otherwise result in NaNs
 	let( ab_normalized = tcplx1_normalize(pb-pa) )
 	let( turn = tcplx1_relative_angle_abc(pa, pb, pc) )
 	let( ov_forward = tan(turn/2) )
@@ -379,8 +385,16 @@ togpath1__assert_equals([-1, 1], togpath1__offset_vector([-1,0], [0,0], [0,1], -
 togpath1__assert_equals([ 0, 0], togpath1__offset_vector([-1,0], [0,0], [0,1],  0));
 togpath1__assert_equals([ 1,-1], togpath1__offset_vector([-1,0], [0,0], [0,1],  1));
 
+// Normally impossible cases can be handled when offset=0
+// (this is important for some [ab]uses of raths for polyline purposes,
+// e.g. by PegboardHook0.scad):
+togpath1__assert_equals([ 0, 0], togpath1__offset_vector([-1,0], [0,0], [-1,0], 0));
+
 function togpath1__offset(pa, pb, pc, dist) =
-	[pb + togpath1__offset_vector(pa, pb, pc, dist)];
+	let( ovec = togpath1__offset_vector(pa, pb, pc, dist) )
+	assert( is_num(ovec[0]), "Ope, offset_vector returned NaN")
+	assert( is_num(ovec[1]), "Ope, offset_vector returned NaN" )
+	[pb + ovec];
 
 togpath1__assert_equals([[-0.5, 0.5]], togpath1__offset([-1,0], [0,0], [0,1], -0.5));
 togpath1__assert_equals([[ 0  , 0  ]], togpath1__offset([-1,0], [0,0], [0,1],  0  ));
@@ -487,6 +501,12 @@ function togpath1_rath_to_polypoints(rath) =
 
 // Deprecated name for togpath1_rath_to_polypoints
 function togpath1_rath_to_points(rath) = togpath1_rath_to_polypoints(rath);
+
+togpath1__assert_equals([[-1,0], [1,0]], togpath1_rath_to_polypoints(["togpath1-rath",
+	["togpath1-rathnode", [-1,0]],
+	["togpath1-rathnode", [ 1,0]],
+]));
+
 
 function togpath1_map_rath_nodes(rath, func) = [
 	rath[0],
