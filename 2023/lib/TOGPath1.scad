@@ -177,7 +177,7 @@ function togpath1__qathseg_to_polypoints(seg, offset=0) =
 	let( a1 = seg[3] )
 	let( rad = seg[4] )
 	let( rad1 = rad + (a1>a0?1:-1)*offset )
-	let( vcount = !is_undef(seg[5]) ? seg[5] : max(2, round(abs(a1 - a0) * max($fn,1) / 360)) )
+	let( vcount = !is_undef(seg[5]) ? seg[5] : max(2, 1 + round(abs(a1 - a0) * max($fn,1) / 360)) )
 	assert( rad >= 0 )
 	assert( abs(a1 - a0) > 0 )
 	let( fcount = vcount-1 )
