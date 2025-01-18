@@ -1,8 +1,20 @@
 {
 	"parameterSets": {
 		"p1748": {
+			"description": "This one worked when prunt with a 0.4mm nozzle on the Ender 3",
 			"$fn": "48",
 			"board_margin": "[0.5, 0.2, 0.1]",
+			"hull_z0_u": "-16",
+			"hull_z1_u": "24",
+			"minirail_margin": "0.1",
+			"outer_offset": "-0.1",
+			"usb_cutout_depth": "2",
+			"usb_groove_ext_u": "12"
+		},
+		"p1759": {
+			"description": "Larger board margins for sloppied (0.8mm nozzle) printers",
+			"$fn": "48",
+			"board_margin": "[0.8, 0.5, 0.1]",
 			"hull_z0_u": "-16",
 			"hull_z1_u": "24",
 			"minirail_margin": "0.1",
