@@ -11,6 +11,14 @@
 			"hook_depth": "76.2",
 			"thickness": "6.35",
 			"width": "38.1"
+		},
+		"p1761": {
+			"description": "3-inch hook (a bit over 2.5\" inside) for holding Sara's handheld vacuum",
+			"head_height": "38.1",
+			"hole_diameter": "8",
+			"hook_depth": "76.2",
+			"thickness": "5",
+			"width": "38.1"
 		}
 	},
 	"parameterSets": "",
