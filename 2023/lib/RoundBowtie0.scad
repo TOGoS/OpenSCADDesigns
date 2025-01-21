@@ -1,4 +1,4 @@
-// RoundBowtie0.4
+// RoundBowtie0.6
 // 
 // A curvier 'bowtie' piece.
 // 
@@ -12,6 +12,8 @@
 //   will union the bowtie with a rectangular base
 // v0.4:
 // - Split library from demo
+// v0.6:
+// - Allow arbitrary lobe_count
 
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
@@ -36,7 +38,7 @@ let(corner_ops = [["round", diamond_r/sqrt(2) + offset]])
 	])	["togpath1-rathnode", v * diamond_r, each corner_ops]
 ];
 
-function roundbowtie0_make_bowtie_rath(diamond_r, offset) =
+function roundbowtie0_make_bowtie_rath(diamond_r, lobe_count=2, offset) =
 // Take 2:
 // 0.7 is intentionally chosen as it is slightly less than sqrt(2),
 // which avoids funkiness at 'seams' between roundings when offset is negative.
@@ -50,22 +52,16 @@ let(actual_rounding_r = diamond_r*0.707 + min(0,offset/diamond_r))
 let(corner_ops = [["round", actual_rounding_r], ["offset", offset]])
 ["togpath1-rath",
 	for(v = [
-		[ 0, 0],
-		[ 1,-1],
-		[ 2, 0],
-		[ 1, 1],
-		[ 0, 0],
-		[-1, 1],
-		[-2, 0],
-		[-1,-1],
+		for( xm=[-lobe_count+1 :  2 :  lobe_count-1] ) each [[xm-1, 0], [xm, -1]],
+		for( xm=[ lobe_count-1 : -2 : -lobe_count+1] ) each [[xm+1, 0], [xm, +1]],
 	])	["togpath1-rathnode", v * diamond_r, each corner_ops]
 ];
 
-function roundbowtie0_make_bowtie_2d(diamond_r, offset=0, center_hole_d=0) =
+function roundbowtie0_make_bowtie_2d(diamond_r, lobe_count=2, offset=0, center_hole_d=0) =
    let( hole = togmod1_make_circle(d=center_hole_d) )
 	["difference",
 		togmod1_make_polygon(togpath1_rath_to_polypoints(
-			roundbowtie0_make_bowtie_rath(diamond_r, offset)
+			roundbowtie0_make_bowtie_rath(diamond_r, lobe_count=lobe_count, offset=offset)
 		)),
 		
 		for( xm=[-1,1] ) ["translate", [xm*diamond_r,0,0], hole],

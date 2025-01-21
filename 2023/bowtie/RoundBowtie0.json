@@ -2,7 +2,7 @@
 	"parameterSets": {
 		"p1725": {
 			"$fn": "32",
-			"base_size": "[25.4, 12.7, 3.1]",
+			"base_thickness": "3.1",
 			"center_hole_d": "4.5",
 			"diamond_r": "6.35",
 			"offset": "-0.07",
@@ -10,7 +10,7 @@
 		},
 		"p1727": {
 			"$fn": "32",
-			"base_size": "[25.4, 12.7, 3.1]",
+			"base_thickness": "3.1",
 			"center_hole_d": "4.5",
 			"diamond_r": "6.35",
 			"offset": "0.0",
@@ -18,7 +18,6 @@
 		},
 		"p1738": {
 			"$fn": "32",
-			"base_size": "[25.4, 12.7, 0]",
 			"center_hole_d": "4.5",
 			"diamond_r": "6.35",
 			"offset": "-0.03",
@@ -26,7 +25,7 @@
 		},
 		"p1742": {
 			"$fn": "32",
-			"base_size": "[25.4, 12.7, 3.1]",
+			"base_thickness": "3.1",
 			"center_hole_d": "4.5",
 			"diamond_r": "6.35",
 			"offset": "-0.03",
@@ -34,7 +33,18 @@
 		},
 		"p1747": {
 			"$fn": "32",
-			"base_size": "[25.4, 12.7, 3.1]",
+			"base_thickness": "3.1",
+			"center_hole_d": "4.5",
+			"center_hole_style": "THL-1001",
+			"diamond_r": "6.35",
+			"offset": "-0.03",
+			"thickness": "19.05"
+		},
+		"p1762": {
+			"description": "Same as p1747, but single-lobed",
+			"$fn": "32",
+			"lobe_count": "1",
+			"base_thickness": "3.1",
 			"center_hole_d": "4.5",
 			"center_hole_style": "THL-1001",
 			"diamond_r": "6.35",
