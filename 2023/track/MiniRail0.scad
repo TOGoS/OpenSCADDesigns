@@ -1,4 +1,4 @@
-// MiniRail0.10
+// MiniRail0.11
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -25,6 +25,8 @@
 // v0.10:
 // - Clip thickness configurable, defaults to 1/2" instead of 3/4",
 //   to fit between notch clips
+// v0.11:
+// - Option for round bowtie cutouts at ends
 
 length_chunks = 3;
 mode = "rail"; // ["rail", "clip", "miniclip", "jammer", "notch-clip"]
@@ -33,6 +35,9 @@ alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
 notches_enabled = true;
 clip_width = 12.7;
 offset = -0.1;
+
+bowtie_style = "none"; // ["none", "round"]
+bowtie_offset = -0.03;
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -85,8 +90,15 @@ tphl1_make_polyhedron_from_layer_function([
 mhole = ["rotate", [180,0,0], tog_holelib2_hole(hole_type, inset=2)];
 alt_mhole = ["rotate", [180,0,0], tog_holelib2_hole(alt_hole_type, inset=2)];
 
+use <../lib/RoundBowtie0.scad>
+
 function make_minirail(length) =
 let( length_mholes = round(length/mhole_pitch) )
+let( bowtie_cutout =
+	bowtie_style == "none" ? ["union"] :
+	bowtie_style == "round" ? ["linear-extrude-zs", [-20, 20], roundbowtie0_make_bowtie_2d(6.35, lobe_count=2, offset=-bowtie_offset)] :
+	assert(false, str("Unrecognized bowtie style: '", bowtie_style, "'"))
+)
 ["difference",
 	["translate", [0, 0, 2*u], make_minirail_hull(
 		length,
@@ -95,6 +107,7 @@ let( length_mholes = round(length/mhole_pitch) )
 	)],
 	for( xm=[-length_mholes/2+0.5 : 1 : length_mholes/2-0.4] ) ["translate", [xm*mhole_pitch, 0, 0], mhole],
 	for( xm=[-length_mholes/2+1   : 1 : length_mholes/2-0.9] ) ["translate", [xm*mhole_pitch, 0, 0], alt_mhole],
+	for( x=[-length/2, +length/2] ) ["translate", [x,0,0], bowtie_cutout],
 ];
 
 outer_rad=4*u;
