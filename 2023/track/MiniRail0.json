@@ -97,7 +97,6 @@
 			"notches_enabled": "true",
 			"offset": "-0.1"
 		},
-		
 		"-- Hooks --": "",
 		"p1536": {
 			"mode": "miniclip",
@@ -114,7 +113,12 @@
 			"clip_width": "12.7",
 			"offset": "-0.1"
 		},
-		"-- Spacers --": "",
+		"-- Spacers (-0.2mm offset) --": "",
+		"p1767": {
+			"mode": "spacer",
+			"clip_width": "3.1",
+			"offset": "-0.2"
+		},
 		"p1537": {
 			"mode": "spacer",
 			"clip_width": "6.3",
@@ -130,6 +134,7 @@
 			"clip_width": "25.4",
 			"offset": "-0.2"
 		},
+		"-- Spacers (-0.3mm offset) --": "",
 		"p1560": {
 			"mode": "spacer",
 			"clip_width": "12.7",
@@ -144,7 +149,7 @@
 			"mode": "notch-clip",
 			"offset": "-0.1"
 		},
-		"p1387 - clip w\/ -0.3mm offset": {
+		"p1387 - clip w/ -0.3mm offset": {
 			"mode": "notch-clip",
 			"offset": "-0.3"
 		},
