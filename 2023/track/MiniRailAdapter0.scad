@@ -1,7 +1,12 @@
-// MiniRailAdapter0.1
+// MiniRailAdapter0.2
 // 
 // Hang it on a MiniRail
 // and bolt stuff to it.
+// 
+// Changes:
+// v0.2:
+// - Change rail cutout and hole placement.
+//   If you liked it the way it was, use 0.1.
 
 size_atoms = [3,12,1];
 rail_mating_offset = -0.1;
@@ -57,20 +62,16 @@ back_hole  = ["translate", [0,0,size[2]-2*u], ["rotate", [180,0,90], tog_holelib
 front_hole = ["translate", [0,0,size[2]-2*u], ["rotate", [  0,0,90], tog_holelib2_hole("THL-1005", depth=size[2], overhead_bore_height=size[2], inset=0)]];
 
 rails = [
-	[ size_atoms[1]/2 - 1.5, "open"],
-	[ size_atoms[1]/2 - 7.5, "closed"],
+	[ size_atoms[1]/2 -  1.5, "open"  , "back" ],
+	[ size_atoms[1]/2 -  4.5, "closed", "back" ],
+	[ size_atoms[1]/2 -  7.5, "closed", "front"],
+	[ size_atoms[1]/2 - 10.5, "closed", "back" ],
 ];
 
 function hole_row_type_by_rail(ym, rail) =
-	rail[1] == "open"   ? (
-		(ym == rail[0]+1) ? "none" :
-		undef
-	) :
-	rail[1] == "closed" ? (
-		(ym == rail[0]+1 || ym == rail[0]-1) ? "none" :
-		ym == rail[0] ? "front" :
-		undef
-	) :
+	rail[1] == "closed" && (ym == rail[0]+1 || ym == rail[0]-1) ? "none" :
+	rail[1] == "open"   && (ym == rail[0]+1) ? "none" :
+	ym == rail[0] ? rail[2] :
 	undef;
 
 function hole_row_type(ym, rails, index=0) =

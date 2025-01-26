@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p1769": {
+			"$fn": "24",
+			"rail_mating_offset": "-0.2",
+			"size_atoms": "[2, 12, 1]"
+		}
+	},
+	"fileFormatVersion": "1"
+}
