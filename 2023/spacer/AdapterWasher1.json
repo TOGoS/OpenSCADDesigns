@@ -9,6 +9,16 @@
 			"post_bevel": "1",
 			"post_diameter": "7.5",
 			"post_height": "3.1"
+		},
+		"p1770": {
+			"$fn": "32",
+			"flange_bevel": "0",
+			"flange_diameter": "12.7",
+			"flange_height": "1.6",
+			"hole_diameter": "4.5",
+			"post_bevel": "1",
+			"post_diameter": "7.5",
+			"post_height": "3.1"
 		}
 	},
 	"parameterSets": "",

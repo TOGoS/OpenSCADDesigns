@@ -1,4 +1,4 @@
-// AdapterWasher1.1
+// AdapterWasher1.2
 // 
 // Has a smaller hole for a smaller screw,
 // and fits into larger holes
@@ -6,16 +6,18 @@
 // Versions:
 // v1.1:
 // - Configurable, zero-able bevels
+// v1.2:
+// - Indicate 0.1 precision for configuration parameters
 
-hole_diameter   = 4.5;
-post_diameter   = 7.5;
-post_height     = 3.1;
+hole_diameter   = 4.5; // 0.1
+post_diameter   = 7.5; // 0.1
+post_height     = 3.1; // 0.1
 // Max size of bevel on tip of post
-post_bevel      = 1.0;
-flange_diameter = 9.0;
-flange_height   = 3.1;
+post_bevel      = 1.0; // 0.1
+flange_diameter = 9.0; // 0.1
+flange_height   = 3.1; // 0.1
 // Max size of bevel on top/bottom of flange
-flange_bevel    = 1.0;
+flange_bevel    = 1.0; // 0.1
 $fn = 32;
 
 use <../lib/TOGMod1.scad>
