@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p1771": {
+			"$fn": "32",
+			"center_hole_diameter": "0",
+			"center_pocket_diameter": "0",
+			"slot_depth": "1.6",
+			"slot_width": "12.7",
+			"thickness": "3.175"
+		}
+	},
+	"fileFormatVersion": "1"
+}
