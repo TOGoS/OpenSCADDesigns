@@ -1,4 +1,4 @@
-// PowerCirclePanel0.4
+// PowerCirclePanel0.5
 // 
 // Mounting panel for a uhm
 // 
@@ -14,6 +14,8 @@
 // v0.4:
 // - Fix the bevels at the ends of the slots to be placed
 //   based on slot_width
+// v0.5:
+// - Fix bevels more and different
 
 thickness = 3.175;
 slot_width = 12.7;
@@ -31,20 +33,23 @@ use <../lib/TOGPath1.scad>
 inch = 25.4;
 
 togmod1_domodule(["difference",
+	let( bev = 3.175 )
 	let( rops = [["round", 3.175]] )
-	let( cops = [["bevel", 3.175], each rops] )
-	let( sbev = slot_width/2+3.175 )
+	let( cops = [["bevel", bev], each rops] )
+	let( hnw = slot_width/2 )
    let( panel_hull_2d = togmod1_make_polygon(togpath1_rath_to_polypoints(["togpath1-rath",
-		["togpath1-rathnode", [ 3*inch, -3*inch], each cops],
-		["togpath1-rathnode", [ 3*inch, -sbev  ], each rops],
-		["togpath1-rathnode", [ 3*inch-sbev,  0]],
-		["togpath1-rathnode", [ 3*inch,  sbev  ], each rops],
-		["togpath1-rathnode", [ 3*inch,  3*inch], each cops],
-		["togpath1-rathnode", [-3*inch,  3*inch], each cops],
-		["togpath1-rathnode", [-3*inch,  sbev  ], each rops],
-		["togpath1-rathnode", [-3*inch+sbev, 0 ]],
-		["togpath1-rathnode", [-3*inch, -sbev  ], each rops],
-		["togpath1-rathnode", [-3*inch, -3*inch], each cops],
+		["togpath1-rathnode", [ 3*inch,  -3*inch], each cops],
+		["togpath1-rathnode", [ 3*inch, -hnw-bev], each rops],
+		["togpath1-rathnode", [ 3*inch-bev, -hnw]],
+		["togpath1-rathnode", [ 3*inch-bev, +hnw]],
+		["togpath1-rathnode", [ 3*inch,  hnw+bev], each rops],
+		["togpath1-rathnode", [ 3*inch,   3*inch], each cops],
+		["togpath1-rathnode", [-3*inch,   3*inch], each cops],
+		["togpath1-rathnode", [-3*inch,  hnw+bev], each rops],
+		["togpath1-rathnode", [-3*inch+bev, +hnw]],
+		["togpath1-rathnode", [-3*inch+bev, -hnw]],
+		["togpath1-rathnode", [-3*inch, -hnw-bev], each rops],
+		["togpath1-rathnode", [-3*inch,  -3*inch], each cops],
 	])))
 	let( mounting_hole = togmod1_make_circle(d=4.5) )
 	let( mounting_hole_positions = [
