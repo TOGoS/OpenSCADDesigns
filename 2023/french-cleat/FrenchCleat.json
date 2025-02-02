@@ -385,6 +385,8 @@
 			"opposite_edge_style": "FFS-trimmed",
 			"slot_height": "6"
 		},
+
+		"-- other stuff --": "",
 		"p1755": {
 			"description": "10-atom flat-backed FC",
 			"$tgx11_offset": "-0.1",
@@ -393,6 +395,15 @@
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1773": {
+			"description": "Tester for WSTYPE-4114-H4.5Ts",
+			"height_ca": "[4.5, \"inch\"]",
+			"length_ca": "[1.5, \"inch\"]",
+			"mating_edge_style": "S",
+			"opposite_edge_style": "T",
+			"mode": "tester",
+			"fc_surface_offset": "-0.1"
 		}
 	},
 	"parameterSets": "",

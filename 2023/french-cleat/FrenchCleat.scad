@@ -1,4 +1,4 @@
-// FrenchCleat-v1.10
+// FrenchCleat-v1.11
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -28,15 +28,22 @@
 // - Allow vertical slots for THL-1006 holes by setting slot_height > 0
 // v1.10:
 // - Add 'description' parameter, to help organize presets.
+// v1.11:
+// - Add 'height_ca' parameter
+// - Add 'T' and 'T-trimmedd' options for opposite edge
+// - Add 'fc_surface_offset' parameter
+//   - set to small negative value like -0.1 to ensure FC is not too big,
+//     or hole in tester not too tight
 
 description = "";
 
+height_ca = [1.5, "inch"];
 length_ca = [6, "inch"];
 //tip_bevel_size = 2;
 //corner_bevel_size = 1;
 
 mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
-opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "S-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
+opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "T", "S-trimmed", "T-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
 hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u"]
 slot_height = 0;
 
@@ -47,6 +54,10 @@ mode = "X"; // ["X", "Z", "tester"]
 // Can use tgx11-atom-f only when -C/-B edge styles are selected and mode = "X"
 backside_texture = "flat"; // ["flat", "tgx11-atom-f", "atom-rows-f"]
 $tgx11_offset = -0.1;
+
+/* [Detail] */
+
+fc_surface_offset = 0; // 0.1
 
 assert(backside_texture == "flat" || (mating_edge_style == "S-trimmed-C" && opposite_edge_style == "FFS-trimmed-B" && mode == "X"));
 
@@ -72,13 +83,20 @@ counterbore_depth    = togridlib3_decode([3/16, "inch"]);
 yn  = togridlib3_decode([-3/4    , "inch"]);
 ypn = togridlib3_decode([ 3/4-3/8, "inch"]);
 ypp = togridlib3_decode([ 3/4+3/8, "inch"]);
-zn = togridlib3_decode([-3/8, "inch"]);
-zp = togridlib3_decode([+3/8, "inch"]);
+zn  = togridlib3_decode([-3/8, "inch"]);
+zp  = togridlib3_decode([+3/8, "inch"]);
 
 // Tip bevel size
 //tb = tip_bevel_size;
 // Corner bevel size
 //cb = corner_bevel_size;
+
+function invert_edge_points(p, off=0) =
+	len(p) == off ? [] :
+	[
+		each invert_edge_points(p, off+1),
+		[p[off][0], -p[off][1]],
+	];
 
 // Positions of points relative to left edge, in 'u'
 
@@ -143,14 +161,18 @@ assert(is_list(right_points))
 function profile_points_for_style(style) =
 	style == "F" ? edge_profile_f_points :
 	style == "S" ? edge_profile_s_points :
+	style == "T" ? invert_edge_points(edge_profile_s_points) :
 	style == "S-trimmed" ? edge_profile_s_trimmed_points :
+	style == "T-trimmed" ? invert_edge_points(edge_profile_s_trimmed_points) :
 	style == "S-trimmed-C" ? edge_profile_s_trimmed_points_c :
 	style == "FS" ? edge_profile_fs_points :
 	style == "FFS-trimmed" ? edge_profile_ffs_trimmed_points :
 	style == "FFS-trimmed-B" ? edge_profile_ffs_trimmed_points_b :
 	assert(false, str("Unknown edge style '", style, "'"));
 
-fc_points = make_fc_profile_points(-12, 12,
+halfheight_u = togridlib3_decode(height_ca, unit=[1, "u"]) / 2;
+
+fc_points = make_fc_profile_points(-halfheight_u, halfheight_u,
 	profile_points_for_style(mating_edge_style),
 	profile_points_for_style(opposite_edge_style),
 	togridlib3_decode([1,"u"]));
@@ -165,12 +187,12 @@ function roundeprof(x0, x1, round) = let(vcount=max(1,ceil($fn/4))) [
 function offset_points(points, offset) =
 	togpath1_rath_to_points(["togpath1-rath", for(p=points) ["togpath1-rathnode", p, ["offset", offset]]]);
 
-function make_fc_hull(direction, length) = tphl1_make_polyhedron_from_layer_function(
+function make_fc_hull(direction, length, fc_surface_offset=0) = tphl1_make_polyhedron_from_layer_function(
 	roundeprof(-length/2, length/2, 1.5)
 	// [-length/2, -1], [-length/2+1, 0], [length/2-1, 0], [length/2, -1]
 , function(xo) [
 	let(x=xo[0])
-	for(point=offset_points(fc_points,xo[1]))
+	for(point=offset_points(fc_points,xo[1]+fc_surface_offset))
 	direction == "X" ? [x, point[0], point[1]] : [point[0], point[1], x]
 ]);
 
@@ -197,7 +219,9 @@ hole_spacing =
 hole_rows = [0];
 
 inch = togridlib3_decode([1,"inch"]);
-tester_hull = tphl1_make_rounded_cuboid([3*inch, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
+
+tester_height = togridlib3_decode(height_ca) + togridlib3_decode([1,"chunk"]);
+tester_hull = tphl1_make_rounded_cuboid([tester_height, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
 
 function fc_atomic_rows_foot(size_ca) =
 let(size = togridlib3_decode_vector(size_ca))
@@ -208,8 +232,8 @@ let(size = togridlib3_decode_vector(size_ca))
 	["translate", [0,  12.7, size[2]/2], togmod1_make_cuboid([size[0], 12.7-inch/8+$tgx11_offset*2, size[2]+$tgx11_offset*2])],
 ];
 
-function make_textured_fc_hull(direction, length, backside_texture) =
-	let(h = make_fc_hull(direction, length))
+function make_textured_fc_hull(direction, length, backside_texture, fc_surface_offset=0) =
+	let(h = make_fc_hull(direction, length, fc_surface_offset=fc_surface_offset))
 	backside_texture == "atom-rows-f" ? ["difference", h,
 		["translate", [0,0,zn], ["rotate", [180,0,0],
 			fc_atomic_rows_foot(
@@ -239,12 +263,17 @@ fc_main =
 		for( y=hole_rows )
 		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, y], hole]]
 	] :
-	mode == "Z" ? make_fc_hull("Z", length) :
+	mode == "Z" ? make_fc_hull("Z", length, fc_surface_offset=fc_surface_offset) :
 	mode == "tester" ? ["difference",
 		tester_hull,
-		make_fc_hull("Z", length*2),
+		
+		make_fc_hull("Z", length*2, fc_surface_offset=-fc_surface_offset),
+		
+		let( chunk=togridlib3_decode([1,"chunk"]) )
+		let( height_chunks=togridlib3_decode(height_ca, unit=[1,"chunk"]) )
+		for( xm=[-height_chunks/2+0.5 : 1 : height_chunks/2] )
 		for( s=[-1, 1] )
-		["scale", [1,s,1], ["translate", [0, -3/8*inch, 0], ["rotate", [90, 0, 0], make_cyllish([[-1, 2], [3/8*inch+1, 12]])]]],
+		["scale", [1,s,1], ["translate", [xm*chunk, -3/8*inch, 0], ["rotate", [90, 0, 0], make_cyllish([[-1, 2], [3/8*inch+1, 12]])]]],
 		// TODO: Subtract center-marking pencil-tip holes
 	] :
 	assert(false, str("Unknown mode: '", mode, "'"));
