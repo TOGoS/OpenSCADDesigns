@@ -1,4 +1,4 @@
-// TOGHoleLib2.14
+// TOGHoleLib2.14.1
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -41,6 +41,8 @@
 // - tog_holelib2_slot, which can currently make THL-1006[-3/16in] slots,
 //   and will fall back to using tog_holelib2_hole for any single-point slots
 // - 'THL-1006-3/16in' hole type
+// v2.14.1:
+// - Remove some debug echoes from tog_holelib2_slot
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -245,17 +247,15 @@ function tog_holelib2_slot(type, zs, points) =
 			["translate", [0,0,zs[1]],
 				tog_holelib2_hole(type, depth=-zs[0]-zs[1], overhead_bore_height=zs[2]-zs[1])]] :
 
-	echo(points=points)
 	let( holezds = tog_holelib2__decode_holezds(type) )
 	let( zds = [for(i=[1:1:len(holezds)-1])
 		let(hzd=holezds[i])
-		echo(hzd)
 		[hzd[0][0]*zs[0] + hzd[0][1]*zs[1] + hzd[0][2]*zs[2] + hzd[0][3]*1, hzd[1]]
 	] )
 	tphl1_make_polyhedron_from_layer_function(
 		zds,
-		function(zd) let(z=zd[0], r=max(0.01, zd[1]/2)) echo(z=z, r=r) togvec0_offset_points(
-			let(polypoints=togpath1_rath_to_polypoints(togpath1_polyline_to_rath(points, r, "round"))) echo(polypoints=polypoints) polypoints,
+		function(zd) let(z=zd[0], r=max(0.01, zd[1]/2)) togvec0_offset_points(
+			let(polypoints=togpath1_rath_to_polypoints(togpath1_polyline_to_rath(points, r, "round"))) polypoints,
 			z
 		)
    );
