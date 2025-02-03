@@ -1,0 +1,46 @@
+{
+	"parameterSets": {
+		"p1776": {
+			"$fn": "72",
+			"chunk_hole_counterbore_depth": "0",
+			"chunk_hole_counterbore_diameter": "22",
+			"chunk_hole_diameter": "8.5",
+			"corner_hole_placement": "corners",
+			"corner_hole_style": "THL-1005",
+			"outer_offset": "-0.1",
+			"post_diameter": "12",
+			"post_height": "31",
+			"size_chunks": "[1, 2]",
+			"thickness": "12.7",
+			"top_bevel": "0"
+		},
+		"p1777": {
+			"$fn": "72",
+			"chunk_hole_counterbore_depth": "0",
+			"chunk_hole_counterbore_diameter": "22",
+			"chunk_hole_diameter": "8.5",
+			"corner_hole_style": "THL-1005",
+			"outer_offset": "-0.1",
+			"post_diameter": "22",
+			"post_height": "-6.35",
+			"size_chunks": "[1, 2]",
+			"thickness": "12.7",
+			"top_bevel": "3.175"
+		},
+		"p1778": {
+			"$fn": "72",
+			"chunk_hole_counterbore_depth": "0",
+			"chunk_hole_counterbore_diameter": "22",
+			"chunk_hole_diameter": "8.5",
+			"corner_hole_placement": "all",
+			"corner_hole_style": "straight-5mm",
+			"outer_offset": "-0.1",
+			"post_diameter": "22",
+			"post_height": "0",
+			"size_chunks": "[1, 2]",
+			"thickness": "3.17",
+			"top_bevel": "0"
+		}
+	},
+	"fileFormatVersion": "1"
+}
