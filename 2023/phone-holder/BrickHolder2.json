@@ -18,7 +18,7 @@
 			"top_segmentation": "chatom"
 		},
 		"p1564": {
-			"description" "3\"x3\"x6\" dunker with atomic sides and 0.2mm inner margin",
+			"description": "3\"x3\"x6\" dunker with atomic sides and 0.2mm inner margin",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
 			"back_segmentation": "atom",
@@ -36,7 +36,7 @@
 			"top_segmentation": "block"
 		},
 		"p1565": {
-			"description" "2\"x2\"x6\" dunker with atomic sides and 0.5mm inner margin",
+			"description": "2\"x2\"x6\" dunker with atomic sides and 0.5mm inner margin",
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "none",
 			"back_segmentation": "atom",
