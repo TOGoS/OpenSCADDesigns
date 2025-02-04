@@ -25,6 +25,12 @@
 			"outer_margin": "0.6",
 			"sub_margin": "0.3",
 			"render_fn": "48"
+		},
+		"p1779": {
+			"outer_margin": "0.6",
+			"render_fn": "48",
+			"style": "PHI-1007-IV",
+			"sub_margin": "0.3"
 		}
 	},
 	"parameterSets": "",
