@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p1780": {
+			"floor_thickness_u": "4",
+			"height_u": "48",
+			"inner_size_u": "[20, 20]",
+			"inner_surface_offset": "-0.2",
+			"outer_size_u": "[24, 24]"
+		}
+	},
+	"fileFormatVersion": "1"
+}
