@@ -1,4 +1,4 @@
-// BrickHolder2.7
+// BrickHolder2.8
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -34,6 +34,10 @@
 // - Use tgx11_block_bottom instead of tgx11_atomic_block_bottom
 //   (tgx11_atomic_block_bottom doesn't handle 'block' segmentation properly;
 //   it should probably throw an error instead of doing it wrong)
+// v2.8:
+// - Option for 'centered-gridbeam-9mm-holes' instead of front slot.
+//   These will line up with the atom-spaced holes in the back
+//   only when width/height is an odd number of atoms.
 
 description = "";
 
@@ -45,7 +49,7 @@ block_size_atoms = [6,6,12];
 can_diameter = 0;
 
 bottom_hole_style = "standard"; // ["none","standard"]
-front_slot_style = "standard"; // ["none","standard"]
+front_slot_style = "standard"; // ["none","standard","centered-gridbeam-9mm-holes"]
 back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
 
 top_cord_slot_depth    = 0; // 0.01
@@ -234,7 +238,15 @@ effective_features = [
 	each features,
 	if(bottom_hole_style == "standard") "bottom-hole",
 	if(front_slot_style == "standard") "front-slot",
+	if(front_slot_style == "centered-gridbeam-9mm-holes") "front-centered-gridbeam-9mm-holes",
 	if(top_cord_slot_diameter > 0 && top_cord_slot_depth > 0) "top-cord-slot",
+];
+
+front_gridbeam_holes =
+let( hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(zrange=[-block_size[1]/2, block_size[1]/2], d=8)] )
+["union",
+	for(ym=[1.5 : 3 : block_size_atoms[2]])
+	["translate", [0, -block_size[1]/2, ym*atom], hole]
 ];
 
 pre_tgx_segmented_brick_holder = ["difference",
@@ -245,6 +257,7 @@ pre_tgx_segmented_brick_holder = ["difference",
 		f == "" ? ["union"] :
 		f == "bottom-hole" ? bottom_hole :
 		f == "front-slot" ? maybedebug(debug_front_slot_enabled, front_slot) :
+		f == "front-centered-gridbeam-9mm-holes" ? front_gridbeam_holes :
 		f == "top-cord-slot" ? top_cord_slot :
 		assert(false, str("Unrecognized feature: '", f, "'")),
 	mounting_holes,
