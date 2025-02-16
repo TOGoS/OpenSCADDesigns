@@ -1,4 +1,4 @@
-// BrickHolder2.8
+// BrickHolder2.9
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -38,6 +38,9 @@
 // - Option for 'centered-gridbeam-9mm-holes' instead of front slot.
 //   These will line up with the atom-spaced holes in the back
 //   only when width/height is an odd number of atoms.
+// v2.9:
+// - 'centered-gridbeam-9mm-holes' will actually make two columns of holes
+//   if width is even multiple of atoms
 
 description = "";
 
@@ -245,8 +248,9 @@ effective_features = [
 front_gridbeam_holes =
 let( hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(zrange=[-block_size[1]/2, block_size[1]/2], d=8)] )
 ["union",
-	for(ym=[1.5 : 3 : block_size_atoms[2]])
-	["translate", [0, -block_size[1]/2, ym*atom], hole]
+	for(xm = block_size_atoms[0] % 2 == 1 ? [0] : [-0.5, +0.5]) // I am complectifying oops lmao
+	for(ym = [1.5 : 3 : block_size_atoms[2]])
+	["translate", [xm*atom, -block_size[1]/2, ym*atom], hole]
 ];
 
 pre_tgx_segmented_brick_holder = ["difference",
