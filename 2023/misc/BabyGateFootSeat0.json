@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p1784": {
+			"description": "2\" x 3.5\" seat with thick walls",
+			"cutout_diameter": "35",
+			"cutout_length_atoms": "3",
+			"floor_height": "3.175",
+			"length_atoms": "7",
+			"total_height": "19.05",
+			"width_atoms": "4",
+			"$tgx11_offset": "-0.1"
+		}
+	},
+	"fileFormatVersion": "1"
+}
