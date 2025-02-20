@@ -1,4 +1,4 @@
-// TerrariumLid0.3
+// TerrariumLid0.4
 // 
 // A panel for the top of those terrarium sections.
 //
@@ -12,12 +12,15 @@
 // - Optional ridge
 // v0.3:
 // - Fix ridge insetting
+// v0.4:
+// - Additional hole options
 
 thickness = 3.175;
 size_atoms = [9,9];
-component_hole_positioning = "center"; // ["none", "center", "back-corners"]
+component_hole_positioning = "center"; // ["none", "center", "back-corners","corners+center"]
 // Subtract this much around the edge of the panel
 outer_offset = -0.1; // 0.1
+lampmount_hole_positioning = "none"; // ["none", "center-x-axis"]
 
 /* [Ridge] */
 
@@ -31,12 +34,16 @@ ridge_extra_inset = 0.5; // 0.1
 
 $fn = 64;
 
+module terrariumlid0__end_params() { }
+
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 
 use <./TerrariumSegment0.scad>
+
+wire_hole_positioning = "none"; // ["none","front-corner"]
 
 thing =
 let(size_ca = [for(s=size_atoms) [s, "atom"]])
@@ -45,11 +52,19 @@ let(actual_outer_size = [size[0]+outer_offset*2, size[1]+outer_offset*2, thickne
 let(outer_hull_2d = togmod1_make_rounded_rect(actual_outer_size, r=6.35))
 let(squavoiden = terrariumsegment0_make_squavoiden(size_ca))
 let(component_hole = togmod1_make_circle(d = 32))
+let(cp = [size[0]/2-38.1, size[1]/2-38.1] )
 let(component_hole_positions =
 	component_hole_positioning == "none" ? [] :
 	component_hole_positioning == "center" ? [[0,0]] :
-	component_hole_positioning == "back-corners" ? [[-size[0]/2+38.1, size[1]/2-38.1], [+size[0]/2-38.1, size[1]/2-38.1]] :
+	component_hole_positioning == "back-corners" ? [for( m=[[-1,1],[1,1]] ) [m[0]*cp[0], m[1]*cp[1]]] :
+	component_hole_positioning == "corners+center" ? [for( m=[[-1,-1],[-1,1],[1,1],[1,-1],[0,0]] ) [m[0]*cp[0], m[1]*cp[1]]] :
 	assert(false, str("Unrecognized component hole positioning scheme: '", component_hole_positioning, "'"))
+)
+let(lampmount_hole = togmod1_make_circle(d = 8))
+let(lampmount_hole_positions =
+	lampmount_hole_positioning == "none" ? [] :
+	lampmount_hole_positioning == "center-x-axis" ? [for( m=[[-1,0],[1,0]] ) [m[0]*cp[0], m[1]*cp[1]]] :
+	assert(false, str("Unrecognized lampmount hole positioning scheme: '", lampmount_hole_positioning, "'"))
 )
 let(screw_hole_positions = squavoiden_to_hole_positions(squavoiden))
 let(screw_hole = togmod1_make_circle(d=4.5))
@@ -73,6 +88,7 @@ let( ridge_2d = ["difference",
 	togmod1_linear_extrude_z([-1, ridge_top_z+1], ["union",			
 		for(hp=screw_hole_positions) ["translate", hp, screw_hole],
 		for(hp=component_hole_positions) ["translate", hp, component_hole],
+		for(hp=lampmount_hole_positions) ["translate", hp, lampmount_hole],
 	]),
 ];
 
