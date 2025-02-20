@@ -1,4 +1,4 @@
-// TerrariumLid0.2
+// TerrariumLid0.3
 // 
 // A panel for the top of those terrarium sections.
 //
@@ -10,6 +10,8 @@
 // - Back corners means +y, not -y
 // - Configurable outer offset, default -0.1mm
 // - Optional ridge
+// v0.3:
+// - Fix ridge insetting
 
 thickness = 3.175;
 size_atoms = [9,9];
@@ -54,8 +56,8 @@ let(screw_hole = togmod1_make_circle(d=4.5))
 let( ridge_top_z = thickness + ridge_height )
 let( ridge_width = 3.175 )
 let( ridge_rect_size = [
-	size[0] - togridlib3_decode([ridge_inset_atoms,"atom"])*2 - ridge_extra_inset*2 - ridge_width/2,
-	size[1] - togridlib3_decode([ridge_inset_atoms,"atom"])*2 - ridge_extra_inset*2 - ridge_width/2,
+	size[0] - togridlib3_decode([ridge_inset_atoms,"atom"])*2 - ridge_extra_inset*2 - ridge_width,
+	size[1] - togridlib3_decode([ridge_inset_atoms,"atom"])*2 - ridge_extra_inset*2 - ridge_width,
 ])
 let( ridge_rath = togpath1_make_rectangle_rath(ridge_rect_size, [["round", 6.35]]) )
 let( ridge_2d = ["difference",
