@@ -1,9 +1,13 @@
-// PanelConnector2.0
+// PanelConnector2.1
 // 
 // Improvements over old regular PanelConnector.scad:
 // - Uses TOGMod1!
 // - Option to make it L-shaped or U-shaped by setting left_jut_u or right_jut_u!
 // - u = 1/16'
+// 
+// Changes:
+// v2.1:
+// - Fix zig size so that tooth pitch is 1/8" instead of 1/4"
 
 // Width of thing (u)
 width_u = 16;
@@ -34,7 +38,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 function panelconnector2_make_xz_outline_points(length, top_z_func) =
-	let( zig = 2*u_num/u_den )
+	let( zig = u_num/u_den )
 	let( len_zigs = ceil(length/zig/2)*2 )
 	let( xz0 = -len_zigs/2, xz1 = len_zigs/2 )
 	[
