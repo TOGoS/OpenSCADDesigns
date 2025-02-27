@@ -1,0 +1,32 @@
+{
+	"parameterSets": {
+		"p1788": {
+                	"description": "3-inch L-shaped thing",
+			"$fn": "48",
+			"base_thickness_u": "6",
+			"center_width_u": "8",
+			"left_jut_u": "6",
+			"length_u": "48",
+			"right_jut_u": "0",
+			"slope": "0.05",
+			"u_den": "160",
+			"u_num": "254",
+			"width_u": "16"
+		},
+		"p1789": {
+                	"description": "3-inch straight thing",
+			"$fn": "48",
+			"base_thickness_u": "6",
+			"center_width_u": "8",
+			"left_jut_u": "0",
+			"length_u": "48",
+			"right_jut_u": "0",
+			"slope": "0.05",
+			"u_den": "160",
+			"u_num": "254",
+			"width_u": "16"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
