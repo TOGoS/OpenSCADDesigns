@@ -1,4 +1,4 @@
-// PanelConnector2.1
+// PanelConnector2.2
 // 
 // Improvements over old regular PanelConnector.scad:
 // - Uses TOGMod1!
@@ -8,6 +8,9 @@
 // Changes:
 // v2.1:
 // - Fix zig size so that tooth pitch is 1/8" instead of 1/4"
+// v2.2:
+// - Offset zigs by 1/4 their pitch so that opposite connectors
+//   can mash together satisfyingly
 
 // Width of thing (u)
 width_u = 16;
@@ -43,7 +46,7 @@ function panelconnector2_make_xz_outline_points(length, top_z_func) =
 	let( xz0 = -len_zigs/2, xz1 = len_zigs/2 )
 	[
 		[xz1*zig,              0],
-		for( xz=[xz1 : -2 : xz0] ) each [
+		for( xz=[xz1 + 0.5 : -2 : xz0] ) each [
 			[(xz  )*zig, top_z_func((xz  )*zig) + 0*zig],
 			[(xz-1)*zig, top_z_func((xz-1)*zig) - 1*zig],
 		],
