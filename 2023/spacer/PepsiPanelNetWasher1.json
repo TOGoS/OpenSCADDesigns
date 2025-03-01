@@ -1,0 +1,22 @@
+{
+	"parameterSets": {
+		"p1792": {
+			"$fn": "48",
+			"bev": "1",
+			"diameter": "25.4",
+			"hole_inset": "0.1",
+			"hole_style": "THL-1001",
+			"thickness": "3.175"
+		},
+		"p1793": {
+			"$fn": "48",
+			"bev": "1",
+			"diameter": "25.4",
+			"hole_inset": "0.1",
+			"hole_style": "THL-1004",
+			"thickness": "3.175"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
