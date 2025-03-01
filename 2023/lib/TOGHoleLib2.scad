@@ -1,4 +1,4 @@
-// TOGHoleLib2.14.1
+// TOGHoleLib2.15
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -43,6 +43,8 @@
 // - 'THL-1006-3/16in' hole type
 // v2.14.1:
 // - Remove some debug echoes from tog_holelib2_slot
+// v2.15:
+// - Add THL-1008 hole type, which is essentially the union of THL-1001 and THL-1004
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -180,6 +182,7 @@ tog_holelib2_hole_types = [
 	["THL-1005", "Countersunk for #6 flathead, but can also accept a hex nut"],
 	["THL-1006", "Counterbored for 1/4\" furniture bolt, weld nut, etc"],
 	["THL-1007", "Counterbored for #6 hex nut, with 'hole overhang remedy'"],
+	["THL-1008", "Suitable for #6 flathead, but roomier than 1001 and larger hole than 1004"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 	["THL-1023", "Counterbored for M3 pan-head screws"],
@@ -218,6 +221,7 @@ function tog_holelib2_hole(
 	type_name == "THL-1006" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=inset, flange_radius=flange_radius) :
 	type_name == "THL-1006-3/16in" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=3/16*inch, flange_radius=flange_radius) :
 	type_name == "THL-1007" ? tog_holelib2_hole1007(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1008" ? tog_holelib2_countersunk_hole(8, 4.5, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
 
