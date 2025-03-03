@@ -23,6 +23,18 @@
 			"ridge_inset_atoms": "1",
 			"ridge_extra_inset": "0.5",
 			"$fn": "64"
+		},
+		"p1797": {
+			"size_atoms": "[24, 12]",
+			"thickness": "3.175",
+			"component_hole_positioning": "back-corners",
+			"barrel_inlet_positioning": "front-left",
+			"outer_offset": "-0.1",
+			"ridge_height": "3.2",
+			"ridge_inset_atoms": "1",
+			"ridge_extra_inset": "0.5",
+			"overhang_remedy_depth": "0.4",
+			"$fn": "64"
 		}
 	},
 	"fileFormatVersion": "1"
