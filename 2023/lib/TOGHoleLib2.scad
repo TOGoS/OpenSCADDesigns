@@ -1,4 +1,4 @@
-// TOGHoleLib2.15
+// TOGHoleLib2.16
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -45,6 +45,10 @@
 // - Remove some debug echoes from tog_holelib2_slot
 // v2.15:
 // - Add THL-1008 hole type, which is essentially the union of THL-1001 and THL-1004
+// v2.16:
+// - Fix tog_holelib2_counterbored_with_remedy_hole so that all cutouts are within
+//   the hull of the counterbore (previously corners would 'stick out into the walls'
+//   if counterbore was not large enough relative to the shaft).
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -94,26 +98,24 @@ function tog_holelib2_counterbored_with_remedy_hole(
 	counterbore_d, shaft_d, depth, overhead_bore_height=undef, remedy_depth=0.4, inset=1
 ) =
 	let(_overhead_bore_height = is_undef(overhead_bore_height) ? max(0, -inset) + 1 : overhead_bore_height)
+	let(tip_z = _overhead_bore_height+counterbore_d/2)
 	["intersection",
+		// Hull: Counterbore and overhead bore all the way down
+		tphl1_make_z_cylinder(zds=[[-depth, counterbore_d], [_overhead_bore_height, counterbore_d], [tip_z, 0]]),
 		["union",
-			tphl1_make_z_cylinder(zds=[
-				[0 - depth - 10                             ,       shaft_d],
-				[0 - inset - remedy_depth                   ,       shaft_d],
-				[0 - inset - remedy_depth                   , counterbore_d],
-				[0 + _overhead_bore_height                  , counterbore_d],
-				[0 + _overhead_bore_height + counterbore_d/2,             0],
-			]),
-			// There's probably a more elegant way to do this
-			["translate", [0,0,-inset],
-				togmod1_make_cuboid([shaft_d+0.1, shaft_d, remedy_depth*4])],
-		],
-		["union",
-			let(cbbh = _overhead_bore_height + counterbore_d + inset)
-				["translate", [0,0,cbbh/2-inset],
-					togmod1_make_cuboid([counterbore_d * 2, counterbore_d * 2, cbbh])],
-			let(sbbh = depth*2)
-				["translate", [0,0,-depth/2],
-					togmod1_make_cuboid([shaft_d+0.1, counterbore_d * 1.5, sbbh])],
+			// From the bottom up:
+			// The shaft:
+			tphl1_make_z_cylinder(zrange=[-depth-1, tip_z+1], d=shaft_d),
+			// Remedy cuts...
+			["intersection",
+				togmod1_linear_extrude_z([-inset-remedy_depth * 3, -inset+1], togmod1_make_rect([counterbore_d+2, shaft_d])), // Y limit for both
+				["union",
+					togmod1_linear_extrude_z([-inset-remedy_depth * 2, -inset+3], togmod1_make_rect([shaft_d,   counterbore_d+3])), // Inner
+					togmod1_linear_extrude_z([-inset-remedy_depth * 1, -inset+2], togmod1_make_rect([counterbore_d+2, shaft_d+1])), // Outer
+				]
+			],
+			// Counterbore
+			tphl1_make_z_cylinder(zrange=[-inset, tip_z+10], d=counterbore_d+1),
 		]
 	];
 

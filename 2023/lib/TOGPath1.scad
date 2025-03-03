@@ -1,4 +1,4 @@
-// TOGPath1.103
+// TOGPath1.104
 //
 // Functions for transforming 2D paths
 // 
@@ -19,6 +19,10 @@
 //   to generate polylines, such as PegboardHook0.scad.
 // v1.103:
 // - togpath1__merge_offsets to omit trailing ["offset", 0] ops.
+// v1.104:
+// - Added handy utility functions to make some common uses easier:
+//   - togpath1_rath_to_polygon
+//   - togpath1_make_rounded_beveled_rect
 
 use <./TOGComplexLib1.scad>
 
@@ -593,3 +597,16 @@ let( zath = togpath1_polyline_to_zath(polyline, end_shape="square") )
 		let( is_end_node = i == 1 || i == 1 + polylen-1 || i == 1 + polylen || i == len(zath)-1 )
 		["togpath1-rathnode", p[0] + p[1]*r, if(is_end_node) each end_ops]
 ];
+
+
+
+//// Handy Utilities
+
+// Copied from TOGMod1Constructors to avoid a dependency.  :-P
+function togpath1__polypoints_to_polygon(verts) =
+	["polygon-vp", verts, [[for( i=[0:1:len(verts)-1] ) i%len(verts)]]];
+
+function togpath1_rath_to_polygon(rath) = togpath1__polypoints_to_polygon(togpath1_rath_to_polypoints(rath));
+
+function togpath1_make_rounded_beveled_rect(size, bevel_size, rounding_radius, offset=0, position=[0,0]) =
+	togpath1_rath_to_polygon(togpath1_make_rectangle_rath(size, [["bevel", bevel_size], ["round", rounding_radius], ["offset", offset]], position=position));
