@@ -1,5 +1,8 @@
 // TOGRack2Case0.2
 
+// 'TOGRack2' = WSTYPE-4140, mentioned in https://www.nuke24.net/docs/2018/TOGRack.html
+// https://www.nuke24.net/uri-res/raw/urn:bitprint:S7EBAC6OOBUZB3IYHEZ6N2QFXRBT2EVX.4GQUAKTWXJNQJRYTZ2HK43UZC5LE3UUI7JZAKEY/WSTYPE-4140-v2.2.pdf
+
 size_chunks = [1,2,1];
 outer_offset = -0.1; // 0.1
 inner_offset = -0.2; // 0.1
