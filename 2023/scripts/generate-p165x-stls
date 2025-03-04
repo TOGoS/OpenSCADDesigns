@@ -1,0 +1,19 @@
+#!/usr/bin/env deno -A
+
+const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
+
+for( const i of [1651,1652,1653,1654,1656,1657,1658,1659] ) {
+	const length_atoms = i - 1650;
+	const shape_id = `p${i}`;
+	const cmd = new Deno.Command(OPENSCAD_COM, { args: [
+		"--hardwarnings",
+		"-p", "2023/french-cleat/FrenchCleat.json", "-P", shape_id,
+		"--render", "2023/french-cleat/FrenchCleat.scad",
+		"-o", `2023/print-archive/${shape_id}-FrenchCleat-${length_atoms}_atom_row_back.png`,
+		"-o", `2023/print-archive/${shape_id}-FrenchCleat-${length_atoms}_atom_row_back.stl`,
+		"--imgsize", "1536,1536",
+	]});
+	const proc = cmd.spawn();
+	const status = await proc.status;	
+	console.log(`openscad.com exited with status ${status.code}`);
+}
