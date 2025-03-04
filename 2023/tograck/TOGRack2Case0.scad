@@ -1,4 +1,9 @@
-// TOGRack2Case0.2
+// TOGRack2Case0.3
+// 
+// v0.3:
+// - Adjust rounding point count calculations to work with recent TOGPath1 verions
+//   that interpret it as vertex count instead of face count (hmm)
+// - Use togx11_block_bottom instead of tgx11_atomic_block_bottom
 
 // 'TOGRack2' = WSTYPE-4140, mentioned in https://www.nuke24.net/docs/2018/TOGRack.html
 // https://www.nuke24.net/uri-res/raw/urn:bitprint:S7EBAC6OOBUZB3IYHEZ6N2QFXRBT2EVX.4GQUAKTWXJNQJRYTZ2HK43UZC5LE3UUI7JZAKEY/WSTYPE-4140-v2.2.pdf
@@ -40,7 +45,7 @@ function recrath(size, corner_ops) = ["togpath1-rath",
 ];
 
 function bevrath(size, off) = recrath(size, [["bevel", 2*u], ["round", 2*u, fn22d], ["offset", off]]);
-function rourath(size, off) = recrath(size, [["round", 1*u, fn22d*2+2], ["offset", off]]);
+function rourath(size, off) = recrath(size, [["round", 1*u, fn22d*2], ["offset", off]]);
 
 function layer_rath(shap) =
 	shap[0] == "b" ? bevrath(shap[1], shap[2]) : rourath(shap[1], shap[2]);
@@ -82,7 +87,7 @@ function rack(size_ca) =
 	let( rackz = size[2] - 6.35 )
 	["difference",
 		["intersection",
-			if( bottom_segmentation != "none" ) tgx11_atomic_block_bottom([[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]], segmentation=bottom_segmentation),
+			if( bottom_segmentation != "none" ) tgx11_block_bottom([[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]], segmentation=bottom_segmentation),
 			rack_hull(size_chunks*chunk_pitch, lip_height=lip_height)
 		],
 	
