@@ -5,6 +5,13 @@
 			"lip_height": "1.5875",
 			"outer_offset": "-0.1",
 			"size_chunks": "[2, 2, 1]"
+		},
+		"p1798": {
+			"bottom_segmentation": "chatom",
+			"inner_offset": "-0.2",
+			"lip_height": "1.5875",
+			"outer_offset": "-0.1",
+			"size_chunks": "[3, 3, 1]"
 		}
 	},
 	"parameterSets": "",
