@@ -1,4 +1,4 @@
-// TOGHoleLib2.20
+// TOGHoleLib2.21
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -55,6 +55,8 @@
 // - Add THL-1014: a slightly loose hole for some panel-mount 2.1mm barrel jacks that I have
 // v2.20:
 // - Support `straight-${rational}mm` hole types, e.g. "straight-4.5mm"
+// v2.20:
+// - Support `straight-${rational}in` hole types, e.g. "straight-3/8in"
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -258,8 +260,13 @@ function tog_holelib2_hole(
 		let( quantr = togstr1_parse_quantity(tokens[1]) )
 		quantr[1] == len(tokens[1]) ? (
 			let( quant = quantr[0] )
-			quant[1] == "mm" ? tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=quant[0][0] / quant[0][1]) :
-			assert(false, str("Unknown unit, '", quant[1], "', in hole type '", type_name, "'"))
+			let( unit_den = 10 )
+			let( unit_num = 
+				quant[1] == "mm" ?  10 :
+				quant[1] == "in" ? 254 :
+				assert(false, str("Unknown unit, '", quant[1], "', in hole type '", type_name, "'"))
+			)
+			tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=unit_num * quant[0][0] / quant[0][1] / unit_den)
 		) :
 		assert(false, str("Failed to parse size from hole type '", type_name, "'"))
 	) :
