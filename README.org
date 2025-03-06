@@ -1,21 +1,48 @@
 #+TITLE: TOGoS's OpenSCAD designs
 
+Re-useable libraries are in [[./2023/lib/]].
+
+'Unit tests' for said libraries are in [[./2023/test/]].
+
+Everything else is shapes.
+
+If you like Gridfinity but want something that fits on an inch-based grid
+and is more rotationally symmetric, check out [[./2023/togridpile/TGx9.4.scad]]
+(for a Swiss Army Chainsaw type thing) or [[./2023/togridpile/TGx11.1.scad]]
+(for a cleaner generation of the basic shape, from which you can
+make your own cut-outs.
+
 ** Testing / Automation
 
-As of [2023-07-09], `test.bat` will use `find` (location specified by `%UNIX_FIND_EXE%`)
-to find all `.scad` files and attempt to evaluate them.
+As of [2023-07-09], ~test.bat~ will use ~find~ (location specified by ~%UNIX_FIND_EXE%~)
+to find all ~.scad~ files and attempt to evaluate them.
 
 A nicer system would cache results and pass in every defined preset for each OpenSCAD design.
+
+** Automated rendering
+
+A reminder to myself about OpenSCAD.com command-line arguments.
 
 STLs and renders can be generated from the command-line, like
 
 #+begin_src bat
-"C:\Program Files\OpenSCAD\openscad.com" -p 2023\togridpile\TGx9.4.json -P p1706 --render 2023\togridpile\TGx9.4.scad -o output/p1706.1536x1536.png -o output/p1706.stl --colorscheme "Tomorrow Night" --imgsize 1536,1536
+"C:\Program Files\OpenSCAD\openscad.com" -p 2023\togridpile\TGx9.4.json -P p1706 ^
+	--render 2023\togridpile\TGx9.4.scad ^
+	-o output/p1706.1536x1536.png ^
+	-o output/p1706.stl ^
+	--colorscheme "Tomorrow Night" ^
+	--imgsize 1536,1536
 #+end_src
 
-*** [2023-07-09] Thoughts on improved testing system
+** [2023-07-09] Thoughts on improved testing system
 
-Process (may be pipelined, unix-style, if you want):
+Idea would be to uniquely identify a ~.scad~ design based
+on the hash of the file and of all its dependencies,
+and results cached based on that hash.
+
+For a given version of the repository,
+generation of those hashes could be done
+in a pipeliney way:
 
 - List files (basically 'find')
 - Hash files, list out filename + hash ('ccouch3 id -show-inputs' may already do this!)
