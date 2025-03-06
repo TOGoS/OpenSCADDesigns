@@ -1,0 +1,20 @@
+{
+	"parameterSets": {
+		"p1800": {
+			"$fn": "24",
+			"hole_style": "THL-1001",
+			"outer_offset": "-0.1",
+			"panel_thickness": "1.5875",
+			"size_atoms": "[9, 9]"
+		},
+		"-- 1u spacers --": "",
+		"p1814": {
+			"$fn": "24",
+			"hole_style": "straight-4.5mm",
+			"outer_offset": "-0.1",
+			"panel_thickness": "1.5875",
+			"size_atoms": "[4, 1]"
+		}
+	},
+	"fileFormatVersion": "1"
+}

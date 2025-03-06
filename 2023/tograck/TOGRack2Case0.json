@@ -12,6 +12,17 @@
 			"lip_height": "1.5875",
 			"outer_offset": "-0.1",
 			"size_chunks": "[3, 3, 1]"
+		},
+		"p1799": {
+			"bottom_segmentation": "chatom",
+			"bottom_v6hc_style": "none",
+			"chunk_center_hole_style": "THL-1006",
+			"chunk_edge_hole_style": "none",
+			"inner_offset": "-0.2",
+			"lip_height": "1.5875",
+			"outer_offset": "-0.1",
+			"rack_inset": "6.35",
+			"size_chunks": "[3, 3, 1]"
 		}
 	},
 	"parameterSets": "",
