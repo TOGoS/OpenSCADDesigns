@@ -1,4 +1,4 @@
-// TOGHoleLib2.18
+// TOGHoleLib2.20
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -53,11 +53,14 @@
 // - tog_holelib2_counterbored_with_remedy_hole includes a third, diagonal cut
 // v2.18:
 // - Add THL-1014: a slightly loose hole for some panel-mount 2.1mm barrel jacks that I have
+// v2.20:
+// - Support `straight-${rational}mm` hole types, e.g. "straight-4.5mm"
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
 use <./TOGPath1.scad>
 use <./TOGVecLib0.scad>
+use <./TOGStringLib1.scad>
 
 function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
 	assert(bore_d <= neck_d, str("bore_d (", bore_d, ") > neck_d (", neck_d, ")"))
@@ -250,6 +253,16 @@ function tog_holelib2_hole(
 		inset = is_undef(inset) ? 5 : inset
 	) :
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
+	let( tokens = togstr1_tokenize(type_name, "-", 2) )
+	tokens[0] == "straight" ? (
+		let( quantr = togstr1_parse_quantity(tokens[1]) )
+		quantr[1] == len(tokens[1]) ? (
+			let( quant = quantr[0] )
+			quant[1] == "mm" ? tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=quant[0][0] / quant[0][1]) :
+			assert(false, str("Unknown unit, '", quant[1], "', in hole type '", type_name, "'"))
+		) :
+		assert(false, str("Failed to parse size from hole type '", type_name, "'"))
+	) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
 
 // hole_zds = ["tog-holelib2-holezds", [[zbottomfact, zsurfacefactor, ztopfactor, onefactor], diameter], ...]
