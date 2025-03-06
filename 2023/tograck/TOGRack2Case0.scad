@@ -1,4 +1,4 @@
-// TOGRack2Case0.5
+// TOGRack2Case0.6
 // 
 // v0.3:
 // - Adjust rounding point count calculations to work with recent TOGPath1 verions
@@ -8,6 +8,8 @@
 // - Make rack_inset configurable
 // v0.5:
 // - More options for bottom segmentation and v6hc style
+// v0.6:
+// - Options for chunk_center_hole_style and chunk_edge_hole_style
 
 // 'TOGRack2' = WSTYPE-4140, mentioned in https://www.nuke24.net/docs/2018/TOGRack.html
 // https://www.nuke24.net/uri-res/raw/urn:bitprint:S7EBAC6OOBUZB3IYHEZ6N2QFXRBT2EVX.4GQUAKTWXJNQJRYTZ2HK43UZC5LE3UUI7JZAKEY/WSTYPE-4140-v2.2.pdf
@@ -20,9 +22,12 @@ lip_height = 1.5875; // 0.0001
 rack_inset = 6.35; // 0.001
 bottom_segmentation = "atom"; // ["atom","chatom","chunk","block","none"]
 bottom_v6hc_style = "none"; // ["none", "v6.1"]
+chunk_center_hole_style = "none";
+chunk_edge_hole_style = "none";
 
 module __tr2c0__end_params() { }
 
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGPath1.scad>
@@ -57,9 +62,8 @@ function rourath(size, off) = recrath(size, [["round", 1*u, fn22d*2], ["offset",
 function layer_rath(shap) =
 	shap[0] == "b" ? bevrath(shap[1], shap[2]) : rourath(shap[1], shap[2]);
 
-function rack_hull(nsize, rack_inset, lip_height) =
+function rack_hull(nsize, rack_inset, lip_height, floor_z) =
 	let(rackz = nsize[2] - rack_inset)
-	let(floorz = 6.35)
 	let(liptopz = nsize[2]+lip_height)
 	let(hsize = [nsize[0] - 4*u, nsize[1] - 14*u])
 	let(csize = [nsize[0] - 3*u, nsize[1] -  3*u])
@@ -70,10 +74,10 @@ function rack_hull(nsize, rack_inset, lip_height) =
 		[   rackz, ["b", nsize,-u-inner_offset]],
 		[   rackz     , ["r", hsize,              0]],
 		// TODO: Taper cavity out for 1/16"-1/8" walls?
-		[   rackz-6.35, ["r", hsize,              0]],
+		[   rackz- 6.35, ["r", hsize,              0]],
 		[   rackz-19.05, ["r", csize,              0]],
-		[  floorz+1   , ["r", csize,              0]],
-		[  floorz+0   , ["r", csize,             -1]],
+		[   floor_z+1  , ["r", csize,              0]],
+		[   floor_z+0  , ["r", csize,             -1]],
 	], function(layer)
 		let(z = layer[0])
 		let(rath = layer_rath(layer[1]))
@@ -85,6 +89,7 @@ mhole2 = tphl1_make_z_cylinder(3, [-19,1]);
 magnet_hole = tphl1_make_z_cylinder(6.2, [-1,2.4]);
 
 function rack(size_ca) =
+	let( floor_z = 6.35 )
 	let( size = togridlib3_decode_vector(size_ca) )	
 	let( conduit_hole = ["rotate", [0,90,0], tphl1_make_z_cylinder(6.35, [-size[0], size[0]])] )
 	let( size_atoms = togridlib3_decode_vector(size_ca, unit=[1, "atom"]) )
@@ -92,10 +97,12 @@ function rack(size_ca) =
 	let( atom_pitch = togridlib3_decode([1,"atom"]) )
 	let( chunk_pitch = togridlib3_decode([1,"chunk"]) )
 	let( rackz = size[2] - rack_inset )
+	let( chunk_center_hole = tog_holelib2_hole(chunk_center_hole_style) )
+	let( chunk_edge_hole = tog_holelib2_hole(chunk_edge_hole_style) )
 	["difference",
 		["intersection",
 			if( bottom_segmentation != "none" ) tgx11_block_bottom([[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]], segmentation=bottom_segmentation, v6hc_style=bottom_v6hc_style ),
-			rack_hull(size_chunks*chunk_pitch, rack_inset=rack_inset, lip_height=lip_height)
+			rack_hull(size_chunks*chunk_pitch, rack_inset=rack_inset, lip_height=lip_height, floor_z=floor_z)
 		],
 	
 		for( xm=[-size_atoms[0]/2+0.5 : 1 : size_atoms[0]/2] )
@@ -109,6 +116,15 @@ function rack(size_ca) =
 		
 		for( ym=[-size_chunks[1]/2+0.5 : 0.5 : size_chunks[1]/2-0.4] )
 		["translate", [0,ym*chunk_pitch,size[2]/2], conduit_hole],
+		
+		for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2-0.5] )
+		for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2-0.5] )
+		["translate", [xm*chunk_pitch, ym*chunk_pitch, floor_z], chunk_center_hole],
+
+		for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2-0.5] )
+		for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2-0.5] )
+		for( apos=[[1,0],[0,1],[-1,0],[0,-1]] )
+		["translate", [xm*chunk_pitch + apos[0]*atom_pitch, ym*chunk_pitch + apos[1]*atom_pitch, floor_z], chunk_edge_hole],
 	];
 
 togmod1_domodule(rack(size_ca));
