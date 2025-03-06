@@ -1,7 +1,9 @@
-// OutletHolder0.1
+// OutletHolder0.2
 // 
 // v0.1:
 // - Prototype to see if it even fits
+// v0.2:
+// - Change hole spacing from 3.281" to simply 3+1/4"
 
 $fn = 24;
 
@@ -15,7 +17,7 @@ use <../lib/TOGHoleLib2.scad>
 inch = 25.4;
 atom = inch/2;
 
-hole_spacing = 3.281*inch;
+hole_spacing  = 3.25*inch;
 hole_diameter = 5;
 
 the_hull_size     = [2*inch       , 4.5*inch    , 1.25*inch];
