@@ -1,12 +1,18 @@
-// OutletFace1.0
+// OutletFace1.1
 // 
 // Outlet dimensions from:
 // https://www.doorware.com/specials/images/DEL-SWP4771.gif
 // https://sc02.alicdn.com/kf/HTB11kntehjaK1RjSZFAq6zdLFXap/225750389/HTB11kntehjaK1RjSZFAq6zdLFXap.jpg
+// 
+// v1.1:
+// - Add extra attach-to-outlet-screw holes, which by default not countersunk
 
 size_atoms = [4,9];
 panel_thickness = 1.5875; // 0.0001
-hole_style = "THL-1001"; // ["THL-1001", "THL-1004", "THL-1008", "straight-4.5mm", "straight-5mm"]
+// Style of holes for attaching panel to rack
+edge_hole_style = "THL-1001"; // ["THL-1001", "THL-1004", "THL-1008", "straight-4.5mm", "straight-5mm"]
+// Style of holes for attaching panel to outlet
+interior_hole_style = "straight-4.5mm";
 outer_offset = -0.1;
 inner_offset = -0.1;
 
@@ -19,6 +25,7 @@ use <../../lib/TOGPath1.scad>
 use <../../lib/TOGPolyhedronLib1.scad>
 
 function u_to_mm(u)     = u * 254/160;
+function inch_to_mm(i)  = i * 254/10;
 function atoms_to_mm(a) = a * 127/10;
 
 outlet_cut_2d = ["intersection",
@@ -37,7 +44,9 @@ panel_rath = ["togpath1-rath",
 ];
 
 //panel_hole = tphl1_make_z_cylinder(d=25.4*5/32, zrange=[-1, panel_thickness+1]);
-panel_hole = tog_holelib2_hole(hole_style);
+edge_hole = tog_holelib2_hole(edge_hole_style);
+interior_hole = tog_holelib2_hole(interior_hole_style);
+
 
 togmod1_domodule(["difference",
 	togmod1_linear_extrude_z([0, panel_thickness], ["difference",
@@ -48,7 +57,7 @@ togmod1_domodule(["difference",
 	
 	for( xm=[-size_atoms[0]/2+0.5 : 1 : size_atoms[0]/2-0.5] )
 	for( ym=size_atoms[1] == 1 ? [0] : [-size_atoms[1]/2+0.5, size_atoms[1]/2-0.5] )
-	["translate", [atoms_to_mm(xm), atoms_to_mm(ym), panel_thickness], panel_hole],
+	["translate", [atoms_to_mm(xm), atoms_to_mm(ym), panel_thickness], edge_hole],
 	
-	["translate", [0,0,panel_thickness], panel_hole],
+	for( ym=[-1,0,1] ) ["translate", [0,ym*inch_to_mm(3+1/4)/2, panel_thickness], interior_hole],
 ]);
