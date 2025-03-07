@@ -6,6 +6,13 @@
 			"outer_offset": "-0.1",
 			"panel_thickness": "1.5875",
 			"width_atoms": "2"
+		},
+		"p1805": {
+			"draft": "6.35",
+			"hole_style": "THL-1001",
+			"outer_offset": "-0.1",
+			"panel_thickness": "1.5875",
+			"width_atoms": "4"
 		}
 	},
 	"parameterSets": "",
