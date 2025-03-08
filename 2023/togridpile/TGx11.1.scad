@@ -1,4 +1,4 @@
-// TGx11
+// TGx11.1.18
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -9,7 +9,8 @@
 // - For the female case: have infinitely sharp corners
 //   (may need to abolish tgp-min-corner-radius)
 // 
-// TODO: 'chunk' bottom style
+// v11.1.18:
+// - bottom_foot_bevel option
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -19,6 +20,7 @@ bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
 top_segmentation = "block"; // ["atom","chatom","chunk","block","none"]
 atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
 bottom_shape = "footed"; // ["footed","beveled"]
+bottom_foot_bevel = 0.0; // 0.1
 bottom_v6hc_style = "v6.1"; // ["v6.1", "none"]
 
 lip_height = 2.54;
@@ -107,6 +109,7 @@ module tgmain() {
 		block_size_ca,
 		bottom_segmentation = bottom_segmentation,
 		bottom_shape        = bottom_shape,
+		bottom_foot_bevel   = bottom_foot_bevel,
 		bottom_v6hc_style   = bottom_v6hc_style,
 		top_segmentation = top_segmentation,
 		atom_bottom_subtractions = atom_bottom_subtractions,
