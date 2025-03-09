@@ -37,7 +37,7 @@
 			"render_fn": "24"
 		},
 		"p1806": {
-			"description": "2x1x1 basic block with 0.4mm foot bevel",
+			"description": "2x1-chunk x 1-inch basic block with 0.4mm foot bevel",
 			"atom_hole_style": "none",
 			"block_height_u": "16",
 			"block_size_chunks": "[1, 2]",
@@ -59,7 +59,7 @@
 			"top_segmentation": "block"
 		},
 		"p1807": {
-			"description": "1x1x1 basic block with 0.4mm foot bevel",
+			"description": "1x1-chunk x 1-inch basic block with 0.4mm foot bevel",
 			"atom_hole_style": "none",
 			"block_height_u": "16",
 			"block_size_chunks": "[1, 1]",
