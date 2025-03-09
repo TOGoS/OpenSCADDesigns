@@ -23,6 +23,19 @@
 			"outer_offset": "-0.1",
 			"rack_inset": "6.35",
 			"size_chunks": "[3, 3, 1]"
+		},
+		"p1808": {
+			"description": "3x3x1-chunk case with slightly beveled chatomic feet and no lip",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "chatom",
+			"bottom_v6hc_style": "none",
+			"chunk_center_hole_style": "THL-1002",
+			"chunk_edge_hole_style": "THL-1001",
+			"inner_offset": "-0.2",
+			"lip_height": "0",
+			"outer_offset": "-0.1",
+			"rack_inset": "6.35",
+			"size_chunks": "[3, 3, 1]"
 		}
 	},
 	"parameterSets": "",

@@ -1,4 +1,4 @@
-// TOGRack2Case0.6
+// TOGRack2Case0.7
 // 
 // v0.3:
 // - Adjust rounding point count calculations to work with recent TOGPath1 verions
@@ -10,6 +10,8 @@
 // - More options for bottom segmentation and v6hc style
 // v0.6:
 // - Options for chunk_center_hole_style and chunk_edge_hole_style
+// v0.7:
+// - Option for bottom_foot_bevel (new TGx11.1.18 feature!)
 
 // 'TOGRack2' = WSTYPE-4140, mentioned in https://www.nuke24.net/docs/2018/TOGRack.html
 // https://www.nuke24.net/uri-res/raw/urn:bitprint:S7EBAC6OOBUZB3IYHEZ6N2QFXRBT2EVX.4GQUAKTWXJNQJRYTZ2HK43UZC5LE3UUI7JZAKEY/WSTYPE-4140-v2.2.pdf
@@ -22,6 +24,7 @@ lip_height = 1.5875; // 0.0001
 rack_inset = 6.35; // 0.001
 bottom_segmentation = "atom"; // ["atom","chatom","chunk","block","none"]
 bottom_v6hc_style = "none"; // ["none", "v6.1"]
+bottom_foot_bevel = 0.0; // 0.1
 chunk_center_hole_style = "none";
 chunk_edge_hole_style = "none";
 
@@ -101,7 +104,12 @@ function rack(size_ca) =
 	let( chunk_edge_hole = tog_holelib2_hole(chunk_edge_hole_style) )
 	["difference",
 		["intersection",
-			if( bottom_segmentation != "none" ) tgx11_block_bottom([[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]], segmentation=bottom_segmentation, v6hc_style=bottom_v6hc_style ),
+		   tgx11_block_bottom(
+				[[size_chunks[0], "chunk"], [size_chunks[1], "chunk"], [size_chunks[2]*2, "chunk"]],
+				segmentation = bottom_segmentation,
+				v6hc_style = bottom_v6hc_style,
+				foot_bevel = bottom_foot_bevel
+			),
 			rack_hull(size_chunks*chunk_pitch, rack_inset=rack_inset, lip_height=lip_height, floor_z=floor_z)
 		],
 	
