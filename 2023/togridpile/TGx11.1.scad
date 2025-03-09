@@ -1,4 +1,4 @@
-// TGx11.1.18
+// TGx11.1.19
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -11,6 +11,8 @@
 // 
 // v11.1.18:
 // - bottom_foot_bevel option
+// v11.1.19:
+// - cavity_type = "basic" option, to make a basic cavity
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -32,6 +34,10 @@ shell_xs_offset = 10;
 
 offset = -0.1; // 0.1
 
+/* [Cavity] */
+
+cavity_type = "none"; // ["none", "basic"]
+
 /* [Preview Options] */
 
 include_test_plate = true;
@@ -50,6 +56,8 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
+use <../lib/TOGPath1.scad>
+use <../lib/TOGVecLib0.scad>
 
 function test_plate(size) =
 	let(u = togridlib3_decode([1,"u"]))
@@ -105,7 +113,7 @@ module tgmain() {
 		if( atom_hole_style == "deep-THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20, inset=3)],
 	];
 
-	function blok() = tgx11_block(
+	function blok1() = tgx11_block(
 		block_size_ca,
 		bottom_segmentation = bottom_segmentation,
 		bottom_shape        = bottom_shape,
@@ -117,6 +125,39 @@ module tgmain() {
 		$tgx11_gender = "m"
 	);
 	
+	function basic_cavity() =
+		let(block_size = togridlib3_decode_vector(block_size_ca))
+		let(wall_thickness = u)
+		let(bev = togridlib3_decode([1, "tgp-standard-bevel"]))
+		tphl1_make_polyhedron_from_layer_function(
+			[
+				[                4*u, -1*u],
+				[                5*u, -0*u],
+				// TODO: Adjust based on block height, maybe use cos or something
+				[block_size[2] - 7*u, -0*u],
+				[block_size[2] - 3*u, -1*u],
+				[block_size[2] - 1*u, -2*u],
+				[block_size[2] + 2*u, -2*u],
+			],
+			function(zo) togvec0_offset_points(
+				togpath1_rath_to_polypoints(togpath1_make_rectangle_rath(
+				   [block_size[0], block_size[1]],
+					corner_ops=[["offset", -wall_thickness], ["bevel", bev], ["round", bev], ["offset", zo[1]]]
+			   )),
+				zo[0]
+			)
+		);
+
+	function cavity() =
+		cavity_type == "none" ? ["union"] :
+		cavity_type == "basic" ? basic_cavity() :
+		assert(false, str("Unrecognized cavity type: '", cavity_type, "'"));
+	
+	function blok() = ["difference",
+		blok1(),
+		cavity(),
+	];
+
 	what =
 		item == "block" ? ["hand+glove",
 			blok(),
