@@ -79,6 +79,27 @@
 			"shell_xs_angle": "0",
 			"shell_xs_offset": "10",
 			"top_segmentation": "block"
+		},
+		"p1823": {
+			"atom_hole_style": "none",
+			"block_height_u": "24",
+			"block_size_chunks": "[3, 2]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "chatom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"cavity_type": "basic",
+			"include_test_plate": "false",
+			"include_unoffset_ghost": "false",
+			"item": "block",
+			"lip_height": "2.54",
+			"mode": "normal",
+			"offset": "-0.1",
+			"preview_fn": "12",
+			"render_fn": "24",
+			"shell_xs_angle": "0",
+			"shell_xs_offset": "10",
+			"top_segmentation": "block"
 		}
 	},
 	"parameterSets": "",
