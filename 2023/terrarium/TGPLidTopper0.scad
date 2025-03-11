@@ -1,9 +1,12 @@
-// TGPLidTopper0.1
+// TGPLidTopper0.2
 // 
 // TOGridPile top for terrarium lid.
 // Specifically for p1797
 // (http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:GJQ6W6P2MMP7R2EHB5LKBKRW44WESZDW.WRY2ZSMRMQBXZYCHY2Q3PSDIRCEL5VTCDACXM5I/p1797.png)
 // though it could be parameterized later
+// 
+// v0.2:
+// - Put big holes in all four corners
 
 $fn = $preview ? 16 : 48;
 $tgx11_offset = -0.1;
@@ -28,9 +31,9 @@ let(extra_hole_2d = togmod1_make_circle(d = 5))
 let(magnet_hole_2d = togmod1_make_circle(d = magnet_hole_diameter))
 let(big_square = togpath1_make_rounded_beveled_rect([inch_to_mm(3), inch_to_mm(3)], u_to_mm(2), inner_round, offset=0 - u_to_mm(1) - $tgx11_offset))
 let(small_square = togpath1_make_rounded_beveled_rect([inch_to_mm(1.5), inch_to_mm(1.5)], u_to_mm(2), inner_round, offset=0 - u_to_mm(1) - $tgx11_offset))
-let(component_hole_positions = [for(cp=[[-3,1],[3,1]] ) cp*chunk])
+let(component_hole_positions = [for(cp=[[-3,-1],[-3,1],[3,1],[3,-1]] ) cp*chunk])
 let(cps = [for(cy=[-1.5 : 1 : 1.5]) for(cx=[-3.5 : 1 : 3.5]) [cx,cy]]) // All chunk positions, in chunks
-let(small_square_positions   = [for(cp=cps) if(cp[1] < 0 || (cp[0] > -2 && cp[0] < 2)) cp*chunk])
+let(small_square_positions   = [for(cp=cps) if(cp[0] > -2 && cp[0] < 2) cp*chunk])
 let(magnet_hole_positions    = [for(cp=cps) for(ap=[[1,-1],[1,1],[-1,1],[-1,-1]]) [cp[0]*3+ap[0], cp[1]*3+ap[1]]*atom])
 let(extra_hole_positions     = [for(cp=cps) for(ap=[[1,0],[0,1],[-1,0],[0,-1]]) [cp[0]*3+ap[0], cp[1]*3+ap[1]]*atom])
 ["difference",
@@ -46,7 +49,7 @@ let(extra_hole_positions     = [for(cp=cps) for(ap=[[1,0],[0,1],[-1,0],[0,-1]]) 
 		for( pos=small_square_positions   ) ["translate", pos, small_square],											  
 	]),
 
-	togmod1_linear_extrude_z([u_to_mm(2) - magnet_hole_depth, u_to_mm(2)+1], ["union",
+	if( magnet_hole_depth > 0 ) togmod1_linear_extrude_z([u_to_mm(2) - magnet_hole_depth, u_to_mm(2)+1], ["union",
 		for( pos=magnet_hole_positions ) ["translate", pos, magnet_hole_2d],
 	]),
 ]);
