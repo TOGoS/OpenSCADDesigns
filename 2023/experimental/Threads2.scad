@@ -1,4 +1,4 @@
-// Threads2.14
+// Threads2.15
 // 
 // New screw threads proto-library
 // 
@@ -40,9 +40,19 @@
 // - Outer/inner threads don't yet support straight threads
 // v2.14:
 // - Add 'description' parameter so you have a description that shows in customizer
+// v2.15:
+// - v2_15_test = 'b' (intend to remove along with deadened code for v2.16)
+//   uses threads2__to_polyhedron in more places
+// - cross_section option; when enabled, cuts out a quarter.
 // 
-// TODO: Refactor outer/inner threads to use threads2__to_polyhedron
-// TODO: Update v2 to do tapering using same parameters as v3, remove taper_function
+// TODO: Maybe thread_polyhedron_algorithm should be $thread_polyhedron_algorithm
+// TODO: Have threads2__to_polyhedron support generating using v2 algorithm
+// TODO: threads2__to_polyhedron could support spec = 'none'.
+// TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
+//       Use OpenSCAD's built-in `lookup(z, [[z0, v0], ...])` function!
+// TODO: Rename some functions, e.g. threads2__to_polyhedron maybe should be public
+//       and named, uhm...something that hints at the inputs.
+// TODO: Extract high-level functions to library
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -68,9 +78,15 @@ head_height  =  6.35;
 head_shape = "square"; // ["square","hexagon","togridpile-chunk"]
 head_surface_offset = -0.1;
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
+
 // This is here so I can see if disabling vertex deduplication speeds things up at all.
 $tphl1_vertex_deduplication_enabled = false;
 $fn = 32;
+
+/* [Debugging/Testing] */
+// Use old (a) or new (b) code path for polyhedron generation (assumes v3 algorithm)
+v2_15_test = "b"; // ["a","b"]
+cross_section = false;
 
 module __threads2_end_params() { }
 
@@ -93,9 +109,11 @@ function togthreads2_layer_params( zparams, pitch ) =
 		for( z=[zparams1[0][0] : layer_height : zparams1[len(zparams1)-1][0]] ) [z, z*360/pitch, undef] // TODO: calculate that extra parammeter
 	];
 
+function togthreads2__to_list(x) = [for(i=x) i];
+
 // rfunc :: z -> phase (0...1) -> r|[x,y]|[x,y,z]
 function togthreads2_zp_to_layers(zs, rfunc, thread_origin_z=0) =
-	assert( len(zs) >= 2 )
+	assert( len(togthreads2__to_list(zs)) >= 2 )
 	let($fn = max(3, $fn))
 	let(fixpoint = function(n, p, z)
 		is_num(n) ? [cos(p*360)*n, sin(p*360)*n, z] :
@@ -380,8 +398,81 @@ function threads2__to_polyhedron(zparams, spec, r_offset=0, end_mode="flush", th
 		thread_origin_z = thread_origin_z
 	);
 
+/**
+ * Generate zparams for threads with ends tapered appropriately
+ * given the pitch and whether the bottom and/or top is open
+ * (taper = -1 or +1 for external/internal threads) or closed (taper = 0).
+ *
+ * Assumes that positive taper means inner threads, and will extend
+ * a bit beyond the end.
+ *
+ * end_zts = [[bottom_z, bottom_taper], [top_z, top_taper]]
+ */
+function togthreads2_thread_zparams(end_zts, pitch) =
+	let( z0 = end_zts[0][0], z1 = end_zts[1][0] )
+	let( t0 = end_zts[0][1], t1 = end_zts[1][1] )
+	let( taper_amt = 1 )
+	[
+		each t0 == 0 ? [
+			[z0        ,  0],
+		] : [
+			if( t0 > 0 )
+			[z0-1      , t0],
+			[z0        , t0],
+			[z0+pitch/2,  0],
+		],
+		each t1 == 0 ? [
+			[z1        ,  0],
+		] : [
+			[z1-pitch/2,  0],
+			[z1        , t1],
+			if( t1 > 0 )
+			[z1+1      , t1],
+		],
+	];
 
 
+// Generate zparams for threads with ends tapered appropriately
+// depending on whether they are open or closed.
+// 
+// outer_zrange = exact Z position of [bottom, top] of object to be subtracted from.
+// inner_zrange = exact Z position of [botton, top] of hole.
+// spec = thread spec of the inner threads
+// 
+// this function will automatically extend zrange and adjust taper
+// depending if inner hole extends beyond outer hole on bottom and top.
+// 
+// TODO: Probably change to use [[bottom_z, bottom_is_open], [top_z, top_is_open]] or something
+// Maybe just use taper_amt to indicate open/closedness; then this could be used for outer threads, too.
+// 
+// TODO: Delete; use togthreads2_thread_zparams directly.
+function togthreads2_inner_thread_zparams(outer_zrange, inner_zrange, spec) =
+	togthreads2_thread_zparams([
+		[inner_zrange[0], inner_zrange[0] <= outer_zrange[0] ? 1 : 0],
+		[inner_zrange[1], inner_zrange[1] >= outer_zrange[1] ? 1 : 0],
+	], threads2__get_thread_pitch(spec));
+	/*
+	let( oz0 = outer_zrange[0], oz1 = outer_zrange[1] )
+	let( iz0 = inner_zrange[0], iz1 = inner_zrange[1] )
+	let( taper_amt = 1 )
+	let( pitch = threads2__get_thread_pitch(spec) )
+	[
+		each iz0 <= oz0 ? [
+			[iz0-1      , taper_amt],
+			[iz0        , taper_amt],
+			[iz0+pitch/2,         0],
+		] : [
+			[iz0        ,         0],
+		],
+		each iz1 >= oz1 ? [
+			[iz1-pitch/2,         0],
+			[iz1        , taper_amt],
+			[iz1+1      , taper_amt],
+		] : [
+			[iz1        ,         0],
+		],
+	];
+	*/
 
 function make_the_post_v2() =
 	total_height <= head_height || outer_threads == "none" ? ["union"] :
@@ -397,7 +488,7 @@ function make_the_post_v2() =
 		thread_origin_z = head_height
 	);
 
-function make_the_post_v3() =
+function make_the_post_v3a() =
 	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
@@ -415,18 +506,55 @@ function make_the_post_v3() =
 		thread_origin_z = head_height
 	);
 
-the_post = thread_polyhedron_algorithm == "v2" ? make_the_post_v2() : make_the_post_v3();
+function make_the_post_v3b() =
+	outer_threads == "none" ? ["union"] :
+	let( spec = threads2__get_thread_spec(outer_threads) )
+	let( top_z = total_height )
+	let( bottom_z = max(0, head_height/2) )
+	threads2__to_polyhedron(
+		togthreads2_thread_zparams([
+			[bottom_z, bottom_z == 0 ? -1 : 0],
+			[   top_z,                 -1    ],
+		], threads2__get_thread_pitch(spec)),
+		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
+	);
 
-the_hole =
+	// TODO: Use threads2__to_polyhedron
+	// TODO: Make sure straight and none work
+/*
+	total_height <= head_height || outer_threads == "none" ? ["union"] :
+	let( top_z = total_height )
+	let( bottom_z = max(0, head_height/2) )
+	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
+	let( type23 = threads2__get_thread_type23(outer_threads) )
+	let( pitch = type23[1] )
+	togthreads2_mkthreads_v3(
+		[
+			each bottom_z == 0 ? [[bottom_z, -1], [bottom_z+pitch/2, 0]] : [[bottom_z, 0]],
+			[top_z-pitch/2, 0], [top_z, -1]
+		],
+		type23,
+		r_offset = outer_thread_radius_offset,
+		end_mode = "blunt",
+		thread_origin_z = head_height
+	);
+*/
+
+the_post =
+	thread_polyhedron_algorithm == "v2" ? make_the_post_v2() :
+	v2_15_test == "a" ? make_the_post_v3a() :
+	make_the_post_v3b();
+
+the_hole_a =
 	inner_threads == "none" ? ["union"] :
-	let( specs = threads2__get_thread_spec(inner_threads) )
+	let( spec = threads2__get_thread_spec(inner_threads) )
 	let( bottom_z = floor_thickness )
 	let( top_z = total_height )
 	let( taper_amt = 1 )
 	thread_polyhedron_algorithm == "v2" ? (
 		let( taper_length = 4 )
-		let( pitch = threads2__get_thread_pitch(specs) )
-		let( rfunc = threads2__get_thread_radius_function(specs) )
+		let( pitch = threads2__get_thread_pitch(spec) )
+		let( rfunc = threads2__get_thread_radius_function(spec) )
 		togthreads2_mkthreads([bottom_z-1, top_z+1], pitch, rfunc,
 			taper_function = function(z) taper_amt * max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
 			r_offset = inner_thread_radius_offset
@@ -435,14 +563,16 @@ the_hole =
 		let( type23 = threads2__get_thread_type23(inner_threads) )
 		let( pitch = type23[1] )
 		togthreads2_mkthreads_v3(
-			[
-				if( bottom_z == 0 ) [bottom_z-1, taper_amt],
-				                               [bottom_z, taper_amt], [bottom_z+pitch/2,         0],
-				[   top_z-pitch/2,         0], [   top_z, taper_amt], [   top_z+1      , taper_amt]
-			],
+			togthreads2_inner_thread_zparams([0, top_z], [bottom_z, top_z], spec),
 			type23, r_offset = inner_thread_radius_offset
 		)
 	);
+
+the_hole = (thread_polyhedron_algorithm == "v2" || v2_15_test == "a") ? the_hole_a :
+	inner_threads == "none" ? ["union"] :
+	// the_hole_b:
+	let( spec = threads2__get_thread_spec(inner_threads) )
+	threads2__to_polyhedron(togthreads2_inner_thread_zparams([0, total_height], [floor_thickness, total_height], spec), inner_threads, r_offset=inner_thread_radius_offset);	
 
 the_floor_hole =
 	floor_threads == "none" || floor_thickness == 0 ? ["union"] :
@@ -487,5 +617,9 @@ togmod1_domodule(["difference",
 		the_cap
 	],
 	the_hole,
-	the_floor_hole
+	the_floor_hole,
+	
+	if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
 ]);
+
+// # cylinder(d=10, h=total_height);
