@@ -396,7 +396,7 @@
 			"total_height": "19.05"
 		},
 		"p1833": {
-			"description": "1/8\"-thick triangular nut with 1+1/4-7-UNC inner threads",
+			"description": "1/4\"-thick triangular nut with 1+1/4-7-UNC inner threads",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -409,7 +409,7 @@
 			"total_height": "6.35"
 		},
 		"p1834": {
-			"description": "1/8\"-thick square nut with 1+1/4-7-UNC inner threads (identical to p1665)",
+			"description": "1/4\"-thick square nut with 1+1/4-7-UNC inner threads (identical to p1665)",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -422,7 +422,7 @@
 			"total_height": "6.35"
 		},
 		"p1835": {
-			"description": "1/8\"-thick pentagonal nut with 1+1/4-7-UNC inner threads",
+			"description": "1/4\"-thick pentagonal nut with 1+1/4-7-UNC inner threads",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -435,7 +435,7 @@
 			"total_height": "6.35"
 		},
 		"p1836": {
-			"description": "1/8\"-thick hexagonal nut with 1+1/4-7-UNC inner threads",
+			"description": "1/4\"-thick hexagonal nut with 1+1/4-7-UNC inner threads",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -448,7 +448,7 @@
 			"total_height": "6.35"
 		},
 		"p1837": {
-			"description": "1/8\"-thick septagonal nut with 1+1/4-7-UNC inner threads",
+			"description": "1/4\"-thick septagonal nut with 1+1/4-7-UNC inner threads",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -461,7 +461,7 @@
 			"total_height": "6.35"
 		},
 		"p1838": {
-			"description": "1/8\"-thick octagonal nut with 1+1/4-7-UNC inner threads",
+			"description": "1/4\"-thick octagonal nut with 1+1/4-7-UNC inner threads",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -474,7 +474,7 @@
 			"total_height": "6.35"
 		},
 		"p1839": {
-			"description": "1/8\"-thick nonagonal nut with 1+1/4-7-UNC inner threads",
+			"description": "1/4\"-thick nonagonal nut with 1+1/4-7-UNC inner threads",
 			"$fn": "64",
 			"handedness": "right",
 			"head_height": "6.35",
