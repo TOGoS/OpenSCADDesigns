@@ -1,0 +1,37 @@
+#!/usr/bin/env deno -A
+
+const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
+
+async function fileExists(path:string) : Promise<boolean> {
+	try {
+		const stats = await Deno.lstat(path);
+		return true;
+	} catch (err) {
+		if (!(err instanceof Deno.errors.NotFound)) {
+			throw err;
+		}
+		return false;
+	}
+}
+
+for( const i of [1833,1834,1835,1836,1837,1838,1839] ) {
+	const length_atoms = i - 1650;
+	const shape_id = `p${i}`;
+	const pngFile = `2023/print-archive/${shape_id}.1536x1536.png`;
+	if( await fileExists(pngFile) ) {
+		console.log(`${pngFile} already exists; skipping generation`);
+		continue;
+	}
+	const cmd = new Deno.Command(OPENSCAD_COM, { args: [
+		"--hardwarnings",
+		"-p", "2023/experimental/Threads2.json", "-P", shape_id,
+		"--render", "2023/experimental/Threads2.scad",
+		"--colorscheme","Tomorrow Night",
+		"-o", pngFile,
+		"-o", `2023/print-archive/${shape_id}.stl`,
+		"--imgsize", "1536,1536",
+	]});
+	const proc = cmd.spawn();
+	const status = await proc.status;	
+	console.log(`openscad.com exited with status ${status.code}`);
+}
