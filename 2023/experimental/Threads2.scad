@@ -1,4 +1,4 @@
-// Threads2.16
+// Threads2.17
 // 
 // New screw threads proto-library
 // 
@@ -46,6 +46,8 @@
 // - cross_section option; when enabled, cuts out a quarter.
 // v2.16:
 // - More regular polygon head shapes, from triangle to nonagon
+// v2.17:
+// - Decagon head shape
 // 
 // TODO: Maybe thread_polyhedron_algorithm should be $thread_polyhedron_algorithm
 // TODO: Have threads2__to_polyhedron support generating using v2 algorithm
@@ -77,7 +79,7 @@ floor_thread_radius_offset =  0.3;
 total_height = 19.05;
 head_width   = 38.1;
 head_height  =  6.35;
-head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","togridpile-chunk"]
+head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","togridpile-chunk"]
 head_surface_offset = -0.1;
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 
@@ -606,13 +608,14 @@ function make_polygon_base(sidecount, width, height) =
 
 function make_base(shape, width, height) =
 	height <= 0 || width <= 0 ? ["union"] :
-	shape == "triangle" ? make_polygon_base(3,width,height) :
-	shape == "square"   ? make_polygon_base(4,width,height) :
-	shape == "pentagon" ? make_polygon_base(5,width,height) :
-	shape == "hexagon"  ? make_polygon_base(6,width,height) :
-	shape == "septagon" ? make_polygon_base(7,width,height) :
-	shape == "octagon"  ? make_polygon_base(8,width,height) :
-	shape == "nonagon"  ? make_polygon_base(9,width,height) :
+	shape == "triangle" ? make_polygon_base(  3, width, height ) :
+	shape == "square"   ? make_polygon_base(  4, width, height ) :
+	shape == "pentagon" ? make_polygon_base(  5, width, height ) :
+	shape == "hexagon"  ? make_polygon_base(  6, width, height ) :
+	shape == "septagon" ? make_polygon_base(  7, width, height ) :
+	shape == "octagon"  ? make_polygon_base(  8, width, height ) :
+	shape == "nonagon"  ? make_polygon_base(  9, width, height ) :
+	shape == "decagon"  ? make_polygon_base( 10, width, height ) :
 	shape == "togridpile-chunk" ? tgx11_block([[width,"mm"],[width,"mm"],[height,"mm"]], lip_height=0, bottom_segmentation = "chunk") :
 	assert(false, str("Unsupported head shape: '", shape, "'"));
 
