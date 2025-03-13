@@ -1,4 +1,4 @@
-// Threads2.17
+// Threads2.18
 // 
 // New screw threads proto-library
 // 
@@ -48,8 +48,18 @@
 // - More regular polygon head shapes, from triangle to nonagon
 // v2.17:
 // - Decagon head shape
+// v2.18:
+// - Internally, thread_polyhedron_algorithm is now $togthreads2_polyhedron_algorithm
+// - Remove v2_15_test option
+// - Have spec -> pitch / radius functions do something reasonable-ish for 'straight-d'
+//   so that v2 (and some cases of v3)
+// - Presets for nuts changed to say outer_threads = "none"
+//   - Otherwise e.g. p1666 did weird things for v3!
 // 
-// TODO: Maybe thread_polyhedron_algorithm should be $thread_polyhedron_algorithm
+// TODO: Remove togthreads2_inner_thread_zparams, just use togthreads2_thread_zparams directly
+// TODO: Deduplicate code in make_the_post_v{2,3} et al so that outer / inner / floor threads
+//       are all generated the same way and can do v2 or v3 uniformly.
+// TODO: Put TGP bottom on both ends of head if tall enough
 // TODO: Have threads2__to_polyhedron support generating using v2 algorithm
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
@@ -88,14 +98,14 @@ $tphl1_vertex_deduplication_enabled = false;
 $fn = 32;
 
 /* [Debugging/Testing] */
-// Use old (a) or new (b) code path for polyhedron generation (assumes v3 algorithm)
-v2_15_test = "b"; // ["a","b"]
+
 cross_section = false;
 
 module __threads2_end_params() { }
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 $tgx11_offset = head_surface_offset;
+$togthreads2_polyhedron_algorithm = thread_polyhedron_algorithm;
 
 // [[z, param], ...] -> [[z, angle, param], ...]
 // Also supports just [z0, ..., zn] as input
@@ -376,25 +386,28 @@ function threads2__get_thread_pitch(spec) =
 	is_string(spec) ? threads2__get_thread_pitch(threads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc" ? 25.4 / spec[2] :
 	is_list(spec) && spec[0] == "demo" ? spec[2] :
+	is_list(spec) && spec[0] == "straight-d" ? spec[1] : // Hack.  Straight doesn't have a pitch!
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 function threads2__get_thread_radius_function(spec) =
 	is_string(spec) ? threads2__get_thread_radius_function(threads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_external_thread_radius_function(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "straight-d" ? function(x, trat=1) spec[1]/2 + trat*spec[1]/8 : // Hack.
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 function threads2__get_thread_type23(spec) = 
 	is_string(spec) ? threads2__get_thread_type23(threads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_to_type23(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "straight-d" ? ["togthreads2.3-type", spec[1], [], spec[1]*3/8, spec[1]*5/8] : // Hack.
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 function threads2__to_polyhedron(zparams, spec, r_offset=0, end_mode="flush", thread_origin_z=0) =
 	let( spec1 = is_string(spec) ? threads2__get_thread_spec(spec) : spec )
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
 	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset) :
-	assert(thread_polyhedron_algorithm == "v3", "threads2__to_polyhedron only supports v3 currently")
+	assert($togthreads2_polyhedron_algorithm == "v3", "threads2__to_polyhedron only supports v3 currently")
 	let( type23 = threads2__get_thread_type23(spec1) )
 	togthreads2_mkthreads_v3(zparams, type23,
 		r_offset = r_offset,
@@ -455,62 +468,22 @@ function togthreads2_inner_thread_zparams(outer_zrange, inner_zrange, spec) =
 		[inner_zrange[0], inner_zrange[0] <= outer_zrange[0] ? 1 : 0],
 		[inner_zrange[1], inner_zrange[1] >= outer_zrange[1] ? 1 : 0],
 	], threads2__get_thread_pitch(spec));
-	/*
-	let( oz0 = outer_zrange[0], oz1 = outer_zrange[1] )
-	let( iz0 = inner_zrange[0], iz1 = inner_zrange[1] )
-	let( taper_amt = 1 )
-	let( pitch = threads2__get_thread_pitch(spec) )
-	[
-		each iz0 <= oz0 ? [
-			[iz0-1      , taper_amt],
-			[iz0        , taper_amt],
-			[iz0+pitch/2,         0],
-		] : [
-			[iz0        ,         0],
-		],
-		each iz1 >= oz1 ? [
-			[iz1-pitch/2,         0],
-			[iz1        , taper_amt],
-			[iz1+1      , taper_amt],
-		] : [
-			[iz1        ,         0],
-		],
-	];
-	*/
 
 function make_the_post_v2() =
 	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
 	let( taper_length = 2 )
-	let( specs = threads2__get_thread_spec(outer_threads) )
-	let( pitch = threads2__get_thread_pitch(specs) )
-	let( rfunc = threads2__get_thread_radius_function(specs) )
+	let( spec  = threads2__get_thread_spec(outer_threads) )
+	let( pitch = threads2__get_thread_pitch(spec) )
+	let( rfunc = threads2__get_thread_radius_function(spec) )
 	togthreads2_mkthreads([bottom_z, top_z], pitch, rfunc,
 		taper_function = function(z) 0 - max(0, (z - (top_z - taper_length))/taper_length),
 		r_offset = outer_thread_radius_offset,
 		thread_origin_z = head_height
 	);
 
-function make_the_post_v3a() =
-	total_height <= head_height || outer_threads == "none" ? ["union"] :
-	let( top_z = total_height )
-	let( bottom_z = max(0, head_height/2) )
-	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
-	let( type23 = threads2__get_thread_type23(outer_threads) )
-	let( pitch = type23[1] )
-	togthreads2_mkthreads_v3(
-		[
-			each bottom_z == 0 ? [[bottom_z, -1], [bottom_z+pitch/2, 0]] : [[bottom_z, 0]],
-			[top_z-pitch/2, 0], [top_z, -1]
-		],
-		type23,
-		r_offset = outer_thread_radius_offset,
-		end_mode = "blunt",
-		thread_origin_z = head_height
-	);
-
-function make_the_post_v3b() =
+function make_the_post_v3() =
 	outer_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(outer_threads) )
 	let( top_z = total_height )
@@ -523,39 +496,17 @@ function make_the_post_v3b() =
 		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
 	);
 
-	// TODO: Use threads2__to_polyhedron
-	// TODO: Make sure straight and none work
-/*
-	total_height <= head_height || outer_threads == "none" ? ["union"] :
-	let( top_z = total_height )
-	let( bottom_z = max(0, head_height/2) )
-	// let( type23 = ["togthreads2.3-type", 10, [[12,0],[10,2],[8,0],[10,-2]], 10.1] )
-	let( type23 = threads2__get_thread_type23(outer_threads) )
-	let( pitch = type23[1] )
-	togthreads2_mkthreads_v3(
-		[
-			each bottom_z == 0 ? [[bottom_z, -1], [bottom_z+pitch/2, 0]] : [[bottom_z, 0]],
-			[top_z-pitch/2, 0], [top_z, -1]
-		],
-		type23,
-		r_offset = outer_thread_radius_offset,
-		end_mode = "blunt",
-		thread_origin_z = head_height
-	);
-*/
-
 the_post =
-	thread_polyhedron_algorithm == "v2" ? make_the_post_v2() :
-	v2_15_test == "a" ? make_the_post_v3a() :
-	make_the_post_v3b();
+	$togthreads2_polyhedron_algorithm == "v2" ? make_the_post_v2() :
+	make_the_post_v3();
 
-the_hole_a =
+the_hole_v2 =
 	inner_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(inner_threads) )
 	let( bottom_z = floor_thickness )
 	let( top_z = total_height )
 	let( taper_amt = 1 )
-	thread_polyhedron_algorithm == "v2" ? (
+	$togthreads2_polyhedron_algorithm == "v2" ? (
 		let( taper_length = 4 )
 		let( pitch = threads2__get_thread_pitch(spec) )
 		let( rfunc = threads2__get_thread_radius_function(spec) )
@@ -572,9 +523,8 @@ the_hole_a =
 		)
 	);
 
-the_hole = (thread_polyhedron_algorithm == "v2" || v2_15_test == "a") ? the_hole_a :
+the_hole = $togthreads2_polyhedron_algorithm == "v2" ? the_hole_v2 :
 	inner_threads == "none" ? ["union"] :
-	// the_hole_b:
 	let( spec = threads2__get_thread_spec(inner_threads) )
 	threads2__to_polyhedron(togthreads2_inner_thread_zparams([0, total_height], [floor_thickness, total_height], spec), inner_threads, r_offset=inner_thread_radius_offset);	
 

@@ -16,7 +16,7 @@
 			"head_height": "6.35",
 			"head_surface_offset": "-0.1",
 			"inner_threads": "1+1/4-7-UNC",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"thread_radius_offset": "-0.2",
 			"total_height": "6.35"
 		},
@@ -39,7 +39,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1664": {
@@ -61,7 +61,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1666": {
@@ -75,7 +75,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1/4-20-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1667": {
@@ -405,7 +405,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1834": {
@@ -418,7 +418,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1835": {
@@ -431,7 +431,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1836": {
@@ -457,7 +457,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1838": {
@@ -470,7 +470,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1839": {
@@ -483,7 +483,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "1+1/4-7-UNC",
 			"outer_thread_radius_offset": "-0.1",
-			"outer_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
 			"total_height": "6.35"
 		},
 		"p1840": {
