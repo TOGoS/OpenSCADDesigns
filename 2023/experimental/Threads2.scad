@@ -1,4 +1,4 @@
-// Threads2.20
+// Threads2.21
 // 
 // New screw threads proto-library
 // 
@@ -61,6 +61,8 @@
 //   (though you might want to make one longer than one chunk,
 //   and ChunkBeam2 with an option for central threads might
 //   be a better place for that).
+// v2.21:
+// - togridpile-chunk heads have a 0.4mm foot bevel
 // 
 // TODO: Remove togthreads2_inner_thread_zparams, just use togthreads2_thread_zparams directly
 // TODO: Deduplicate code in make_the_post_v{2,3} et al so that outer / inner / floor threads
@@ -574,8 +576,7 @@ function make_polygon_base(sidecount, width, height) =
 	);
 
 function make_togridpile_chunk_bottom(width,height) =
-	tgx11_block_bottom([[width,"mm"],[width,"mm"],[height,"mm"]], segmentation = "chunk");
-	//height < 9.525 ? tgx11_block_bottom([[width,"mm"],[width,"mm"],[height,"mm"]], lip_height=0, bottom_segmentation = "chunk") : 
+	tgx11_block_bottom([[width,"mm"],[width,"mm"],[height,"mm"]], segmentation = "chunk", foot_bevel = 0.4);
 
 function make_togridpile_chunk(width,height) =
 	let( bottom = make_togridpile_chunk_bottom(width,height) )
