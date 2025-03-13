@@ -549,6 +549,23 @@
 			"outer_threads": "1-8-UNC",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "25.4"
+		},
+		"p1848": {
+			"$fn": "64",
+			"$tphl1_vertex_deduplication_enabled": "false",
+			"description": "gridbeam cube with 1+1/4-7-UNC hole up the center",
+			"handedness": "right",
+			"head_height": "38.1",
+			"head_shape": "togridpile-chunk",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"headside_thread_radius_offset": "0.3",
+			"headside_threads": "straight-8.5mm",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "38.1"
 		}
 	},
 	"parameterSets": "",

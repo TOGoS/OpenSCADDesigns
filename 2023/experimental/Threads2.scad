@@ -1,4 +1,4 @@
-// Threads2.18
+// Threads2.20
 // 
 // New screw threads proto-library
 // 
@@ -55,11 +55,16 @@
 //   so that v2 (and some cases of v3)
 // - Presets for nuts changed to say outer_threads = "none"
 //   - Otherwise e.g. p1666 did weird things for v3!
+// v2.20:
+// - Put TGP bottom on both ends of head if tall enough
+// - Option for headside holes, in case you want to make gridbeam.
+//   (though you might want to make one longer than one chunk,
+//   and ChunkBeam2 with an option for central threads might
+//   be a better place for that).
 // 
 // TODO: Remove togthreads2_inner_thread_zparams, just use togthreads2_thread_zparams directly
 // TODO: Deduplicate code in make_the_post_v{2,3} et al so that outer / inner / floor threads
 //       are all generated the same way and can do v2 or v3 uniformly.
-// TODO: Put TGP bottom on both ends of head if tall enough
 // TODO: Have threads2__to_polyhedron support generating using v2 algorithm
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
@@ -90,6 +95,8 @@ total_height = 19.05;
 head_width   = 38.1;
 head_height  =  6.35;
 head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","togridpile-chunk"]
+headside_threads = "none";
+headside_thread_radius_offset =  0.3;
 head_surface_offset = -0.1;
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 
@@ -532,6 +539,16 @@ the_floor_hole =
 	floor_threads == "none" || floor_thickness == 0 ? ["union"] :
 	threads2__to_polyhedron([-1, floor_thickness+1], floor_threads, r_offset=floor_thread_radius_offset);
 
+the_headside_holes =
+	headside_threads == "none" ? ["union"] :
+	// Could do a hole in every face, but for now just work for square heads.
+	assert(head_shape == "square" || head_shape == "togridpile-chunk", "Head holes currently only implemented for square or togridpile-chunk heads")
+	let(headside_hole = threads2__to_polyhedron([-head_width/2, head_width/2], headside_threads, r_offset=headside_thread_radius_offset))
+	["union",
+		["translate", [0,0,head_height/2], ["rotate", [90,0,0], headside_hole]],
+		["translate", [0,0,head_height/2], ["rotate", [0,90,0], headside_hole]],
+	];
+
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPath1.scad>
 
@@ -556,6 +573,21 @@ function make_polygon_base(sidecount, width, height) =
 		height, r=r2
 	);
 
+function make_togridpile_chunk_bottom(width,height) =
+	tgx11_block_bottom([[width,"mm"],[width,"mm"],[height,"mm"]], segmentation = "chunk");
+	//height < 9.525 ? tgx11_block_bottom([[width,"mm"],[width,"mm"],[height,"mm"]], lip_height=0, bottom_segmentation = "chunk") : 
+
+function make_togridpile_chunk(width,height) =
+	let( bottom = make_togridpile_chunk_bottom(width,height) )
+	["intersection",
+		tphl1_extrude_polypoints([-1,height+1], tgx11_chunk_xs_points(
+			size = [width,width],
+			offset = $tgx11_offset
+		)),
+		bottom,
+		if( height >= 8 ) ["translate", [0,0,height], ["rotate",[180,0,0],bottom]],
+	];
+
 function make_base(shape, width, height) =
 	height <= 0 || width <= 0 ? ["union"] :
 	shape == "triangle" ? make_polygon_base(  3, width, height ) :
@@ -566,7 +598,7 @@ function make_base(shape, width, height) =
 	shape == "octagon"  ? make_polygon_base(  8, width, height ) :
 	shape == "nonagon"  ? make_polygon_base(  9, width, height ) :
 	shape == "decagon"  ? make_polygon_base( 10, width, height ) :
-	shape == "togridpile-chunk" ? tgx11_block([[width,"mm"],[width,"mm"],[height,"mm"]], lip_height=0, bottom_segmentation = "chunk") :
+	shape == "togridpile-chunk" ? make_togridpile_chunk(width,height) :
 	assert(false, str("Unsupported head shape: '", shape, "'"));
 
 the_cap = make_base(head_shape, head_width, head_height);
@@ -578,7 +610,7 @@ togmod1_domodule(["difference",
 	],
 	the_hole,
 	the_floor_hole,
-	
+	the_headside_holes,
 	if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
 ]);
 
