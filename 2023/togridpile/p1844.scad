@@ -1,8 +1,11 @@
-// p1844 v1.0
+// p1844 v1.1
 // 
 // v1.0:
 // - Copy TGx11.1.19
 // - Add magnet holes
+// v1.1:
+// - bottom_foot_bevel = 0.4
+// - bottom_v6hc_style = "none"
 
 block_size_chunks = [2,2];
 block_height_u = 12;
@@ -13,8 +16,8 @@ bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
 top_segmentation = "block"; // ["atom","chatom","chunk","block","none"]
 atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
 bottom_shape = "footed"; // ["footed","beveled"]
-bottom_foot_bevel = 0.0; // 0.1
-bottom_v6hc_style = "v6.1"; // ["v6.1", "none"]
+bottom_foot_bevel = 0.4; // 0.1
+bottom_v6hc_style = "none"; // ["v6.1", "none"]
 
 lip_height = 2.54;
 
