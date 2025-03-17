@@ -1,4 +1,4 @@
-// Threads2.21
+// Threads2.22
 // 
 // New screw threads proto-library
 // 
@@ -63,11 +63,15 @@
 //   be a better place for that).
 // v2.21:
 // - togridpile-chunk heads have a 0.4mm foot bevel
-// 
-// TODO: Remove togthreads2_inner_thread_zparams, just use togthreads2_thread_zparams directly
+// v2.22:
+// - togthreads2_thread_zparams now takes taper_length instead of
+//   taking pitch and deriving it from that
+// - Remove togthreads2_inner_thread_zparams, just use togthreads2_thread_zparams directly
+// - Delete redundant part of make_the_hole_v2
+//
+// TODO: Have threads2__to_polyhedron support generating using v2 algorithm
 // TODO: Deduplicate code in make_the_post_v{2,3} et al so that outer / inner / floor threads
 //       are all generated the same way and can do v2 or v3 uniformly.
-// TODO: Have threads2__to_polyhedron support generating using v2 algorithm
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
 //       Use OpenSCAD's built-in `lookup(z, [[z0, v0], ...])` function!
@@ -432,12 +436,15 @@ function threads2__to_polyhedron(zparams, spec, r_offset=0, end_mode="flush", th
  * Assumes that positive taper means inner threads, and will extend
  * a bit beyond the end.
  *
+ * I've been using pitch/2 for taper_length, but idk what's best.
+ *
  * end_zts = [[bottom_z, bottom_taper], [top_z, top_taper]]
  */
-function togthreads2_thread_zparams(end_zts, pitch) =
+function togthreads2_thread_zparams(end_zts, taper_length) =
 	let( z0 = end_zts[0][0], z1 = end_zts[1][0] )
 	let( t0 = end_zts[0][1], t1 = end_zts[1][1] )
 	let( taper_amt = 1 )
+	let( taper_l   = taper_length ) // Make it fit in the column
 	[
 		each t0 == 0 ? [
 			[z0        ,  0],
@@ -445,46 +452,25 @@ function togthreads2_thread_zparams(end_zts, pitch) =
 			if( t0 > 0 )
 			[z0-1      , t0],
 			[z0        , t0],
-			[z0+pitch/2,  0],
+			[z0+taper_l,  0],
 		],
 		each t1 == 0 ? [
 			[z1        ,  0],
 		] : [
-			[z1-pitch/2,  0],
+			[z1-taper_l,  0],
 			[z1        , t1],
 			if( t1 > 0 )
 			[z1+1      , t1],
 		],
 	];
 
-
-// Generate zparams for threads with ends tapered appropriately
-// depending on whether they are open or closed.
-// 
-// outer_zrange = exact Z position of [bottom, top] of object to be subtracted from.
-// inner_zrange = exact Z position of [botton, top] of hole.
-// spec = thread spec of the inner threads
-// 
-// this function will automatically extend zrange and adjust taper
-// depending if inner hole extends beyond outer hole on bottom and top.
-// 
-// TODO: Probably change to use [[bottom_z, bottom_is_open], [top_z, top_is_open]] or something
-// Maybe just use taper_amt to indicate open/closedness; then this could be used for outer threads, too.
-// 
-// TODO: Delete; use togthreads2_thread_zparams directly.
-function togthreads2_inner_thread_zparams(outer_zrange, inner_zrange, spec) =
-	togthreads2_thread_zparams([
-		[inner_zrange[0], inner_zrange[0] <= outer_zrange[0] ? 1 : 0],
-		[inner_zrange[1], inner_zrange[1] >= outer_zrange[1] ? 1 : 0],
-	], threads2__get_thread_pitch(spec));
-
 function make_the_post_v2() =
 	total_height <= head_height || outer_threads == "none" ? ["union"] :
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
-	let( taper_length = 2 )
 	let( spec  = threads2__get_thread_spec(outer_threads) )
 	let( pitch = threads2__get_thread_pitch(spec) )
+	let( taper_length = pitch/2 )
 	let( rfunc = threads2__get_thread_radius_function(spec) )
 	togthreads2_mkthreads([bottom_z, top_z], pitch, rfunc,
 		taper_function = function(z) 0 - max(0, (z - (top_z - taper_length))/taper_length),
@@ -501,7 +487,7 @@ function make_the_post_v3() =
 		togthreads2_thread_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
 			[   top_z,                 -1    ],
-		], threads2__get_thread_pitch(spec)),
+		], threads2__get_thread_pitch(spec)/2),
 		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
 	);
 
@@ -509,33 +495,31 @@ the_post =
 	$togthreads2_polyhedron_algorithm == "v2" ? make_the_post_v2() :
 	make_the_post_v3();
 
-the_hole_v2 =
+function make_the_hole_v2() =
 	inner_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(inner_threads) )
 	let( bottom_z = floor_thickness )
 	let( top_z = total_height )
 	let( taper_amt = 1 )
-	$togthreads2_polyhedron_algorithm == "v2" ? (
-		let( taper_length = 4 )
-		let( pitch = threads2__get_thread_pitch(spec) )
-		let( rfunc = threads2__get_thread_radius_function(spec) )
-		togthreads2_mkthreads([bottom_z-1, top_z+1], pitch, rfunc,
-			taper_function = function(z) taper_amt * max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
-			r_offset = inner_thread_radius_offset
-		)
-	) : (
-		let( type23 = threads2__get_thread_type23(inner_threads) )
-		let( pitch = type23[1] )
-		togthreads2_mkthreads_v3(
-			togthreads2_inner_thread_zparams([0, top_z], [bottom_z, top_z], spec),
-			type23, r_offset = inner_thread_radius_offset
-		)
+	let( pitch = threads2__get_thread_pitch(spec) )
+	let( taper_length = pitch/2 )
+	let( rfunc = threads2__get_thread_radius_function(spec) )
+	togthreads2_mkthreads([bottom_z-1, top_z+1], pitch, rfunc,
+		taper_function = function(z) taper_amt * max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
+		r_offset = inner_thread_radius_offset
 	);
 
-the_hole = $togthreads2_polyhedron_algorithm == "v2" ? the_hole_v2 :
+the_hole = $togthreads2_polyhedron_algorithm == "v2" ? make_the_hole_v2() :
 	inner_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(inner_threads) )
-	threads2__to_polyhedron(togthreads2_inner_thread_zparams([0, total_height], [floor_thickness, total_height], spec), inner_threads, r_offset=inner_thread_radius_offset);	
+	let( taper_length = threads2__get_thread_pitch(spec)/2 )
+	threads2__to_polyhedron(
+	   togthreads2_thread_zparams([
+		   [floor_thickness, floor_thickness > 0 ? 0 : 1],
+			[total_height   ,                           1],
+		], taper_length),
+		inner_threads, r_offset=inner_thread_radius_offset
+	);
 
 the_floor_hole =
 	floor_threads == "none" || floor_thickness == 0 ? ["union"] :
