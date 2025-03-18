@@ -1,4 +1,4 @@
-// Threads2.22
+// Threads2.23.1
 // 
 // New screw threads proto-library
 // 
@@ -68,6 +68,8 @@
 //   taking pitch and deriving it from that
 // - Remove togthreads2_inner_thread_zparams, just use togthreads2_thread_zparams directly
 // - Delete redundant part of make_the_hole_v2
+// v2.23.1:
+// - More explanation about what 'type23' means.
 //
 // TODO: Have threads2__to_polyhedron support generating using v2 algorithm
 // TODO: Deduplicate code in make_the_post_v{2,3} et al so that outer / inner / floor threads
@@ -257,6 +259,12 @@ function togthreads2__normalize_zparams(zparams) =
 	[ for(zp=zparams) is_list(zp) ? zp : is_num(zp) ? [zp, 0] : assert(false, str("Expected [z,t] or z for zparam, got ", zp, "'")) ];
 
 // Type23 = ["togthreads2.3-type", pitch, cross_section_polypoints, min_radius, max_radius]
+// Where:
+// - pitch = distance between threads
+// - cross_section_polypoints = points of a polygon centered at y=0, x=min_radius
+//   that represents the vertical shape of the threads
+// - min_radius = radius of solid center section of bolt
+// - max_radius = radius of hole (probably = half the nominal diameter of the bolt)
 
 // zparams: [z0, z1] (z range) or [[z0, t0], ...., [zn, tn]] (z,t control points, where t = -1..1)
 // type23: a Type23 thread spec
@@ -352,7 +360,7 @@ function togthreads2_unc_to_type23(basic_diameter, tpi) =
 	let( rmint= r2 - has )
 	let( rmin = r2 - han )
 	let( rmax = r2 + has )
-	["togthreads2.3-type", P, [[rmax, P/16], [rmint, P*7/16], [rmint, -P*7/16], [rmax, -P/16]], rmin, d/2];
+	["togthreads2.3-type", P, [[rmax, P/16], [rmint, P*7/16], [rmint, -P*7/16], [rmax, -P/16]], rmin, r];
 
 ////
 
