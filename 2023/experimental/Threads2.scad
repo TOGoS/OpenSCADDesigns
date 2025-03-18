@@ -1,4 +1,4 @@
-// Threads2.24
+// Threads2.24.1
 // 
 // New screw threads proto-library
 // 
@@ -98,6 +98,9 @@
 // - Rename some functions from "threads2_" to "togthreads2_"
 // - 'threads2__to_polyhedron' is now 'togthreads2_make_threads'
 // - double__underscore a few other function names to 'mark as private'
+// v2.24.1
+// - Also rename togthreads2_thread_zparams to togthreads2_simple_zparams
+//   and rewrite its documentation.
 //
 // TODO: Extract high-level functions to library
 
@@ -457,17 +460,16 @@ function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", 
 
 /**
  * Generate zparams for threads with ends tapered appropriately
- * given the pitch and whether the bottom and/or top is open
- * (taper = -1 or +1 for external/internal threads) or closed (taper = 0).
+ * given the taper direction (separately for bottom/top) and length.
  *
- * Assumes that positive taper means inner threads, and will extend
- * a bit beyond the end.
- *
- * I've been using pitch/2 for taper_length, but idk what's best.
- *
- * end_zts = [[bottom_z, bottom_taper], [top_z, top_taper]]
+ * Assumes that positive taper means inner threads,
+ * which will be extended a bit beyond the stated end.
+ * 
+ * - end_zts = [[bottom_z, bottom_taper_direction], [top_z, top_taper_direction]]
+ *   where taper_direction = -1 (inward), 0 (straight), or 1 (outward)
+ * - taper_length = vertical length of taper, in mm
  */
-function togthreads2_thread_zparams(end_zts, taper_length) =
+function togthreads2_simple_zparams(end_zts, taper_length) =
 	let( z0 = end_zts[0][0], z1 = end_zts[1][0] )
 	let( t0 = end_zts[0][1], t1 = end_zts[1][1] )
 	let( taper_amt = 1 )
@@ -477,7 +479,7 @@ function togthreads2_thread_zparams(end_zts, taper_length) =
 			[z0        ,  0],
 		] : [
 			if( t0 > 0 )
-			[z0-1      , t0],
+			[z0-1      , t0*2],
 			[z0        , t0],
 			[z0+taper_l,  0],
 		],
@@ -487,7 +489,7 @@ function togthreads2_thread_zparams(end_zts, taper_length) =
 			[z1-taper_l,  0],
 			[z1        , t1],
 			if( t1 > 0 )
-			[z1+1      , t1],
+			[z1+1      , t1*2],
 		],
 	];
 
@@ -497,7 +499,7 @@ the_post =
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
 	togthreads2_make_threads(
-		togthreads2_thread_zparams([
+		togthreads2_simple_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
 			[   top_z,                 -1    ],
 		], taper_length),
@@ -508,7 +510,7 @@ the_hole =
 	let( spec = togthreads2__get_thread_spec(inner_threads) )
 	let( taper_length = togthreads2__get_default_taper_length(spec) )
 	togthreads2_make_threads(
-		togthreads2_thread_zparams([
+		togthreads2_simple_zparams([
 			[floor_thickness, floor_thickness > 0 ? 0 : 1],
 			[total_height   ,                           1],
 		], taper_length),
