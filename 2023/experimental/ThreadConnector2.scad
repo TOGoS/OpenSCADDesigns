@@ -1,15 +1,21 @@
-// ThreadConnector2.0
+// ThreadConnector2.1
 // 
 // Double-headed bolt
+// 
+// Versions:
+// v2.0:
+// - Created based on Threads2.25
+// v2.1:
+// - More 'reasonable' defaults
 
 upper_outer_threads = "1+1/4-7-UNC";
 lower_outer_threads = "1+1/4-7-UNC";
 upper_outer_thread_height   = 15.875; // 0.01
 lower_outer_thread_height   = 15.875; // 0.01
-inner_threads = "1-8-UNC";
+inner_threads = "3/4-10-UNC";
 ring_width      = 38.1 ; // 0.01
 ring_height     =  6.35; // 0.01
-ring_side_count =  5;
+ring_side_count =  8;
 
 /* [Detail] */
 
