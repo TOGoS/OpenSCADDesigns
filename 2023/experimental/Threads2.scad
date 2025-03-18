@@ -1,4 +1,4 @@
-// Threads2.23.1
+// Threads2.23.2
 // 
 // New screw threads proto-library
 // 
@@ -70,10 +70,15 @@
 // - Delete redundant part of make_the_hole_v2
 // v2.23.1:
 // - More explanation about what 'type23' means.
+// v2.23.2:
+// - threads2__to_polyhedron can use v2 or v3 algorithm
+// - togthreads2_mkthreads_v2 accepts same parameters as togthreads2_mkthreads_v3,
+//   automatically translating type23 into thread radius function
+// - Type23 polypoints specified as always being in -Y to +Y order
+//   so that lookup(z, polypoints) will work
+// - standardize on terminology for different kinds of functions
+// - reorganize to put 'type definitions' at top
 //
-// TODO: Have threads2__to_polyhedron support generating using v2 algorithm
-// TODO: Deduplicate code in make_the_post_v{2,3} et al so that outer / inner / floor threads
-//       are all generated the same way and can do v2 or v3 uniformly.
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
 //       Use OpenSCAD's built-in `lookup(z, [[z0, v0], ...])` function!
@@ -122,26 +127,63 @@ $togridlib3_unit_table = tgx11_get_default_unit_table();
 $tgx11_offset = head_surface_offset;
 $togthreads2_polyhedron_algorithm = thread_polyhedron_algorithm;
 
-// [[z, param], ...] -> [[z, angle, param], ...]
-// Also supports just [z0, ..., zn] as input
-// Interpolating param for each actual layer.
-// TODO: Actually calculate that third parameter!
-function togthreads2_layer_params( zparams, pitch ) =
-	let( layer_height = pitch/$fn )
-	let( zparams1 = [
-		for( zp = zparams )
-			is_num(zp) ? [zp,zp] :
-			is_list(zp) ? zp :
-			assert(false, str("Expected number or list for Z parameters, got ", zp))
-	] )
-	[
-		for( z=[zparams1[0][0] : layer_height : zparams1[len(zparams1)-1][0]] ) [z, z*360/pitch, undef] // TODO: calculate that extra parammeter
-	];
+//// On 'thread Z origin'
+
+// Threads stick out to the right at z = thread_origin_z.
+// Since v2 specifies ridge at phase = 0.5 and groove at 0 and 1,
+// that means that phase = z / pitch - floor(z / pitch) + 0.5
+
+//// Type definitions
+
+// ptrfunc = PhaseTaperRadiusFunction = (phase, taper) -> radius
+// zprfunc = ZPhaseRadiusFunction     = (z, phase) -> radius
+
+// Translate a Z offset into the appropriate phase, given pitch, handedness, and phase offset
+// - z = Z position at which to sample
+// - pitch = Z distance between threads
+// - phase_offset = additional phase offset
+// - zmul = -1 for right-handed threads, +1 for left-handed
+function togthreads2__z_to_phase(z, pitch, phase_offset=0, zmul=-1) =
+	let(phase_raw = 0.5 + phase_offset + z * zmul / pitch)
+	phase_raw - floor(phase_raw);
+
+// Turn a PhaseTaperRadiusFunction into a ZPhaseRadiusFunction.
+function togthreads2__ptrfunc_to_zprfunc(ptrfunc, pitch, direction="right", taper_function=function(z) 1, r_offset=0) =
+	let( zmul = direction == "right" ? -1 : 1 )
+	function(z,phase_offset)
+		r_offset + ptrfunc(
+		   togthreads2__z_to_phase(z, pitch, phase_offset=phase_offset, zmul=zmul),
+			taper_function(z)
+		);
+
+// Type23 = ["togthreads2.3-type", pitch, cross_section_polypoints, min_radius, max_radius]
+// Where:
+// - pitch = distance between threads
+// - cross_section_polypoints = points of a polygon centered at y=0, x=min_radius
+//   that represents the vertical shape of the threads; must be listed from -y to +y
+//   so that they can be used by lookup(z, polypoints)
+// - min_radius = radius of solid center section of bolt
+// - max_radius = radius of hole (probably = half the nominal diameter of the bolt)
+
+function togthreads2_type23_pitch(type23) = type23[1];
+function togthreads2_type23_polypoints(type23) = type23[2];
+function togthreads2_type23_min_radius(type23) = type23[3];
+function togthreads2_type23_max_radius(type23) = type23[4];
+
+function togthreads2__type23_to_ptrfunc(type23) =
+	let( pitch      = togthreads2_type23_pitch(type23)      )
+	let( polypoints = togthreads2_type23_polypoints(type23) )
+	let( min_radius = togthreads2_type23_min_radius(type23) )
+	let( max_radius = togthreads2_type23_max_radius(type23) )
+	let( remapped = [[-1, 0], for(p=polypoints) [p[1]/pitch + 0.5, p[0]], [2, 0]] )
+	function(phase, t=0) lookup(phase, remapped) + t*(max_radius-min_radius); // TODO put back
+
 
 function togthreads2__to_list(x) = [for(i=x) i];
 
+// v2 layer-generation
 // rfunc :: z -> phase (0...1) -> r|[x,y]|[x,y,z]
-function togthreads2_zp_to_layers(zs, rfunc, thread_origin_z=0) =
+function togthreads2__zpr_to_layers(zs, zprfunc, thread_origin_z=0) =
 	assert( len(togthreads2__to_list(zs)) >= 2 )
 	let($fn = max(3, $fn))
 	let(fixpoint = function(n, p, z)
@@ -152,51 +194,25 @@ function togthreads2_zp_to_layers(zs, rfunc, thread_origin_z=0) =
 		assert(false, str("Rfunc should return 1..3 values, but it returned ", n)))
 	[
 		for( z=zs ) [
-			for( p=[0:1:$fn-1] ) fixpoint(rfunc(z - thread_origin_z, p/$fn), p/$fn, z)
+			for( p=[0:1:$fn-1] ) fixpoint(zprfunc(z - thread_origin_z, p/$fn), p/$fn, z)
 		]
 	];
 
-// TODO: Instead of just accepting a z range,
-// accept a list of [z, param],
-// and interpolate param values between Zs.
-// TODO: Remove taper_function
-togthreads2_mkthreads_v1 = function( zparams, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0 )
-	let( $fn = max(3, $fn) )
-	let( $tphl1_quad_split_direction = direction )
-	tphl1_make_polyhedron_from_layer_function(
-		togthreads2_layer_params(zparams, pitch),
-		function(za)
-			togvec0_offset_points(
-				[
-					for( j = [0:1:$fn-1] )
-					let( a = 360 * j / $fn )
-					let( t_raw = (za[1] + a * (direction == "right" ? -1 : 1)) / 360 )
-					let( t = t_raw - floor(t_raw) )
-					let( r = radius_function(t, taper_function(za[0])) + r_offset )
-					[r * cos(a), r * sin(a)]
-				],
-				za[0]
-			)
-	);
-
-function togthreads2_threadradfunc_to_zpfunc(trfunc, pitch, direction="right", taper_function=function(z) 1, r_offset=0) =
-	function(z,p)
-		let(t_raw = p + z * (direction == "right" ? -1 : 1) / pitch)
-		let(t = t_raw - floor(t_raw))
-		trfunc(t, taper_function(z)) + r_offset;
-
 // V2: Based on the idea of using a function like z -> phase -> r
 // to make it simpler to transform r at a given z
-togthreads2_mkthreads_v2 = function( zrange, pitch, radius_function, direction="right", taper_function=function(z) 1, r_offset=0, thread_origin_z=0 )
+function togthreads2_mkthreads_v2(zparams, type23, direction="right", r_offset=0, end_mode="flush", thread_origin_z=0) =
+//function( zparams, type23, direction="right", r_offset=0, thread_origin_z=0 )
+	let( pitch = type23[1] )
+	let( ptrfunc = togthreads2__type23_to_ptrfunc(type23) )
+	let( zrange = [zparams[0][0], zparams[len(zparams)-1][0]] )
 	let( layer_height = pitch/$fn )
-	let( layers = togthreads2_zp_to_layers(
+	let( taper_function = function(z) 0 /* lookup(z, zparams) */ ) // TODO Put back
+	let( layers = togthreads2__zpr_to_layers(
 		[zrange[0] : layer_height : zrange[1]],
-		togthreads2_threadradfunc_to_zpfunc(radius_function, pitch, direction, taper_function=taper_function, r_offset=r_offset),
+		zprfunc = togthreads2__ptrfunc_to_zprfunc(ptrfunc, pitch, direction, taper_function=taper_function, r_offset=r_offset),
 		thread_origin_z = thread_origin_z
 	) )
 	tphl1_make_polyhedron_from_layers(layers);
-
-togthreads2_mkthreads = togthreads2_mkthreads_v2;
 
 function togthreads2__clamp(x, lower, upper) = min(upper, max(lower, x));
 
@@ -208,7 +224,7 @@ function togthreads2__ridge(t) =
 
 // basic_diameter = inches
 // pitch = threads per inch
-function togthreads2_unc_external_thread_radius_function(basic_diameter, tpi, side="external", meth="orig") =
+function togthreads2_unc_external_ptrfunc(basic_diameter, tpi, side="external", meth="orig") =
 	// Based on
 	// https://www.machiningdoctor.com/charts/unified-inch-threads-charts/#formulas-for-basic-dimensions
 	// https://www.machiningdoctor.com/wp-content/uploads/2022/07/Unfied-Thread-Basic-Dimensions-External.png?ezimgfmt=ng:webp/ngcb1
@@ -229,15 +245,15 @@ function togthreads2_unc_external_thread_radius_function(basic_diameter, tpi, si
 	// let( r1 = r - hs )
 	let( rmin = r2 - han )
 	let( rmax = r2 + has )
-	function(t, trat=1)
+	function(phase, trat=1)
 		let( x = t*2 )
 		togthreads2__clamp(
-		   r0 + trat*H/2 + H*togthreads2__ridge(t - 0.5),
+		   r0 + trat*H/2 + H*togthreads2__ridge(phase - 0.5),
 			rmin, rmax
 		);
 
-function togthreads2_demo_thread_radius_function(diam,pitch) =
-	function(t, trat=0) max(9, min(10, 9 + trat + (0.5 + 2 * ((2*abs(t-0.5))-0.5)) ));;
+function togthreads2_demo_ptrfunc(diam, pitch) =
+	function(phase, trat=0) max(9, min(10, 9 + trat + (0.5 + 2 * ((2*abs(phase-0.5))-0.5)) ));;
 
 ////
 
@@ -257,14 +273,6 @@ function togthreads2__zparams_to_zrange(zparams) =
 
 function togthreads2__normalize_zparams(zparams) =
 	[ for(zp=zparams) is_list(zp) ? zp : is_num(zp) ? [zp, 0] : assert(false, str("Expected [z,t] or z for zparam, got ", zp, "'")) ];
-
-// Type23 = ["togthreads2.3-type", pitch, cross_section_polypoints, min_radius, max_radius]
-// Where:
-// - pitch = distance between threads
-// - cross_section_polypoints = points of a polygon centered at y=0, x=min_radius
-//   that represents the vertical shape of the threads
-// - min_radius = radius of solid center section of bolt
-// - max_radius = radius of hole (probably = half the nominal diameter of the bolt)
 
 // zparams: [z0, z1] (z range) or [[z0, t0], ...., [zn, tn]] (z,t control points, where t = -1..1)
 // type23: a Type23 thread spec
@@ -286,11 +294,12 @@ function togthreads2_mkthreads_v3(zparams, type23, direction="right", r_offset=0
 	assert( is_num(type23[3]) )
 	assert( is_list(type23) && type23[0] == "togthreads2.3-type" )
 	let( reverse = function(arr) [ for(i=[len(arr)-1 : -1 : 0]) arr[i]] )
-	let( pitch = type23[1] )
+	let( pitch = togthreads2_type23_pitch(type23) )
 	assert( pitch < 99999, str("[Effectively] infinite pitch: ", pitch) )
-	let( xspolypoints = direction == "right" ? reverse(type23[2]) : type23[2] )
-	let( min_radius = type23[3] )
-	let( max_radius = type23[4] )
+	let( polypoints = togthreads2_type23_polypoints(type23) )
+	let( xspolypoints = direction == "right" ? reverse(polypoints) : polypoints )
+	let( min_radius = togthreads2_type23_min_radius(type23) )
+	let( max_radius = togthreads2_type23_max_radius(type23) )
 	echo( ceil(zrange[1]-zrange[0])*$fn/pitch )
 	let( thread_zrange = end_mode == "blunt" ? zrange : [zrange[0]-pitch/2, zrange[1]+pitch/2] )
 	assert(thread_zrange[1] > thread_zrange[0])
@@ -334,7 +343,7 @@ function togthreads2_demo_to_type23(diam, pitch) =
 	let( outer_r = diam/2 )
 	let( bev = pitch/3 )
 	let( inner_r = outer_r - bev )
-	["togthreads2.3-type", pitch, [[outer_r,pitch/8], [inner_r,pitch/8+bev], [inner_r,-pitch/8-bev], [outer_r,-pitch/8]], outer_r-pitch/4, outer_r];
+	["togthreads2.3-type", pitch, [[inner_r,-pitch/8-bev], [outer_r,-pitch/8], [outer_r,pitch/8], [inner_r,pitch/8+bev]], outer_r-pitch/4, outer_r];
 
 function togthreads2_unc_to_type23(basic_diameter, tpi) =
 	// Based on
@@ -360,7 +369,7 @@ function togthreads2_unc_to_type23(basic_diameter, tpi) =
 	let( rmint= r2 - has )
 	let( rmin = r2 - han )
 	let( rmax = r2 + has )
-	["togthreads2.3-type", P, [[rmax, P/16], [rmint, P*7/16], [rmint, -P*7/16], [rmax, -P/16]], rmin, r];
+	["togthreads2.3-type", P, [[rmint, -P*7/16], [rmax, -P/16], [rmax, P/16], [rmint, P*7/16]], rmin, r];
 
 ////
 
@@ -410,31 +419,40 @@ function threads2__get_thread_pitch(spec) =
 	is_list(spec) && spec[0] == "straight-d" ? spec[1] : // Hack.  Straight doesn't have a pitch!
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-function threads2__get_thread_radius_function(spec) =
-	is_string(spec) ? threads2__get_thread_radius_function(threads2__get_thread_spec(spec)) :
-	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_external_thread_radius_function(spec[1], spec[2]) :
-	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_thread_radius_function(spec[1], spec[2]) :
+function threads2__get_ptrfunc(spec) =
+	is_string(spec) ? threads2__get_ptrfunc(threads2__get_thread_spec(spec)) :
+	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_external_ptrfunc(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_ptrfunc(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "straight-d" ? function(x, trat=1) spec[1]/2 + trat*spec[1]/8 : // Hack.
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 function threads2__get_thread_type23(spec) = 
-	is_string(spec) ? threads2__get_thread_type23(threads2__get_thread_spec(spec)) :
+	is_string(spec) ? threads2__get_thread_type23(threads2__gegt_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "straight-d" ? ["togthreads2.3-type", spec[1], [], spec[1]*3/8, spec[1]*5/8] : // Hack.
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-function threads2__to_polyhedron(zparams, spec, r_offset=0, end_mode="flush", thread_origin_z=0) =
+function threads2__to_polyhedron(zparams, spec, r_offset=0, direction="right", end_mode="flush", thread_origin_z=0) =
 	let( spec1 = is_string(spec) ? threads2__get_thread_spec(spec) : spec )
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
 	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset) :
-	assert($togthreads2_polyhedron_algorithm == "v3", "threads2__to_polyhedron only supports v3 currently")
+	// assert($togthreads2_polyhedron_algorithm == "v3", "threads2__to_polyhedron only supports v3 currently")
 	let( type23 = threads2__get_thread_type23(spec1) )
-	togthreads2_mkthreads_v3(zparams, type23,
-		r_offset = r_offset,
-		end_mode = end_mode,
-		thread_origin_z = thread_origin_z
-	);
+	$togthreads2_polyhedron_algorithm == "v2" ?
+		togthreads2_mkthreads_v2(
+			zparams, type23,
+			direction = direction,
+			r_offset = r_offset,
+			end_mode = end_mode,
+			thread_origin_z = thread_origin_z
+		) : togthreads2_mkthreads_v3(
+			zparams, type23,
+			direction = direction,
+			r_offset = r_offset,
+			end_mode = end_mode,
+			thread_origin_z = thread_origin_z
+		);
 
 /**
  * Generate zparams for threads with ends tapered appropriately
@@ -472,21 +490,7 @@ function togthreads2_thread_zparams(end_zts, taper_length) =
 		],
 	];
 
-function make_the_post_v2() =
-	total_height <= head_height || outer_threads == "none" ? ["union"] :
-	let( top_z = total_height )
-	let( bottom_z = max(0, head_height/2) )
-	let( spec  = threads2__get_thread_spec(outer_threads) )
-	let( pitch = threads2__get_thread_pitch(spec) )
-	let( taper_length = pitch/2 )
-	let( rfunc = threads2__get_thread_radius_function(spec) )
-	togthreads2_mkthreads([bottom_z, top_z], pitch, rfunc,
-		taper_function = function(z) 0 - max(0, (z - (top_z - taper_length))/taper_length),
-		r_offset = outer_thread_radius_offset,
-		thread_origin_z = head_height
-	);
-
-function make_the_post_v3() =
+the_post =
 	outer_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(outer_threads) )
 	let( top_z = total_height )
@@ -499,25 +503,7 @@ function make_the_post_v3() =
 		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
 	);
 
-the_post =
-	$togthreads2_polyhedron_algorithm == "v2" ? make_the_post_v2() :
-	make_the_post_v3();
-
-function make_the_hole_v2() =
-	inner_threads == "none" ? ["union"] :
-	let( spec = threads2__get_thread_spec(inner_threads) )
-	let( bottom_z = floor_thickness )
-	let( top_z = total_height )
-	let( taper_amt = 1 )
-	let( pitch = threads2__get_thread_pitch(spec) )
-	let( taper_length = pitch/2 )
-	let( rfunc = threads2__get_thread_radius_function(spec) )
-	togthreads2_mkthreads([bottom_z-1, top_z+1], pitch, rfunc,
-		taper_function = function(z) taper_amt * max(1-z/taper_length, 0, 1 - (top_z-z)/taper_length),
-		r_offset = inner_thread_radius_offset
-	);
-
-the_hole = $togthreads2_polyhedron_algorithm == "v2" ? make_the_hole_v2() :
+the_hole =
 	inner_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(inner_threads) )
 	let( taper_length = threads2__get_thread_pitch(spec)/2 )
