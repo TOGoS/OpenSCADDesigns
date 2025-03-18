@@ -1,4 +1,4 @@
-// Threads2.23.3
+// Threads2.23.4
 // 
 // New screw threads proto-library
 // 
@@ -81,6 +81,8 @@
 // v2.23.3:
 // - Fix togthreads2__type23_to_ptrfunc to clamp radius to >= min_radius
 // - v2 tapering may still not quite match that of v3
+// v2.23.4:
+// - Fix v2 tapering to clamp between min/max radius adjusted by taper amount
 //
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
@@ -136,6 +138,8 @@ $togthreads2_polyhedron_algorithm = thread_polyhedron_algorithm;
 // Since v2 specifies ridge at phase = 0.5 and groove at 0 and 1,
 // that means that phase = z / pitch - floor(z / pitch) + 0.5
 
+function togthreads2__clamp(x, lower, upper) = min(upper, max(lower, x));
+
 //// Type definitions
 
 // ptrfunc = PhaseTaperRadiusFunction = (phase, taper) -> radius
@@ -179,8 +183,13 @@ function togthreads2__type23_to_ptrfunc(type23) =
 	let( min_radius = togthreads2_type23_min_radius(type23) )
 	let( max_radius = togthreads2_type23_max_radius(type23) )
 	let( remapped = [[-10, 0], for(p=polypoints) [p[1]/pitch + 0.5, p[0]], [11, 0]] )
-	function(phase, t=0) max(min_radius, lookup(phase, remapped)) + t*(max_radius-min_radius); // TODO put back
-
+	function(phase, t=0)
+		let( taper_offset = t*(max_radius-min_radius) )
+		togthreads2__clamp(
+			lookup(phase, remapped),
+			min_radius + taper_offset,
+			max_radius + taper_offset
+		);
 
 function togthreads2__to_list(x) = [for(i=x) i];
 
@@ -209,15 +218,13 @@ function togthreads2_mkthreads_v2(zparams, type23, direction="right", r_offset=0
 	let( ptrfunc = togthreads2__type23_to_ptrfunc(type23) )
 	let( zrange = [zparams[0][0], zparams[len(zparams)-1][0]] )
 	let( layer_height = pitch/$fn )
-	let( taper_function = function(z) 0 /* lookup(z, zparams) */ ) // TODO Put back
+	let( taper_function = function(z) lookup(z, zparams) )
 	let( layers = togthreads2__zpr_to_layers(
 		[zrange[0] : layer_height : zrange[1]],
 		zprfunc = togthreads2__ptrfunc_to_zprfunc(ptrfunc, pitch, direction, taper_function=taper_function, r_offset=r_offset),
 		thread_origin_z = thread_origin_z
 	) )
 	tphl1_make_polyhedron_from_layers(layers);
-
-function togthreads2__clamp(x, lower, upper) = min(upper, max(lower, x));
 
 // 0 -> 0, 0.5 -> 1, 1 -> 0
 function togthreads2__ridge(t) =
