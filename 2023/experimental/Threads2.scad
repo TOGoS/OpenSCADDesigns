@@ -1,4 +1,4 @@
-// Threads2.23.5
+// Threads2.23.6
 // 
 // New screw threads proto-library
 // 
@@ -85,10 +85,12 @@
 // - Fix v2 tapering to clamp between min/max radius adjusted by taper amount
 // v2.23.5:
 // - More assertions in quantity parsing
+// v2.23.6:
+// - threads2__to_polyhedron now handles 'none' thread type
+// - Define threads2__get_default_taper_length to avoid threads2__get_thread_pitch
+//   having to support non-thread cases
+// - Delete some dead code
 // 
-// TODO: threads2__to_polyhedron could support spec = 'none'.
-// TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
-//       Use OpenSCAD's built-in `lookup(z, [[z0, v0], ...])` function!
 // TODO: Rename some functions, e.g. threads2__to_polyhedron maybe should be public
 //       and named, uhm...something that hints at the inputs.
 // TODO: Extract high-level functions to library
@@ -233,39 +235,6 @@ function togthreads2__ridge(t) =
 	let( trem = t - floor(t) )
 	let( dtrem = trem * 2 )
 	dtrem > 1 ? 2 - dtrem : dtrem;
-
-// basic_diameter = inches
-// pitch = threads per inch
-function togthreads2_unc_external_ptrfunc(basic_diameter, tpi, side="external", meth="orig") =
-	// Based on
-	// https://www.machiningdoctor.com/charts/unified-inch-threads-charts/#formulas-for-basic-dimensions
-	// https://www.machiningdoctor.com/wp-content/uploads/2022/07/Unfied-Thread-Basic-Dimensions-External.png?ezimgfmt=ng:webp/ngcb1
-	// 
-	// It looks like the formulas for internal/external threads are the same
-	// except that the inner/outer flattening is inverted.
-	// 
-	// TODO: This seems like it might be wrong.  Figure out and fix.
-	let( d = basic_diameter*25.4 )
-	let( P = 25.4/tpi )
-	let( H = P * sqrt(3)/2 ) // difference in radius between unclamped min and max
-	let( hs = H*5/8 )
-	let( has = H*3/8 )
-	let( han = H*1/4 )
-	let( r = d/2 )
-	let( r2 = r - has ) // Mid point
-	let( r0 = r2 - H/2 ) // unclamped min radius
-	// let( r1 = r - hs )
-	let( rmin = r2 - han )
-	let( rmax = r2 + has )
-	function(phase, trat=1)
-		let( x = t*2 )
-		togthreads2__clamp(
-		   r0 + trat*H/2 + H*togthreads2__ridge(phase - 0.5),
-			rmin, rmax
-		);
-
-function togthreads2_demo_ptrfunc(diam, pitch) =
-	function(phase, trat=0) max(9, min(10, 9 + trat + (0.5 + 2 * ((2*abs(phase-0.5))-0.5)) ));;
 
 ////
 
@@ -414,6 +383,7 @@ function threads2__decode_dim(feh) =
 	togridlib3_decode([rq[0][0], rq[1]]) / rq[0][1];
 
 function threads2__get_thread_spec(name, index=0) =
+	name == "none" ? ["none"] :
 	threads2_thread_types[index][0] == name ? threads2_thread_types[index][1] :
 	index+1 < len(threads2_thread_types) ? threads2__get_thread_spec(name, index+1) :
 	let( kq = togstr1_tokenize(name, "-", 3) )
@@ -429,25 +399,23 @@ function threads2__get_thread_pitch(spec) =
 	is_string(spec) ? threads2__get_thread_pitch(threads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc" ? 25.4 / spec[2] :
 	is_list(spec) && spec[0] == "demo" ? spec[2] :
-	is_list(spec) && spec[0] == "straight-d" ? spec[1] : // Hack.  Straight doesn't have a pitch!
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-function threads2__get_ptrfunc(spec) =
-	is_string(spec) ? threads2__get_ptrfunc(threads2__get_thread_spec(spec)) :
-	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_external_ptrfunc(spec[1], spec[2]) :
-	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_ptrfunc(spec[1], spec[2]) :
-	is_list(spec) && spec[0] == "straight-d" ? function(x, trat=1) spec[1]/2 + trat*spec[1]/8 : // Hack.
-	assert(false, str("Unrecognized thread spec: ", spec));
+function threads2__get_default_taper_length(spec) =
+	is_string(spec) ? threads2__get_thread_pitch(threads2__get_thread_spec(spec)) :
+	is_list(spec) && spec[0] == "straight-d" ? spec[1] :
+	is_list(spec) && spec[0] == "none"       ? 1       :
+	threads2__get_thread_pitch(spec)/2;
 
 function threads2__get_thread_type23(spec) = 
 	is_string(spec) ? threads2__get_thread_type23(threads2__gegt_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_to_type23(spec[1], spec[2]) :
-	is_list(spec) && spec[0] == "straight-d" ? ["togthreads2.3-type", spec[1], [], spec[1]*3/8, spec[1]*5/8] : // Hack.
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 function threads2__to_polyhedron(zparams, spec, r_offset=0, direction="right", end_mode="flush", thread_origin_z=0) =
 	let( spec1 = is_string(spec) ? threads2__get_thread_spec(spec) : spec )
+	spec1[0] == "none" ? ["union"] :
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
 	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset) :
 	// assert($togthreads2_polyhedron_algorithm == "v3", "threads2__to_polyhedron only supports v3 currently")
@@ -504,7 +472,6 @@ function togthreads2_thread_zparams(end_zts, taper_length) =
 	];
 
 the_post =
-	outer_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(outer_threads) )
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
@@ -512,14 +479,13 @@ the_post =
 		togthreads2_thread_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
 			[   top_z,                 -1    ],
-		], threads2__get_thread_pitch(spec)/2),
+		], threads2__get_default_taper_length(spec)),
 		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
 	);
 
 the_hole =
-	inner_threads == "none" ? ["union"] :
 	let( spec = threads2__get_thread_spec(inner_threads) )
-	let( taper_length = threads2__get_thread_pitch(spec)/2 )
+	let( taper_length = threads2__get_default_taper_length(spec) )
 	threads2__to_polyhedron(
 	   togthreads2_thread_zparams([
 		   [floor_thickness, floor_thickness > 0 ? 0 : 1],
