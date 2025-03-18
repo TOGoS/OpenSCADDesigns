@@ -1,4 +1,4 @@
-// Threads2.23.7
+// Threads2.24
 // 
 // New screw threads proto-library
 // 
@@ -94,9 +94,11 @@
 // - Have inner threads' origin be at the top
 // - Fix v2 thread generation by applying thread_origin_z in
 //   togthreads2__ptrfunc_to_zprfunc instead of togthreads2__zpr_to_layers
-// 
-// TODO: Rename some functions, e.g. threads2__to_polyhedron maybe should be public
-//       and named, "togthreads2_" + something that more explicitly indicates inputs
+// v2.24:
+// - Rename some functions from "threads2_" to "togthreads2_"
+// - 'threads2__to_polyhedron' is now 'togthreads2_make_threads'
+// - double__underscore a few other function names to 'mark as private'
+//
 // TODO: Extract high-level functions to library
 
 use <../lib/TOGArrayLib1.scad>
@@ -229,7 +231,7 @@ function togthreads2__zpr_to_layers(zs, zprfunc) =
 
 // V2: Based on the idea of using a function like z -> phase -> r
 // to make it simpler to transform r at a given z
-function togthreads2_mkthreads_v2(zparams, type23, direction="right", r_offset=0, end_mode="flush", thread_origin_z=0) =
+function togthreads2__mkthreads_v2(zparams, type23, direction="right", r_offset=0, end_mode="flush", thread_origin_z=0) =
 //function( zparams, type23, direction="right", r_offset=0, thread_origin_z=0 )
 	let( pitch = type23[1] )
 	let( ptrfunc = togthreads2__type23_to_ptrfunc(type23) )
@@ -281,7 +283,7 @@ function togthreads2__normalize_zparams(zparams) =
 //   - You probably want this for outer threads
 // - "flush" to have threads continue all the way to the end
 //   - You probably want this for inner threads
-function togthreads2_mkthreads_v3(zparams, type23, direction="right", r_offset=0, end_mode="flush", thread_origin_z=0) =
+function togthreads2__mkthreads_v3(zparams, type23, direction="right", r_offset=0, end_mode="flush", thread_origin_z=0) =
 	assert( !is_undef(r_offset) )
 	assert( is_list(type23) )
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
@@ -337,13 +339,13 @@ function togthreads2_mkthreads_v3(zparams, type23, direction="right", r_offset=0
 		]
 	];
 
-function togthreads2_demo_to_type23(diam, pitch) =
+function togthreads2__demo_to_type23(diam, pitch) =
 	let( outer_r = diam/2 )
 	let( bev = pitch/3 )
 	let( inner_r = outer_r - bev )
 	["togthreads2.3-type", pitch, [[inner_r,-pitch/8-bev], [outer_r,-pitch/8], [outer_r,pitch/8], [inner_r,pitch/8+bev]], outer_r-pitch/4, outer_r];
 
-function togthreads2_unc_to_type23(basic_diameter, tpi) =
+function togthreads2__unc_to_type23(basic_diameter, tpi) =
 	// Based on
 	// https://www.machiningdoctor.com/charts/unified-inch-threads-charts/#formulas-for-basic-dimensions
 	// https://www.machiningdoctor.com/wp-content/uploads/2022/07/Unfied-Thread-Basic-Dimensions-External.png?ezimgfmt=ng:webp/ngcb1
@@ -371,16 +373,10 @@ function togthreads2_unc_to_type23(basic_diameter, tpi) =
 
 ////
 
-threads2_thread_types = [
-	["threads2-demo", ["demo", 20, 5]],
-	["#6-32-UNC", ["unc", 0.138, 32]],
-	["#8-32-UNC", ["unc", 0.168, 32]],
-];
-
 use <../lib/TOGStringLib1.scad>
 use <../lib/TOGridLib3.scad>
 
-function threads2__parse_num(feh, index=0) =
+function togthreads2__parse_num(feh, index=0) =
 	let(ratr = togstr1_parse_rational_number(feh, index))
 	ratr[1] == index ? [undef, index] :
 	let(rn = ratr[0])
@@ -388,63 +384,70 @@ function threads2__parse_num(feh, index=0) =
 	assert(is_num(num))
 	[num, ratr[1]];
 
-function threads2__decode_num(feh) =
-	let(numr = threads2__parse_num(feh))
+function togthreads2__decode_num(feh) =
+	let(numr = togthreads2__parse_num(feh))
 	assert(numr[1] > 0, str("Failed to parse rational number from '", feh, "'"))
 	numr[0];
 
-function threads2__decode_dim(feh) =
+function togthreads2__decode_dim(feh) =
 	let(qr = togstr1_parse_quantity(feh))
 	assert(qr[1] > 0, str("Failed to parse quantity from '", feh, "'"))
 	let(rq = qr[0])
 	togridlib3_decode([rq[0][0], rq[1]]) / rq[0][1];
 
-function threads2__get_thread_spec(name, index=0) =
-	name == "none" ? ["none"] :
-	threads2_thread_types[index][0] == name ? threads2_thread_types[index][1] :
-	index+1 < len(threads2_thread_types) ? threads2__get_thread_spec(name, index+1) :
+// A few hardcoded thread types
+togthreads2_thread_types = [
+	["none", ["none"]],
+	["threads2-demo", ["demo", 20, 5]],
+	["#6-32-UNC", ["unc", 0.138, 32]],
+	["#8-32-UNC", ["unc", 0.168, 32]],
+];
+
+function togthreads2__get_thread_spec(name, index=0) =
+	togthreads2_thread_types[index][0] == name ? togthreads2_thread_types[index][1] :
+	index+1 < len(togthreads2_thread_types) ? togthreads2__get_thread_spec(name, index+1) :
 	let( kq = togstr1_tokenize(name, "-", 3) )
-	kq[0] == "straight" && len(kq) == 2 ? ["straight-d", threads2__decode_dim(kq[1])] :
+	kq[0] == "straight" && len(kq) == 2 ? ["straight-d", togthreads2__decode_dim(kq[1])] :
 	let(uncdiam =
-		len(kq) == 3 && kq[2] == "UNC" ?	let( diamr = threads2__parse_num(kq[0]) ) diamr[0] :
+		len(kq) == 3 && kq[2] == "UNC" ?	let( diamr = togthreads2__parse_num(kq[0]) ) diamr[0] :
 		undef
 	)
-	is_num(uncdiam) ? ["unc", uncdiam, threads2__decode_num(kq[1])] :
+	is_num(uncdiam) ? ["unc", uncdiam, togthreads2__decode_num(kq[1])] :
 	assert(false, str("Failed to parse thread spec ''", name, "' (not in list or recognized format)"));
 
-function threads2__get_thread_pitch(spec) =
-	is_string(spec) ? threads2__get_thread_pitch(threads2__get_thread_spec(spec)) :
+function togthreads2__get_thread_pitch(spec) =
+	is_string(spec) ? togthreads2__get_thread_pitch(togthreads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc" ? 25.4 / spec[2] :
 	is_list(spec) && spec[0] == "demo" ? spec[2] :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-function threads2__get_default_taper_length(spec) =
-	is_string(spec) ? threads2__get_thread_pitch(threads2__get_thread_spec(spec)) :
+function togthreads2__get_default_taper_length(spec) =
+	is_string(spec) ? togthreads2__get_thread_pitch(togthreads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "straight-d" ? spec[1] :
 	is_list(spec) && spec[0] == "none"       ? 1       :
-	threads2__get_thread_pitch(spec)/2;
+	togthreads2__get_thread_pitch(spec)/2;
 
-function threads2__get_thread_type23(spec) = 
-	is_string(spec) ? threads2__get_thread_type23(threads2__gegt_thread_spec(spec)) :
-	is_list(spec) && spec[0] == "unc"  ? togthreads2_unc_to_type23(spec[1], spec[2]) :
-	is_list(spec) && spec[0] == "demo" ? togthreads2_demo_to_type23(spec[1], spec[2]) :
+function togthreads2__get_thread_type23(spec) = 
+	is_string(spec) ? togthreads2__get_thread_type23(togthreads2__gegt_thread_spec(spec)) :
+	is_list(spec) && spec[0] == "unc"  ? togthreads2__unc_to_type23(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "demo" ? togthreads2__demo_to_type23(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
-function threads2__to_polyhedron(zparams, spec, r_offset=0, direction="right", end_mode="flush", thread_origin_z=0) =
-	let( spec1 = is_string(spec) ? threads2__get_thread_spec(spec) : spec )
+// TODO: Allow 'spec' to be a type23
+function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", end_mode="flush", thread_origin_z=0) =
+	let( spec1 = is_string(spec) ? togthreads2__get_thread_spec(spec) : spec )
 	spec1[0] == "none" ? ["union"] :
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
 	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset) :
-	// assert($togthreads2_polyhedron_algorithm == "v3", "threads2__to_polyhedron only supports v3 currently")
-	let( type23 = threads2__get_thread_type23(spec1) )
+	let( type23 = togthreads2__get_thread_type23(spec1) )
 	$togthreads2_polyhedron_algorithm == "v2" ?
-		togthreads2_mkthreads_v2(
+		togthreads2__mkthreads_v2(
 			zparams, type23,
 			direction = direction,
 			r_offset = r_offset,
 			end_mode = end_mode,
 			thread_origin_z = thread_origin_z
-		) : togthreads2_mkthreads_v3(
+		) : togthreads2__mkthreads_v3(
 			zparams, type23,
 			direction = direction,
 			r_offset = r_offset,
@@ -489,11 +492,11 @@ function togthreads2_thread_zparams(end_zts, taper_length) =
 	];
 
 the_post =
-	let( spec = threads2__get_thread_spec(outer_threads) )
-	let( taper_length = threads2__get_default_taper_length(spec) )
+	let( spec = togthreads2__get_thread_spec(outer_threads) )
+	let( taper_length = togthreads2__get_default_taper_length(spec) )
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
-	threads2__to_polyhedron(
+	togthreads2_make_threads(
 		togthreads2_thread_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
 			[   top_z,                 -1    ],
@@ -502,9 +505,9 @@ the_post =
 	);
 
 the_hole =
-	let( spec = threads2__get_thread_spec(inner_threads) )
-	let( taper_length = threads2__get_default_taper_length(spec) )
-	threads2__to_polyhedron(
+	let( spec = togthreads2__get_thread_spec(inner_threads) )
+	let( taper_length = togthreads2__get_default_taper_length(spec) )
+	togthreads2_make_threads(
 		togthreads2_thread_zparams([
 			[floor_thickness, floor_thickness > 0 ? 0 : 1],
 			[total_height   ,                           1],
@@ -514,13 +517,13 @@ the_hole =
 
 the_floor_hole =
 	floor_threads == "none" || floor_thickness == 0 ? ["union"] :
-	threads2__to_polyhedron([-1, floor_thickness+1], floor_threads, r_offset=floor_thread_radius_offset);
+	togthreads2_make_threads([-1, floor_thickness+1], floor_threads, r_offset=floor_thread_radius_offset);
 
 the_headside_holes =
 	headside_threads == "none" ? ["union"] :
 	// Could do a hole in every face, but for now just work for square heads.
 	assert(head_shape == "square" || head_shape == "togridpile-chunk", "Head holes currently only implemented for square or togridpile-chunk heads")
-	let(headside_hole = threads2__to_polyhedron([-head_width/2, head_width/2], headside_threads, r_offset=headside_thread_radius_offset))
+	let(headside_hole = togthreads2_make_threads([-head_width/2, head_width/2], headside_threads, r_offset=headside_thread_radius_offset))
 	["union",
 		["translate", [0,0,head_height/2], ["rotate", [90,0,0], headside_hole]],
 		["translate", [0,0,head_height/2], ["rotate", [0,90,0], headside_hole]],
