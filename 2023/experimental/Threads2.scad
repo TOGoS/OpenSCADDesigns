@@ -1,4 +1,4 @@
-// Threads2.23.6
+// Threads2.23.7
 // 
 // New screw threads proto-library
 // 
@@ -90,9 +90,13 @@
 // - Define threads2__get_default_taper_length to avoid threads2__get_thread_pitch
 //   having to support non-thread cases
 // - Delete some dead code
+// v2.23.7:
+// - Have inner threads' origin be at the top
+// - Fix v2 thread generation by applying thread_origin_z in
+//   togthreads2__ptrfunc_to_zprfunc instead of togthreads2__zpr_to_layers
 // 
 // TODO: Rename some functions, e.g. threads2__to_polyhedron maybe should be public
-//       and named, uhm...something that hints at the inputs.
+//       and named, "togthreads2_" + something that more explicitly indicates inputs
 // TODO: Extract high-level functions to library
 
 use <../lib/TOGArrayLib1.scad>
@@ -159,11 +163,20 @@ function togthreads2__z_to_phase(z, pitch, phase_offset=0, zmul=-1) =
 	phase_raw - floor(phase_raw);
 
 // Turn a PhaseTaperRadiusFunction into a ZPhaseRadiusFunction.
-function togthreads2__ptrfunc_to_zprfunc(ptrfunc, pitch, direction="right", taper_function=function(z) 1, r_offset=0) =
+function togthreads2__ptrfunc_to_zprfunc(
+	ptrfunc,
+	pitch,
+	direction       = "right",
+	taper_function  = function(z) 1,
+	r_offset        = 0,
+	thread_origin_z = 0
+) =
 	let( zmul = direction == "right" ? -1 : 1 )
-	function(z,phase_offset)
+	function(z, phase_offset)
+		let( phase = togthreads2__z_to_phase(z - thread_origin_z, pitch, phase_offset=phase_offset, zmul=zmul) )
+		assert( phase >= 0 ) assert( phase <= 1 )
 		r_offset + ptrfunc(
-		   togthreads2__z_to_phase(z, pitch, phase_offset=phase_offset, zmul=zmul),
+			phase,
 			taper_function(z)
 		);
 
@@ -199,7 +212,7 @@ function togthreads2__to_list(x) = [for(i=x) i];
 
 // v2 layer-generation
 // rfunc :: z -> phase (0...1) -> r|[x,y]|[x,y,z]
-function togthreads2__zpr_to_layers(zs, zprfunc, thread_origin_z=0) =
+function togthreads2__zpr_to_layers(zs, zprfunc) =
 	assert( len(togthreads2__to_list(zs)) >= 2 )
 	let($fn = max(3, $fn))
 	let(fixpoint = function(n, p, z)
@@ -210,7 +223,7 @@ function togthreads2__zpr_to_layers(zs, zprfunc, thread_origin_z=0) =
 		assert(false, str("Rfunc should return 1..3 values, but it returned ", n)))
 	[
 		for( z=zs ) [
-			for( p=[0:1:$fn-1] ) fixpoint(zprfunc(z - thread_origin_z, p/$fn), p/$fn, z)
+			for( p=[0:1:$fn-1] ) fixpoint(zprfunc(z, p/$fn), p/$fn, z)
 		]
 	];
 
@@ -225,8 +238,12 @@ function togthreads2_mkthreads_v2(zparams, type23, direction="right", r_offset=0
 	let( taper_function = function(z) lookup(z, zparams) )
 	let( layers = togthreads2__zpr_to_layers(
 		[zrange[0] : layer_height : zrange[1]],
-		zprfunc = togthreads2__ptrfunc_to_zprfunc(ptrfunc, pitch, direction, taper_function=taper_function, r_offset=r_offset),
-		thread_origin_z = thread_origin_z
+		zprfunc = togthreads2__ptrfunc_to_zprfunc(
+			ptrfunc, pitch, direction,
+			taper_function = taper_function,
+			r_offset = r_offset,
+			thread_origin_z = thread_origin_z
+		)
 	) )
 	tphl1_make_polyhedron_from_layers(layers);
 
@@ -473,13 +490,14 @@ function togthreads2_thread_zparams(end_zts, taper_length) =
 
 the_post =
 	let( spec = threads2__get_thread_spec(outer_threads) )
+	let( taper_length = threads2__get_default_taper_length(spec) )
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2) )
 	threads2__to_polyhedron(
 		togthreads2_thread_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
 			[   top_z,                 -1    ],
-		], threads2__get_default_taper_length(spec)),
+		], taper_length),
 		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
 	);
 
@@ -487,11 +505,11 @@ the_hole =
 	let( spec = threads2__get_thread_spec(inner_threads) )
 	let( taper_length = threads2__get_default_taper_length(spec) )
 	threads2__to_polyhedron(
-	   togthreads2_thread_zparams([
-		   [floor_thickness, floor_thickness > 0 ? 0 : 1],
+		togthreads2_thread_zparams([
+			[floor_thickness, floor_thickness > 0 ? 0 : 1],
 			[total_height   ,                           1],
 		], taper_length),
-		inner_threads, r_offset=inner_thread_radius_offset
+		inner_threads, r_offset=inner_thread_radius_offset, end_mode="blunt", thread_origin_z = total_height
 	);
 
 the_floor_hole =
