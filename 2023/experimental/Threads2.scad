@@ -1,4 +1,4 @@
-// Threads2.23.2
+// Threads2.23.3
 // 
 // New screw threads proto-library
 // 
@@ -78,6 +78,9 @@
 //   so that lookup(z, polypoints) will work
 // - standardize on terminology for different kinds of functions
 // - reorganize to put 'type definitions' at top
+// v2.23.3:
+// - Fix togthreads2__type23_to_ptrfunc to clamp radius to >= min_radius
+// - v2 tapering may still not quite match that of v3
 //
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
@@ -175,8 +178,8 @@ function togthreads2__type23_to_ptrfunc(type23) =
 	let( polypoints = togthreads2_type23_polypoints(type23) )
 	let( min_radius = togthreads2_type23_min_radius(type23) )
 	let( max_radius = togthreads2_type23_max_radius(type23) )
-	let( remapped = [[-1, 0], for(p=polypoints) [p[1]/pitch + 0.5, p[0]], [2, 0]] )
-	function(phase, t=0) lookup(phase, remapped) + t*(max_radius-min_radius); // TODO put back
+	let( remapped = [[-10, 0], for(p=polypoints) [p[1]/pitch + 0.5, p[0]], [11, 0]] )
+	function(phase, t=0) max(min_radius, lookup(phase, remapped)) + t*(max_radius-min_radius); // TODO put back
 
 
 function togthreads2__to_list(x) = [for(i=x) i];
