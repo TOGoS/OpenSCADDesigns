@@ -1,4 +1,4 @@
-// Threads2.23.4
+// Threads2.23.5
 // 
 // New screw threads proto-library
 // 
@@ -83,7 +83,9 @@
 // - v2 tapering may still not quite match that of v3
 // v2.23.4:
 // - Fix v2 tapering to clamp between min/max radius adjusted by taper amount
-//
+// v2.23.5:
+// - More assertions in quantity parsing
+// 
 // TODO: threads2__to_polyhedron could support spec = 'none'.
 // TODO: Update v2 to do tapering using same parameters as v3, remove taper_function.
 //       Use OpenSCAD's built-in `lookup(z, [[z0, v0], ...])` function!
@@ -407,6 +409,7 @@ function threads2__decode_num(feh) =
 
 function threads2__decode_dim(feh) =
 	let(qr = togstr1_parse_quantity(feh))
+	assert(qr[1] > 0, str("Failed to parse quantity from '", feh, "'"))
 	let(rq = qr[0])
 	togridlib3_decode([rq[0][0], rq[1]]) / rq[0][1];
 
@@ -414,7 +417,7 @@ function threads2__get_thread_spec(name, index=0) =
 	threads2_thread_types[index][0] == name ? threads2_thread_types[index][1] :
 	index+1 < len(threads2_thread_types) ? threads2__get_thread_spec(name, index+1) :
 	let( kq = togstr1_tokenize(name, "-", 3) )
-	kq[0] == "straight" ? ["straight-d", threads2__decode_dim(kq[1])] :
+	kq[0] == "straight" && len(kq) == 2 ? ["straight-d", threads2__decode_dim(kq[1])] :
 	let(uncdiam =
 		len(kq) == 3 && kq[2] == "UNC" ?	let( diamr = threads2__parse_num(kq[0]) ) diamr[0] :
 		undef

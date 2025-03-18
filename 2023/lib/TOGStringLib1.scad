@@ -116,6 +116,7 @@ function togstr1_parse_quantity(str) =
 	let( numr = togstr1_parse_rational_number(str) )
 	// For now, just let the unit be the rest of the string;
 	// can revisit to stop at delimiters if needed in the future.
+	assert( numr[1] < len(str), str("Quantity string missing unit: '", str, "'"))
 	let( unit = togstr1_slice(str, numr[1], len(str)) ) 
 	[[numr[0], unit], len(str)];
 
