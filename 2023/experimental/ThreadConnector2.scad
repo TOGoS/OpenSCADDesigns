@@ -8,7 +8,11 @@
 // v2.1:
 // - More 'reasonable' defaults
 // v2.2:
+// - cross_section_z0 specifies height at which
+//   cross-section cut should start
 // - thread_radius_offset options
+// v2.3:
+// - Fix placement of bottom of inner threads' taper
 
 lower_outer_threads = "1+1/4-7-UNC";
 lower_outer_thread_radius_offset = -0.1;
@@ -82,7 +86,7 @@ togmod1_domodule(
 		[  ring_height/2 + upper_outer_thread_height, -1],
 	], 5), upper_outer_threads, r_offset=upper_outer_thread_radius_offset) )
 	let( the_inner_threads = togthreads2_make_threads(togthreads2_simple_zparams([
-		[ -ring_height/2 - upper_outer_thread_height,  1],
+		[ -ring_height/2 - lower_outer_thread_height,  1],
 		[  ring_height/2 + upper_outer_thread_height,  1],
 	], 5), inner_threads, r_offset=inner_thread_radius_offset) )
 	["difference",
