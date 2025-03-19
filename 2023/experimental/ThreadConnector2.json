@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p1851": {
+			"cross_section_z0": "25.4",
+			"inner_thread_radius_offset": "0.1",
+			"inner_threads": "1/4-20-UNC",
+			"lower_outer_thread_height": "25.4",
+			"lower_outer_thread_radius_offset": "-0.1",
+			"lower_outer_threads": "3/4-10-UNC",
+			"preview_fn": "24",
+			"render_fn": "48",
+			"ring_height": "12.7",
+			"ring_side_count": "8",
+			"ring_width": "19.05",
+			"upper_outer_thread_height": "38.1",
+			"upper_outer_thread_radius_offset": "-0.1",
+			"upper_outer_threads": "3/4-10-UNC"
+		}
+	},
+	"fileFormatVersion": "1"
+}

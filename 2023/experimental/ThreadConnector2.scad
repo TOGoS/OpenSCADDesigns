@@ -1,4 +1,4 @@
-// ThreadConnector2.1
+// ThreadConnector2.2
 // 
 // Double-headed bolt
 // 
@@ -7,12 +7,17 @@
 // - Created based on Threads2.25
 // v2.1:
 // - More 'reasonable' defaults
+// v2.2:
+// - thread_radius_offset options
 
-upper_outer_threads = "1+1/4-7-UNC";
 lower_outer_threads = "1+1/4-7-UNC";
-upper_outer_thread_height   = 15.875; // 0.01
+lower_outer_thread_radius_offset = -0.1;
 lower_outer_thread_height   = 15.875; // 0.01
+upper_outer_threads = "1+1/4-7-UNC";
+upper_outer_thread_radius_offset = -0.1;
+upper_outer_thread_height   = 15.875; // 0.01
 inner_threads = "3/4-10-UNC";
+inner_thread_radius_offset = 0.1;
 ring_width      = 38.1 ; // 0.01
 ring_height     =  6.35; // 0.01
 ring_side_count =  8;
@@ -24,7 +29,7 @@ render_fn = 48;
 
 /* [Debugging/Testing] */
 
-cross_section   = false;
+cross_section_z0   = 999; // 0.1
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -71,15 +76,15 @@ togmod1_domodule(
 	let( the_lower_outer_threads = togthreads2_make_threads(togthreads2_simple_zparams([
 		[ -ring_height/2 - lower_outer_thread_height, -1],
 		[ -ring_height/4                            ,  0],
-	], 5), lower_outer_threads) )
+	], 5), lower_outer_threads, r_offset=lower_outer_thread_radius_offset) )
 	let( the_upper_outer_threads = togthreads2_make_threads(togthreads2_simple_zparams([
 		[  ring_height/4                            ,  0],
 		[  ring_height/2 + upper_outer_thread_height, -1],
-	], 5), upper_outer_threads) )
+	], 5), upper_outer_threads, r_offset=upper_outer_thread_radius_offset) )
 	let( the_inner_threads = togthreads2_make_threads(togthreads2_simple_zparams([
 		[ -ring_height/2 - upper_outer_thread_height,  1],
 		[  ring_height/2 + upper_outer_thread_height,  1],
-	], 5), inner_threads) )
+	], 5), inner_threads, r_offset=inner_thread_radius_offset) )
 	["difference",
 		["union",
 			the_lower_outer_threads,
@@ -87,6 +92,6 @@ togmod1_domodule(
 			the_ring
 		],
 		the_inner_threads,
-		if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
+		["translate", [50,50,cross_section_z0+100], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
 	]
 );
