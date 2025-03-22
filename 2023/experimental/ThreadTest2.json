@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p1860": {
+			"label": "p1860",
+			"threads": "1/4-20-UNC",
+			"offsets": "[0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3]",
+			"block_thickness": "6.35",
+			"block_width": "19.05",
+			"text_font": "Prototype",
+			"text_size": "4",
+			"text_thickening": "-0.1",
+			"$togthreads2_polyhedron_algorithm": "v3",
+			"$tgx11_offset": "-0.01",
+			"preview_fn": "16",
+			"render_fn": "64"
+		}
+	},
+	"fileFormatVersion": "1"
+}
