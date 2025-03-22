@@ -35,7 +35,7 @@ async function openscad(opts : {
 		"--imgsize", "3072,3072",
 	]});
 	const proc = cmd.spawn();
-	const status = await proc.status;	
+	const status = await proc.status;
 	if (!status.success) {
 		throw new Error(`OpenSCAD failed: ${status.code}`);
 	}
