@@ -1,4 +1,4 @@
-// Threads2.25
+// Threads2.26
 // 
 // New screw threads proto-library
 // 
@@ -103,6 +103,8 @@
 //   and rewrite its documentation.
 // v2.25:
 // - Extract thread generation to ../lib/TOGThreads2.scad
+// v2.26:
+// - Fix height of togridpile-chunk head
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -212,7 +214,7 @@ function make_togridpile_chunk_bottom(width,height) =
 function make_togridpile_chunk(width,height) =
 	let( bottom = make_togridpile_chunk_bottom(width,height) )
 	["intersection",
-		tphl1_extrude_polypoints([-1,height+1], tgx11_chunk_xs_points(
+		tphl1_extrude_polypoints([0-$tgx11_offset,height+$tgx11_offset], tgx11_chunk_xs_points(
 			size = [width,width],
 			offset = $tgx11_offset
 		)),
