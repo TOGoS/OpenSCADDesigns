@@ -2,11 +2,11 @@
 	"parameterSets": {
 		"p1726": {
                 	"description": "Block with zero offset to test tightness of bowties",
-			"$fn": "32",
+			"size_chunks": "[1, 1]",
+			"height_u": "22",
 			"bowtie_offset": "0",
-			"flat_edge_inset": "3.175",
 			"hull_offset": "0",
-			"size_chunks": "[1, 1]"
+			"$fn": "32"
 		}
 	},
 	"parameterSets": "",
