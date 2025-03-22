@@ -2,6 +2,9 @@
 // OpenSCAD library for representing shapes
 // 
 // See also: Functional OpenSCAD (https://github.com/thehans/FunctionalOpenSCAD)
+// 
+// v1.8:
+// - Add "text-tsfhvsdls"
 
 module togmod1_domodule(mod) {
 	assert(is_list(mod));
@@ -55,6 +58,8 @@ module togmod1_domodule(mod) {
 		# togmod1_domodule(mod[1]);
 	} else if( mod[0] == "x-color" ) {
 		color(mod[1]) togmod1_domodule(mod[2]);
+	} else if( mod[0] == "text-tsfhvsdls" ) {
+		text(text=mod[1], size=mod[2], font=mod[3], halign=mod[4], valign=mod[5], spacing=mod[6], direction=mod[7], language=mod[7], script=mod[8]);
 	} else {
 		assert(false, str("Unrecognized shape: ", mod[0]));
 	}

@@ -1,8 +1,10 @@
-// TOGThreads2.25
+// TOGThreads2.25.1
 // 
 // Versions:
 // v2.25:
 // - Extract to library from ../experimental/Threads2.scad
+// v2.25.1
+// - Remove an echo
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -172,7 +174,6 @@ function togthreads2__mkthreads_v3(zparams, type23, direction="right", r_offset=
 	let( xspolypoints = direction == "right" ? reverse(polypoints) : polypoints )
 	let( min_radius = togthreads2_type23_min_radius(type23) )
 	let( max_radius = togthreads2_type23_max_radius(type23) )
-	echo( ceil(zrange[1]-zrange[0])*$fn/pitch )
 	let( thread_zrange = end_mode == "blunt" ? zrange : [zrange[0]-pitch/2, zrange[1]+pitch/2] )
 	assert(thread_zrange[1] > thread_zrange[0])
 	// layer_count = total number of layers, including both the top and bottom;

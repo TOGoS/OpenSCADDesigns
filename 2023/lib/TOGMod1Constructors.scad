@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.7
+// TOGMod1Constructors-v1.8
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -27,6 +27,8 @@
 // - togmod1_make_rounded_rect will defer to togmod1_make_rect when r=0
 // v1.7:
 // - togmod1_make_circle will return empty shape (["union"]) when d=0
+// v1.8:
+// - Add togmod1_text
 
 use <./TOGArrayLib1.scad>
 
@@ -127,3 +129,6 @@ function togmod1_linear_extrude_x(range, shape) =
 function togmod1_linear_extrude_y(range, shape) =
 	assert(togmod1__is_range1d(range))
 	["rotate", [90, 0, 180], togmod1_linear_extrude_z(range, shape)];
+
+function togmod1_text(text, size, font, halign, valign, spacing, direction, language, script) =
+	["text-tsfhvsdls", text, size, font, halign, valign, spacing, direction, language, script];
