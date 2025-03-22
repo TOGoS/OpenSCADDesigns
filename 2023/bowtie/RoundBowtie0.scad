@@ -1,4 +1,4 @@
-// RoundBowtie0.6
+// RoundBowtie0.7
 // 
 // A curvier 'bowtie' piece.
 // 
@@ -16,6 +16,8 @@
 // - Add option for THL-1001 or THL-1005 holes
 // v0.6:
 // - Allow arbitrary lobe_count
+// v0.7:
+// - Allow smaller increments of base_thickness
 
 thickness = 6.35;
 diamond_r = 6.35;
@@ -26,7 +28,7 @@ center_hole_d = 4.5;
 center_hole_style = "straight"; // ["none","straight","THL-1001","THL-1005"]
 lobe_count = 2;
 base_width = 12.7;
-base_thickness = 0;
+base_thickness = 0; // 0.01
 
 // Old way of indicating base size,
 // before you could have lobe_count <> 2

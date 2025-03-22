@@ -45,11 +45,27 @@
 			"$fn": "32",
 			"lobe_count": "1",
 			"base_thickness": "3.1",
-			"center_hole_d": "4.5",
 			"center_hole_style": "THL-1001",
 			"diamond_r": "6.35",
 			"offset": "-0.03",
 			"thickness": "19.05"
+		},
+		"p1856": {
+			"description": "Same as p1747, but only 1/2\" tall",
+			"thickness": "12.7",
+			"base_thickness": "3.1",
+			"center_hole_style": "THL-1001",
+			"diamond_r": "6.35",
+			"offset": "-0.03",
+			"$fn": "32"
+		},
+		"p1857": {
+			"description": "1/4\" tall, simple bowtie",
+			"thickness": "6.35",
+			"center_hole_style": "THL-1001",
+			"diamond_r": "6.35",
+			"offset": "-0.03",
+			"$fn": "48"
 		}
 	},
 	"parameterSets": "",
