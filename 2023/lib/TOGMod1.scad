@@ -1,10 +1,12 @@
-// TOGMod1
+// TOGMod1.9
 // OpenSCAD library for representing shapes
 // 
 // See also: Functional OpenSCAD (https://github.com/thehans/FunctionalOpenSCAD)
 // 
 // v1.8:
-// - Add "text-tsfhvsdls"
+// - Add `text-tsfhvsdls`
+// v1.9
+// - Add `offset-ds` (offset with _d_elta a _s_hape)
 
 module togmod1_domodule(mod) {
 	assert(is_list(mod));
@@ -60,6 +62,10 @@ module togmod1_domodule(mod) {
 		color(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "text-tsfhvsdls" ) {
 		text(text=mod[1], size=mod[2], font=mod[3], halign=mod[4], valign=mod[5], spacing=mod[6], direction=mod[7], language=mod[7], script=mod[8]);
+	} else if( mod[0] == "offset-ds" ) {
+		assert(is_num(mod[1]));
+		assert(is_list(mod[2]));
+		offset(delta=mod[1]) togmod1_domodule(mod[2]);
 	} else {
 		assert(false, str("Unrecognized shape: ", mod[0]));
 	}
