@@ -1,4 +1,4 @@
-// Threads2.26
+// Threads2.27
 // 
 // New screw threads proto-library
 // 
@@ -105,9 +105,12 @@
 // - Extract thread generation to ../lib/TOGThreads2.scad
 // v2.26:
 // - Fix height of togridpile-chunk head
+// v2.27:
+// - Option for 'head M-holes' (head_mhole_diameter, head_mhole_spacing)
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGThreads2.scad>
 
@@ -124,12 +127,18 @@ floor_thickness = 0; // 0.01
 floor_threads = "3/8-16-UNC";
 floor_thread_radius_offset =  0.3;
 total_height = 19.05;
+
 head_width   = 38.1;
 head_height  =  6.35;
 head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","togridpile-chunk"]
 headside_threads = "none";
 headside_thread_radius_offset =  0.3;
 head_surface_offset = -0.1;
+
+// Diameter of 'mounting holes' in head
+head_mhole_diameter = 0; // 0.1
+head_mhole_spacing = 32; // 0.1
+
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 
 // This is here so I can see if disabling vertex deduplication speeds things up at all.
@@ -237,6 +246,14 @@ function make_base(shape, width, height) =
 
 the_cap = make_base(head_shape, head_width, head_height);
 
+the_head_mholes =
+	let( cir=togmod1_make_circle(d=head_mhole_diameter) )
+	togmod1_linear_extrude_z([-1,100],
+		["union",
+			for(xm=[-1,1]) for(ym=[-1,1]) ["translate", [xm*head_mhole_spacing/2,ym*head_mhole_spacing/2], cir]
+		 ]
+	);
+
 togmod1_domodule(["difference",
 	["union",
 		the_post,
@@ -246,6 +263,7 @@ togmod1_domodule(["difference",
 	the_floor_hole,
 	the_headside_holes,
 	if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
+	the_head_mholes,
 ]);
 
 // # cylinder(d=10, h=total_height);
