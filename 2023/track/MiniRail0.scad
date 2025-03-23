@@ -1,4 +1,4 @@
-// MiniRail0.18
+// MiniRail0.19
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -50,6 +50,8 @@
 // v0.18:
 // - Freeform hole types
 // - 'render' holes
+// 0.19:
+// - Option for hole remedy depth, which is by default 0.3
 // 
 // Notes:
 // - As of v0.13, the clips do not take rail_thickness_u or rail_width_u into account.
@@ -61,6 +63,7 @@ mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip",
 hole_type = "THL-1002";
 alt_hole_type = "THL-1001";
 hole_pattern = "chunk"; // ["chunk", "atom"]
+hole_remedy_depth = 0.3;
 notches_enabled = true;
 clip_width = 12.7;
 notch_width = 6.35;
@@ -136,7 +139,7 @@ tphl1_make_polyhedron_from_layer_function([
 
 function mekhole(hole_type) = ["render",
 	hole_type == "2mm" ? tphl1_make_z_cylinder(d=2, zrange=[-10, 10]) :
-	tog_holelib2_hole(hole_type, inset=2)
+	tog_holelib2_hole(hole_type, inset=2, remedy_depth=hole_remedy_depth)
 ];
 
 mhole = ["rotate", [180,0,0], mekhole(hole_type)];
