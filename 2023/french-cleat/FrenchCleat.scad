@@ -1,4 +1,4 @@
-// FrenchCleat-v1.11
+// FrenchCleat-v1.12
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -34,6 +34,8 @@
 // - Add 'fc_surface_offset' parameter
 //   - set to small negative value like -0.1 to ensure FC is not too big,
 //     or hole in tester not too tight
+// v1.12:
+// - #6-32-UNC and 1/4-20-UNC holes
 
 description = "";
 
@@ -44,7 +46,7 @@ length_ca = [6, "inch"];
 
 mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
 opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "T", "S-trimmed", "T-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
-hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u"]
+hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u", "#6-32-UNC", "1/4-20-UNC"]
 slot_height = 0;
 
 mode = "X"; // ["X", "Z", "tester"]
@@ -68,11 +70,13 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TGx11.1Lib.scad>
+use <../lib/TOGThreads2.scad>
 
 module __fc202310__end_params() { }
 
 $fn = $preview ? 12 : 72;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
+$togthreads2_polyhedron_algorithm = "v3";
 
 length               = togridlib3_decode(length_ca);
 length_gb            = floor(togridlib3_decode(length_ca, unit=[1.5, "inch"]));
@@ -207,10 +211,20 @@ counterbored_hole = tphl1_make_polyhedron_from_layer_function([
 
 _hole_style = hole_style == "GB-counterbored" ? "THL-1006-3/16in" : hole_style;
 
+function is_thread_hole_style(s) =
+	s == "#6-32-UNC" || s == "1/4-20-UNC"; // TODO: Does itend with "-UNC"?
+
 hole =
 	_hole_style == "GB-counterbored" ? counterbored_hole :
 	_hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
 	_hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], tog_holelib2_hole("THL-1005", inset=5*25.4/16)] :
+	is_thread_hole_style(_hole_style)?
+		togthreads2_make_threads(
+			togthreads2_simple_zparams([[-zp+1,1], [zp-1,1]], taper_length=1, extend=1.5),
+			_hole_style,
+			r_offset = 0.2, // Usually good!
+			end_mode = "blunt"
+		) :
 	["translate", [0,0,zp], tog_holelib2_slot(_hole_style, [-20, 0, 20], slot_height == 0 ? [[0,0]] : [[0,slot_height/2],[0,-slot_height/2]])];
 
 hole_spacing =

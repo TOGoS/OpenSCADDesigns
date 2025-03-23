@@ -385,6 +385,25 @@
 			"opposite_edge_style": "FFS-trimmed",
 			"slot_height": "6"
 		},
+		"-- p186x series (if p1861 works out lol): atom row backs in atom length increments with #6-32 threaded holes": "",
+		"p1861": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[1, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1862": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[2, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
 
 		"-- other stuff --": "",
 		"p1755": {
