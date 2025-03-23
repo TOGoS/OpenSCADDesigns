@@ -1,4 +1,4 @@
-// MiniRail0.17
+// MiniRail0.18
 // 
 // v0.2
 // - Attempt to fix clip path to be not too tight in parts
@@ -47,6 +47,9 @@
 // - Bring back the original v0.11..v0.15 changes that got clobbered
 //   by 7ef0205595646de3471d4fbf5da33b0fc53a5efa
 // - Option for round bowtie cutouts at ends
+// v0.18:
+// - Freeform hole types
+// - 'render' holes
 // 
 // Notes:
 // - As of v0.13, the clips do not take rail_thickness_u or rail_width_u into account.
@@ -55,8 +58,8 @@
 
 length_chunks = 3; // 0.5
 mode = "rail"; // ["rail", "clip", "miniclip", "spacer", "jammer", "notch-clip", "notch-pin"]
-hole_type = "THL-1002"; // ["none", "THL-1001", "THL-1002","2mm"]
-alt_hole_type = "THL-1001"; // ["none", "THL-1001", "THL-1002","2mm"]
+hole_type = "THL-1002";
+alt_hole_type = "THL-1001";
 hole_pattern = "chunk"; // ["chunk", "atom"]
 notches_enabled = true;
 clip_width = 12.7;
@@ -131,9 +134,10 @@ tphl1_make_polyhedron_from_layer_function([
 	[ for(yz=yzpoints) [lon[0], yz[0], yz[1]] ]
 );
 
-function mekhole(hole_type) =
+function mekhole(hole_type) = ["render",
 	hole_type == "2mm" ? tphl1_make_z_cylinder(d=2, zrange=[-10, 10]) :
-	tog_holelib2_hole(hole_type, inset=2);
+	tog_holelib2_hole(hole_type, inset=2)
+];
 
 mhole = ["rotate", [180,0,0], mekhole(hole_type)];
 alt_mhole = ["rotate", [180,0,0], mekhole(alt_hole_type)];

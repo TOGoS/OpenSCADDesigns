@@ -97,6 +97,14 @@
 			"notches_enabled": "true",
 			"offset": "-0.1"
 		},
+		"p1870": {
+			"alt_hole_type": "THL-1009",
+			"hole_type": "THL-1009",
+			"length_chunks": "7",
+			"mode": "rail",
+			"notches_enabled": "true",
+			"offset": "-0.1"
+		},
 		"-- Hooks --": "",
 		"p1536": {
 			"mode": "miniclip",
