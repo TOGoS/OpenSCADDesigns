@@ -220,6 +220,18 @@ function tog_holelib2_is_hole_type(type_name, idx=0) =
 	tog_holelib2_hole_types[idx][0] == type_name ? true :
 	tog_holelib2_is_hole_type(type_name, idx=idx + 1);
 
+// Parse result value
+function tog_holelib2__prv(parse_result, idx=0, what="") =
+	assert(parse_result[1] > idx, str("Failed to parse ", what))
+	parse_result[0];
+
+function tog_holelib2__parse_cb(cbstr) =
+	let( tokens = togstr1_tokenize(cbstr, "-", 3) )
+	let( diam = tog_holelib2__prv(togstr1_parse_quantity(tokens[0]), 0, "counterbore diameter") )
+	let( depth = len(tokens) == 1 ? undef : tog_holelib2__prv(togstr1_parse_quantity(tokens[1]), 0, "counterbore depth") )
+	let( next_hole = len(tokens) < 3 ? undef : tog_holelib2_hole(tokens[2]) )
+	["counterbore-ddn", diam, depth, next_hole];
+
 function tog_holelib2_hole(
 	type_name,
 	// Negative of Z position of bottom of hole
@@ -270,6 +282,7 @@ function tog_holelib2_hole(
 		) :
 		assert(false, str("Failed to parse size from hole type '", type_name, "'"))
 	) :
+	tokens[0] == "CB" ? tog_holelib2__parse_cb(tokens[1]) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
 
 // hole_zds = ["tog-holelib2-holezds", [[zbottomfact, zsurfacefactor, ztopfactor, onefactor], diameter], ...]
