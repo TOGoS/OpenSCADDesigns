@@ -1,10 +1,12 @@
-// TOGThreads2.25.1
+// TOGThreads2.26
 // 
 // Versions:
 // v2.25:
 // - Extract to library from ../experimental/Threads2.scad
 // v2.25.1
 // - Remove an echo
+// v2.26:
+// - 'extend' parameter to togthreads2_simple_zparams
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -338,8 +340,9 @@ function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", 
  * - end_zts = [[bottom_z, bottom_taper_direction], [top_z, top_taper_direction]]
  *   where taper_direction = -1 (inward), 0 (straight), or 1 (outward)
  * - taper_length = vertical length of taper, in mm
+ * - extend = distance to extend past the ends when positive taper (default = 1mm)
  */
-function togthreads2_simple_zparams(end_zts, taper_length) =
+function togthreads2_simple_zparams(end_zts, taper_length, extend=1) =
 	let( z0 = end_zts[0][0], z1 = end_zts[1][0] )
 	let( t0 = end_zts[0][1], t1 = end_zts[1][1] )
 	let( taper_amt = 1 )
@@ -349,7 +352,7 @@ function togthreads2_simple_zparams(end_zts, taper_length) =
 			[z0        ,  0],
 		] : [
 			if( t0 > 0 )
-			[z0-1      , t0*2],
+			[z0-extend , t0*2],
 			[z0        , t0],
 			[z0+taper_l,  0],
 		],
@@ -359,6 +362,6 @@ function togthreads2_simple_zparams(end_zts, taper_length) =
 			[z1-taper_l,  0],
 			[z1        , t1],
 			if( t1 > 0 )
-			[z1+1      , t1*2],
+			[z1+extend , t1*2],
 		],
 	];
