@@ -1,4 +1,4 @@
-// TOGHoleLib2.21
+// TOGHoleLib2.22
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -55,8 +55,10 @@
 // - Add THL-1014: a slightly loose hole for some panel-mount 2.1mm barrel jacks that I have
 // v2.20:
 // - Support `straight-${rational}mm` hole types, e.g. "straight-4.5mm"
-// v2.20:
+// v2.21:
 // - Support `straight-${rational}in` hole types, e.g. "straight-3/8in"
+// v2.22:
+// - THL-1008: Counterbored for #8 pan head
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -205,6 +207,7 @@ tog_holelib2_hole_types = [
 	["THL-1006", "Counterbored for 1/4\" furniture bolt, weld nut, etc"],
 	["THL-1007", "Counterbored for #6 hex nut, with 'hole overhang remedy'"],
 	["THL-1008", "Suitable for #6 flathead, but roomier than 1001 and larger hole than 1004"],
+	["THL-1009", "Suiitable for #8 pan-head"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	["THL-1014", "Suitable for loosely holding one of my 2.1mm barrel inlets"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
@@ -246,12 +249,20 @@ function tog_holelib2_hole(
 	type_name == "THL-1006-3/16in" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=3/16*inch, flange_radius=flange_radius) :
 	type_name == "THL-1007" ? tog_holelib2_hole1007(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1008" ? tog_holelib2_countersunk_hole(8, 4.5, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
+	type_name == "THL-1009" ? tog_holelib2_counterbored_with_remedy_hole(
+		counterbore_d = 9.5,
+		shaft_d = 5,
+		depth = depth,
+		inset = 3.175,
+		overhead_bore_height = overhead_bore_height,
+		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth
+	) :
 	type_name == "THL-1014" ? tog_holelib2_counterbored_with_remedy_hole(
 		counterbore_d = 11,
 		shaft_d = 8.5,
 		depth = depth,
 		overhead_bore_height = overhead_bore_height,
-		remedy_depth = is_undef(remedy_depth) ? 0.4 : remedy_depth,
+		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth,
 		inset = is_undef(inset) ? 5 : inset
 	) :
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
