@@ -9,6 +9,10 @@ const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 type FilePath = string;
 
 const defaultRenderSize = 3072;
+// Version numbers to change when I break/fix stuff:
+const stlBuilderVersion       = "b1318";
+const renderPngBuilderVersion = "b1317";
+const crushPngBuilderVersion  = "b1317";
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
@@ -123,7 +127,10 @@ function openscadCommand(opts : {
 	outPngPath? : FilePath,
 }) : Commande {
 	const outPngArgs = opts.outPngPath ? ["-o", opts.outPngPath] : [];
-	const outStlArgs = opts.outStlPath ? ["-o", opts.outStlPath] : [];
+	const outStlArgs = opts.outStlPath ? [
+		"--export-format=binstl",
+		"-o", opts.outStlPath
+	] : [];
 	
 	if( opts.presetName != undefined && opts.inConfigPath == undefined ) {
 		throw new Error("Preset name provided without config file");
@@ -150,6 +157,7 @@ function openscadCommand(opts : {
 		"x:MaxConcurrency:OpenSCAD:2",
 		"x:OpenSCADCom",
 		"--hardwarnings",
+		// "--backend=manifold",
 		...presetArgs,
 		"--render", opts.inScadPath,
 		...outStlArgs,
@@ -194,8 +202,8 @@ function osdBuildRules(partId:string, opts:{
 	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
 	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
 	
-	const outStlPath = `${outDir}/${partId}-b1316.stl`;
-	const renderedPngPath = `${outDir}/${partId}-b1317-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
+	const outStlPath = `${outDir}/${partId}-${stlBuilderVersion}.stl`;
+	const renderedPngPath = `${outDir}/${partId}-${renderPngBuilderVersion}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
 	let inConfigFile : FilePath | undefined;
 	if( opts.presetName != undefined ) {
 		if( (m = /^(.*?)\.scad$/.exec(opts.inScadFile)) != null ) {
@@ -206,9 +214,8 @@ function osdBuildRules(partId:string, opts:{
 	const crushSizes = [512, 384, 256, 128];
 	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
 	for( const _size of crushSizes ) {
-		const builderName = "b1317";
 		const size = [_size, _size];
-		const crushedPngPath = `${outDir}/${partId}-${builderName}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
+		const crushedPngPath = `${outDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
 		crushedPngBuildRules[crushedPngPath] = {
 			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
@@ -289,7 +296,7 @@ const builder = new Builder({
 			targetType: "phony",
 			prereqs: [
 				...flatMap(rangInc(1861,1869), i => [
-					`2023/print-archive/p18xx/p${i}-b1316.stl`,
+					`2023/print-archive/p18xx/p${i}-${stlBuilderVersion}.stl`,
 					`2023/print-archive/p18xx/p${i}-b1317-cam-10x-10x-10.256x256.png`,
 				]),
 			]
