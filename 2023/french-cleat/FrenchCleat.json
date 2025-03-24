@@ -385,7 +385,7 @@
 			"opposite_edge_style": "FFS-trimmed",
 			"slot_height": "6"
 		},
-		"-- p186x series (if p1861 works out lol): atom row backs in atom length increments with #6-32 threaded holes": "",
+		"-- p186x series: atom row backs in atom length increments with #6-32 threaded holes": "",
 		"p1861": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "atom-rows-f",
@@ -400,6 +400,69 @@
 			"backside_texture": "atom-rows-f",
 			"hole_style": "#6-32-UNC",
 			"length_ca": "[2, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1863": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[3, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1864": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[4, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1865": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[5, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1866": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[6, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1867": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[7, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1868": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[8, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1869": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[9, \"atom\"]",
 			"mating_edge_style": "S-trimmed-C",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
