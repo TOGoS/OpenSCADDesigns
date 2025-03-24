@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p1872": {
+			"description": "6-inch back with three 1.5-inch hooks",
+			"back_height_atoms": "12",
+			"back_hole_style": "THL-1001",
+			"depth_atoms": "3",
+			"front_height": "19.05",
+			"hook_spacing_atoms": "4",
+			"thickness": "5",
+			"width_atoms": "2",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}
