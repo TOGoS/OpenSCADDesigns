@@ -1,65 +1,300 @@
 #!/usr/bin/env deno -A
 
-import Builder, { BuildContext } from 'https://deno.land/x/tdbuilder@0.5.0/Builder.ts';
-import { mkParentDirs } from 'https://deno.land/x/tdbuilder@0.5.0/FSUtil.ts';
+import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.0/Builder.ts';
 
 // TODO: Check for env vars, search for the .com if not specified
 const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
+const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 
 type FilePath = string;
 
-async function openscad(opts : {
-	inScadFile : FilePath,
-	inConfigFile? : FilePath,
+const defaultRenderSize = 3072;
+
+type Vec2<T> = [T, T];
+type Vec3<T> = [T, T, T];
+
+const defaultCameraPosition : Vec3<number> = [-10, -10, -10];
+
+type Commande = {
+	argv : string[]
+}
+
+function quotedArgv(argv:string[]) : string {
+	return argv.map(arg => {
+		if( /^[a-zA-Z0-9_\+\-\.]+$/.test(arg) ) {
+			return arg;
+		} else {
+			return `"${
+				arg
+					.replaceAll('\\', '\\\\')
+				   .replaceAll('"', '\\"')
+			}"`;
+		}
+	}).join(' ');
+}
+
+class ProcessQueue {
+	private queue: (() => void)[] = [];
+	private activeCount = 0;
+	private readonly maxConcurrency: number;
+	
+	constructor(maxConcurrency: number = 1) {
+		this.maxConcurrency = maxConcurrency;
+	}
+	
+	enqueue<T>(producer: () => Promise<T>): Promise<T> {
+		return new Promise<T>((resolve, reject) => {
+			const execute = async () => {
+				this.activeCount++;
+				try {
+					const result = await producer();
+					resolve(result);
+				} catch (error) {
+					reject(error);
+				} finally {
+					this.activeCount--;
+					this.next();
+				}
+			};
+			
+			if (this.activeCount < this.maxConcurrency) {
+				execute();
+			} else {
+				this.queue.push(execute);
+			}
+		});
+	}
+	
+	private next() {
+		if (this.queue.length > 0 && this.activeCount < this.maxConcurrency) {
+			const nextTask = this.queue.shift();
+			if (nextTask) {
+				nextTask();
+			}
+		}
+	}
+}
+
+const processQueues = new Map<string, ProcessQueue>();
+function getProcessQueue(name:string, maxConcurrency:number) : ProcessQueue {
+	let queue = processQueues.get(name);
+	if( queue == undefined ) {
+		queue = new ProcessQueue(maxConcurrency);
+		processQueues.set(name, queue);
+	}
+	return queue;
+}
+
+async function run(cmd:Commande) : Promise<void> {
+	if( cmd.argv.length == 0 ) {
+		throw new Error("Empty command");
+	}
+	
+	let m : RegExpMatchArray | null;
+	if( (m = /^x:MaxConcurrency:([^:]+):(\d+)/.exec(cmd.argv[0])) != null ) {
+		const queueName = m[1];
+		const maxConcurrency = +m[2];
+		const queue = getProcessQueue(queueName, maxConcurrency);
+		return queue.enqueue(() => run({argv: cmd.argv.slice(1)}));
+	}
+	
+	const realExe =
+		cmd.argv[0] == "x:OpenSCADCom" ? OPENSCAD_COM :
+		cmd.argv[0] == "x:Magick" ? MAGICK_EXE :
+		cmd.argv[0];
+	
+	console.log(`Spawning: ${quotedArgv([realExe, ...cmd.argv.slice(1)])}`);
+	
+	const dcmd = new Deno.Command(realExe, { args: cmd.argv.slice(1) });
+	const proc = dcmd.spawn();
+	const status = await proc.status;
+	if (!status.success) {
+		throw new Error(`${cmd.argv[0]} failed with code ${status.code}`);
+	}
+}
+		
+function openscadCommand(opts : {
+	inScadPath : FilePath,
+	inConfigPath? : FilePath,
 	presetName? : string,
+	renderSize?: Vec2<number>,
+	cameraPosition?: Vec3<number>,
 	outStlPath? : FilePath,
-	outPngPathPrefix? : FilePath
-}) : Promise<void> {
-	const outPngArgs = opts.outPngPathPrefix ? ["-o", `${opts.outPngPathPrefix}.1.png`] : [];
+	outPngPath? : FilePath,
+}) : Commande {
+	const outPngArgs = opts.outPngPath ? ["-o", opts.outPngPath] : [];
 	const outStlArgs = opts.outStlPath ? ["-o", opts.outStlPath] : [];
 	
-	if( opts.presetName != undefined && opts.inConfigFile == undefined ) {
+	if( opts.presetName != undefined && opts.inConfigPath == undefined ) {
 		throw new Error("Preset name provided without config file");
 	}
 	
-	const presetArgs = opts.presetName && opts.inConfigFile ?
-		["-p", opts.inConfigFile, "-P", opts.presetName] : [];
+	const presetArgs = opts.presetName != undefined && opts.inConfigPath != undefined  ?
+		["-p", opts.inConfigPath, "-P", opts.presetName] : [];
+		
+	const imgSizeArgs = opts.renderSize != undefined ?
+		[`--imgsize=${opts.renderSize[0]},${opts.renderSize[1]}`] : [];
 	
-	const cmd = new Deno.Command(OPENSCAD_COM, { args: [
+	const cameraArgs = opts.cameraPosition != undefined ?
+		[
+			`--camera=${opts.cameraPosition[0]},${opts.cameraPosition[1]},${opts.cameraPosition[2]},0,0,0`,
+			'--autocenter',
+			'--viewall',
+		] : [];
+	
+	const colorSchemeArgs = opts.outPngPath != undefined ? [
+		'--colorscheme=Tomorrow Night',
+	] : [];
+	
+	return {argv: [
+		"x:MaxConcurrency:OpenSCAD:2",
+		"x:OpenSCADCom",
 		"--hardwarnings",
 		...presetArgs,
-		"--render", opts.inScadFile,
-		"--colorscheme", "Tomorrow Night",
-		...outPngArgs,
+		"--render", opts.inScadPath,
 		...outStlArgs,
-		"--imgsize", "3072,3072",
-	]});
-	const proc = cmd.spawn();
-	const status = await proc.status;
-	if (!status.success) {
-		throw new Error(`OpenSCAD failed: ${status.code}`);
+		...colorSchemeArgs,
+		...imgSizeArgs,
+		...cameraArgs,
+		...outPngArgs,
+	]};
+}
+
+function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Commande {
+	const subSize = (crushSize * 240/256)|0;
+	return {argv: [
+		"x:Magick",
+		'convert',
+		inFile,
+		'-trim',
+		'+repage',
+		'-resize', `${subSize}x${subSize}`,
+		'-background', '#1c2022',
+		'-gravity', 'center',
+		'-extent', `${crushSize}x${crushSize}`,
+		'-colors', '36',
+		outFile,
+	]};
+}
+
+function osdBuildRules(partId:string, opts:{
+	inScadFile:FilePath,
+	cameraPosition?: Vec3<number>,
+	renderSize?: Vec2<number>,
+	presetName?: string
+}) : {[targetName:string]: BuildRule} {
+	let m : RegExpMatchArray | null;
+	let outDir : FilePath;
+	if( (m = /^p(\d\d)(\d\d)$/.exec(partId)) != null ) {
+		outDir = `2023/print-archive/p${m[1]}xx`;
+	} else {
+		outDir = `2023/print-archive/misc`;
+	}
+	
+	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
+	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
+	
+	const outStlPath = `${outDir}/${partId}-b1316.stl`;
+	const renderedPngPath = `${outDir}/${partId}-b1317-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
+	let inConfigFile : FilePath | undefined;
+	if( opts.presetName != undefined ) {
+		if( (m = /^(.*?)\.scad$/.exec(opts.inScadFile)) != null ) {
+			inConfigFile = `${m[1]}.json`;
+		}
+	}
+	
+	const crushSizes = [512, 384, 256, 128];
+	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
+	for( const _size of crushSizes ) {
+		const builderName = "b1317";
+		const size = [_size, _size];
+		const crushedPngPath = `${outDir}/${partId}-${builderName}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
+		crushedPngBuildRules[crushedPngPath] = {
+			prereqs: [renderedPngPath],
+			invoke: async (ctx:BuildContext) => {
+				await run(magickCommand(renderedPngPath, _size, ctx.targetName));
+			}
+		};
+	}
+	
+	return {
+		[outStlPath]: {
+			invoke: async (ctx:BuildContext) => {
+				await run(openscadCommand({
+					inScadPath: opts.inScadFile,
+					inConfigPath: inConfigFile,
+					presetName: opts.presetName,
+					outStlPath: ctx.targetName,
+				}));
+			},
+		},
+		[renderedPngPath]: {
+			invoke: async (ctx:BuildContext) => {
+				await run(openscadCommand({
+					inScadPath: opts.inScadFile,
+					inConfigPath: inConfigFile,
+					presetName: opts.presetName,
+					outPngPath: ctx.targetName,
+					cameraPosition: cameraPos,
+				}));
+			},
+		},
+		...crushedPngBuildRules
+	};
+}
+
+function* rangInc(start:number, end:number) : Iterable<number> {
+	for( let i = start; i <= end; i++ ) {
+		yield i;
 	}
 }
+function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
+	for( const x of input ) yield fn(x);
+}
+function* flatMap<T,U>(input:Iterable<T>, fn:(x:T) => Iterable<U>) : Iterable<U> {
+	for( const x of input ) for( const y of fn(x) ) yield y;
+}
+
+function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
+	const res : {[k:string]: T} = {};
+	for( const obj of input ) {
+		for( const k in obj ) {
+			res[k] = obj[k];
+		}
+	}
+	return res;
+}
+
+const p186xBuildRules = flattenObj(map(
+	rangInc(1861,1869),
+	i => {
+		const partId = `p${i}`;
+		return osdBuildRules(partId, {
+			inScadFile: "2023/french-cleat/FrenchCleat.scad",
+			presetName: partId,
+		})
+	},
+));
 
 // Something like this.
 const builder = new Builder({
 	rules: {
-		// TDBuilder doesn't really support build rules
-		// with more than one output, so we can't generate
-		// both the STL and PNG at the same time while
-		// also generating either only when it doesn't exist.
-		// So let's just make a subdirectory for each output.
-		"2023/print-archive/p18xx/p1859": {
-			invoke(ctx:BuildContext) : Promise<void> {
-				return Deno.mkdir(ctx.targetName).then(() => openscad({
-					inScadFile: "2023/experimental/ThreadTest2.scad",
-					outStlPath: `${ctx.targetName}/p1859.stl`,
-					outPngPathPrefix: `${ctx.targetName}/p1859`,
-				}));
-			}
+		...osdBuildRules("p1859", {
+			inScadFile: "2023/experimental/ThreadTest2.scad",
+			presetName: "p1859",
+			cameraPosition: [-10, -10, -10],
+		}),
+		...p186xBuildRules,
+		"p186x": {
+			targetType: "phony",
+			prereqs: [
+				...flatMap(rangInc(1861,1869), i => [
+					`2023/print-archive/p18xx/p${i}-b1316.stl`,
+					`2023/print-archive/p18xx/p${i}-b1317-cam-10x-10x-10.256x256.png`,
+				]),
+			]
 		}
 	},
-	defaultTargetNames: ["2023/print-archive/p18xx/p1859"]
 });
 
 if( import.meta.main ) {
