@@ -1,6 +1,10 @@
-// Hook3.0
+// Hook3.1
 // 
 // Hook intended for mounting on hatomic-backed FCs.
+// 
+// Versions
+// v3.1:
+// - Fix rounding of tips
 // 
 // For the future:
 // Maybe allow multiple hooks along the back?
@@ -65,7 +69,9 @@ let( majorpc = max($fn,64)/4 )
 hook = //togmod1_linear_extrude_z([0, width_atoms*atom], hook_2d);
 	tphl1_make_polyhedron_from_layer_function(
 		[
-			for( i=[-0.5 : 0.1 : 0.5] ) [width_atoms*atom*i, 1 - cos(90*i)]
+			for( i=[-128/256 : 8/256 : 128/256] )
+			let( ang = asin(i*1.2) )
+			[width_atoms*atom*i, 1 - cos(ang)]
 		],
 		function(zi) togvec0_offset_points(
 			togpath1_rath_to_polypoints(
