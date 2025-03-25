@@ -161,6 +161,8 @@ tog_holelib_hole_types = [
 	// ["THL-1006", "Counterbored for 1/4\" furniture bolt, weld nut, etc"],
 	// ["THL-1007", "Counterbored for #6 hex nut, with 'hole overhang remedy'"],
 	// ["THL-1008", "Suitable for #6 flathead, but roomier than 1001 and larger hole than 1004"],
+	// ["THL-1009", "Suiitable for #8 pan-head"],
+	// ["THL-1010", "Suiitable for #6 pan-head"],
 	["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
 	// ["THL-1023", "Counterbored for M3 pan-head screws"],

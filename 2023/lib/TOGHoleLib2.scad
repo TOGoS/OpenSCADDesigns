@@ -1,4 +1,4 @@
-// TOGHoleLib2.22
+// TOGHoleLib2.23
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -58,7 +58,9 @@
 // v2.21:
 // - Support `straight-${rational}in` hole types, e.g. "straight-3/8in"
 // v2.22:
-// - THL-1008: Counterbored for #8 pan head
+// - THL-1009: Counterbored for #8 pan head
+// v2.23
+// - THL-1010: Counterbored for #6 pan head
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -114,6 +116,8 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 function tog_holelib2_counterbored_with_remedy_hole(
 	counterbore_d, shaft_d, depth, overhead_bore_height=undef, remedy_depth=0.4, inset=1
 ) =
+	// TODO: If remedy_depth = 0, make single polyhedron to avoid blowing up CGAL
+	// Workaround is to ["render", hole], which might be a good idea anyway.
 	let(_overhead_bore_height = is_undef(overhead_bore_height) ? max(0, -inset) + 1 : overhead_bore_height)
 	let(tip_z = _overhead_bore_height+counterbore_d/2)
 	["intersection",
@@ -208,6 +212,7 @@ tog_holelib2_hole_types = [
 	["THL-1007", "Counterbored for #6 hex nut, with 'hole overhang remedy'"],
 	["THL-1008", "Suitable for #6 flathead, but roomier than 1001 and larger hole than 1004"],
 	["THL-1009", "Suiitable for #8 pan-head"],
+	["THL-1010", "Suiitable for #6 pan-head"],
 	// ["THL-1013", "Suitable for CRE24F2HBBNE SPDT rocker switche"],
 	["THL-1014", "Suitable for loosely holding one of my 2.1mm barrel inlets"],
 	// ["THL-1021-(W)x(H)", "Mini-PV sleeve hole"]
@@ -253,7 +258,15 @@ function tog_holelib2_hole(
 		counterbore_d = 9.5,
 		shaft_d = 5,
 		depth = depth,
-		inset = 3.175,
+		inset = is_undef(inset) ? 3.175 : inset,
+		overhead_bore_height = overhead_bore_height,
+		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth
+	) :
+	type_name == "THL-1010" ? tog_holelib2_counterbored_with_remedy_hole(
+		counterbore_d = 8,
+		shaft_d = 4.5,
+		depth = depth,
+		inset = is_undef(inset) ? 3.175 : inset,
 		overhead_bore_height = overhead_bore_height,
 		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth
 	) :
