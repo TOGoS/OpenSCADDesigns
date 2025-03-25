@@ -12,12 +12,12 @@ const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
 const stlBuilderVersion       = "b1318";
 const renderPngBuilderVersion = "b1317";
-const crushPngBuilderVersion  = "b1317";
+const crushPngBuilderVersion  = "b1320"; // 21 used 'Cubic' instead of 'Lanczos', but result seems the same
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
 
-const defaultCameraPosition : Vec3<number> = [-10, -10, -10];
+const defaultCameraPosition : Vec3<number> = [-10, -10, 10];
 
 type Commande = {
 	argv : string[]
@@ -94,6 +94,18 @@ async function run(cmd:Commande) : Promise<void> {
 		throw new Error("Empty command");
 	}
 	
+	if( cmd.argv[0] == "x:Hardlink" ) {
+		const src = cmd.argv[1];
+		const dst = cmd.argv[2];
+		try {
+			await Deno.remove(dst);
+		} catch( _e ) {
+			// Ignore; maybe it just didn't exist.
+		}
+		console.log(`Hardlinking: ${dst} = ${src}`);
+		return Deno.link(src, dst);
+	}
+	
 	let m : RegExpMatchArray | null;
 	if( (m = /^x:MaxConcurrency:([^:]+):(\d+)/.exec(cmd.argv[0])) != null ) {
 		const queueName = m[1];
@@ -128,7 +140,7 @@ function openscadCommand(opts : {
 }) : Commande {
 	const outPngArgs = opts.outPngPath ? ["-o", opts.outPngPath] : [];
 	const outStlArgs = opts.outStlPath ? [
-		"--export-format=binstl",
+		"--export-format=binstl", // Otherwise it defaults to ASCIISTL
 		"-o", opts.outStlPath
 	] : [];
 	
@@ -176,6 +188,7 @@ function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Co
 		inFile,
 		'-trim',
 		'+repage',
+		'-filter', 'Lanczos',
 		'-resize', `${subSize}x${subSize}`,
 		'-background', '#1c2022',
 		'-gravity', 'center',
@@ -189,6 +202,7 @@ function osdBuildRules(partId:string, opts:{
 	inScadFile:FilePath,
 	cameraPosition?: Vec3<number>,
 	renderSize?: Vec2<number>,
+	imageSize?: Vec2<number>,
 	presetName?: string
 }) : {[targetName:string]: BuildRule} {
 	let m : RegExpMatchArray | null;
@@ -203,7 +217,9 @@ function osdBuildRules(partId:string, opts:{
 	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
 	
 	const outStlPath = `${outDir}/${partId}-${stlBuilderVersion}.stl`;
+	const simplifiedStlPath = `${outDir}/${partId}.stl`;
 	const renderedPngPath = `${outDir}/${partId}-${renderPngBuilderVersion}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
+	const simplifiedPngPath = `${outDir}/${partId}.png`;
 	let inConfigFile : FilePath | undefined;
 	if( opts.presetName != undefined ) {
 		if( (m = /^(.*?)\.scad$/.exec(opts.inScadFile)) != null ) {
@@ -223,6 +239,8 @@ function osdBuildRules(partId:string, opts:{
 			}
 		};
 	}
+	const imageSize = opts.imageSize ?? [256, 256];
+	const preferredPngPath = `${outDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${imageSize.join('x')}.png`;
 	
 	return {
 		[outStlPath]: {
@@ -246,7 +264,19 @@ function osdBuildRules(partId:string, opts:{
 				}));
 			},
 		},
-		...crushedPngBuildRules
+		...crushedPngBuildRules,
+		[simplifiedStlPath]: {
+			prereqs: [outStlPath],
+			invoke(ctx:BuildContext) {
+				return run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
+			}
+		},
+		[simplifiedPngPath]: {
+			prereqs: [preferredPngPath, "make.ts"],
+			invoke(ctx:BuildContext) {
+				return run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
+			}
+		}
 	};
 }
 
@@ -279,6 +309,7 @@ const p186xBuildRules = flattenObj(map(
 		return osdBuildRules(partId, {
 			inScadFile: "2023/french-cleat/FrenchCleat.scad",
 			presetName: partId,
+			cameraPosition: [-10,-10,+10],
 		})
 	},
 ));
@@ -289,15 +320,29 @@ const builder = new Builder({
 		...osdBuildRules("p1859", {
 			inScadFile: "2023/experimental/ThreadTest2.scad",
 			presetName: "p1859",
-			cameraPosition: [-10, -10, -10],
+		}),
+		...osdBuildRules("p1873", {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: "p1873",
+			imageSize: [512, 512],
+		}),
+		...osdBuildRules("p1874", {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: "p1874",
+			imageSize: [512, 512],
+		}),
+		...osdBuildRules("p1875", {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: "p1875",
+			imageSize: [512, 512],
 		}),
 		...p186xBuildRules,
 		"p186x": {
 			targetType: "phony",
 			prereqs: [
 				...flatMap(rangInc(1861,1869), i => [
-					`2023/print-archive/p18xx/p${i}-${stlBuilderVersion}.stl`,
-					`2023/print-archive/p18xx/p${i}-b1317-cam-10x-10x-10.256x256.png`,
+					`2023/print-archive/p18xx/p${i}.stl`,
+					`2023/print-archive/p18xx/p${i}.png`,
 				]),
 			]
 		}
