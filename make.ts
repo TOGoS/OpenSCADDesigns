@@ -212,13 +212,14 @@ function osdBuildRules(partId:string, opts:{
 	} else {
 		outDir = `2023/print-archive/misc`;
 	}
+	const tempDir = `${outDir}/.temp`;
 	
 	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
 	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
 	
-	const outStlPath = `${outDir}/${partId}-${stlBuilderVersion}.stl`;
+	const outStlPath = `${tempDir}/${partId}-${stlBuilderVersion}.stl`;
 	const simplifiedStlPath = `${outDir}/${partId}.stl`;
-	const renderedPngPath = `${outDir}/${partId}-${renderPngBuilderVersion}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
+	const renderedPngPath = `${tempDir}/${partId}-${renderPngBuilderVersion}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
 	const simplifiedPngPath = `${outDir}/${partId}.png`;
 	let inConfigFile : FilePath | undefined;
 	if( opts.presetName != undefined ) {
@@ -231,7 +232,7 @@ function osdBuildRules(partId:string, opts:{
 	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
 	for( const _size of crushSizes ) {
 		const size = [_size, _size];
-		const crushedPngPath = `${outDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
+		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
 		crushedPngBuildRules[crushedPngPath] = {
 			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
@@ -240,7 +241,7 @@ function osdBuildRules(partId:string, opts:{
 		};
 	}
 	const imageSize = opts.imageSize ?? [256, 256];
-	const preferredPngPath = `${outDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${imageSize.join('x')}.png`;
+	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${imageSize.join('x')}.png`;
 	
 	return {
 		[outStlPath]: {
