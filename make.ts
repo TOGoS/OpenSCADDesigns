@@ -337,6 +337,21 @@ const builder = new Builder({
 			presetName: "p1875",
 			imageSize: [512, 512],
 		}),
+		...osdBuildRules("p1876", {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: "p1876",
+			imageSize: [512, 512],
+		}),
+		...osdBuildRules("p1877", {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: "p1877",
+			imageSize: [512, 512],
+		}),
+		...osdBuildRules("p1878", {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: "p1878",
+			imageSize: [512, 512],
+		}),
 		...p186xBuildRules,
 		"p186x": {
 			targetType: "phony",

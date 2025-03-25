@@ -26,6 +26,7 @@
 			"bevel_size": "2.0"
 		},
 		"p1873": {
+			"description": "WSTYPE-4114-H3.0T-L7.5 hollow French cleat with thick walls, bowtie cutouts, and 4.5mm back holes",
 			"bevel_size": "2",
 			"body_style": "hollow",
 			"outer_wall_thickness": "3",
@@ -34,6 +35,7 @@
 			"hole_style": "THL-1010"
 		},
 		"p1874": {
+			"description": "WSTYPE-4114-H3.0T-L7.5 hollow2 French cleat with thick walls, bowtie cutouts, and 4.5mm back holes",
 			"bevel_size": "2",
 			"body_style": "hollow2",
 			"outer_wall_thickness": "3",
@@ -42,10 +44,39 @@
 			"hole_style": "THL-1010"
 		},
 		"p1875": {
+			"description": "WSTYPE-4114-H3.0T-L7.5 solid French cleat with bowtie cutouts and THL-1010 holes",
 			"bevel_size": "2",
 			"body_style": "solid",
 			"bowtie_style": "round-with-base",
 			"hole_style": "THL-1010"
+		},
+		"p1876": {
+			"description": "WSTYPE-4114-H3.0T-L7.5 hollow French cleat with thick walls, bowtie cutouts, 5mm back holes, and 0.3mm raft",
+			"bevel_size": "2",
+			"body_style": "hollow",
+			"outer_wall_thickness": "3",
+			"inner_wall_thickness": "2",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1009",
+			"raft_thickness": "0.3"
+		},
+		"p1877": {
+			"description": "WSTYPE-4114-H3.0T-L7.5 hollow2 French cleat with thick walls, bowtie cutouts, and 5mm back holes, and 0.3mm raft",
+			"bevel_size": "2",
+			"body_style": "hollow2",
+			"outer_wall_thickness": "3",
+			"inner_wall_thickness": "2",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1009",
+			"raft_thickness": "0.3"
+		},
+		"p1878": {
+			"description": "WSTYPE-4114-H3.0T-L7.5 solid French cleat with bowtie cutouts, THL-1009 holes, and 0.3mm raft",
+			"bevel_size": "2",
+			"body_style": "solid",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1009",
+			"raft_thickness": "0.3"
 		}
 	},
 	"fileFormatVersion": "1"

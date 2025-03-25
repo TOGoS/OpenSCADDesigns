@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.7
+// HollowFrenchCleat1.8
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -23,6 +23,8 @@
 // - Configurable hole_style
 // - Fix subtraction order so that screw holes
 //   cut through outer walls and bowtie borders
+// v1.8:
+// - raft_thickness option
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -38,6 +40,9 @@ bowtie_offset = -0.03;
 body_style    = "hollow"; // ["hollow","solid","hollow2"]
 bowtie_style  = "round"; // ["none","round", "round-with-base"]
 bevel_size    =  0.0;
+
+// Set to first layer height to make a solid first layer
+raft_thickness = 0; // 0.01
 
 $fn = 32;
 
@@ -102,7 +107,7 @@ outer_hull = hfc1_shell(size, top_dydz, bottom_dydz, offset=outer_offset, end_of
 
 atom_hollow = hfc1_shell([atom_pitch, size[1], size[2]], top_dydz, bottom_dydz, offset=outer_offset-outer_wall_thickness, front_offset=outer_wall_thickness*2, bevel_size=bevel_size);
 
-atom_hole = ["render", tog_holelib2_hole(hole_style, overhead_bore_height=size[2], inset=0)];
+atom_hole = ["render", tog_holelib2_hole(hole_style, depth=raft_thickness == 0 ? size[2] : size[2]/2-raft_thickness, overhead_bore_height=size[2], inset=0)];
 
 basic_bowtie_border = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=outer_wall_thickness-bowtie_offset));
 basic_bowtie_cutout = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=-bowtie_offset));
