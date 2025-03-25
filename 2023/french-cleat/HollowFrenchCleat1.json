@@ -24,6 +24,28 @@
 			"inner_wall_thickness": "1.2",
 			"bowtie_style": "round-with-base",
 			"bevel_size": "2.0"
+		},
+		"p1873": {
+			"bevel_size": "2",
+			"body_style": "hollow",
+			"outer_wall_thickness": "3",
+			"inner_wall_thickness": "2",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1010"
+		},
+		"p1874": {
+			"bevel_size": "2",
+			"body_style": "hollow2",
+			"outer_wall_thickness": "3",
+			"inner_wall_thickness": "2",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1010"
+		},
+		"p1875": {
+			"bevel_size": "2",
+			"body_style": "solid",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1010"
 		}
 	},
 	"fileFormatVersion": "1"

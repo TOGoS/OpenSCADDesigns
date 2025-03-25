@@ -1,4 +1,4 @@
-// HollowFrenchCleat1.6
+// HollowFrenchCleat1.7
 // 
 // 3D-printable mostly-hollow French cleat section for light use
 //
@@ -19,6 +19,10 @@
 // v1.6:
 // - Allow beveling of the pointy corners,
 //   which implicitly does a little bit of rounding, also
+// v1.7:
+// - Configurable hole_style
+// - Fix subtraction order so that screw holes
+//   cut through outer walls and bowtie borders
 
 outer_wall_thickness = 2;
 inner_wall_thickness = 0.8;
@@ -27,6 +31,7 @@ length_chunks =  5;
 height_chunks =  2;
 top_dydz      = +1; // [-1, 0, 1]
 bottom_dydz   = -1; // [-1, 0, 1]
+hole_style    = "THL-1010";
 end_offset    = -0.03;
 outer_offset  = -0.00;
 bowtie_offset = -0.03;
@@ -37,6 +42,7 @@ bevel_size    =  0.0;
 $fn = 32;
 
 use <../lib/RoundBowtie0.scad>
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -96,10 +102,7 @@ outer_hull = hfc1_shell(size, top_dydz, bottom_dydz, offset=outer_offset, end_of
 
 atom_hollow = hfc1_shell([atom_pitch, size[1], size[2]], top_dydz, bottom_dydz, offset=outer_offset-outer_wall_thickness, front_offset=outer_wall_thickness*2, bevel_size=bevel_size);
 
-atom_hole_d    = 4.5;
-atom_hole_cb_d = 8;
-
-atom_hole = tphl1_make_z_cylinder(zds=[[-size[2], atom_hole_d], [0, atom_hole_d], [0, atom_hole_cb_d], [+size[2], atom_hole_cb_d]]);
+atom_hole = ["render", tog_holelib2_hole(hole_style, overhead_bore_height=size[2], inset=0)];
 
 basic_bowtie_border = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=outer_wall_thickness-bowtie_offset));
 basic_bowtie_cutout = togmod1_linear_extrude_z([-size[2], size[2]], roundbowtie0_make_bowtie_2d(atom_pitch/2, offset=-bowtie_offset));
@@ -152,19 +155,16 @@ togmod1_domodule(["difference",
 	outer_hull,
 	
 	["difference",
-		["union",
-			the_hollow,
-			//for( xm=[-size[0]/atom_pitch/2 + 0.5 : 1 : size[0]/atom_pitch/2] )
-			//	["translate", [xm*atom_pitch, 0, 0], atom_hollow],
-			
-			for( xm=[-size[0]/atom_pitch/2 + 0.5 : 1 : size[0]/atom_pitch/2 - 0.4] )
-			for( ym=[-size[1]/atom_pitch/2 + 1.5 : 1 : size[1]/atom_pitch/2 - 1.4] )
-				["translate", [xm*atom_pitch, ym*atom_pitch, 0], atom_hole],
-		],
+		the_hollow,
 		
 		for( pos=bowtie_positions ) ["translate", pos, bowtie_border],
 	],
+	
 	for( pos=bowtie_positions ) ["translate", pos, bowtie_cutout],
+	
+	for( xm=[-size[0]/atom_pitch/2 + 0.5 : 1 : size[0]/atom_pitch/2 - 0.4] )
+	for( ym=[-size[1]/atom_pitch/2 + 1.5 : 1 : size[1]/atom_pitch/2 - 1.4] )
+		["translate", [xm*atom_pitch, ym*atom_pitch, 0], atom_hole],
 	
 	// ["translate", [size[0]/2, 0, 0], togmod1_make_cuboid([size[0], 100, 100])],
 ]);
