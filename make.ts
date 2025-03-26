@@ -11,8 +11,8 @@ type FilePath = string;
 const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
 const stlBuilderVersion       = "b1318";
-const renderPngBuilderVersion = "b1317";
-const crushPngBuilderVersion  = "b1320"; // 21 used 'Cubic' instead of 'Lanczos', but result seems the same
+const renderPngBuilderVersion = "b1322";
+const crushPngBuilderVersion  = "b1322"; // 21 used 'Cubic' instead of 'Lanczos', but result seems the same
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
@@ -262,6 +262,7 @@ function osdBuildRules(partId:string, opts:{
 					presetName: opts.presetName,
 					outPngPath: ctx.targetName,
 					cameraPosition: cameraPos,
+					renderSize: renderSize
 				}));
 			},
 		},
@@ -357,6 +358,15 @@ const builder = new Builder({
 			targetType: "phony",
 			prereqs: [
 				...flatMap(rangInc(1861,1869), i => [
+					`2023/print-archive/p18xx/p${i}.stl`,
+					`2023/print-archive/p18xx/p${i}.png`,
+				]),
+			]
+		},
+		"p187x": {
+			targetType: "phony",
+			prereqs: [
+				...flatMap(rangInc(1873,1878), i => [
 					`2023/print-archive/p18xx/p${i}.stl`,
 					`2023/print-archive/p18xx/p${i}.png`,
 				]),
