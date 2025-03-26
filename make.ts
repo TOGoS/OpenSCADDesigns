@@ -12,7 +12,7 @@ const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
 const stlBuilderVersion       = "b1318";
 const renderPngBuilderVersion = "b1322";
-const crushPngBuilderVersion  = "b1322"; // 21 used 'Cubic' instead of 'Lanczos', but result seems the same
+const crushPngBuilderVersion  = "b1323";
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
@@ -188,7 +188,7 @@ function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Co
 		inFile,
 		'-trim',
 		'+repage',
-		'-filter', 'Lanczos',
+		// '-filter', 'Lanczos',
 		'-resize', `${subSize}x${subSize}`,
 		'-background', '#1c2022',
 		'-gravity', 'center',
