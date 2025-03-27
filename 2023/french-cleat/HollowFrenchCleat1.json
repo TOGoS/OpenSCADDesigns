@@ -77,6 +77,17 @@
 			"bowtie_style": "round-with-base",
 			"hole_style": "THL-1009",
 			"raft_thickness": "0.3"
+		},
+		"p1879": {
+			"description": "WSTYPE-4114-H3.0T-L5.5 hollow French cleat with thick walls, bowtie cutouts, 5mm back holes, and 0.3mm raft",
+			"length": "11atom",
+			"bevel_size": "2",
+			"body_style": "hollow",
+			"outer_wall_thickness": "3",
+			"inner_wall_thickness": "2",
+			"bowtie_style": "round-with-base",
+			"hole_style": "THL-1009",
+			"raft_thickness": "0.3"
 		}
 	},
 	"fileFormatVersion": "1"
