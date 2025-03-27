@@ -315,6 +315,19 @@ const p186xBuildRules = flattenObj(map(
 		})
 	},
 ));
+const p187xBuildRules = flattenObj(map(
+	rangInc(1873,1879),
+	i => {
+		const partId = `p${i}`;
+		return osdBuildRules(partId, {
+			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
+			presetName: partId,
+			cameraPosition: [-10,-10,+10],
+			imageSize: [512,512],
+		})
+	},
+));
+
 
 // Something like this.
 const builder = new Builder({
@@ -322,36 +335,6 @@ const builder = new Builder({
 		...osdBuildRules("p1859", {
 			inScadFile: "2023/experimental/ThreadTest2.scad",
 			presetName: "p1859",
-		}),
-		...osdBuildRules("p1873", {
-			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
-			presetName: "p1873",
-			imageSize: [512, 512],
-		}),
-		...osdBuildRules("p1874", {
-			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
-			presetName: "p1874",
-			imageSize: [512, 512],
-		}),
-		...osdBuildRules("p1875", {
-			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
-			presetName: "p1875",
-			imageSize: [512, 512],
-		}),
-		...osdBuildRules("p1876", {
-			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
-			presetName: "p1876",
-			imageSize: [512, 512],
-		}),
-		...osdBuildRules("p1877", {
-			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
-			presetName: "p1877",
-			imageSize: [512, 512],
-		}),
-		...osdBuildRules("p1878", {
-			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
-			presetName: "p1878",
-			imageSize: [512, 512],
 		}),
 		...p186xBuildRules,
 		"p186x": {
@@ -363,10 +346,11 @@ const builder = new Builder({
 				]),
 			]
 		},
+		...p187xBuildRules,
 		"p187x": {
 			targetType: "phony",
 			prereqs: [
-				...flatMap(rangInc(1873,1878), i => [
+				...flatMap(rangInc(1873,1879), i => [
 					`2023/print-archive/p18xx/p${i}.stl`,
 					`2023/print-archive/p18xx/p${i}.png`,
 				]),
