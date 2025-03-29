@@ -198,6 +198,14 @@ function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Co
 	]};
 }
 
+/** Build rule that is an alias for a set of targets */
+function brAlias(targetNames:Iterable<string>|AsyncIterable<string>) : BuildRule {
+	return {
+		targetType: "phony",
+		prereqs: targetNames
+	};
+}
+
 function osdBuildRules(partId:string, opts:{
 	inScadFile:FilePath,
 	cameraPosition?: Vec3<number>,
@@ -278,13 +286,14 @@ function osdBuildRules(partId:string, opts:{
 			invoke(ctx:BuildContext) {
 				return run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
-		}
+		},
+		[partId]: brAlias([simplifiedStlPath, simplifiedPngPath]),
 	};
 }
 
-function* rangInc(start:number, end:number) : Iterable<number> {
+function* partIdRange(pfx:string, start:number, end:number) : Iterable<string> {
 	for( let i = start; i <= end; i++ ) {
-		yield i;
+		yield pfx + i;
 	}
 }
 function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
@@ -304,8 +313,10 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 	return res;
 }
 
+const p186xPartIds = partIdRange("p",1861,1869);
+
 const p186xBuildRules = flattenObj(map(
-	rangInc(1861,1869),
+	p186xPartIds,
 	i => {
 		const partId = `p${i}`;
 		return osdBuildRules(partId, {
@@ -315,8 +326,10 @@ const p186xBuildRules = flattenObj(map(
 		})
 	},
 ));
-const p187xBuildRules = flattenObj(map(
-	rangInc(1873,1879),
+
+const p187xFcPartIds = partIdRange("p",1873,1879);
+const p187xFcBuildRules = flattenObj(map(
+	p187xFcPartIds,
 	i => {
 		const partId = `p${i}`;
 		return osdBuildRules(partId, {
@@ -328,6 +341,16 @@ const p187xBuildRules = flattenObj(map(
 	},
 ));
 
+/**
+ * Parts build rules alias -
+ * Create a build rule to build the standard
+ * outputs (one STL and PNG) for each of a
+ * list of parts
+ */
+function pbrAlias(partIds:Iterable<string>) : BuildRule {
+	return brAlias(partIds);
+}
+
 
 // Something like this.
 const builder = new Builder({
@@ -335,42 +358,20 @@ const builder = new Builder({
 		...osdBuildRules("p1859", {
 			inScadFile: "2023/experimental/ThreadTest2.scad",
 			presetName: "p1859",
+			imageSize: [512,512],
 		}),
 		...p186xBuildRules,
-		"p186x": {
-			targetType: "phony",
-			prereqs: [
-				...flatMap(rangInc(1861,1869), i => [
-					`2023/print-archive/p18xx/p${i}.stl`,
-					`2023/print-archive/p18xx/p${i}.png`,
-				]),
-			]
-		},
-		...p187xBuildRules,
-		"p187x": {
-			targetType: "phony",
-			prereqs: [
-				...flatMap(rangInc(1873,1879), i => [
-					`2023/print-archive/p18xx/p${i}.stl`,
-					`2023/print-archive/p18xx/p${i}.png`,
-				]),
-			]
-		},
+		"p186x": pbrAlias(p186xPartIds),
+		...p187xFcBuildRules,
+		"p187x": pbrAlias(p187xFcPartIds),
 		...osdBuildRules("p1880", {
 			inScadFile: "2023/french-cleat/FrenchCleat.scad",
 			presetName: "p1880",
 			cameraPosition: [20,50,+50],
 			imageSize: [256,256],
 		}),
-		"p188x": {
-			targetType: "phony",
-			prereqs: [
-				...flatMap(rangInc(1880,1880), i => [
-					`2023/print-archive/p18xx/p${i}.stl`,
-					`2023/print-archive/p18xx/p${i}.png`,
-				]),
-			]
-		},
+		"p188x": pbrAlias(partIdRange("p",1880,1880)),
+		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
 
