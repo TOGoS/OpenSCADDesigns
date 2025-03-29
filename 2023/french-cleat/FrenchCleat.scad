@@ -1,4 +1,4 @@
-// FrenchCleat-v1.12
+// FrenchCleat-v1.13
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -36,6 +36,9 @@
 //     or hole in tester not too tight
 // v1.12:
 // - #6-32-UNC and 1/4-20-UNC holes
+// v1.13:
+// - Any hole type can be made into a slot
+// - Option to 'trim' (i.e. bevel) F corners
 
 description = "";
 
@@ -44,8 +47,8 @@ length_ca = [6, "inch"];
 //tip_bevel_size = 2;
 //corner_bevel_size = 1;
 
-mating_edge_style = "S-trimmed"; // ["F", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS"]
-opposite_edge_style  = "FFS-trimmed"; // ["F", "S", "T", "S-trimmed", "T-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
+mating_edge_style = "S-trimmed"; // ["F", "F-trimmed", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS", "FFS-trimmed"]
+opposite_edge_style  = "FFS-trimmed"; // ["F", "F-trimmed", "S", "S-trimmed", "T", "T-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
 hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u", "#6-32-UNC", "1/4-20-UNC"]
 slot_height = 0;
 
@@ -125,6 +128,12 @@ edge_profile_f_points = [
 	[ 0, +6],
 	[ 0, -6],
 ];
+edge_profile_f_trimmed_points = [
+	[+1, +6],
+	[ 0, +5],
+	[ 0, -5],
+	[+1, -6],
+];
 edge_profile_fs_points = [
 	[ 0, +6],
 	[ 0,  0],
@@ -164,6 +173,7 @@ assert(is_list(right_points))
 
 function profile_points_for_style(style) =
 	style == "F" ? edge_profile_f_points :
+	style == "F-trimmed" ? edge_profile_f_trimmed_points :
 	style == "S" ? edge_profile_s_points :
 	style == "T" ? invert_edge_points(edge_profile_s_points) :
 	style == "S-trimmed" ? edge_profile_s_trimmed_points :
@@ -214,10 +224,14 @@ _hole_style = hole_style == "GB-counterbored" ? "THL-1006-3/16in" : hole_style;
 function is_thread_hole_style(s) =
 	s == "#6-32-UNC" || s == "1/4-20-UNC"; // TODO: Does itend with "-UNC"?
 
+// TOGHoleLib2 hexagonal holes are pointy in the X.
+// Make them pointy in the Y to make slots work out better:
+hole_rotation = [0,0,90];
+
 hole =
 	_hole_style == "GB-counterbored" ? counterbored_hole :
 	_hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
-	_hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], tog_holelib2_hole("THL-1005", inset=5*25.4/16)] :
+	_hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole("THL-1005", inset=5*25.4/16)]] :
 	is_thread_hole_style(_hole_style)?
 		togthreads2_make_threads(
 			togthreads2_simple_zparams([[-zp+1,1], [zp-1,1]], taper_length=1, extend=1.5),
@@ -225,7 +239,12 @@ hole =
 			r_offset = 0.2, // Usually good!
 			end_mode = "blunt"
 		) :
-	["translate", [0,0,zp], tog_holelib2_slot(_hole_style, [-20, 0, 20], slot_height == 0 ? [[0,0]] : [[0,slot_height/2],[0,-slot_height/2]])];
+	["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole(_hole_style)]];
+
+slot = ["render", ["minkowski",
+	togmod1_make_cuboid([0.01,slot_height,0.01]),
+	hole
+]];
 
 hole_spacing =
 	(hole_style == "GB-counterbored" || hole_style == "THL-1002") ? 38.1 : 12.7;
@@ -275,7 +294,7 @@ fc_main =
 		make_textured_fc_hull("X", length, backside_texture),
 		
 		for( y=hole_rows )
-		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, y], hole]]
+		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, y], slot]]
 	] :
 	mode == "Z" ? make_fc_hull("Z", length, fc_surface_offset=fc_surface_offset) :
 	mode == "tester" ? ["difference",

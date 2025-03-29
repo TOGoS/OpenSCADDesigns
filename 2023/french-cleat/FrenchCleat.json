@@ -486,6 +486,19 @@
 			"opposite_edge_style": "T",
 			"mode": "tester",
 			"fc_surface_offset": "-0.1"
+		},
+		"p1880": {
+			"description": "Funky stopper (for securing my 1\" hooks to non-standard FCs)",
+			"mode": "X",
+			"backside_texture": "flat",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "THL-1005-5u",
+			"length_ca": "[1, \"inch\"]",
+			"mating_edge_style": "F-trimmed",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "19",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"parameterSets": "",

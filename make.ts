@@ -355,7 +355,22 @@ const builder = new Builder({
 					`2023/print-archive/p18xx/p${i}.png`,
 				]),
 			]
-		}
+		},
+		...osdBuildRules("p1880", {
+			inScadFile: "2023/french-cleat/FrenchCleat.scad",
+			presetName: "p1880",
+			cameraPosition: [20,50,+50],
+			imageSize: [256,256],
+		}),
+		"p188x": {
+			targetType: "phony",
+			prereqs: [
+				...flatMap(rangInc(1880,1880), i => [
+					`2023/print-archive/p18xx/p${i}.stl`,
+					`2023/print-archive/p18xx/p${i}.png`,
+				]),
+			]
+		},
 	},
 });
 
