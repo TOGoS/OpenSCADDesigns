@@ -1,0 +1,17 @@
+{
+	"parameterSets": {
+		"p1882": {
+			"hole_style": "3/4-10-UNC",
+			"inner_offset": "-0.2",
+			"outer_offset": "-0.1",
+			"$fn": "64"
+		},
+		"p1883": {
+			"hole_style": "3/4-10-UNC",
+			"inner_offset": "-0.3",
+			"outer_offset": "-0.1",
+			"$fn": "64"
+		}
+	},
+	"fileFormatVersion": "1"
+}
