@@ -24,7 +24,9 @@ module togmod1_domodule(mod) {
 		assert(is_list(mod[1]));
 		for(c=mod[1]) assert(is_num(c), "translate component should be numeric");
 		translate(mod[1]) togmod1_domodule(mod[2]);
-	} else if( mod[0] == "rotate" ) {
+	} else if( mod[0] == "rotate" || mod[0] == "rotate-xyz" ) {
+		// Note that ["rotate", [x,y,z], shape] actually rotates around x, then y, then z.
+		// It does *not* rotate around [x,y,z]!  That would require a different form.
 		assert(len(mod) == 3);
 		rotate(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "intersection" ) {
