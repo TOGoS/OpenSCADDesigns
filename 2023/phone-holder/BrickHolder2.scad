@@ -1,4 +1,4 @@
-// BrickHolder2.9
+// BrickHolder2.10
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -41,6 +41,9 @@
 // v2.9:
 // - 'centered-gridbeam-9mm-holes' will actually make two columns of holes
 //   if width is even multiple of atoms
+// v2.10:
+// - inner_rounding_radius can be specified
+// - bottom_hole_style = "full" to have no floor
 
 description = "";
 
@@ -51,7 +54,7 @@ block_size_atoms = [6,6,12];
 // Diameter of cylinder to additionally subtract from main cavity, e.g. for a soda can.  Set to 0 to skip it.
 can_diameter = 0;
 
-bottom_hole_style = "standard"; // ["none","standard"]
+bottom_hole_style = "standard"; // ["none","standard","full"]
 front_slot_style = "standard"; // ["none","standard","centered-gridbeam-9mm-holes"]
 back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
 
@@ -68,6 +71,7 @@ front_segmentation  = "none"; // ["none","block","chunk","chatom","atom","hatom"
 
 // Offset of cavity walls and bottom hole
 inner_offset = -0.2;
+inner_rounding_radius = 2;
 // Offset of TOGridPile surfaces
 $tgx11_offset = -0.1;
 
@@ -103,7 +107,7 @@ block_size = togridlib3_decode_vector(block_size_ca);
 cavity_size_ca = [
 	[block_size_atoms[0] - 1  , "atom"],
 	[block_size_atoms[1] - 1  , "atom"],
-	[block_size_atoms[2] - 0.5, "atom"],
+	bottom_hole_style == "full" ? [block_size_atoms[2]*2, "atom"] : [block_size_atoms[2] - 0.5, "atom"],
 ];
 
 cavity_actual_size = [for(d=togridlib3_decode_vector(cavity_size_ca)) d - inner_offset*2];
@@ -121,11 +125,6 @@ chunk = togridlib3_decode([1, "chunk"]);
 
 top_slot_width = cavity_actual_size[0] - 6;
 bottom_slot_width = atom; // Or whatever; could be configurable
-
-min_wall_thickness = 4;
-floor_thickness = 6.35;
-
-min_side_thickness = [min_wall_thickness, min_wall_thickness, floor_thickness];
 
 function dimstr(dims, suffix, i=0) =
 	len(dims) == i ? "" :
@@ -177,7 +176,7 @@ block_hull = ["intersection",
 ];
 
 cavity_2d = ["union",
-	togmod1_make_rounded_rect(cavity_actual_size, r=2),
+	togmod1_make_rounded_rect(cavity_actual_size, r=inner_rounding_radius),
 	if( can_diameter > 0 ) togmod1_make_circle(d=can_diameter, $fn=max($fn,48))
 ];
 
@@ -203,7 +202,7 @@ mounting_holes = ["union",
 	for( xm=[round(-block_size[0]/atom)/2 + 0.5 : 1 : round(block_size[0]/atom)/2] )
 	let( x = xm*atom )
 	if( x-4 >= -cavity_actual_size[0]/2 && x+4 <= cavity_actual_size[0]/2 )
-	for( zm=[1.5 : 1 : round(block_size[2]/atom)] )
+	for( zm=[(bottom_hole_style == "full" ? 0.5 : 1.5) : 1 : round(block_size[2]/atom)] )
 	["translate", [xm*atom, cavity_actual_size[1]/2, zm*atom], mounting_hole]
 ];
 
