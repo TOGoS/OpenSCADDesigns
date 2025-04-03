@@ -31,6 +31,21 @@
 			"upper_outer_thread_height": "38.1",
 			"upper_outer_thread_radius_offset": "-0.1",
 			"upper_outer_threads": "3/4-10-UNC"
+		},
+		"p1885": {
+			"inner_thread_radius_offset": "0.1",
+			"inner_threads": "straight-5/16inch",
+			"lower_outer_thread_height": "19.05",
+			"lower_outer_thread_radius_offset": "-0.1",
+			"lower_outer_threads": "3/4-10-UNC",
+			"preview_fn": "24",
+			"render_fn": "48",
+			"ring_height": "25.4",
+			"ring_side_count": "6",
+			"ring_width": "19.05",
+			"upper_outer_thread_height": "6.35",
+			"upper_outer_thread_radius_offset": "-0.1",
+			"upper_outer_threads": "3/4-10-UNC"
 		}
 	},
 	"fileFormatVersion": "1"
