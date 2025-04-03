@@ -585,6 +585,24 @@
 			"outer_threads": "1+1/4-7-UNC",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "40"
+		},
+		"p1884": {
+			"description": "Pencil holder",
+			"total_height": "25.4",
+			"handedness": "right",
+			"head_height": "19.05",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "19",
+			"headside_thread_radius_offset": "0.3",
+			"headside_threads": "none",
+			"inner_thread_radius_offset": "0.1",
+			"inner_threads": "straight-5/16inch",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "3/4-10-UNC",
+			"thread_polyhedron_algorithm": "v3",
+			"$tphl1_vertex_deduplication_enabled": "false",
+			"$fn": "64"
 		}
 	},
 	"parameterSets": "",

@@ -1,4 +1,4 @@
-// Threads2.27
+// Threads2.28
 // 
 // New screw threads proto-library
 // 
@@ -107,6 +107,8 @@
 // - Fix height of togridpile-chunk head
 // v2.27:
 // - Option for 'head M-holes' (head_mhole_diameter, head_mhole_spacing)
+// v2.28:
+// - Threads don't extend as deep into tall heads
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -159,7 +161,7 @@ the_post =
 	let( spec = togthreads2__get_thread_spec(outer_threads) )
 	let( taper_length = togthreads2__get_default_taper_length(spec) )
 	let( top_z = total_height )
-	let( bottom_z = max(0, head_height/2) )
+	let( bottom_z = max(0, head_height/2, head_height-1) )
 	togthreads2_make_threads(
 		togthreads2_simple_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
