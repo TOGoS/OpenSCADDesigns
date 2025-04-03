@@ -1,4 +1,4 @@
-// MiniRailHanger0.5
+// MiniRailHanger0.6
 // 
 // Can I use a MiniRail as a tiny French cleat?
 // This hanger is designed to hold one corner
@@ -19,9 +19,15 @@
 // - Adjustments to allow lip to be as tall as the full block
 // - Side is now a bit lower than the lip
 // - Overhead bores for the holes through lip
+// v0.6:
+// - Adjustable back height.  Avoid making the lowest rail cutout 'hangy'.
+// - Echo cavity depth depth so you can know you're making it big enough.
+// 
+// TODO: Option for bottom bracing would be nice
 
 mode = "sided-hanger"; // ["sided-hanger", "open-hanger", "spacer"]
 // Surface offset of rail-facing surfaces; negative to give more space
+hanger_height_chunks = 3;
 rail_offset     = -0.10; // 0.01
 width           = 19.05; // 0.1
 hanger_depth    = 27.0 ; // 0.1
@@ -39,6 +45,7 @@ module __kinja__end_params() { }
 
 u         = 25.4/16;
 atom      = 12.7 ;
+chunk     = 38.1;
 halfchunk = 19.05;
 $fn = 24;
 forcefn = 8;
@@ -58,13 +65,18 @@ let( x0 = 0, x1 = 4*u - off )
 corner_ops = ["round", 2, forcefn]; // For outer corners
 tc_ops = ["round", 0.6, forcefn]; // For tiny corners
 
-y0 = -114.3;
+y0 = -hanger_height_chunks * chunk;
 
 function kinja_make_back_nodes() = [
 	["togpath1-rathnode", [     0,    0  ], corner_ops],
-	for( params=[[-0.5, -4*u], [-1.5,0], [-2.5,0]] )
-	for( n=kinja_slot_rathnodes(pos=[0,params[0]*38.1], off=rail_offset, ba=params[1]) ) n,
-	["togpath1-rathnode", [     0, -114.3], corner_ops],
+	
+	for( params=[[-0.5, -4*u], for(yc=[-1.5 : -1 : -hanger_height_chunks]) [yc,0]] )
+	if( params[0] > -hanger_height_chunks )
+	let( yc = params[0] ) // Y position of cutout, in chunks
+	let( ba = yc-1 > -hanger_height_chunks ? params[1] : 0 ) // Lowest one mustn't dip
+	for( n=kinja_slot_rathnodes(pos=[0,yc*chunk], off=rail_offset, ba=ba) ) n,
+	
+	["togpath1-rathnode", [     0, y0], corner_ops],
 ];
 
 function lerp(r, v0, v1) = (r*v1) + (1-r)*v0;
@@ -80,6 +92,7 @@ let( xbti  = xbi + sideishness * 1*u ) // x back top inner
 let( xlbi  = xli - sideishness * (xlti-xbti)*1/3 ) // x lip bottom inner
 let( xbbi  = lerp(min(1,max(0,10-abs(y0i))), xbti, xbti + (xlti-xbti)*1/3) ) // x back bottom inner
 let( dep   = hanger_depth )
+echo( inner_cavity_depth = (xli-xbi) )
 [
 	//["togpath1-rathnode", [    6*u, -114.3]],
 	["togpath1-rathnode", [   dep    , y0  ], corner_ops],
