@@ -36,6 +36,17 @@
 			"hanger_lip_thickness": "3.2",
 			"rail_offset": "-0.1",
 			"width": "38.1"
+		},
+		"p1887": {
+			"mode": "open-hanger",
+			"hanger_depth": "50.8",
+			"hanger_floor_thickness": "3.2",
+			"hanger_front_y_offset": "34.9",
+			"hanger_height_chunks": "3",
+			"hanger_lip_height": "12.7",
+			"hanger_lip_thickness": "3",
+			"width": "38.1",
+			"rail_offset": "-0.1"
 		}
 	},
 	"parameterSets": "",

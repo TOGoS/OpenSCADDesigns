@@ -1,4 +1,4 @@
-// MiniRailHanger0.6
+// MiniRailHanger0.7
 // 
 // Can I use a MiniRail as a tiny French cleat?
 // This hanger is designed to hold one corner
@@ -22,8 +22,8 @@
 // v0.6:
 // - Adjustable back height.  Avoid making the lowest rail cutout 'hangy'.
 // - Echo cavity depth depth so you can know you're making it big enough.
-// 
-// TODO: Option for bottom bracing would be nice
+// v0.7:
+// - hanger_floor_thickness and hanger_front_y_offset options
 
 mode = "sided-hanger"; // ["sided-hanger", "open-hanger", "spacer"]
 // Surface offset of rail-facing surfaces; negative to give more space
@@ -33,6 +33,8 @@ width           = 19.05; // 0.1
 hanger_depth    = 27.0 ; // 0.1
 hanger_lip_height = 12.7; // 0.1
 hanger_lip_thickness = 1.6; // 0.1
+hanger_floor_thickness = 3.2; // 0.1
+hanger_front_y_offset  = 0.0; // 0.1
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -83,8 +85,9 @@ function lerp(r, v0, v1) = (r*v1) + (1-r)*v0;
 
 function make_front_nodes(sideishness=0) =
 // Top of block = 0, bottom = y0
-let( yl = y0 + hanger_lip_height )
-let( y0i   = lerp(sideishness, y0+2*u, max(y0+2*u,min(0,yl)-2*u)) )
+let( y0l   = y0 + hanger_front_y_offset )
+let( y1l   = y0 + hanger_lip_height + max(0,hanger_front_y_offset) )
+let( y0i   = lerp(sideishness, y0+hanger_floor_thickness+max(0,hanger_front_y_offset), max(y0+2*u,min(0,y1l)-2*u)) )
 let( xbi   = 6*u ) // x back inner (before messing with it to make side)
 let( xli   = hanger_depth - hanger_lip_thickness ) // x lip inner (pre-messing)
 let( xlti  = xli ) // x lip top inner
@@ -95,9 +98,10 @@ let( dep   = hanger_depth )
 echo( inner_cavity_depth = (xli-xbi) )
 [
 	//["togpath1-rathnode", [    6*u, -114.3]],
-	["togpath1-rathnode", [   dep    , y0  ], corner_ops],
-	["togpath1-rathnode", [   dep    , yl  ], tc_ops    ],
-	["togpath1-rathnode", [   xlti   , yl  ], tc_ops    ],
+	if( y0l > y0 ) ["togpath1-rathnode", [   12.7   , y0  ], corner_ops],
+	["togpath1-rathnode", [   dep    , y0l ], corner_ops],
+	["togpath1-rathnode", [   dep    , y1l ], tc_ops    ],
+	["togpath1-rathnode", [   xlti   , y1l ], tc_ops    ],
 	["togpath1-rathnode", [   xlbi   , y0i ], tc_ops    ],
 	["togpath1-rathnode", [   xbbi   , y0i ], tc_ops    ],
 	["togpath1-rathnode", [   xbti   ,  0  ], corner_ops],
