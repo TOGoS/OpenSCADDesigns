@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p1886": {
+			"thickness": "0.4",
+			"inner_diameter": "19.3",
+			"outer_diameter": "25.4",
+			"$fn": "96"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
