@@ -1,4 +1,4 @@
-// MiniRailHanger0.7
+// MiniRailHanger0.8
 // 
 // Can I use a MiniRail as a tiny French cleat?
 // This hanger is designed to hold one corner
@@ -24,12 +24,17 @@
 // - Echo cavity depth depth so you can know you're making it big enough.
 // v0.7:
 // - hanger_floor_thickness and hanger_front_y_offset options
+// v0.8:
+// - side_width can be configured anywhere from 0 to width
 
 mode = "sided-hanger"; // ["sided-hanger", "open-hanger", "spacer"]
 // Surface offset of rail-facing surfaces; negative to give more space
 hanger_height_chunks = 3;
 rail_offset     = -0.10; // 0.01
+// Total width of hanger
 width           = 19.05; // 0.1
+// Width of side section (applies only when mode="sided-hanger"); if >= width, hanger will be entirely side
+side_width      =  1.6;
 hanger_depth    = 27.0 ; // 0.1
 hanger_lip_height = 12.7; // 0.1
 hanger_lip_thickness = 1.6; // 0.1
@@ -133,12 +138,16 @@ function make_hanger_body(zses) = tphl1_make_polyhedron_from_layer_function(
 		togvec0_offset_points(togpath1_rath_to_polypoints(kinja_make_layer_rath(sideishness)), z)
 	);
 
-sided_hanger_zses = [
-	[ 0        , 1],
-	[ 1*u      , 1],
-	[ 1*u + 0.1, 0],
-	[width     , 0],
-];
+sided_hanger_zses =
+	side_width <= 0     ? [[0,0], [width, 0]] :
+	side_width >= width ? [[0,1], [width, 1]] :
+	[
+		[ 0              , 1],
+		[side_width      , 1],
+		[side_width + 0.1, 0],
+		[width           , 0],
+	];
+
 open_hanger_zses = [
 	[ 0   , 0],
 	[width, 0],

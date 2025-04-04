@@ -47,6 +47,17 @@
 			"hanger_lip_thickness": "3",
 			"width": "38.1",
 			"rail_offset": "-0.1"
+		},
+		"p1888": {
+			"mode": "sided-hanger",
+			"hanger_depth": "50.8",
+			"hanger_front_y_offset": "34.9",
+			"hanger_height_chunks": "3",
+			"hanger_lip_height": "38.1",
+			"hanger_lip_thickness": "3",
+			"side_width": "3.1",
+			"width": "3.1",
+			"rail_offset": "-0.1"
 		}
 	},
 	"parameterSets": "",
