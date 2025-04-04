@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p1889": {
+			"size": "[\"9atom\", \"1atom\", \"1atom\"]",
+			"bottom_segmentation": "hatom",
+			"hole_diameter": "4.5",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}
