@@ -625,8 +625,6 @@
 		},
 		"p1894": {
 			"description": "5/16-18-UNC nut (0.2mm inner radius offset)",
-			"$fn": "32",
-			"$tphl1_vertex_deduplication_enabled": "false",
 			"cross_section": "false",
 			"handedness": "right",
 			"head_height": "3.1",
@@ -637,7 +635,25 @@
 			"inner_threads": "5/16-18-UNC",
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "none",
-			"total_height": "3.17"
+			"total_height": "3.17",
+			"$fn": "32"
+		},
+		"p1895": {
+			"description": "Filament dryer port replacement candidate - 5/16-18-UNC, larger internal margins",
+			"floor_thickness": "3.17",
+			"floor_thread_radius_offset": "0.6",
+			"floor_threads": "straight-2mm",
+			"handedness": "right",
+			"head_height": "3.17",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "12.7",
+			"inner_thread_radius_offset": "0.5",
+			"inner_threads": "straight-4mm",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "5/16-18-UNC",
+			"total_height": "12.7",
+			"$fn": "32"
 		}
 	},
 	"parameterSets": "",
