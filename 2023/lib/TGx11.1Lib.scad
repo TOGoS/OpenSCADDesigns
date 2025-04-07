@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.18
+// TGx11.1Lib - v11.1.19
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -44,6 +44,9 @@
 //   This may be useful to help blocks slide into baseplates or
 //   to compensate for overly squished-down (and out) first layers of FDM prints.
 // - Fix that segmentation = "none" was not handled properly by tgx11_block_bottom
+// v11.1.19:
+// - Don't try to bevel corners when rounding radius would make it impossible;
+//   this allows for round atom bottoms by setting rounding radius to a large value
 
 module __tgx11lib_end_params() { }
 
@@ -131,17 +134,23 @@ function tgx11__corner_radius(offset, gender) =
 		togridlib3_decode([1, gender == "m" ? "tgp-m-outer-corner-radius" : "tgp-f-outer-corner-radius"]) + offset
 	);
 
-function tgx11_chunk_xs_zath(size, bevels=[true,true,true,true]) =
-	tgx11_beveled_rect_zath(size, bevel_size=togridlib3_decode([1,"tgp-standard-bevel"]), bevels=bevels);
+function tgx11_chunk_xs_zath(size, gender, bevels=undef) =
+	// Cleverly skip beveling corners by default if rounding radius sufficiently large:
+	let( rounding_radius = tgx11__corner_radius(offset=0,gender=gender) )
+	let( bevel_size = togridlib3_decode([1, "tgp-standard-bevel"]) )
+	let( default_bevel = rounding_radius < bevel_size * 1.707 )
+	let( _bevels1 = is_undef(bevels) ? [undef,undef,undef,undef] : bevels )
+	let( _bevels2 = [for(b=_bevels1) is_undef(b) ? default_bevel : b] )
+	tgx11_beveled_rect_zath(size, bevel_size=togridlib3_decode([1,"tgp-standard-bevel"]), bevels=_bevels2);
 
 function tgx11_chunk_xs_qath(size, offset=0, gender="m") = togpath1_zath_to_qath(
-	tgx11_chunk_xs_zath(size),
+	tgx11_chunk_xs_zath(size, gender=gender),
 	offset = offset,
 	radius = tgx11__corner_radius(offset=offset, gender=gender)
 );
 
 function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = togpath1_zath_to_qath(
-	tgx11_chunk_xs_zath(size, bevels=[false,true,true,false]),
+	tgx11_chunk_xs_zath(size, gender=gender, bevels=[false,undef,undef,false]),
 	offset = offset,
 	radius = tgx11__corner_radius(offset=offset, gender=gender),
 	closed=false
