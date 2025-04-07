@@ -1,3 +1,3 @@
 @echo off
 
-deno run -A make.ts %*
+deno run --check -A make.ts %*

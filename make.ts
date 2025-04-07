@@ -12,12 +12,14 @@ const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
 const stlBuilderVersion       = "b1318";
 const renderPngBuilderVersion = "b1322";
-const crushPngBuilderVersion  = "b1323";
+const crushPngBuilderVersion  = "b1326";
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
 
 const defaultCameraPosition : Vec3<number> = [-10, -10, 10];
+
+const RESOLVED_PROMISE = Promise.resolve();
 
 type Commande = {
 	argv : string[]
@@ -89,12 +91,22 @@ function getProcessQueue(name:string, maxConcurrency:number) : ProcessQueue {
 	return queue;
 }
 
+const dirsMade = new Set<FilePath>();
+async function mkdir(dir:FilePath) : Promise<void> {
+	if( dirsMade.has(dir) ) return RESOLVED_PROMISE;
+	await Deno.mkdir(dir, {recursive:true});
+	dirsMade.add(dir);
+	return RESOLVED_PROMISE;
+}
+
 async function run(cmd:Commande) : Promise<void> {
 	if( cmd.argv.length == 0 ) {
 		throw new Error("Empty command");
 	}
 	
-	if( cmd.argv[0] == "x:Hardlink" ) {
+	if( cmd.argv[0] == "x:MkDirs" ) {
+		return Promise.all(cmd.argv.slice(1).map(p => mkdir(p))).then(() => RESOLVED_PROMISE);
+	} else if( cmd.argv[0] == "x:Hardlink" ) {
 		const src = cmd.argv[1];
 		const dst = cmd.argv[2];
 		try {
@@ -193,6 +205,7 @@ function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Co
 		'-background', '#1c2022',
 		'-gravity', 'center',
 		'-extent', `${crushSize}x${crushSize}`,
+		'-dither', 'None',
 		'-colors', '36',
 		outFile,
 	]};
@@ -242,7 +255,7 @@ function osdBuildRules(partId:string, opts:{
 		const size = [_size, _size];
 		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
 		crushedPngBuildRules[crushedPngPath] = {
-			prereqs: [renderedPngPath],
+			prereqs: [renderedPngPath, tempDir],
 			invoke: async (ctx:BuildContext) => {
 				await run(magickCommand(renderedPngPath, _size, ctx.targetName));
 			}
@@ -254,6 +267,7 @@ function osdBuildRules(partId:string, opts:{
 	return {
 		[outStlPath]: {
 			invoke: async (ctx:BuildContext) => {
+				await mkdir(outDir);
 				await run(openscadCommand({
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
@@ -264,6 +278,7 @@ function osdBuildRules(partId:string, opts:{
 		},
 		[renderedPngPath]: {
 			invoke: async (ctx:BuildContext) => {
+				await mkdir(tempDir);
 				await run(openscadCommand({
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
@@ -277,14 +292,16 @@ function osdBuildRules(partId:string, opts:{
 		...crushedPngBuildRules,
 		[simplifiedStlPath]: {
 			prereqs: [outStlPath],
-			invoke(ctx:BuildContext) {
-				return run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
+			async invoke(ctx:BuildContext) {
+				await mkdir(outDir);
+				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
 		},
 		[simplifiedPngPath]: {
 			prereqs: [preferredPngPath, "make.ts"],
-			invoke(ctx:BuildContext) {
-				return run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
+			async invoke(ctx:BuildContext) {
+				await mkdir(outDir);
+				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
 		},
 		[partId]: brAlias([simplifiedStlPath, simplifiedPngPath]),
@@ -314,11 +331,9 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 }
 
 const p186xPartIds = partIdRange("p",1861,1869);
-
 const p186xBuildRules = flattenObj(map(
 	p186xPartIds,
-	i => {
-		const partId = `p${i}`;
+	partId => {
 		return osdBuildRules(partId, {
 			inScadFile: "2023/french-cleat/FrenchCleat.scad",
 			presetName: partId,
@@ -330,13 +345,24 @@ const p186xBuildRules = flattenObj(map(
 const p187xFcPartIds = partIdRange("p",1873,1879);
 const p187xFcBuildRules = flattenObj(map(
 	p187xFcPartIds,
-	i => {
-		const partId = `p${i}`;
+	partId => {
 		return osdBuildRules(partId, {
 			inScadFile: "2023/french-cleat/HollowFrenchCleat1.scad",
 			presetName: partId,
 			cameraPosition: [-10,-10,+10],
 			imageSize: [512,512],
+		})
+	},
+));
+
+const p190xPartIds = partIdRange("p",1901,1909);
+const p190xBuildRules = flattenObj(map(
+	p190xPartIds,
+	partId => {
+		return osdBuildRules(partId, {
+			inScadFile: "2023/french-cleat/FrenchCleat.scad",
+			presetName: partId,
+			cameraPosition: [-10,-10,-10],
 		})
 	},
 ));
@@ -377,6 +403,8 @@ const builder = new Builder({
 			imageSize: [512,512],
 		}),
 		"p188x": pbrAlias(["p1880"]),
+		...p190xBuildRules,
+		"p190x": pbrAlias(p190xPartIds),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
