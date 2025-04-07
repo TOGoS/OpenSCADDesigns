@@ -467,6 +467,88 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
+		"-- p190x series: atom backs in atom length increments with #6-32 threaded holes": "",
+		"p1901": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[1, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1902": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[2, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1903": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[3, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1904": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[4, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1905": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[5, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1906": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[6, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1907": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[7, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1908": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[8, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
+		"p1909": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "tgx11-atom-f",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[9, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B"
+		},
 
 		"-- other stuff --": "",
 		"p1755": {
