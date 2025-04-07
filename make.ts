@@ -370,7 +370,13 @@ const builder = new Builder({
 			cameraPosition: [20,50,+50],
 			imageSize: [256,256],
 		}),
-		"p188x": pbrAlias(partIdRange("p",1880,1880)),
+		...osdBuildRules("p1896", {
+			inScadFile: "2023/gridbeam/ChunkBackBeam1.scad",
+			presetName: "p1896",
+			cameraPosition: [-20,20,-30],
+			imageSize: [512,512],
+		}),
+		"p188x": pbrAlias(["p1880"]),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

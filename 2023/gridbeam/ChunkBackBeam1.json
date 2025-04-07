@@ -5,6 +5,13 @@
 			"bottom_segmentation": "hatom",
 			"hole_diameter": "4.5",
 			"$fn": "24"
+		},
+		"p1896": {
+			"$fn": "24",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom",
+			"hole_diameter": "4.5",
+			"size": "[\"9atom\", \"1atom\", \"1atom\"]"
 		}
 	},
 	"fileFormatVersion": "1"
