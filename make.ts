@@ -1,6 +1,6 @@
 #!/usr/bin/env deno -A
 
-import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.0/Builder.ts';
+import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
 
 // TODO: Check for env vars, search for the .com if not specified
 const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
@@ -308,10 +308,10 @@ function osdBuildRules(partId:string, opts:{
 	};
 }
 
-function* partIdRange(pfx:string, start:number, end:number) : Iterable<string> {
-	for( let i = start; i <= end; i++ ) {
-		yield pfx + i;
-	}
+function partIdRange(pfx:string, start:number, end:number) : string[] {
+	const partIds : string[] = [];
+	for( let i = start; i <= end; i++ ) partIds.push(pfx+i);
+	return partIds;
 }
 function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
 	for( const x of input ) yield fn(x);
@@ -367,17 +367,6 @@ const p190xBuildRules = flattenObj(map(
 	},
 ));
 
-/**
- * Parts build rules alias -
- * Create a build rule to build the standard
- * outputs (one STL and PNG) for each of a
- * list of parts
- */
-function pbrAlias(partIds:Iterable<string>) : BuildRule {
-	return brAlias(partIds);
-}
-
-
 // Something like this.
 const builder = new Builder({
 	rules: {
@@ -387,9 +376,9 @@ const builder = new Builder({
 			imageSize: [512,512],
 		}),
 		...p186xBuildRules,
-		"p186x": pbrAlias(p186xPartIds),
+		"p186x": brAlias(p186xPartIds),
 		...p187xFcBuildRules,
-		"p187x": pbrAlias(p187xFcPartIds),
+		"p187x": brAlias(p187xFcPartIds),
 		...osdBuildRules("p1880", {
 			inScadFile: "2023/french-cleat/FrenchCleat.scad",
 			presetName: "p1880",
@@ -402,9 +391,9 @@ const builder = new Builder({
 			cameraPosition: [-20,20,-30],
 			imageSize: [512,512],
 		}),
-		"p188x": pbrAlias(["p1880"]),
+		"p188x": brAlias(["p1880"]),
 		...p190xBuildRules,
-		"p190x": pbrAlias(p190xPartIds),
+		"p190x": brAlias(p190xPartIds),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
