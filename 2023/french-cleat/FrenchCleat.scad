@@ -1,4 +1,4 @@
-// FrenchCleat-v1.13
+// FrenchCleat-v1.14
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -39,6 +39,8 @@
 // v1.13:
 // - Any hole type can be made into a slot
 // - Option to 'trim' (i.e. bevel) F corners
+// v1.14:
+// - Only apply minkowsky if slot_height <> 0
 
 description = "";
 
@@ -228,7 +230,7 @@ function is_thread_hole_style(s) =
 // Make them pointy in the Y to make slots work out better:
 hole_rotation = [0,0,90];
 
-hole =
+hole = ["render",
 	_hole_style == "GB-counterbored" ? counterbored_hole :
 	_hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
 	_hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole("THL-1005", inset=5*25.4/16)]] :
@@ -239,9 +241,10 @@ hole =
 			r_offset = 0.2, // Usually good!
 			end_mode = "blunt"
 		) :
-	["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole(_hole_style)]];
+	["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole(_hole_style)]]
+];
 
-slot = ["render", ["minkowski",
+slot = slot_height == 0 ? hole : ["render", ["minkowski",
 	togmod1_make_cuboid([0.01,slot_height,0.01]),
 	hole
 ]];
