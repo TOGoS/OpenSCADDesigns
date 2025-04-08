@@ -12,7 +12,7 @@ const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
 const stlBuilderVersion       = "b1318";
 const renderPngBuilderVersion = "b1322";
-const crushPngBuilderVersion  = "b1326";
+const crushPngBuilderVersion  = "b1327";
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
@@ -202,7 +202,7 @@ function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Co
 		'+repage',
 		// '-filter', 'Lanczos',
 		'-resize', `${subSize}x${subSize}`,
-		'-background', '#1c2022',
+		'-background', '#1d1f21',
 		'-gravity', 'center',
 		'-extent', `${crushSize}x${crushSize}`,
 		'-dither', 'None',
@@ -389,6 +389,12 @@ const builder = new Builder({
 			inScadFile: "2023/gridbeam/ChunkBackBeam1.scad",
 			presetName: "p1896",
 			cameraPosition: [-20,20,-30],
+			imageSize: [512,512],
+		}),
+		...osdBuildRules("p1897", {
+			inScadFile: "2023/gridbeam/ChunkBackBeam1.scad",
+			presetName: "p1897",
+			cameraPosition: [-20,-20,-30],
 			imageSize: [512,512],
 		}),
 		"p188x": brAlias(["p1880"]),

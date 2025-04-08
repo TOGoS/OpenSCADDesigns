@@ -1,4 +1,4 @@
-// ChunkBackBeam1.1
+// ChunkBackBeam1.2
 // 
 // TOGBeam that is chunked on only one side,
 // for use with e.g. atom of hatom-backed FCs (p165x, p186x, etc)
@@ -10,11 +10,15 @@
 // - Add 'vatom', 'atom', and 'atom+v6hc' segmentation options
 // - Add 'bottom_foot_bevel' option
 // - Footed instead of beveled feet
+// v1.2:
+// - Make tgp_outer_corner_radius configurable
 
 size = ["9atom", "1atom", "1atom"];
 hole_diameter = 4.5;
 bottom_segmentation = "hatom"; // ["none","hatom","vatom","atom","atom+v6hc"]
 bottom_foot_bevel = 0.4;
+// Outer corner radius of TOGridPile atoms; will be clamped to some minimum value
+tgp_outer_corner_radius = 0;
 $fn = 24;
 
 module chunkbackbeam1__end_params() { }
@@ -28,7 +32,7 @@ use <../lib/TOGStringLib1.scad>
 use <../lib/TOGPath1.scad>
 
 $togridlib3_unit_table = [
-	["tgp-m-outer-corner-radius", [3, "u"]],
+	if( !is_undef(tgp_outer_corner_radius) ) ["tgp-m-outer-corner-radius", [tgp_outer_corner_radius, "mm"]],
 	each tgx11_get_default_unit_table(),
 ];
 $tgx11_offset = -0.1;

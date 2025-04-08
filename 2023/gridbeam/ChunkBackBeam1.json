@@ -7,11 +7,20 @@
 			"$fn": "24"
 		},
 		"p1896": {
-			"$fn": "24",
+			"size": "[\"9atom\", \"1atom\", \"1atom\"]",
 			"bottom_foot_bevel": "0.4",
 			"bottom_segmentation": "atom",
+			"tgp_outer_corner_radius": "4.8",
 			"hole_diameter": "4.5",
-			"size": "[\"9atom\", \"1atom\", \"1atom\"]"
+			"$fn": "24"
+		},
+		"p1897": {
+			"size": "[\"12atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
 		}
 	},
 	"fileFormatVersion": "1"
