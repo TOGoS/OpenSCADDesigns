@@ -1,4 +1,4 @@
-// Pi4Holder1.2
+// Pi4Holder1.3
 // 
 // TOGridPile holder for a Raspberry Pi 4B or similar
 // 
@@ -14,6 +14,9 @@
 // - Cutout to accomodate microSD card
 // - More mounting holes along edges
 // - Round/bevel corners of upper cavity
+// v1.3:
+// - Ramp between center and edge floors
+// - Fix doubling of 'center' offset (which was zero, so no change in output)
 
 $tgx11_offset = -0.1;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
@@ -62,24 +65,25 @@ let( s2 = [size[0]*2, size[1]*2] )
 	// Cutout for board
 	["difference",
 		["union",
-			// TODO: Chamfer edges instead of cliffs
-			["translate", [center[0], center[1], 0], togmod1_linear_extrude_z([size[2]-center_depth, size[2]+center_depth], togpath1_rath_to_polygon(
-			   let( hbs = [board_size[0]/2 + board_margin, board_size[1]/2+board_margin] )
-				let( cops = [["round", board_margin*2]] )
-				let( bcops = [["round", 3]] )
-				let( q = inch/4 )
-				["togpath1-rath",
-					["togpath1-rathnode", [center[0]+hbs[0]  , center[1]+hbs[1]], each  cops],
-					["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+hbs[1]], each  cops],
-					["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+q     ], each bcops],
-					// TODO: Extend uSD cutout to edge, round corners
-					["togpath1-rathnode", [center[0]-hbs[0]-q, center[1]+q     ], each  cops],
-					["togpath1-rathnode", [center[0]-hbs[0]-q, center[1]-q     ], each  cops],
-					["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-q     ], each bcops],
-					["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-hbs[1]], each  cops],
-					["togpath1-rathnode", [center[0]+hbs[0]  , center[1]-hbs[1]], each  cops],
-				]
-			))],
+		   let( hbs = [board_size[0]/2 + board_margin, board_size[1]/2+board_margin] )
+			let( cops = [["round", board_margin*2]] )
+			let( bcops = [["round", 3]] )
+			let( q = inch/4 )
+			tphl1_make_polyhedron_from_layer_function([
+				[size[2]-center_depth + 0  , 0  ],
+				[size[2]-center_depth + 1.5, 1.5],
+				[size[2]+center_depth      , 1.5],
+			], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(["togpath1-rath",
+				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]+hbs[1]], each  cops],
+				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+hbs[1]], each  cops],
+				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+q     ], each bcops],
+				// TODO: Extend uSD cutout to edge, round corners
+				["togpath1-rathnode", [center[0]-hbs[0]-q, center[1]+q     ], each  cops],
+				["togpath1-rathnode", [center[0]-hbs[0]-q, center[1]-q     ], each  cops],
+				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-q     ], each bcops],
+				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-hbs[1]], each  cops],
+				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]-hbs[1]], each  cops],
+			], zo[1])), zo[0])),
 
 			// ["translate", [center[0], center[1], size[2]], togmod1_make_cuboid([87,56,center_depth*2]) ],
 			
