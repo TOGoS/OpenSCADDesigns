@@ -1,4 +1,4 @@
-// Pi4Holder1.6
+// Pi4Holder1.7
 // 
 // TOGridPile holder for a Raspberry Pi 4B or similar
 // 
@@ -25,6 +25,8 @@
 // - Big old cutout for access to microSD card
 // v1.6:
 // - Fix shape of SD card notch and make less deep
+// v1.7:
+// - Lengthen walls at Eth port end because they can be without blocking anything
 
 $tgx11_offset = -0.1;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
@@ -60,8 +62,9 @@ full_hick = togmod1_linear_extrude_z([-1/4*inch, 1/4*inch], ["hull",
 
 togmod1_domodule(
 let( board_size = [85,56] )
-let( corner_hole_positions = [for(xm=[-1,1]) for(ym=[-1,1]) [xm*(size_atoms[0]/2-0.5)*atom, ym*(size_atoms[1]/2-0.5)*atom]] )
-let( hick_positions = [for(xm=[-1,1]) [xm*(size_atoms[0]/2-0.5)*atom, 0]] )
+let( corner_hole_x_positions = [for(xm=[-size_atoms[0]/2 + 0.5, size_atoms[0]/2 - 0.5]) xm*atom] )
+let( corner_hole_positions = [for(x=corner_hole_x_positions) for(ym=[-1,1]) [x, ym*(size_atoms[1]/2-0.5)*atom]] )
+let( hick_positions = [for(x=corner_hole_x_positions) [x, 0]] )
 let( center = [0,0] )
 let( post_data = [for(xm=[-1,1]) for(ym=[-1,1]) [[center[0]-85/2+3.5+58/2+xm*58/2, center[1]+ym*49/2], [/*xm > 0 ? 0 :*/ xm, ym]]] )
 let( post = ["render", tphl1_make_z_cylinder(zrange=[-post_height, post_height], d=inch/4)] )
@@ -73,6 +76,8 @@ let( s2 = [size[0]*2, size[1]*2] )
 	// Cutout for board
 	["difference",
 		["union",
+
+			// Lower cavity
 		   let( hbs = [board_size[0]/2 + board_margin, board_size[1]/2+board_margin] )
 			let( cops = [["round", board_margin*2, 6]] )
 			let( bcops = [["round", 3, 6]] )
@@ -97,9 +102,9 @@ let( s2 = [size[0]*2, size[1]*2] )
 				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]-hbs[1]], each  cops],
 			], zo[1])), zo[0])),
 
-			// ["translate", [center[0], center[1], size[2]], togmod1_make_cuboid([87,56,center_depth*2]) ],
-			
+			// Upper cavity
 			let( icops = [["bevel", 6.35], ["round", 3.175, 6]] )
+			let( x1 =  -39, x2 = inch*3/4 )
 			tphl1_make_polyhedron_from_layer_function([
 			   [size[2]-edge_depth  ,-1],
 			   [size[2]-edge_depth+1, 0],
@@ -107,20 +112,21 @@ let( s2 = [size[0]*2, size[1]*2] )
 			   [size[2]           +2, 3],
 			   [size[2]+edge_depth  , 3],
 			], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(["togpath1-rath",
-			   ["togpath1-rathnode", [ 39, -s2[1]], ],
-			   ["togpath1-rathnode", [ 39, -28], each icops],
+			   ["togpath1-rathnode", [ x2, -s2[1]], ],
+			   ["togpath1-rathnode", [ x2, -28], each icops],
 			   ["togpath1-rathnode", [ s2[0], -28], ],
 			   ["togpath1-rathnode", [ s2[0], 28], ],
-			   ["togpath1-rathnode", [ 39, 28], each icops],
-			   ["togpath1-rathnode", [ 39, s2[1]], ],
-			   ["togpath1-rathnode", [-39, s2[1]], ],
-			   ["togpath1-rathnode", [-39, 28], each icops],
+			   ["togpath1-rathnode", [ x2, 28], each icops],
+			   ["togpath1-rathnode", [ x2, s2[1]], ],
+			   ["togpath1-rathnode", [ x1, s2[1]], ],
+			   ["togpath1-rathnode", [ x1, 28], each icops],
 			   ["togpath1-rathnode", [-s2[0], 28], ],
 			   ["togpath1-rathnode", [-s2[0], -28], ],
-			   ["togpath1-rathnode", [-39, -28], each icops],
-			   ["togpath1-rathnode", [-39, -s2[1]], ],
+			   ["togpath1-rathnode", [ x1, -28], each icops],
+			   ["togpath1-rathnode", [ x1, -s2[1]], ],
 			], zo[1])), zo[0])),
 			
+			// SD card notch
 			let( bcops = [["round", 6, 6]] )
 			let( q = inch/4   )
 			let( g = inch/8   )
@@ -153,11 +159,13 @@ let( s2 = [size[0]*2, size[1]*2] )
 	for( pos=corner_hole_positions ) ["translate", [pos[0], pos[1], size[2]], full_hole],
 	for( pos=hick_positions ) ["translate", [pos[0], pos[1], size[2]], full_hick],
 	
+	// Short edge holes
 	for( xm=[-size_atoms[0]/2+0.5, size_atoms[0]/2-0.5] )
 	for( ym=[-size_atoms[1]/2+1.5 : 1 : size_atoms[1]/2-1.4] )
 	if( xm > -size_atoms[0]/2+1 || abs(ym) > 1 )
 	["translate", [xm*atom, ym*atom, size[2]-edge_depth], edge_hole],
 	
+	// Long eedge holes
 	for( xm=[-size_atoms[0]/2+1.5 : 1 : size_atoms[0]/2-1.4] )
 	for( ym=[-size_atoms[1]/2+0.5, size_atoms[1]/2-0.5] )
 	["translate", [xm*atom, ym*atom, size[2]-edge_depth], edge_hole],
