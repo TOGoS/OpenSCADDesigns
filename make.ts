@@ -402,6 +402,11 @@ const builder = new Builder({
 			cameraPosition: [-15,-20,30],
 			imageSize: [512,512],
 		}),
+		...osdBuildRules("p1899", {
+			inScadFile: "2023/experimental/Pi4Holder1.scad",
+			cameraPosition: [10,-20,20],
+			imageSize: [512,512],
+		}),
 		"p188x": brAlias(["p1880"]),
 		...p190xBuildRules,
 		"p190x": brAlias(p190xPartIds),
