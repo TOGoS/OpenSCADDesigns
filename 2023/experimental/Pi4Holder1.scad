@@ -1,4 +1,4 @@
-// Pi4Holder1.3
+// Pi4Holder1.4
 // 
 // TOGridPile holder for a Raspberry Pi 4B or similar
 // 
@@ -17,6 +17,10 @@
 // v1.3:
 // - Ramp between center and edge floors
 // - Fix doubling of 'center' offset (which was zero, so no change in output)
+// v1.4:
+// - Extend SD card cutout to end of enclosure
+//   - Maybe it should be all the way through the bottom, so you could
+//     actually grab it out!  Maybe next iteration.
 
 $tgx11_offset = -0.1;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
@@ -66,9 +70,10 @@ let( s2 = [size[0]*2, size[1]*2] )
 	["difference",
 		["union",
 		   let( hbs = [board_size[0]/2 + board_margin, board_size[1]/2+board_margin] )
-			let( cops = [["round", board_margin*2]] )
-			let( bcops = [["round", 3]] )
+			let( cops = [["round", board_margin*2, 6]] )
+			let( bcops = [["round", 3, 6]] )
 			let( q = inch/4 )
+			let( g = inch/8 )
 			tphl1_make_polyhedron_from_layer_function([
 				[size[2]-center_depth + 0  , 0  ],
 				[size[2]-center_depth + 1.5, 1.5],
@@ -77,9 +82,10 @@ let( s2 = [size[0]*2, size[1]*2] )
 				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]+hbs[1]], each  cops],
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+hbs[1]], each  cops],
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+q     ], each bcops],
-				// TODO: Extend uSD cutout to edge, round corners
-				["togpath1-rathnode", [center[0]-hbs[0]-q, center[1]+q     ], each  cops],
-				["togpath1-rathnode", [center[0]-hbs[0]-q, center[1]-q     ], each  cops],
+				["togpath1-rathnode", [-size[0]/2+g      , center[1]+q     ], each bcops],
+				["togpath1-rathnode", [-size[0]/2+g-10   , center[1]+q+10  ],           ],
+				["togpath1-rathnode", [-size[0]/2+g-10   , center[1]-q-10  ],           ],
+				["togpath1-rathnode", [-size[0]/2+g      , center[1]-q     ], each bcops],
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-q     ], each bcops],
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-hbs[1]], each  cops],
 				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]-hbs[1]], each  cops],
