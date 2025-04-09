@@ -1,4 +1,4 @@
-// Pi4Holder1.5
+// Pi4Holder1.6
 // 
 // TOGridPile holder for a Raspberry Pi 4B or similar
 // 
@@ -23,6 +23,8 @@
 //     actually grab it out!  Maybe next iteration.
 // v1.5:
 // - Big old cutout for access to microSD card
+// v1.6:
+// - Fix shape of SD card notch and make less deep
 
 $tgx11_offset = -0.1;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
@@ -120,24 +122,24 @@ let( s2 = [size[0]*2, size[1]*2] )
 			], zo[1])), zo[0])),
 			
 			let( bcops = [["round", 6, 6]] )
-			let( q = inch/4 )
-			let( g = inch/8 )
-			let( a = atom   )
-			let( d = inch   )
+			let( q = inch/4   )
+			let( g = inch/8   )
+			let( a = atom     )
+			let( d = inch*3/4 )
 			tphl1_make_polyhedron_from_layer_function([
 				[                      -1  , 1.5],
 				[                       1.5, 1.5],
 				[                       3.1, 0  ],
-				[size[2]-center_depth +   0, 0  ],
-				[size[2]-center_depth + 1.5, 1.5],
+				[size[2]-center_depth - 0.1, 0  ],
+				[size[2]-center_depth + 1.4, 1.5],
 				[size[2]+center_depth + 1.5, 1.5],
 			], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(["togpath1-rath",
 				["togpath1-rathnode", [-size[0]/2+d      ,  a     ], each bcops],
 				["togpath1-rathnode", [-size[0]/2+g      ,  a     ], each bcops],
 				["togpath1-rathnode", [-size[0]/2+g-10   ,  a+10  ],           ],
 				["togpath1-rathnode", [-size[0]/2+g-10   , -a-10  ],           ],
-				["togpath1-rathnode", [-size[0]/2+g      , -a-q   ], each bcops],
-				["togpath1-rathnode", [-size[0]/2+d      , -a-q   ], each bcops],
+				["togpath1-rathnode", [-size[0]/2+g      , -a   ], each bcops],
+				["togpath1-rathnode", [-size[0]/2+d      , -a   ], each bcops],
 			], zo[1])), zo[0])),
 		],
 		
