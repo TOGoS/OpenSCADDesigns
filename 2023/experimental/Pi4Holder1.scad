@@ -1,4 +1,4 @@
-// Pi4Holder1.4
+// Pi4Holder1.5
 // 
 // TOGridPile holder for a Raspberry Pi 4B or similar
 // 
@@ -21,6 +21,8 @@
 // - Extend SD card cutout to end of enclosure
 //   - Maybe it should be all the way through the bottom, so you could
 //     actually grab it out!  Maybe next iteration.
+// v1.5:
+// - Big old cutout for access to microSD card
 
 $tgx11_offset = -0.1;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
@@ -81,12 +83,14 @@ let( s2 = [size[0]*2, size[1]*2] )
 			], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(["togpath1-rath",
 				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]+hbs[1]], each  cops],
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+hbs[1]], each  cops],
+/*
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]+q     ], each bcops],
 				["togpath1-rathnode", [-size[0]/2+g      , center[1]+q     ], each bcops],
 				["togpath1-rathnode", [-size[0]/2+g-10   , center[1]+q+10  ],           ],
 				["togpath1-rathnode", [-size[0]/2+g-10   , center[1]-q-10  ],           ],
 				["togpath1-rathnode", [-size[0]/2+g      , center[1]-q     ], each bcops],
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-q     ], each bcops],
+*/
 				["togpath1-rathnode", [center[0]-hbs[0]  , center[1]-hbs[1]], each  cops],
 				["togpath1-rathnode", [center[0]+hbs[0]  , center[1]-hbs[1]], each  cops],
 			], zo[1])), zo[0])),
@@ -114,9 +118,27 @@ let( s2 = [size[0]*2, size[1]*2] )
 			   ["togpath1-rathnode", [-39, -28], each icops],
 			   ["togpath1-rathnode", [-39, -s2[1]], ],
 			], zo[1])), zo[0])),
-
-			//["translate", [center[0], center[1], size[2]], togmod1_make_cuboid([size[0]*2, 56, edge_depth*2]) ],
-			//["translate", [center[0], center[1], size[2]], togmod1_make_cuboid([79, size[1]*2, edge_depth*2]) ],
+			
+			let( bcops = [["round", 6, 6]] )
+			let( q = inch/4 )
+			let( g = inch/8 )
+			let( a = atom   )
+			let( d = inch   )
+			tphl1_make_polyhedron_from_layer_function([
+				[                      -1  , 1.5],
+				[                       1.5, 1.5],
+				[                       3.1, 0  ],
+				[size[2]-center_depth +   0, 0  ],
+				[size[2]-center_depth + 1.5, 1.5],
+				[size[2]+center_depth + 1.5, 1.5],
+			], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(["togpath1-rath",
+				["togpath1-rathnode", [-size[0]/2+d      ,  a     ], each bcops],
+				["togpath1-rathnode", [-size[0]/2+g      ,  a     ], each bcops],
+				["togpath1-rathnode", [-size[0]/2+g-10   ,  a+10  ],           ],
+				["togpath1-rathnode", [-size[0]/2+g-10   , -a-10  ],           ],
+				["togpath1-rathnode", [-size[0]/2+g      , -a-q   ], each bcops],
+				["togpath1-rathnode", [-size[0]/2+d      , -a-q   ], each bcops],
+			], zo[1])), zo[0])),
 		],
 		
 		//for( pos=post_positions ) ["translate", [pos[0], pos[1], size[2]-center_depth], post],
