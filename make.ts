@@ -367,6 +367,20 @@ const p190xBuildRules = flattenObj(map(
 	},
 ));
 
+const p192xPartIds = partIdRange("p",1921,1939);
+const p192xBuildRules = flattenObj(map(
+	p192xPartIds,
+	partId => {
+		const num = +partId.substring(1);
+		return osdBuildRules(partId, {
+			inScadFile: "2023/gridbeam/ChunkBackBeam1.scad",
+			presetName: partId,
+			cameraPosition: [20,-20,-20],
+			imageSize: num > 1932 ? [512,512] : num > 1927 ? [384,384] : [256,256],
+		})
+	},
+));
+
 // Something like this.
 const builder = new Builder({
 	rules: {
@@ -410,6 +424,8 @@ const builder = new Builder({
 		"p188x": brAlias(["p1880"]),
 		...p190xBuildRules,
 		"p190x": brAlias(p190xPartIds),
+		...p192xBuildRules,
+		"p1920": brAlias(partIdRange('p',1921,1939)),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

@@ -21,6 +21,159 @@
 			"hole_diameter": "4.5",
 			"tgp_outer_corner_radius": "0",
 			"$fn": "24"
+		},
+		"-- p1920 series: atom-segmented in 1/2\" and then 1+1/2\" length increments": "",
+		"p1921": {
+			"size": "[\"1atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1922": {
+			"size": "[\"2atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1923": {
+			"size": "[\"3atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1924": {
+			"size": "[\"4atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1925": {
+			"size": "[\"5atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1926": {
+			"size": "[\"6atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1927": {
+			"size": "[\"7atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1928": {
+			"size": "[\"8atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1929": {
+			"size": "[\"9atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1930": {
+			"size": "[\"10atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1931": {
+			"size": "[\"11atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1932": {
+			"size": "[\"12atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1933": {
+			"size": "[\"15atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1934": {
+			"size": "[\"18atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1935": {
+			"size": "[\"21atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1936": {
+			"size": "[\"24atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1937": {
+			"size": "[\"27atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1938": {
+			"size": "[\"30atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
+		},
+		"p1939": {
+			"size": "[\"36atom\", \"1atom\", \"1atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom+v6hc",
+			"hole_diameter": "4.5",
+			"tgp_outer_corner_radius": "0",
+			"$fn": "24"
 		}
 	},
 	"fileFormatVersion": "1"
