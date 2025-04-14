@@ -1,5 +1,8 @@
-// CigarettHolder1Cap, v1.0
+// CigarettHolder1Cap, v1.2
 //
+// v1.2
+// - Updated version number to reflect that there is
+//   now a beveled bottom edge since SimpleCap0.2
 
 module __cigaretteholder1cap__end_params() { }
 
