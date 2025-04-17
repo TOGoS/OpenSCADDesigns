@@ -2,6 +2,27 @@
 
 import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
 
+//// Utility functions
+
+function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
+	for( const x of input ) yield fn(x);
+}
+function* flatMap<T,U>(input:Iterable<T>, fn:(x:T) => Iterable<U>) : Iterable<U> {
+	for( const x of input ) for( const y of fn(x) ) yield y;
+}
+
+function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
+	const res : {[k:string]: T} = {};
+	for( const obj of input ) {
+		for( const k in obj ) {
+			res[k] = obj[k];
+		}
+	}
+	return res;
+}
+
+
+
 // TODO: Check for env vars, search for the .com if not specified
 const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
@@ -263,9 +284,14 @@ function osdBuildRules(partId:string, opts:{
 	}
 	const imageSize = opts.imageSize ?? [256, 256];
 	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${imageSize.join('x')}.png`;
+
+	const prereqs = [];
+	prereqs.push(opts.inScadFile);
+	if( inConfigFile != undefined ) prereqs.push(inConfigFile);
 	
 	return {
 		[outStlPath]: {
+			prereqs,
 			invoke: async (ctx:BuildContext) => {
 				await mkdir(outDir);
 				await run(openscadCommand({
@@ -277,6 +303,7 @@ function osdBuildRules(partId:string, opts:{
 			},
 		},
 		[renderedPngPath]: {
+			prereqs,
 			invoke: async (ctx:BuildContext) => {
 				await mkdir(tempDir);
 				await run(openscadCommand({
@@ -308,26 +335,23 @@ function osdBuildRules(partId:string, opts:{
 	};
 }
 
+/** Build rules for multiple presets (and otherwise same settings) for one .scad */
+function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
+	cameraPosition?: Vec3<number>,
+	renderSize?: Vec2<number>,
+	imageSize?: Vec2<number>,
+}={}) : {[targetName:string]: BuildRule} {
+	return flattenObj(partIds.map(partId => osdBuildRules(partId, {
+		inScadFile,
+		presetName: partId,
+		...opts
+	})));
+}
+
 function partIdRange(pfx:string, start:number, end:number) : string[] {
 	const partIds : string[] = [];
 	for( let i = start; i <= end; i++ ) partIds.push(pfx+i);
 	return partIds;
-}
-function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
-	for( const x of input ) yield fn(x);
-}
-function* flatMap<T,U>(input:Iterable<T>, fn:(x:T) => Iterable<U>) : Iterable<U> {
-	for( const x of input ) for( const y of fn(x) ) yield y;
-}
-
-function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
-	const res : {[k:string]: T} = {};
-	for( const obj of input ) {
-		for( const k in obj ) {
-			res[k] = obj[k];
-		}
-	}
-	return res;
 }
 
 const p186xPartIds = partIdRange("p",1861,1869);
@@ -425,6 +449,10 @@ const builder = new Builder({
 		...p190xBuildRules,
 		"p190x": brAlias(p190xPartIds),
 		...p192xBuildRules,
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1916"], {
+			cameraPosition: [-20,-20,-30],
+			imageSize: [512,512],			
+		}),
 		"p1920": brAlias(partIdRange('p',1921,1939)),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},

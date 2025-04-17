@@ -581,6 +581,15 @@
 			"opposite_edge_style": "FFS-trimmed",
 			"slot_height": "19",
 			"$tgx11_offset": "-0.1"
+		},
+		"p1916": {
+			"description": "10-atom flat-backed FC with #6-32 threaded holes",
+			"$tgx11_offset": "-0.1",
+			"hole_style": "#6-32-UNC",
+			"length_ca": "[10, \"atom\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed"
 		}
 	},
 	"parameterSets": "",
