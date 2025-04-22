@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p1917": {
+			"style": "tailey",
+			"base_height": "6.35",
+			"base_width": "6.35",
+			"head_height": "1.8",
+			"head_width": "6.35",
+			"max_overhang": "1.5",
+			"stem_height": "1.8",
+			"stem_width": "3.175",
+			"$fn": "40"
+		}
+	},
+	"fileFormatVersion": "1"
+}

@@ -453,6 +453,10 @@ const builder = new Builder({
 			cameraPosition: [-20,-20,-30],
 			imageSize: [512,512],			
 		}),
+		...multiOsdBuildRules("2023/experimental/WSTYPE201630Nub1.scad", ["p1917"], {
+			cameraPosition: [ 20, 20, 20],
+			imageSize: [256, 256],
+		}),
 		"p1920": brAlias(partIdRange('p',1921,1939)),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
