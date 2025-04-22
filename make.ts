@@ -457,6 +457,10 @@ const builder = new Builder({
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/experimental/WSTYPE201630Nub1.scad", ["p1919"], {
+			cameraPosition: [ 10, 20, 5],
+			imageSize: [256, 256],
+		}),
 		...osdBuildRules("p1918", {
 			inScadFile: "2023/experimental/WSTYPE201630Plate1.scad",
 			cameraPosition: [-20, -20, 20],
