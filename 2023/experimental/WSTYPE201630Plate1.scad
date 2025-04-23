@@ -1,14 +1,19 @@
-// WSTYPE201630Plate1.0
+// WSTYPE201630Plate1.1
+//
+// Versions:
+// v1.1:
+// - 'improve' (perhaps) the grating
+// - option to make little holes for nails or those tailey things
 
-stem_width  = 3.175;
-head_width  = 6.35;
-max_overhang = 1.5;
 thickness   = 6.35;
-style = "round"; // ["round","tailey"]
+hole_style = "tailey"; // ["tailey","straight-3mm"]
 
 $fn = 24;
 
 module __whatever__end_params() { }
+
+stem_width  = 3.175;
+head_width  = 6.35;
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -24,7 +29,9 @@ function make_tailey_base_2d(offset=0) =
 
 chunk = 38.1;
 
-nub_hole_2d = make_tailey_base_2d(0.05);
+nub_hole_2d =
+	hole_style == "tailey" ? make_tailey_base_2d(0.05) :
+	togmod1_make_circle(d=3);
 
 inch = 25.4;
 
@@ -38,13 +45,22 @@ gridbeam_hole_positions = [
 
 gridbeam_hole = tog_holelib2_hole("THL-1006");
 
+// One triangle
 cake = togmod1_make_polygon(togpath1_rath_to_polypoints(["togpath1-rath",
 	["togpath1-rathnode", [0.5*chunk, -0.5*chunk], ["offset", -1.5]],
 	["togpath1-rathnode", [0.5*chunk, +0.5*chunk], ["offset", -1.5]],
 	["togpath1-rathnode", [0        ,  0        ], ["offset", -1.5]],
 ]));
+// Four triangles
 cakes = ["union",
    for( r=[0:90:270] ) ["rotate", [0,0,r], cake]
+];
+bake = togmod1_make_rect([chunk-2.9, chunk-2.9]);
+
+function make_lake(offset) = ["intersection",
+	togmod1_make_rect([3*chunk-12.7, 8*chunk]),
+	// togmod1_make_rounded_rect([3*chunk+offset*2, 6*chunk+offset*2], r=55+offset)
+	togpath1_make_rounded_beveled_rect([3*chunk, 6*chunk], 38.1, 12.7, offset=offset),
 ];
 
 togmod1_domodule(["difference",
@@ -55,12 +71,19 @@ togmod1_domodule(["difference",
 			for(pos=nub_hole_positions) ["translate", pos, nub_hole_2d],
 			
 		   ["intersection",
-				togmod1_make_rounded_rect([3*chunk - 12.7, 6*chunk - 12.7], r=(38.1-12.7), $fn=4),
-				
+				make_lake(0),
 				["union", for( xm=[-1:1:1] ) for( ym=[-3.5:1:3.5] ) ["translate", [xm,ym]*chunk, cakes]],
 			],
 		]
 	),
 	
 	for( pos=gridbeam_hole_positions ) ["translate", [pos[0],pos[1],thickness], gridbeam_hole],
+
+   // Hackety hack
+	togmod1_linear_extrude_z([thickness/2, thickness*3/2],
+		["intersection",
+			make_lake(0.1),
+			["union", for( xm=[-1:1:1] ) for( ym=[-3.5:1:3.5] ) ["translate", [xm,ym]*chunk, bake]],
+		]
+	),
 ]);

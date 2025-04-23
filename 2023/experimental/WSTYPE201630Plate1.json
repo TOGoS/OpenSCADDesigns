@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p1940": {
+			"hole_style": "straight-3mm",
+			"thickness": "6.35",
+			"$fn": "40"
+		}
+	},
+	"fileFormatVersion": "1"
+}
