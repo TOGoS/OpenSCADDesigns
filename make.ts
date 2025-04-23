@@ -461,7 +461,9 @@ const builder = new Builder({
 			cameraPosition: [ 10, 20, 5],
 			imageSize: [256, 256],
 		}),
-		...multiOsdBuildRules("2023/experimental/WSTYPE201630Plate1.scad", ["p1940"], {
+		...osdBuildRules("p1941", {
+			inScadFile: "2023/experimental/WSTYPE201630Plate1.scad",
+			presetName: "p1940",
 			cameraPosition: [-20, -20, 20],
 			imageSize: [512, 512],
 		}),
