@@ -549,7 +549,21 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-
+		"-- p196x: Like p186x but with an extra row of screw holes --": "",
+		"p1962": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"description": "",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"length_ca": "[2, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"slot_height": "0"
+		},
 		"-- other stuff --": "",
 		"p1755": {
 			"description": "10-atom flat-backed FC",

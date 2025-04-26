@@ -1,4 +1,4 @@
-// FrenchCleat-v1.14
+// FrenchCleat-v1.15
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -41,6 +41,8 @@
 // - Option to 'trim' (i.e. bevel) F corners
 // v1.14:
 // - Only apply minkowsky if slot_height <> 0
+// v1.15:
+// - Add option for holes in top row
 
 description = "";
 
@@ -52,6 +54,7 @@ length_ca = [6, "inch"];
 mating_edge_style = "S-trimmed"; // ["F", "F-trimmed", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS", "FFS-trimmed"]
 opposite_edge_style  = "FFS-trimmed"; // ["F", "F-trimmed", "S", "S-trimmed", "T", "T-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
 hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u", "#6-32-UNC", "1/4-20-UNC"]
+include_top_hole_row = false;
 slot_height = 0;
 
 mode = "X"; // ["X", "Z", "tester"]
@@ -82,6 +85,9 @@ module __fc202310__end_params() { }
 $fn = $preview ? 12 : 72;
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 $togthreads2_polyhedron_algorithm = "v3";
+
+inch = togridlib3_decode([1,"inch"]);
+atom = togridlib3_decode([1,"atom"]);
 
 length               = togridlib3_decode(length_ca);
 length_gb            = floor(togridlib3_decode(length_ca, unit=[1.5, "inch"]));
@@ -252,9 +258,9 @@ slot = slot_height == 0 ? hole : ["render", ["minkowski",
 hole_spacing =
 	(hole_style == "GB-counterbored" || hole_style == "THL-1002") ? 38.1 : 12.7;
 
-hole_rows = [0];
 
-inch = togridlib3_decode([1,"inch"]);
+
+hole_rows = [0, if(include_top_hole_row) 1*atom];
 
 tester_height = togridlib3_decode(height_ca) + togridlib3_decode([1,"chunk"]);
 tester_hull = tphl1_make_rounded_cuboid([tester_height, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
