@@ -449,6 +449,7 @@ const builder = new Builder({
 		...p190xBuildRules,
 		"p190x": brAlias(p190xPartIds),
 		...p192xBuildRules,
+		"p1920": brAlias(partIdRange('p',1921,1939)),
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1916"], {
 			cameraPosition: [-20,-20,-30],
 			imageSize: [512,512],			
@@ -467,7 +468,11 @@ const builder = new Builder({
 			cameraPosition: [-20, -20, 20],
 			imageSize: [512, 512],
 		}),
-		"p1920": brAlias(partIdRange('p',1921,1939)),
+		...osdBuildRules("p1942", {
+			inScadFile: "2023/phone-holder/MiniPCHolder1.scad",
+			cameraPosition: [-10, -20, 20],
+			imageSize: [512, 512],
+		}),
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1962"], {
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
