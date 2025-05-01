@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p1944": {
+			"height": "2inch",
+			"size": "[\"2atom\",\"2atom\"]",
+			"hole_style": "#6-32-UNC",
+			"concave_corner_radius": "1/2inch"
+		},
+		"p1945": {
+			"height": "2inch",
+			"size": "[\"1atom\",\"1atom\"]",
+			"hole_style": "#6-32-UNC"
+		},
+		"p1946": {
+			"height": "2inch",
+			"size": "[\"3atom\",\"1atom\"]",
+			"hole_style": "#6-32-UNC"
+		}
+	},
+	"fileFormatVersion": "1"
+}
