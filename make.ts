@@ -473,6 +473,11 @@ const builder = new Builder({
 			cameraPosition: [-10, -20, 20],
 			imageSize: [512, 512],
 		}),
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1943"], {
+			// Similar perspective to p165x: http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:434G5TB3POPCU6EN4XDL5U4BMFSLZ5EY.TLGMRPMX6ARKDRBFUSJH37IODHTF5H25EA3DQQI/p165x.html
+			cameraPosition: [20,20,20],
+			imageSize: [512,512],			
+		}),
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1962"], {
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],

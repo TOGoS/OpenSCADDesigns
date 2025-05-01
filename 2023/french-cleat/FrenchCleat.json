@@ -604,6 +604,20 @@
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
+		},
+		"p1943": {
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "atom-rows-f",
+			"description": "6-inch hatom-backed with THL-1005-5u holes",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "THL-1005-5u",
+			"include_top_hole_row": "false",
+			"length_ca": "[12, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"slot_height": "0"
 		}
 	},
 	"parameterSets": "",
