@@ -12,9 +12,24 @@
 			"hole_style": "#6-32-UNC"
 		},
 		"p1946": {
-			"height": "2inch",
 			"size": "[\"3atom\",\"1atom\"]",
+			"height": "2inch",
 			"hole_style": "#6-32-UNC"
+		},
+		"p1949": {
+			"size": "[\"2atom\", \"2atom\"]",
+			"height": "1.5inch",
+			"concave_corner_radius": "1/2inch",
+			"right_side_offset": "-1/4inch",
+			"hole_style": "#6-32-UNC",
+			"$fn": "32"
+		},
+		"p1948": {
+			"size": "[\"2atom\", \"2atom\"]",
+			"height": "1/2inch",
+			"concave_corner_radius": "1/2inch",
+			"hole_style": "straight-4.5mm",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"

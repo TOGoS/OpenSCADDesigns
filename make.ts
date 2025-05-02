@@ -482,7 +482,7 @@ const builder = new Builder({
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/phone-holder/Midblock2.scad", ["p1944","p1945","p1946"], {
+		...multiOsdBuildRules("2023/phone-holder/Midblock2.scad", ["p1944","p1945","p1946","p1948","p1949"], {
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
 		}),
