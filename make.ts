@@ -486,6 +486,10 @@ const builder = new Builder({
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/phone-holder/FrontPanel2.scad", ["p1947"], {
+			cameraPosition: [ 15,-20, 20],
+			imageSize: [384, 384],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

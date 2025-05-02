@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p1947": {
+			"size": "[\"2atom\", \"12atom\", \"4u\"]",
+			"hole_style": "THL-1001",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
