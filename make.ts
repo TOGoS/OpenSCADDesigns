@@ -490,6 +490,14 @@ const builder = new Builder({
 			cameraPosition: [ 15,-20, 20],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1951","p1952","p1953"], {
+			cameraPosition: [ 20, 20, 20],
+			imageSize: [256,256],
+		}),
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleatCrossSection.scad", ["p1954","p1955","p1956"], {
+			cameraPosition: [ 20, 20, 20],
+			imageSize: [256,256],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
