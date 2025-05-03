@@ -112,12 +112,14 @@ function getProcessQueue(name:string, maxConcurrency:number) : ProcessQueue {
 	return queue;
 }
 
-const dirsMade = new Set<FilePath>();
-async function mkdir(dir:FilePath) : Promise<void> {
-	if( dirsMade.has(dir) ) return RESOLVED_PROMISE;
-	await Deno.mkdir(dir, {recursive:true});
-	dirsMade.add(dir);
-	return RESOLVED_PROMISE;
+const dirsMade = new Map<FilePath,Promise<void>>();
+function mkdir(dir:FilePath) : Promise<void> {
+	let prom = dirsMade.get(dir);
+	if( prom == null ) {
+		prom = Deno.mkdir(dir, {recursive:true});
+		dirsMade.set(dir, prom);
+	}
+	return prom;
 }
 
 async function run(cmd:Commande) : Promise<void> {
@@ -276,8 +278,9 @@ function osdBuildRules(partId:string, opts:{
 		const size = [_size, _size];
 		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
 		crushedPngBuildRules[crushedPngPath] = {
-			prereqs: [renderedPngPath, tempDir],
+			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
+				await mkdir(tempDir);
 				await run(magickCommand(renderedPngPath, _size, ctx.targetName));
 			}
 		};
