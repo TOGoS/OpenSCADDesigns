@@ -1,10 +1,13 @@
-// French cleat cross-sections, v1.1
+// French cleat cross-sections, v1.2
 // 
 // v1.1:
 // - hole_diameter = 0 skips holes entirely
+// v1.2:
+// - Allow finer adjustments to height
+// - Fix hole positioning to work when there should be an odd number of holes
 
 thickness_inches = 0.75;
-nominal_height_inches = 4.5;
+nominal_height_inches = 4.5; // 0.01
 length_inches = 0.75;
 top_edge_slant = 1; // [-1, 0, 1]
 top_edge_trim_inches = 0.125;
@@ -56,7 +59,7 @@ linear_extrude(length) {
 				[-thickness, trim_bottom_y],
 			]);
 		}
-		if( hole_diameter > 0 ) for( y=[-round(height/2/hole_spacing)+0.5 : 1 : round(height/2/hole_spacing)-0.5] ) {
+		if( hole_diameter > 0 ) for( y=[-round(height/hole_spacing)/2+0.5 : 1 : round(height/hole_spacing)/2-0.5] ) {
 			translate([0, y*hole_spacing, 0]) circle(d=hole_diameter);
 		}
 	}

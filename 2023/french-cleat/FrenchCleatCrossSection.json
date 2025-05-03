@@ -1,7 +1,6 @@
 {
 	"parameterSets": {
 		"p1427": {
-			"$fn": "20",
 			"bottom_edge_slant": "-1",
 			"bottom_edge_trim_inches": "0.062",
 			"hole_diameter": "5",
@@ -17,7 +16,6 @@
 				"WSTYPE-4114-H3FS, 1/16\" trim",
 				"What you make with a 3+1/2\" board"
 			],
-			"$fn": "20",
 			"bottom_edge_slant": "1",
 			"bottom_edge_trim_inches": "0.375",
 			"hole_diameter": "5",
@@ -27,8 +25,40 @@
 			"thickness_inches": "0.75",
 			"top_edge_slant": "1",
 			"top_edge_trim_inches": "0.062"
+		},
+		"p1956": {
+			"bottom_edge_slant": "1",
+			"bottom_edge_trim_inches": "0.062",
+			"hole_diameter": "5",
+			"hole_spacing_inches": "0.75",
+			"length_inches": "0.75",
+			"nominal_height_inches": "3",
+			"thickness_inches": "0.75",
+			"top_edge_slant": "1",
+			"top_edge_trim_inches": "0.062"
+		},
+		"p1955": {
+			"bottom_edge_slant": "0",
+			"bottom_edge_trim_inches": "0.062",
+			"hole_diameter": "5",
+			"hole_spacing_inches": "0.75",
+			"length_inches": "0.75",
+			"nominal_height_inches": "2.25",
+			"thickness_inches": "0.75",
+			"top_edge_slant": "1",
+			"top_edge_trim_inches": "0.062"
+		},
+		"p1954": {
+			"bottom_edge_slant": "0",
+			"bottom_edge_trim_inches": "0.062",
+			"hole_diameter": "5",
+			"hole_spacing_inches": "0.75",
+			"length_inches": "0.75",
+			"nominal_height_inches": "1.5",
+			"thickness_inches": "0.75",
+			"top_edge_slant": "1",
+			"top_edge_trim_inches": "0.062"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }
