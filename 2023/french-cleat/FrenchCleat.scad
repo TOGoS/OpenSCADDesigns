@@ -1,4 +1,4 @@
-// FrenchCleat-v1.15
+// FrenchCleat-v1.16
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -43,6 +43,8 @@
 // - Only apply minkowsky if slot_height <> 0
 // v1.15:
 // - Add option for holes in top row
+// v1.16:
+// - Adjust pencil hole shape somewhat
 
 description = "";
 
@@ -315,8 +317,7 @@ fc_main =
 		let( height_chunks=togridlib3_decode(height_ca, unit=[1,"chunk"]) )
 		for( xm=[-height_chunks/2+0.5 : 1 : height_chunks/2] )
 		for( s=[-1, 1] )
-		["scale", [1,s,1], ["translate", [xm*chunk, -3/8*inch, 0], ["rotate", [90, 0, 0], make_cyllish([[-1, 2], [3/8*inch+1, 12]])]]],
-		// TODO: Subtract center-marking pencil-tip holes
+		["scale", [1,s,1], ["translate", [xm*chunk, -3/8*inch, 0], ["rotate", [90, 0, 0], make_cyllish([[-1, 3], [3,3], [13,8]])]]],
 	] :
 	assert(false, str("Unknown mode: '", mode, "'"));
 
