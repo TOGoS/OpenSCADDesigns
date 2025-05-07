@@ -501,6 +501,10 @@ const builder = new Builder({
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [256,256],
 		}),
+		...multiOsdBuildRules("2023/gridbeam/Gridrail2.scad", ["p1957","p1958"], {
+			cameraPosition: [-20,-20, 20],
+			imageSize: [256,256],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
