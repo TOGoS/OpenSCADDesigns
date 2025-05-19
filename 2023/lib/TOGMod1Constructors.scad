@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.8
+// TOGMod1Constructors-v1.9
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -29,6 +29,8 @@
 // - togmod1_make_circle will return empty shape (["union"]) when d=0
 // v1.8:
 // - Add togmod1_text
+// v1.9:
+// - togmod1_circle_points uses 3 as minimum circle point count instead of 6
 
 use <./TOGArrayLib1.scad>
 
@@ -99,13 +101,18 @@ function togmod1_make_rounded_rect(size, r) =
 	r == 0 ? togmod1_make_rect(size) :
 	togmod1_make_polygon(togmod1_rounded_rect_points(size,r,simplify_rounded_sides=true));
 
+/**
+ * Returns points for an approximation of a circle where points are at distance r from pos.
+ * Can be used to make other regular polygons, but the faces will be less than that
+ * distance from pos (do some trig if you want face distance, e.g. for a hex nut).
+ */
 function togmod1_circle_points(r, pos=[0,0], d=undef) =
 	assert( !is_undef(r) || !is_undef(d) )
 	assert(!is_undef(pos[0]))
 	assert(!is_undef(pos[1]))
 	let(finalizepos = togmod1__make_nd_vector_adder(pos))
 	let(r_ = !is_undef(r) ? r : d/2)
-	let(fn = max($fn, 6))
+	let(fn = max($fn, 3))
 	[for(i=[0 : 1 : fn-1]) finalizepos([r_*cos(i*360/fn), r_*sin(i*360/fn)])];
 
 function togmod1_make_circle(r, pos=[0,0], d=undef) =
