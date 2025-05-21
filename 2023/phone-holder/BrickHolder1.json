@@ -87,6 +87,26 @@
 			"top_cord_slot_depth": "0",
 			"top_cord_slot_diameter": "0",
 			"top_segmentation": "none"
+		},
+		"p1963": {
+			"description": "Holder for WSTYPE-201670 laptop USB-C power brick",
+			"back_segmentation": "atom",
+			"bottom_hole_size": "[42, 16]",
+			"bottom_segmentation": "none",
+			"brick_size": "[51, 29, 91]",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "none",
+			"margin": "1",
+			"mode": "holder",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "none",
+			"spacer_thickness": "12.7",
+			"top_cord_slot_depth": "0",
+			"top_cord_slot_diameter": "0",
+			"top_segmentation": "none",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"parameterSets": "",

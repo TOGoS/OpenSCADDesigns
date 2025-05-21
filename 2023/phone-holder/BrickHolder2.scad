@@ -1,4 +1,4 @@
-// BrickHolder2.10
+// BrickHolder2.11
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -44,6 +44,8 @@
 // v2.10:
 // - inner_rounding_radius can be specified
 // - bottom_hole_style = "full" to have no floor
+// v2.11:
+// - Optional bottom_hole_size, and handle some corner cases when it's zero or very small
 
 description = "";
 
@@ -55,6 +57,8 @@ block_size_atoms = [6,6,12];
 can_diameter = 0;
 
 bottom_hole_style = "standard"; // ["none","standard","full"]
+// Size of bottom hole when there is one; -1 for automatic (taking inner_offset into account)
+bottom_hole_size = [-1,-1]; // 0.1
 front_slot_style = "standard"; // ["none","standard","centered-gridbeam-9mm-holes"]
 back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
 
@@ -117,7 +121,9 @@ bottom_hole_size_ca = [
 	[block_size_atoms[1] - 2  , "atom"],
 ];
 
-bottom_hole_actual_size = [for(d=togridlib3_decode_vector(bottom_hole_size_ca)) d - inner_offset*2];
+bottom_hole_actual_size = [
+	for(i=[0,1]) max(0, bottom_hole_size[i] == -1 ? togridlib3_decode(bottom_hole_size_ca[i]) - inner_offset*2 : bottom_hole_size[i])
+];
 
 u     = togridlib3_decode([1, "u"    ]);
 atom  = togridlib3_decode([1, "atom" ]);
@@ -195,7 +201,11 @@ front_slot = tphl1_make_polyhedron_from_layer_function([
 	togmod1_rounded_rect_points(zs[1], r=2, pos=[0,-block_size[1]/2, zs[0]])
 );
 
-bottom_hole = tphl1_make_rounded_cuboid([bottom_hole_actual_size[0], bottom_hole_actual_size[1], block_size[2]*3], [2,2,0]);
+bottom_hole_min_dim = min(bottom_hole_actual_size[0], bottom_hole_actual_size[1]);
+bottom_hole_corner_r = min(bottom_hole_min_dim*127/256, 2);
+
+bottom_hole = bottom_hole_min_dim == 0 ? ["union"] :
+	tphl1_make_rounded_cuboid([bottom_hole_actual_size[0], bottom_hole_actual_size[1], block_size[2]*3], [bottom_hole_corner_r,bottom_hole_corner_r,0]);
 
 mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [90,0,0], tog_holelib2_hole(back_mounting_hole_style, depth=block_size[1]-cavity_actual_size[1])]);
 mounting_holes = ["union",
