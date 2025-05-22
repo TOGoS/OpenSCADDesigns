@@ -1,4 +1,4 @@
-// FrenchCleat-v1.16
+// FrenchCleat-v1.17
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -45,6 +45,9 @@
 // - Add option for holes in top row
 // v1.16:
 // - Adjust pencil hole shape somewhat
+// v1.17:
+// - top row threaded holes are only threaded halfway through
+//   to avoid generating invalid manifolds
 
 description = "";
 
@@ -238,7 +241,7 @@ function is_thread_hole_style(s) =
 // Make them pointy in the Y to make slots work out better:
 hole_rotation = [0,0,90];
 
-hole = ["render",
+row0_hole = ["render",
 	_hole_style == "GB-counterbored" ? counterbored_hole :
 	_hole_style == "coutnersnuk"     ? ["translate", [0,0,zp], tog_holelib2_countersunk_hole(8, 4, 2, zp-zn+1, inset=3)] :
 	_hole_style == "THL-1005-5u"     ? ["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole("THL-1005", inset=5*25.4/16)]] :
@@ -251,18 +254,37 @@ hole = ["render",
 		) :
 	["translate", [0,0,zp], ["rotate", hole_rotation, tog_holelib2_hole(_hole_style)]]
 ];
+// Assuming for now that row1 is shorter due to slanted top,
+// and therefore it doesn't make sense to make the threads as long,
+// eespecially since that results in bad manifolds?
+row1_hole = ["render",
+	is_thread_hole_style(_hole_style)?
+		togthreads2_make_threads(
+		   [[-zp-0.5,1], [-zp+1,1], [-zp+2,0],  [0,0], [1,1], [zp+0.5,1]],
+			_hole_style,
+			r_offset = 0.2, // Usually good!
+			end_mode = "blunt"
+		) :
+	row0_hole
+];
 
-slot = slot_height == 0 ? hole : ["render", ["minkowski",
-	togmod1_make_cuboid([0.01,slot_height,0.01]),
-	hole
-]];
+
+function hole_to_slot(slot_height, hole) = 
+	slot_height == 0 ? hole :
+	["render", ["minkowski",
+		togmod1_make_cuboid([0.01,slot_height,0.01]),
+		hole
+	]];
+
+row0_slot = hole_to_slot(slot_height, row0_hole);
+row1_slot = hole_to_slot(slot_height, row1_hole);
 
 hole_spacing =
 	(hole_style == "GB-counterbored" || hole_style == "THL-1002") ? 38.1 : 12.7;
 
 
 
-hole_rows = [0, if(include_top_hole_row) 1*atom];
+hole_rows = [[0, row0_slot], if(include_top_hole_row) [1*atom, row1_slot]];
 
 tester_height = togridlib3_decode(height_ca) + togridlib3_decode([1,"chunk"]);
 tester_hull = tphl1_make_rounded_cuboid([tester_height, 1.5*inch, length], [1/2*inch, 1/2*inch, 0]);
@@ -304,8 +326,8 @@ fc_main =
 	mode == "X" ? ["difference",
 		make_textured_fc_hull("X", length, backside_texture),
 		
-		for( y=hole_rows )
-		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, y], slot]]
+		for( ys=hole_rows )
+		for( xm=[-length/hole_spacing/2 + 0.5 : 1 : length/hole_spacing/2] ) ["x-debug", ["translate", [xm*hole_spacing, ys[0]], ys[1]]]
 	] :
 	mode == "Z" ? make_fc_hull("Z", length, fc_surface_offset=fc_surface_offset) :
 	mode == "tester" ? ["difference",

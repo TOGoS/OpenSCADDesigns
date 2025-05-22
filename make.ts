@@ -481,10 +481,6 @@ const builder = new Builder({
 			cameraPosition: [20,20,20],
 			imageSize: [512,512],			
 		}),
-		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1962"], {
-			cameraPosition: [ 20, 20, 20],
-			imageSize: [384, 384],
-		}),
 		...multiOsdBuildRules("2023/phone-holder/Midblock2.scad", ["p1944","p1945","p1946","p1948","p1949"], {
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
@@ -513,6 +509,11 @@ const builder = new Builder({
 			cameraPosition: [-15,-20, 20],
 			imageSize: [256,256],
 		}),
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1971", "p1972", "p1973", "p1974", "p1975", "p1976", "p1977", "p1978", "p1979"], {
+			cameraPosition: [ 20, 20, 20],
+			imageSize: [384, 384],
+		}),
+		"p1970": brAlias(partIdRange('p',1971,1979)),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

@@ -549,20 +549,123 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
-		"-- p196x: Like p186x but with an extra row of screw holes --": "",
-		"p1962": {
-			"$tgx11_offset": "-0.1",
+		"-- p197x: Like p186x but with an extra row of screw holes --": "",
+		"p1971": {
+			"description": "1/2-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[1, \"atom\"]",
 			"backside_texture": "atom-rows-f",
-			"description": "",
 			"fc_surface_offset": "0",
 			"height_ca": "[1.5, \"inch\"]",
 			"hole_style": "#6-32-UNC",
 			"include_top_hole_row": "true",
-			"length_ca": "[2, \"atom\"]",
 			"mating_edge_style": "S-trimmed-C",
-			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed-B",
-			"slot_height": "0"
+			"$tgx11_offset": "-0.1"
+		},
+		"p1972": {
+			"description": "1-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[2, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1973": {
+			"description": "1+1/2-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[3, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1974": {
+			"description": "2-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[4, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1975": {
+			"description": "2+1/2-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[5, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1976": {
+			"description": "3-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[6, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1977": {
+			"description": "3+1/2-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[7, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1978": {
+			"description": "4-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[8, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
+		},
+		"p1979": {
+			"description": "4+1/2-inch FC with two rows of #6-32 threaded holes",
+			"mode": "X",
+			"length_ca": "[9, \"atom\"]",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "#6-32-UNC",
+			"include_top_hole_row": "true",
+			"mating_edge_style": "S-trimmed-C",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"$tgx11_offset": "-0.1"
 		},
 		"-- other stuff --": "",
 		"p1755": {
@@ -658,6 +761,5 @@
 			"slot_height": "0"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }
