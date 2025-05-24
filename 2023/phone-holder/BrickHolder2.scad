@@ -1,4 +1,4 @@
-// BrickHolder2.11
+// BrickHolder2.12
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -46,6 +46,9 @@
 // - bottom_hole_style = "full" to have no floor
 // v2.11:
 // - Optional bottom_hole_size, and handle some corner cases when it's zero or very small
+// v2.12:
+// - 'standard2' front slot, which is just rounded a bit at the top,
+//   because Renee asked for that
 
 description = "";
 
@@ -59,7 +62,7 @@ can_diameter = 0;
 bottom_hole_style = "standard"; // ["none","standard","full"]
 // Size of bottom hole when there is one; -1 for automatic (taking inner_offset into account)
 bottom_hole_size = [-1,-1]; // 0.1
-front_slot_style = "standard"; // ["none","standard","centered-gridbeam-9mm-holes"]
+front_slot_style = "standard"; // ["none","standard","standard2","centered-gridbeam-9mm-holes"]
 back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
 
 top_cord_slot_depth    = 0; // 0.01
@@ -129,9 +132,6 @@ u     = togridlib3_decode([1, "u"    ]);
 atom  = togridlib3_decode([1, "atom" ]);
 chunk = togridlib3_decode([1, "chunk"]);
 
-top_slot_width = cavity_actual_size[0] - 6;
-bottom_slot_width = atom; // Or whatever; could be configurable
-
 function dimstr(dims, suffix, i=0) =
 	len(dims) == i ? "" :
 	str(i > 0 ? " x " : "", dims[i], suffix, dimstr(dims, suffix, i+1));
@@ -192,14 +192,24 @@ cavity = //["translate", [0,0,block_size[2]], tphl1_make_rounded_cuboid([cavity_
 	);
 
 function widthcurve(t) = t <= 0 ? 0 : t >= 1 ? 1 : 0.5 - 0.5*cos(t*180);
-front_slot = tphl1_make_polyhedron_from_layer_function([
-	//[-100             , [bottom_hole_size[0], block_size[1]+bottom_hole_size[1]]],
-	//[block_size[2]+100, [bottom_hole_size[0], block_size[1]+bottom_hole_size[1]]],
-	for( z = [-100, for(z=[-1:5:block_size[2]+1]) z, block_size[2]+100] )
-		[z, [bottom_slot_width + widthcurve(z / block_size[2]) * (top_slot_width-bottom_slot_width), block_size[1]]],
-], function( zs )
+function make_front_slot(zparams) = tphl1_make_polyhedron_from_layer_function(zparams, function( zs )
 	togmod1_rounded_rect_points(zs[1], r=2, pos=[0,-block_size[1]/2, zs[0]])
 );
+
+function make_standard_front_slot(bottom_slot_width, top_slot_width) = make_front_slot([
+	for( z = [-100, for(z=[-1:5:block_size[2]+1]) z, block_size[2]+100] )
+		[z, [bottom_slot_width + widthcurve(z / block_size[2]) * (top_slot_width-bottom_slot_width), block_size[1]]],
+]);
+function make_toprounded_front_slot(bottom_slot_width, top_slot_width, r) =
+	let( cz = block_size[2]-r )
+make_front_slot([
+	for( z = [-100, for(z=[-1:5:cz]) z] )
+		[z, [bottom_slot_width + widthcurve(z / cz) * (top_slot_width-bottom_slot_width), block_size[1]]],
+	for( i=[0:1:$fn/4] ) let(a=i*360/$fn)
+		[cz + r*sin(a), [top_slot_width + 2*r*(1-cos(a)), block_size[1]]],
+	[block_size[2]+100, [top_slot_width + 2*r, block_size[1]]],
+]);
+
 
 bottom_hole_min_dim = min(bottom_hole_actual_size[0], bottom_hole_actual_size[1]);
 bottom_hole_corner_r = min(bottom_hole_min_dim*127/256, 2);
@@ -249,7 +259,8 @@ features = []; // Might make configurable as an 'escape hatch' of sorts
 effective_features = [
 	each features,
 	if(bottom_hole_style == "standard") "bottom-hole",
-	if(front_slot_style == "standard") "front-slot",
+	if(front_slot_style == "standard") "standard-front-slot",
+	if(front_slot_style == "standard2") "standard2-front-slot",
 	if(front_slot_style == "centered-gridbeam-9mm-holes") "front-centered-gridbeam-9mm-holes",
 	if(top_cord_slot_diameter > 0 && top_cord_slot_depth > 0) "top-cord-slot",
 ];
@@ -269,7 +280,8 @@ pre_tgx_segmented_brick_holder = ["difference",
 	for( f=effective_features )
 		f == "" ? ["union"] :
 		f == "bottom-hole" ? bottom_hole :
-		f == "front-slot" ? maybedebug(debug_front_slot_enabled, front_slot) :
+		f == "standard-front-slot" ? maybedebug(debug_front_slot_enabled, make_standard_front_slot(bottom_slot_width=atom, top_slot_width = cavity_actual_size[0] - 6)) :
+		f == "standard2-front-slot" ? maybedebug(debug_front_slot_enabled, make_toprounded_front_slot(bottom_slot_width=atom, top_slot_width = cavity_actual_size[0] - 6.35, r=3.175)) :
 		f == "front-centered-gridbeam-9mm-holes" ? front_gridbeam_holes :
 		f == "top-cord-slot" ? top_cord_slot :
 		assert(false, str("Unrecognized feature: '", f, "'")),
