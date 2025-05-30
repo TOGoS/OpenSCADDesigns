@@ -489,7 +489,7 @@ const builder = new Builder({
 			cameraPosition: [ 15,-20, 20],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1951","p1952","p1953","p1967"], {
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1951","p1952","p1953","p1967","p1968"], {
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [256,256],
 		}),

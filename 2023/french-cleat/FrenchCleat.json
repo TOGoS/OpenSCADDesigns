@@ -772,6 +772,19 @@
 			"mode": "tester",
 			"opposite_edge_style": "F",
 			"slot_height": "0"
+		},
+		"p1968": {
+			"description": "Tester for WSTYPE-4114-H3.0FS",
+			"backside_texture": "flat",
+			"fc_surface_offset": "-0.1",
+			"height_ca": "[3, \"inch\"]",
+			"hole_style": "GB-counterbored",
+			"include_top_hole_row": "false",
+			"length_ca": "[1.5, \"inch\"]",
+			"mating_edge_style": "S",
+			"mode": "tester",
+			"opposite_edge_style": "FS",
+			"slot_height": "0"
 		}
 	},
 	"fileFormatVersion": "1"
