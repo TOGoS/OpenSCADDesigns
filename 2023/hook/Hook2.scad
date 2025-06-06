@@ -1,4 +1,4 @@
-// Hook2.3
+// Hook2.4
 //
 // Changes:
 // v2.1
@@ -11,13 +11,19 @@
 // - Changes to hole position calculation;
 //   should be the same for wide hooks (like p1418 and p1419)
 //   but work better for narrow hooks (like p1609)
+// v2.4:
+// - Option for back_curve_inner_radius_u separate from outer radius
+// - Fix front lip height to avoid invalid shapes
 
 total_height_u = 48;
 front_height_u = 16;
 thickness_u    =  2;
 outer_depth_u  = 24;
 front_curve_radius_u = 999; // 0.01
+// Will be clamped as necessary based on hook depth
 back_curve_radius_u  = 999; // 0.01
+// Will be clamped as necessary based on outer radius and hook depth; 0 to follow outer
+back_curve_inner_radius_u = 0; // 0.01
 width_u        = 24;
 
 module __asdmlkaslkd__end_params() { }
@@ -40,9 +46,10 @@ y2 = front_height_u*u;
 y3 = total_height_u*u;
 
 r_c = thickness/3;
-r_bo = min( back_curve_radius_u * u, y3-y0 - r_c - 0.25, (x2-x0)/2 - 0.25);
+r_bo_max = min(y3-y0 - r_c - 0.25, (x2-x0)/2 - 0.25);
+r_bo = min( back_curve_radius_u * u, r_bo_max);
 r_fo = min(front_curve_radius_u * u, y2-y0 - r_c - 0.25, (x2-x0)/2 - 0.25);
-r_bi = max(r_bo - thickness, 0);
+r_bi = min(r_bo_max - thickness, max(back_curve_inner_radius_u * u, r_bo - thickness, 0));
 r_fi = max(r_fo - thickness, 0);
 
 function make_hook_rath(y2, y3) = ["togpath1-rath",
@@ -73,11 +80,11 @@ body = tphl1_make_polyhedron_from_layer_function([
 	// the curve might need to be smashed down, which for now I just do by scaling.
 	// It might be better to calculate the back and front points completely separately!
 	// This would complicate the 3Dification of the raths, though.
-	let(front_rounding_depth = min(z_corner_radius, max(0, y2 - r_fo - 0.25)))
+	let(front_rounding_depth = min(z_corner_radius, max(0, y2 - r_fo - r_c - 0.25))) // Not sure this is right?
 	let( back_rounding_depth = min(z_corner_radius, max(0, y3 - r_bo - 0.25)))
 	let(polypoints = togpath1_rath_to_polypoints(make_hook_rath(
-		y2 + p[1]*front_rounding_depth,
-		y3 + p[1]* back_rounding_depth
+		y2 + p[1] * front_rounding_depth,
+		y3 + p[1] *  back_rounding_depth
 	)))
 	togvec0_offset_points(polypoints, p[0])
 );

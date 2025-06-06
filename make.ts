@@ -513,6 +513,10 @@ const builder = new Builder({
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/hook/Hook2.scad", ["p1969"], {
+			cameraPosition: [-20,-20, 30],
+			imageSize: [384, 384],
+		}),
 		"p1970": brAlias(partIdRange('p',1971,1979)),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
