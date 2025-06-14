@@ -517,7 +517,10 @@ const builder = new Builder({
 			cameraPosition: [-20,-20, 30],
 			imageSize: [384, 384],
 		}),
-		"p1970": brAlias(partIdRange('p',1971,1979)),
+		...multiOsdBuildRules("2023/spacer/UnistrutMountingWasher1.scad", ["p1992"], {
+			cameraPosition: [-10,-20, 20],
+			imageSize: [256, 256],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

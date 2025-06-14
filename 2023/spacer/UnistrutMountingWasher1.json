@@ -1,0 +1,9 @@
+{
+	"parameterSets": {
+		"p1992": {
+			"$fn": "24",
+			"hole_style": "straight-5mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
