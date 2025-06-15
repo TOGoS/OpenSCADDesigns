@@ -1,4 +1,4 @@
-// TOGHoleLib2.23
+// TOGHoleLib2.24
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -61,6 +61,10 @@
 // - THL-1009: Counterbored for #8 pan head
 // v2.23
 // - THL-1010: Counterbored for #6 pan head
+// v2.24:
+// - Add a separate counterbore_inset parameter that is added to inset only for counterbored holes.
+//   This way callers don't need to have special-case logic for counterbored/non-counterbored holes
+//   when they want to override counterbore depth but not mess with inset of other things.
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -241,24 +245,31 @@ function tog_holelib2_hole(
 	flange_radius=undef,
 	// Overridable for some styles
 	bore_d=undef,
-	remedy_depth=undef
+	remedy_depth=undef,
+	// Inset to be applied to counterbored but not countersunk holes; added to inset if both defined
+	counterbore_inset=undef
 ) =
 	let(inch = 25.4)
+	let(cb_inset =
+		is_undef(counterbore_inset) && is_undef(inset) ? undef :
+		(is_undef(counterbore_inset) ? 0 : counterbore_inset) +
+		(is_undef(inset) ? 0 : inset)
+	)
 	type_name == "none" ? ["union"] :
 	type_name == "THL-1001" ? tog_holelib2_hole1001(depth, overhead_bore_height, inset=inset) :
 	type_name == "THL-1002" ? tog_holelib2_hole1002(depth, overhead_bore_height, inset=inset, bore_d=bore_d) :
-	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1003" ? tog_holelib2_hole1003(depth, overhead_bore_height, inset=cb_inset) :
 	type_name == "THL-1004" ? tog_holelib2_countersunk_hole(8, 4, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	type_name == "THL-1005" ? tog_holelib2_hole1005(depth, overhead_bore_height, inset=inset) :
-	type_name == "THL-1006" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=inset, flange_radius=flange_radius) :
+	type_name == "THL-1006" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=cb_inset, flange_radius=flange_radius) :
 	type_name == "THL-1006-3/16in" ? tog_holelib2_hole1006(depth, overhead_bore_height, inset=3/16*inch, flange_radius=flange_radius) :
-	type_name == "THL-1007" ? tog_holelib2_hole1007(depth, overhead_bore_height, inset=inset) :
+	type_name == "THL-1007" ? tog_holelib2_hole1007(depth, overhead_bore_height, inset=cb_inset) :
 	type_name == "THL-1008" ? tog_holelib2_countersunk_hole(8, 4.5, 2, depth, overhead_bore_height=overhead_bore_height, inset=inset) :
 	type_name == "THL-1009" ? tog_holelib2_counterbored_with_remedy_hole(
 		counterbore_d = 9.5,
 		shaft_d = 5,
 		depth = depth,
-		inset = is_undef(inset) ? 3.175 : inset,
+		inset = is_undef(cb_inset) ? 3.175 : cb_inset,
 		overhead_bore_height = overhead_bore_height,
 		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth
 	) :
@@ -266,7 +277,7 @@ function tog_holelib2_hole(
 		counterbore_d = 8,
 		shaft_d = 4.5,
 		depth = depth,
-		inset = is_undef(inset) ? 3.175 : inset,
+		inset = is_undef(cb_inset) ? 3.175 : cb_inset,
 		overhead_bore_height = overhead_bore_height,
 		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth
 	) :
@@ -278,7 +289,7 @@ function tog_holelib2_hole(
 		remedy_depth = is_undef(remedy_depth) ? 0 : remedy_depth,
 		inset = is_undef(inset) ? 5 : inset
 	) :
-	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(inset, 2)) :
+	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(cb_inset, 2)) :
 	let( tokens = togstr1_tokenize(type_name, "-", 2) )
 	tokens[0] == "straight" ? (
 		let( quantr = togstr1_parse_quantity(tokens[1]) )
