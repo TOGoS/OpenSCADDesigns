@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p1993": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"atom_hole_style": "magnet-hole",
+			"block_height_u": "12",
+			"block_size_chunks": "[2, 2]",
+			"bottom_magnet_hole_depth": "2.4",
+			"bottom_magnet_hole_diameter": "6.3",
+			"chunk_hole_style": "THL-1002",
+			"floor_thickness_u": "3",
+			"thickness_u": "2",
+			"thread_render_fn": "48",
+			"width_u": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}

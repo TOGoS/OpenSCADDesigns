@@ -1,4 +1,4 @@
-// Clarp2506.0.3
+// Clarp2506.0.4
 // 
 // The Clarp2505 profile, but in an octagon!
 // And maybe with 1+1/4-7 threads
@@ -9,23 +9,46 @@
 // - Fix some indentation
 // v0.3:
 // - 1+1/4-7-UNC threads!
-// 
-// TODO: Make it a TOGridPile block
+// v0.4:
+// - Make it a TOGridPile block
 
 width_u = 24;
 block_height_u = 12;
 thickness_u = 2;
+block_size_chunks = [1,1];
+
+atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom","magnet-hole"]
+chunk_hole_style = "none";
+
+/* [Bottom] */
+
+bottom_magnet_hole_diameter = 6.3;
+bottom_magnet_hole_depth    = 2.4;
+
+/* [detail] */
+
+thread_r_offset = 0.2;
+bottom_foot_bevel = 0.4; // 0.1
+
+$tgx11_offset = -0.1;
 $fn = 24;
 thread_render_fn = 48;
 
+module __clarp2506__end_params() { }
+
+use <../lib/TGx11.1Lib.scad>
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGridLib3.scad>
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGThreads2.scad>
 
-u = 254/160;
+$togridlib3_unit_table = tgx11_get_default_unit_table();
+
+u = togridlib3_decode([1, "u"]);
 
 thickness = thickness_u * u;
 
@@ -71,19 +94,42 @@ pd2 = mirror_points([
 
 // togmod1_linear_extrude_z([0, thickness], togmod1_make_polygon([for(p=pd1) p*254/160])));
 
-togmod1_domodule(["difference",
-	togmod1_linear_extrude_z([0, block_height_u*u], togmod1_make_rounded_rect([width_u*u, width_u*u], 3*u)),
-	["intersection",
+// Bunch of stuff copypastad from p1944.scad
+
+block_size = [for(t=togridlib3_decode_vector(block_size_chunks)) t, block_height_u*u];
+
+atom_bottom_subtractions = [
+	if( atom_hole_style == "magnet-hole" ) tphl1_make_z_cylinder(d=bottom_magnet_hole_diameter, zrange=[-1, bottom_magnet_hole_depth]),
+	if( atom_hole_style == "straight-5mm" ) tphl1_make_z_cylinder(d=5, zrange=[-20, block_size[2]+20]),
+   if( atom_hole_style == "THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20)],
+	if( atom_hole_style == "deep-THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20, inset=3)],
+];
+
+function bottom_hole_positions(size_chunks) =
+let( chunk = togridlib3_decode([1,"chunk"]) )
+let(  atom = togridlib3_decode([1,"atom" ]) )
+[
+	for(yc=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2])
+	for(xc=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2])
+	for(apos=[[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]])
+	[xc*chunk + apos[0]*atom, yc*chunk + apos[1]*atom]
+];
+
+floor_thickness_u = 3;
+
+chunk_cavity = ["render", ["union",
+	["render",["intersection",
 		// Main cavity
 		tphl1_make_polyhedron_from_layer_function([
-			[2, -4],
-			[4, -2],
-			[block_height_u * 2, -2]
+			[floor_thickness_u  , -4],
+			[floor_thickness_u+2, -2],
+			[block_height_u * 2 , -2]
 		], function(zo) togvec0_offset_points(
 			togpath1_rath_to_polypoints(togpath1_make_rectangle_rath(
 				let(w=(width_u)*u)
 				[w, w],
-				[["bevel", 3*u], ["round", 3*u], ["offset", zo[1]*u]]
+				assert(zo[1] >= -4, str("offset too big; zo = ", zo))
+				[["bevel", 3*u], ["round", 4*u], ["offset", zo[1]*u + 0.1]]
 			)),
 			zo[0]*u
 		)),
@@ -102,14 +148,33 @@ togmod1_domodule(["difference",
 			)),
 			zo[0]*u
 		)),
-	],
+	]],
 	togthreads2_make_threads(
 	   togthreads2_simple_zparams([
 		   [u * (block_height_u - 6), 0],
 			[u *  block_height_u + 1 , 0],
 		], 0, 0),
 		"1+1/4-7-UNC",
-		r_offset = 0.2,
+		r_offset = thread_r_offset,
+		thread_origin_z = block_height_u *u,
 		$fn = $preview ? $fn : max($fn,thread_render_fn)
 	),
+	["translate", [0,0,floor_thickness_u*u], ["render", tog_holelib2_hole(chunk_hole_style, counterbore_inset=min(1*u, floor_thickness_u*u/2), depth=5*u)]],
+]];
+
+togmod1_domodule(
+let(chunk = togridlib3_decode([1, "chunk"]))
+["difference",
+	tgx11_block(
+		[[block_size_chunks[0], "chunk"], [block_size_chunks[1], "chunk"], [block_height_u, "u"]],
+		bottom_segmentation = "chatom",
+		bottom_foot_bevel   = bottom_foot_bevel,
+		top_segmentation    = "block",
+		atom_bottom_subtractions = atom_bottom_subtractions,
+		lip_height = 1.6
+	),
+	
+	for(yc=[-block_size_chunks[1]/2+0.5 : 1 : block_size_chunks[1]/2])
+	for(xc=[-block_size_chunks[0]/2+0.5 : 1 : block_size_chunks[0]/2])
+	["translate", [xc*chunk, yc*chunk], chunk_cavity],
 ]);

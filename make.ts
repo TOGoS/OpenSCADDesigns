@@ -521,6 +521,10 @@ const builder = new Builder({
 			cameraPosition: [-10,-20, 20],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/experimental/Clarp2506.scad", ["p1993"], {
+			cameraPosition: [-10,-20, 20],
+			imageSize: [512, 512],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
