@@ -1,10 +1,12 @@
-// Clarp2506.0.1
+// Clarp2506.0.2
 // 
 // The Clarp2505 profile, but in an octagon!
 // And maybe with 1+1/4-7 threads
 // 
 // v0.1:
 // - Illustrate basic idea
+// v0.2:
+// - Fix some indentation
 // 
 // TODO: Make it a TOGridPile block
 // TODO: UNC threads
@@ -73,27 +75,27 @@ togmod1_domodule(["difference",
 			[2, -4],
 			[4, -2],
 			[block_height_u * 2, -2]
-	   ], function(zo) togvec0_offset_points(
+		], function(zo) togvec0_offset_points(
 			togpath1_rath_to_polypoints(togpath1_make_rectangle_rath(
 				let(w=(width_u)*u)
 				[w, w],
 				[["bevel", 3*u], ["round", 3*u], ["offset", zo[1]*u]]
 			)),
 			zo[0]*u
-	   )),
+		)),
 		tphl1_make_polyhedron_from_layer_function([
 			[             0  , block_height_u-3],
 			[block_height_u-2,               -3],
 			[block_height_u-1,               -3],
 			[block_height_u  ,               -2],
 			[block_height_u*2, block_height_u-2],
-	   ], function(zo) togvec0_offset_points(
+		], function(zo) togvec0_offset_points(
 			togpath1_rath_to_polypoints(togpath1_make_polygon_rath(
 				(width_u/2 + zo[1])*u / cos(22.5),
 				rotation = 22.5,
 				$fn = 8
 			)),
 			zo[0]*u
-	   )),
-	 ]
+		)),
+	]
 ]);
