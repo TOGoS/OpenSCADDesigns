@@ -1,4 +1,4 @@
-// TOGThreads2.26
+// TOGThreads2.27
 // 
 // Versions:
 // v2.25:
@@ -7,16 +7,20 @@
 // - Remove an echo
 // v2.26:
 // - 'extend' parameter to togthreads2_simple_zparams
+// v2.27:
+// - $togthreads2_polyhedron_algorithm effectively defaults to 'v3'
+// - Remove request for apparently unused dynamic variables from documentation
 // 
 // To use this library, set the following dynamic variables:
 // 
-//   $togridlib3_unit_table = tgx11_get_default_unit_table();
-//   $tgx11_offset          = -0.1;
-//   $togthreads2_polyhedron_algorithm = "v3"
+//   $togthreads2_polyhedron_algorithm = "v3" (optional)
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+
+function togthreads2__get_polyhedron_algorithm() =
+	is_undef($togthreads2_polyhedron_algorithm) ? "v3" : $togthreads2_polyhedron_algorithm;
 
 //// On 'thread Z origin'
 
@@ -315,7 +319,7 @@ function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", 
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
 	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset) :
 	let( type23 = togthreads2__get_thread_type23(spec1) )
-	$togthreads2_polyhedron_algorithm == "v2" ?
+	togthreads2__get_polyhedron_algorithm() == "v2" ?
 		togthreads2__mkthreads_v2(
 			zparams, type23,
 			direction = direction,
