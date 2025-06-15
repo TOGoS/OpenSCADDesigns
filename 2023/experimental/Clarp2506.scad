@@ -1,4 +1,4 @@
-// Clarp2506.0.2
+// Clarp2506.0.3
 // 
 // The Clarp2505 profile, but in an octagon!
 // And maybe with 1+1/4-7 threads
@@ -7,20 +7,23 @@
 // - Illustrate basic idea
 // v0.2:
 // - Fix some indentation
+// v0.3:
+// - 1+1/4-7-UNC threads!
 // 
 // TODO: Make it a TOGridPile block
-// TODO: UNC threads
 
 width_u = 24;
 block_height_u = 12;
 thickness_u = 2;
 $fn = 24;
+thread_render_fn = 48;
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGVecLib0.scad>
+use <../lib/TOGThreads2.scad>
 
 u = 254/160;
 
@@ -71,6 +74,7 @@ pd2 = mirror_points([
 togmod1_domodule(["difference",
 	togmod1_linear_extrude_z([0, block_height_u*u], togmod1_make_rounded_rect([width_u*u, width_u*u], 3*u)),
 	["intersection",
+		// Main cavity
 		tphl1_make_polyhedron_from_layer_function([
 			[2, -4],
 			[4, -2],
@@ -83,6 +87,7 @@ togmod1_domodule(["difference",
 			)),
 			zo[0]*u
 		)),
+		// Clippable sublip
 		tphl1_make_polyhedron_from_layer_function([
 			[             0  , block_height_u-3],
 			[block_height_u-2,               -3],
@@ -97,5 +102,14 @@ togmod1_domodule(["difference",
 			)),
 			zo[0]*u
 		)),
-	]
+	],
+	togthreads2_make_threads(
+	   togthreads2_simple_zparams([
+		   [u * (block_height_u - 6), 0],
+			[u *  block_height_u + 1 , 0],
+		], 0, 0),
+		"1+1/4-7-UNC",
+		r_offset = 0.2,
+		$fn = $preview ? $fn : max($fn,thread_render_fn)
+	),
 ]);
