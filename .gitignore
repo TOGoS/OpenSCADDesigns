@@ -4,3 +4,4 @@
 *.gcode
 /test-output.stl
 /2023/print-archive
+!/2023/misc/p1994-obj_4_Hook-v10.stl
