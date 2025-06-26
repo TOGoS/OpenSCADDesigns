@@ -12,10 +12,17 @@ length_u = 2;
 
 part = "both"; // ["male", "female", "both"]
 bottom_corner_shape = "footed"; // ["footed","beveled"]
+hole_style = "THL-1006"; 
+hole_spacing_u = 24;
+slot_length_u = 4;
 $tgx11_offset = -0.1;
+$fn = 24;
+
+module __clarp2505__end_params() { }
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGridLib3.scad>
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1Constructors.scad>
 
 u = 254/160;
@@ -89,7 +96,13 @@ function clarp_pd_to_polypoints(pd) =
 	[for(p=pd) clarp_pd_to_vec2(p, u, $tgx11_offset)];
 
 function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0]) =
-	togmod1_linear_extrude_z(zrange, togmod1_make_polygon(clarp_pd_to_polypoints(pd)));
+	let(u = togridlib3_decode([1, "u"]))
+	let(hole = ["render", ["rotate", [-90,0,0], tog_holelib2_slot(hole_style, [-4*u, 0*u, 4*u], [[0,-slot_length_u*u/2], [0,slot_length_u*u/2]])]])
+	let(hole_spacing = hole_spacing_u*u)
+	["difference",
+		togmod1_linear_extrude_z(zrange, togmod1_make_polygon(clarp_pd_to_polypoints(pd))),
+		["union", for(zc=[zrange[0]/hole_spacing + 0.5 : 1 : zrange[1]/hole_spacing]) ["translate", [floor_posori[0], floor_posori[1], zc*hole_spacing], ["rotate", [0,0,floor_posori[2]], hole]]],
+	];
 
 function make_the_thing(part) =
 	part == "both" ? ["union",

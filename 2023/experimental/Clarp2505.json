@@ -1,0 +1,27 @@
+{
+	"parameterSets": {
+		"p2001": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"bottom_corner_shape": "footed",
+			"hole_spacing_u": "24",
+			"hole_style": "THL-1006",
+			"length_u": "48",
+			"part": "male",
+			"slot_length_u": "4",
+			"width_u": "24"
+		},
+		"p2002": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"bottom_corner_shape": "footed",
+			"hole_spacing_u": "24",
+			"hole_style": "THL-1006",
+			"length_u": "48",
+			"part": "female",
+			"slot_length_u": "4",
+			"width_u": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}
