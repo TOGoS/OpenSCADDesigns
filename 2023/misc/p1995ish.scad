@@ -1,5 +1,9 @@
+// p1995ish, v0.2
+// 
+// Something Renee asked for.
+
 input_offset = [-128,-102]; // 0.1
-hole_position = [0,0,3]; // 0.1
+hole_position = [0.0,0.0,3.0]; // 0.1
 hole_scale = 1.00; // 0.01
 
 $fn = 32;

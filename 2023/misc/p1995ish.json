@@ -1,0 +1,23 @@
+{
+	"parameterSets": {
+		"p1996": {
+			"$fn": "32",
+			"hole_position": "[0, -3, 3]",
+			"hole_scale": "1",
+			"input_offset": "[-128, -102]"
+		},
+		"p1997": {
+			"$fn": "32",
+			"hole_position": "[0, -2, 3]",
+			"hole_scale": "1",
+			"input_offset": "[-128, -102]"
+		},
+		"p1998": {
+			"$fn": "32",
+			"hole_position": "[0, -2.5, 3]",
+			"hole_scale": "1",
+			"input_offset": "[-128, -102]"
+		}
+	},
+	"fileFormatVersion": "1"
+}
