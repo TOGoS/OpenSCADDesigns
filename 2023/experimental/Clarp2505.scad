@@ -1,50 +1,76 @@
-// Clarp2505.0.2
+// Clarp2505.1.0
 // 
 // Prototype clippy thing
 // 
 // v0.2:
 // - Parameterize width and thickness
+// v1.0:
+// - Add some options, complicate things
 
 width_u = 24;
-thickness_u = 2;
+length_u = 2;
+
+part = "both"; // ["male", "female", "both"]
+bottom_corner_shape = "footed"; // ["footed","beveled"]
+$tgx11_offset = -0.1;
 
 use <../lib/TOGMod1.scad>
+use <../lib/TOGridLib3.scad>
 use <../lib/TOGMod1Constructors.scad>
 
 u = 254/160;
 
-thickness = thickness_u * u;
-
 function reverse_list(list) =
 	[for(i=[len(list)-1 : -1 : 0]) list[i]];
 
+function extend_point_dat(point, offset=[0,0], scale=[1,1]) =
+	[
+		(point[0] + offset[0])*scale[0],
+		(point[1] + offset[1])*scale[1],
+		scale[0] * (len(point) > 2 ? point[2] : 0),
+		scale[1] * (len(point) > 3 ? point[3] : 0)
+	];
+
 function mirror_points(points, offset=[0,0]) = [
-	for(p=points) p + offset,
-	for(p=reverse_list(points)) [-p[0], p[1]] - offset
+	for(p=points) extend_point_dat(p, offset),
+	for(p=reverse_list(points)) extend_point_dat(p, offset, [-1,1]),
 ];
 
-pd1 = mirror_points([
-	[ 2, -8],
+clarp_face_point_data = [
+	[ 2,  0],
+	[ 3, -1],
+	[ 3, -2],
+	[ 2, -3],
+];
+
+fpd = mirror_points([
+	each bottom_corner_shape == "beveled" ? [
+		[ 2, -8],
+	] : [
+		[ 1, -8, -1, 0],
+		[ 1, -7, -1, 1],
+	],
+	
 	[ 0, -6],
 	[ 0,  2],
 	[ 1,  1],
 	[ 1,  0],
-	[ 2,  0],
-	[ 3, -1],
-	[ 3, -2],
-	[ 2, -3],
+	each clarp_face_point_data,
 	[ 2, -5],
 	[ 3, -6],
 ], [-width_u/2, 0]);
 
-pd2 = mirror_points([
-	[ 2,  8],
+mpd = mirror_points([
+	each bottom_corner_shape == "beveled" ? [
+		[ 2,  8],
+	] : [
+		[ 1,  8, -1, 0],
+		[ 1,  7, -1, 1],
+	],
+
 	[ 0,  6],
 	[ 0,  2],
-	[ 2,  0],
-	[ 3, -1],
-	[ 3, -2],
-	[ 2, -3],
+	each clarp_face_point_data,
 	[ 2, -4],
 	[ 3, -5],
 	[ 4, -5],
@@ -55,7 +81,25 @@ pd2 = mirror_points([
 	[ 3,  6],
 ], [-width_u/2, 0]);
 
+function clarp_pd_to_vec2(pd, scale=1, offset=0) =
+	[pd[0]*scale + offset*pd[2], pd[1]*scale + offset*pd[3]];
 
-togmod1_domodule(togmod1_linear_extrude_z([0, thickness], togmod1_make_polygon([for(p=pd1) p*254/160])));
+function clarp_pd_to_polypoints(pd) =
+	let(u = togridlib3_decode([1, "u"]))
+	[for(p=pd) clarp_pd_to_vec2(p, u, $tgx11_offset)];
 
-translate([0,8*u]) togmod1_domodule(togmod1_linear_extrude_z([0, thickness], togmod1_make_polygon([for(p=pd2) p*254/160])));
+function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0]) =
+	togmod1_linear_extrude_z(zrange, togmod1_make_polygon(clarp_pd_to_polypoints(pd)));
+
+function make_the_thing(part) =
+	part == "both" ? ["union",
+		["translate", [0, -4*u], make_the_thing("female")],
+		["translate", [0,  4*u], make_the_thing("male")],
+	] :
+	clarp_pd_to_polyhedron(
+		part == "male" ? mpd : fpd,
+		[0, length_u*u],
+		part == "male" ? [0,8,180] : [0,-8,0]
+	);
+
+togmod1_domodule(make_the_thing(part));
