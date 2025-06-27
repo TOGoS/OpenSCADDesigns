@@ -5,6 +5,13 @@
 			"height_u": "16",
 			"inner_corner_extension_u": "0.3",
 			"length_u": "24",
+			"rail_width_u": "16"
+		},
+		"p2004": {
+			"$fn": "32",
+			"height_u": "16",
+			"inner_corner_extension_u": "0.3",
+			"length_u": "24",
 			"rail_width_u": "12"
 		}
 	},

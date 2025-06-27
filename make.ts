@@ -533,7 +533,7 @@ const builder = new Builder({
 			cameraPosition: [ 10, 20, 20],
 			imageSize: [512, 512],
 		}),
-		...multiOsdBuildRules("2023/conduit/Clurp2507.scad", ["p2003"], {
+		...multiOsdBuildRules("2023/conduit/Clurp2507.scad", ["p2003","p2004"], {
 			cameraPosition: [-20,-20, 20],
 			imageSize: [256, 256],
 		}),
