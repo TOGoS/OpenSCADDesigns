@@ -1,4 +1,4 @@
-// Clarp2505.1.0
+// Clarp2505.1.1-clurpy
 // 
 // Prototype clippy thing
 // 
@@ -6,11 +6,15 @@
 // - Parameterize width and thickness
 // v1.0:
 // - Add some options, complicate things
+// v1.1-clurpy
+// - Attempt to add support for generating the clurp shape, but:
+//   - Some things that are parameters in Clurp2507 are not
+//   - I think the hole placement is a little off (forgot to *u, need to override counterbore inset)
 
 width_u = 24;
 length_u = 2;
 
-part = "both"; // ["male", "female", "both"]
+part = "both"; // ["male", "female", "clurp", "both"]
 bottom_corner_shape = "footed"; // ["footed","beveled"]
 hole_style = "THL-1006"; 
 hole_spacing_u = 24;
@@ -24,6 +28,7 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGridLib3.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1Constructors.scad>
+use <../lib/TOGPath1.scad>
 
 u = 254/160;
 
@@ -95,20 +100,81 @@ function clarp_pd_to_polypoints(pd) =
 	let(u = togridlib3_decode([1, "u"]))
 	[for(p=pd) clarp_pd_to_vec2(p, u, $tgx11_offset)];
 
-function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0]) =
+function make_clgeneric(shape2d, zrange, floor_posori=[0,0,0]) =
 	let(u = togridlib3_decode([1, "u"]))
 	let(hole = ["render", ["rotate", [-90,0,0], tog_holelib2_slot(hole_style, [-4*u, 0*u, 4*u], [[0,-slot_length_u*u/2], [0,slot_length_u*u/2]])]])
 	let(hole_spacing = hole_spacing_u*u)
 	["difference",
-		togmod1_linear_extrude_z(zrange, togmod1_make_polygon(clarp_pd_to_polypoints(pd))),
+		togmod1_linear_extrude_z(zrange, shape2d),
 		["union", for(zc=[zrange[0]/hole_spacing + 0.5 : 1 : zrange[1]/hole_spacing]) ["translate", [floor_posori[0], floor_posori[1], zc*hole_spacing], ["rotate", [0,0,floor_posori[2]], hole]]],
 	];
+
+function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0]) =
+	make_clgeneric(togmod1_make_polygon(clarp_pd_to_polypoints(pd)), zrange, floor_posori);
+
+function mirror_point(point) = [-point[0], point[1]];
+
+function translate_rathnode(node, translation) = [
+	node[0],
+	node[1] + translation,
+	for(i=[2:1:len(node)-1]) node[i]
+];
+
+function mirror_rathnode(node) = [
+	node[0],
+	mirror_point(node[1]),
+	for(i=[2:1:len(node)-1]) node[i]
+];
+
+function reverse_list(list) = [
+	for(i=[len(list)-1:-1:0]) list[i]
+];
+
+function translate_and_mirror_rathnodes(nodes, translation) = [
+	each              [for(n=nodes)                 translate_rathnode(n, translation) ] ,
+	each reverse_list([for(n=nodes) mirror_rathnode(translate_rathnode(n, translation))]),
+];
+
+function generate_clurp_rath(rail_width, clip_height, inner_corner_extension=0.3, overhang=1) =
+	let(x0 = rail_width/2)
+	let(y1 = clip_height)
+	let(ce = inner_corner_extension)
+	let(ov = overhang) // Overhang
+	let(otr = (4-ov)*63/128)
+	let(obr = (4-ov)*63/128)
+	let(rath_data = [
+		["togpath1-rathnode", [ 0   , y1-2], ["round", 2]],
+		["togpath1-rathnode", [ 2   , y1-4], ["round", 2]],
+		["togpath1-rathnode", [ 2   ,    8], ["round", 3]],
+		["togpath1-rathnode", [-2   ,    4], ["round", 0.8]],
+		if(ce > 0) ["togpath1-rathnode", [ 0,    4], ["round", 0.8]],
+		["togpath1-rathnode", [ 2+ce, 4+ce], /*if(ce > 0) ["round", ce/2]*/],
+		["togpath1-rathnode", [ 2-ov, 4-ov], ["round", otr]],
+		["togpath1-rathnode", [ 2-ov,    0], ["round", obr]],
+		["togpath1-rathnode", [ 4   ,    0], ["round", 1.5]],
+		["togpath1-rathnode", [ 4   , y1-3], ["round", 3]],
+		["togpath1-rathnode", [ 1   , y1-0], ["round", 3]],
+	])
+	["togpath1-rath", each translate_and_mirror_rathnodes(rath_data, [x0,0])];
+
+function make_clurp_2d() =
+	["scale", u, togpath1_rath_to_polygon(
+		generate_clurp_rath(
+			12, 16 // rail_width_u, height_u
+			//inner_corner_extension = inner_corner_extension_u,
+			//overhang = clip_overhang_u
+		)
+	)];
+
+function make_clurp() =
+	make_clgeneric(make_clurp_2d(), [0, length_u*u], [0,14*u,180]);
 
 function make_the_thing(part) =
 	part == "both" ? ["union",
 		["translate", [0, -4*u], make_the_thing("female")],
 		["translate", [0,  4*u], make_the_thing("male")],
 	] :
+	part == "clurp" ? make_clurp() :
 	clarp_pd_to_polyhedron(
 		part == "male" ? mpd : fpd,
 		[0, length_u*u],
