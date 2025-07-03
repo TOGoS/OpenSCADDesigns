@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2006": {
+			"part": "Clarp2508-female"
+		},
+		"p2007": {
+			"part": "Clarp2508-male"
+		}
+	},
+	"fileFormatVersion": "1"
+}
