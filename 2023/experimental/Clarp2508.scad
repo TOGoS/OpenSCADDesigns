@@ -1,4 +1,4 @@
-// Clarp2508.0.1
+// Clarp2508.0.2
 // 
 // Generalization of Clarp2505.
 // Experimental class of shapes defined by offset (from 'top left
@@ -6,16 +6,18 @@
 // 
 // v0.1:
 // - Define female shape
+// v0.2:
+// - Define male shape
 // 
-// TODO: Define male shape
-
 // TODO: Parse ms_* params from a string, like Clarp2508:2.5u,2.5u,1u,
 // so that it can be referenced by Clarp2507 or whatever.
 
-ms_pos_u = [2.5, -1.5];
-ms_width_u = 1;
+part = "Clarp2508-male"; // ["Clarp2508-male","Clarp2508-female"]
+ms_pos_u = [2.5, -1.5]; // 0.05
+ms_width_u = 1; // 0.05
 outer_width_u = 12;
-outer_depth_u =  8;
+outer_depth_u =  6;
+thickness_u = 1.0; // 0.05
 length_u = 12;
 $fn = 32;
 
@@ -26,9 +28,6 @@ u = 254/160;
 use <../lib/TOGMod1.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGMod1Constructors.scad>
-
-
-
 
 function clarp2508__mirror_point(point) = [-point[0], point[1]];
 
@@ -72,8 +71,31 @@ function clarp2508_make_f_rath(ms_pos, ms_width, outer_width, outer_depth, thick
 		["togpath1-rathnode", [       x0+outer_bevel, y0    ], ["round", outer_bevel]],
 	])];
 
+function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thickness=1*u, top_inner_bevel=0.5*u, outer_bevel=2*u) =
+	let(x0 = -outer_width/2)
+	let(y1 =  outer_depth)
+	let(ms_points = clarp2508_ms_points(ms_pos, ms_width, x0))
+	let(ms_point_a = ms_points[0])
+	let(ms_point_z = ms_points[len(ms_points)-1])
+	let(r0 = min(ms_width, thickness)*255/256)
+	["togpath1-rath", each clarp2508__mirror_rathnodes([
+		["togpath1-rathnode", [x0+thickness, y1-thickness], ["bevel", outer_bevel-thickness*0.6], ["round", outer_bevel-thickness*0.6]],
+		["togpath1-rathnode", [x0+thickness, thickness], ["bevel", outer_bevel-thickness*0.6], ["round", outer_bevel-thickness*0.6]],
+		["togpath1-rathnode", [ms_point_z[0]+thickness, thickness], ["round", thickness]],
+		["togpath1-rathnode", [ms_point_z[0]+thickness, ms_point_a[1]-ms_width+thickness], ["round", r0]],
+		["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
+		each [for(p=ms_points) ["togpath1-rathnode", p]],
+		["togpath1-rathnode", [ms_point_z[0],    0  ], /*["bevel", top_inner_bevel]*/],
+		["togpath1-rathnode", [       x0    ,    0  ], ["bevel", outer_bevel], ["round", outer_bevel]],
+		["togpath1-rathnode", [       x0    ,   y1  ], ["bevel", outer_bevel], ["round", outer_bevel]],
+	])];
+
 // When this graduates from 'experimental',
 // this could be part of Clarp2505, and use clgeneric
 function clarp2508_rath_to_part(rath) = togmod1_linear_extrude_z([0, length_u*u], togpath1_rath_to_polygon(rath));
 
-togmod1_domodule(clarp2508_rath_to_part(clarp2508_make_f_rath(ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u)));
+togmod1_domodule(clarp2508_rath_to_part(
+	part == "Clarp2508-male" ? clarp2508_make_m_rath(ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
+	part == "Clarp2508-female" ? clarp2508_make_f_rath(ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
+	assert(false, str("Unknown part: '", part, "'"))
+));
