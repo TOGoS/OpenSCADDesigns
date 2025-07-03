@@ -1,4 +1,4 @@
-// Clarp2508.0.2
+// Clarp2508.0.3
 // 
 // Generalization of Clarp2505.
 // Experimental class of shapes defined by offset (from 'top left
@@ -8,6 +8,8 @@
 // - Define female shape
 // v0.2:
 // - Define male shape
+// v0.3:
+// - Adjustments to male shape to allow ms_x=1.5u to work
 // 
 // TODO: Parse ms_* params from a string, like Clarp2508:2.5u,2.5u,1u,
 // so that it can be referenced by Clarp2507 or whatever.
@@ -78,15 +80,16 @@ function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thick
 	let(ms_point_a = ms_points[0])
 	let(ms_point_z = ms_points[len(ms_points)-1])
 	let(r0 = min(ms_width, thickness)*255/256)
+	let(r1 = min(thickness*1.5, ms_pos[0]+ms_width/2))
 	["togpath1-rath", each clarp2508__mirror_rathnodes([
 		["togpath1-rathnode", [x0+thickness, y1-thickness], ["bevel", outer_bevel-thickness*0.6], ["round", outer_bevel-thickness*0.6]],
-		["togpath1-rathnode", [x0+thickness, thickness], ["bevel", outer_bevel-thickness*0.6], ["round", outer_bevel-thickness*0.6]],
+		["togpath1-rathnode", [x0+thickness, thickness], ["round", max(0, r1-thickness)]],
 		["togpath1-rathnode", [ms_point_z[0]+thickness, thickness], ["round", thickness]],
 		["togpath1-rathnode", [ms_point_z[0]+thickness, ms_point_a[1]-ms_width+thickness], ["round", r0]],
 		["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
 		each [for(p=ms_points) ["togpath1-rathnode", p]],
 		["togpath1-rathnode", [ms_point_z[0],    0  ], /*["bevel", top_inner_bevel]*/],
-		["togpath1-rathnode", [       x0    ,    0  ], ["bevel", outer_bevel], ["round", outer_bevel]],
+		["togpath1-rathnode", [       x0    ,    0  ], ["round", r1]],
 		["togpath1-rathnode", [       x0    ,   y1  ], ["bevel", outer_bevel], ["round", outer_bevel]],
 	])];
 

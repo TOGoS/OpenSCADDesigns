@@ -5,6 +5,14 @@
 		},
 		"p2007": {
 			"part": "Clarp2508-male"
+		},
+		"p2008": {
+			"part": "Clarp2508-female",
+			"ms_pos_u": "[1.5, -1.5]"
+		},
+		"p2009": {
+			"part": "Clarp2508-male",
+			"ms_pos_u": "[1.5, -1.5]"
 		}
 	},
 	"fileFormatVersion": "1"
