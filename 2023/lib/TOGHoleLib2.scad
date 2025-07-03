@@ -1,4 +1,4 @@
-// TOGHoleLib2.24
+// TOGHoleLib2.25
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -65,6 +65,8 @@
 // - Add a separate counterbore_inset parameter that is added to inset only for counterbored holes.
 //   This way callers don't need to have special-case logic for counterbored/non-counterbored holes
 //   when they want to override counterbore depth but not mess with inset of other things.
+// v2.25:
+// - tog_holelib2_slot accepts counterbore_inset parameter
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -308,12 +310,19 @@ function tog_holelib2_hole(
 	assert(false, str("Unknown hole type: '", type_name, "'"));
 
 // hole_zds = ["tog-holelib2-holezds", [[zbottomfact, zsurfacefactor, ztopfactor, onefactor], diameter], ...]
-function tog_holelib2__decode_holezds(type, inset=undef) =
+function tog_holelib2__decode_holezds(
+	type,
+	inset = undef,
+	counterbore_inset = undef
+) =
 	let(inch = 25.4)
 	// TODO: More generically parse the third token as inset, be it 3/16in or 5u
 	type == "THL-1006-3/16in" ? tog_holelib2__decode_holezds("THL-1006", inset=3/16*inch) :
 	is_list(type) && type[0] == "tog-hgolelib2-holezds" ? type :
-	type == "THL-1006" ? let(_inset=is_undef(inset)?3.175:inset) ["tog-holelib2-holezds",
+	type == "THL-1006" ? let( _inset =
+		!is_undef(counterbore_inset) ? counterbore_inset :
+		!is_undef(inset) ? inset : 3.175
+	) ["tog-holelib2-holezds",
 		[[1, 0, 0, -5/32*inch],    0     ],
 		[[1, 0, 0,  0        ], 5/16*inch],
 		[[0, 1, 0, -_inset   ], 5/16*inch], // 5/16*inch, 7/8*inch, default_counterbore_depth=3.175
@@ -324,16 +333,19 @@ function tog_holelib2__decode_holezds(type, inset=undef) =
 	assert(false, str("Unrecognized (to decode_holezds) hole type: ", type));
 
 // zs = [z_bottom_of_hole, z_surface, z_top_of_overhead_bore]
-function tog_holelib2_slot(type, zs, points) =
+function tog_holelib2_slot(
+	type, zs, points,
+	counterbore_inset = undef
+) =
 	// Fall back to the classic implementation
 	// for single-point holes until everything's ported over
 	// to the holezds system:
 	is_string(type) && len(points) == 1 ?
 		["translate", points[0],
 			["translate", [0,0,zs[1]],
-				tog_holelib2_hole(type, depth=-zs[0]-zs[1], overhead_bore_height=zs[2]-zs[1])]] :
+				tog_holelib2_hole(type, depth=-zs[0]-zs[1], overhead_bore_height=zs[2]-zs[1], counterbore_inset=counterbore_inset)]] :
 
-	let( holezds = tog_holelib2__decode_holezds(type) )
+	let( holezds = tog_holelib2__decode_holezds(type, counterbore_inset=counterbore_inset) )
 	let( zds = [for(i=[1:1:len(holezds)-1])
 		let(hzd=holezds[i])
 		[hzd[0][0]*zs[0] + hzd[0][1]*zs[1] + hzd[0][2]*zs[2] + hzd[0][3]*1, hzd[1]]
