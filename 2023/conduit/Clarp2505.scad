@@ -1,4 +1,4 @@
-// Clarp2505.1.1-clurpy
+// Clarp2505.1.2
 // 
 // Prototype clippy thing
 // 
@@ -10,6 +10,8 @@
 // - Attempt to add support for generating the clurp shape, but:
 //   - Some things that are parameters in Clurp2507 are not
 //   - I think the hole placement is a little off (forgot to *u, need to override counterbore inset)
+// v1.2
+// - Fix hole placement
 
 width_u = 24;
 length_u = 2;
@@ -100,16 +102,24 @@ function clarp_pd_to_polypoints(pd) =
 	let(u = togridlib3_decode([1, "u"]))
 	[for(p=pd) clarp_pd_to_vec2(p, u, $tgx11_offset)];
 
-function make_clgeneric(shape2d, zrange, floor_posori=[0,0,0]) =
+// floor_posori = [x,y,rotation,thickness] of 'floor' (where mounting holes go)
+function make_clgeneric(shape2d, zrange, floor_posori=[0,0,0,1]) =
 	let(u = togridlib3_decode([1, "u"]))
-	let(hole = ["render", ["rotate", [-90,0,0], tog_holelib2_slot(hole_style, [-4*u, 0*u, 4*u], [[0,-slot_length_u*u/2], [0,slot_length_u*u/2]])]])
+	let(counterbore_inset = min(3.175,floor_posori[3]/2))
+	let(hole = ["render", ["rotate", [-90,0,0],
+		tog_holelib2_slot(
+			hole_style,
+			[-4*u, 0*u, 4*u], [[0,-slot_length_u*u/2], if(slot_length_u != 0) [0,slot_length_u*u/2]],
+			counterbore_inset = counterbore_inset
+		)
+	]])
 	let(hole_spacing = hole_spacing_u*u)
 	["difference",
 		togmod1_linear_extrude_z(zrange, shape2d),
 		["union", for(zc=[zrange[0]/hole_spacing + 0.5 : 1 : zrange[1]/hole_spacing]) ["translate", [floor_posori[0], floor_posori[1], zc*hole_spacing], ["rotate", [0,0,floor_posori[2]], hole]]],
 	];
 
-function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0]) =
+function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0,u]) =
 	make_clgeneric(togmod1_make_polygon(clarp_pd_to_polypoints(pd)), zrange, floor_posori);
 
 function mirror_point(point) = [-point[0], point[1]];
@@ -167,7 +177,7 @@ function make_clurp_2d() =
 	)];
 
 function make_clurp() =
-	make_clgeneric(make_clurp_2d(), [0, length_u*u], [0,14*u,180]);
+	make_clgeneric(make_clurp_2d(), [0, length_u*u], [0,14*u,180,2*u]);
 
 function make_the_thing(part) =
 	part == "both" ? ["union",
@@ -178,7 +188,7 @@ function make_the_thing(part) =
 	clarp_pd_to_polyhedron(
 		part == "male" ? mpd : fpd,
 		[0, length_u*u],
-		part == "male" ? [0,8,180] : [0,-8,0]
+		part == "male" ? [0,6*u,180,2*u] : [0,-6*u,0,2*u]
 	);
 
 togmod1_domodule(make_the_thing(part));
