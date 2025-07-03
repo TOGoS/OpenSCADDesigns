@@ -7,7 +7,7 @@
 			"hole_spacing_u": "24",
 			"hole_style": "THL-1006",
 			"length_u": "48",
-			"part": "male",
+			"part": "Clarp2505-male",
 			"slot_length_u": "4",
 			"width_u": "24"
 		},
@@ -18,7 +18,7 @@
 			"hole_spacing_u": "24",
 			"hole_style": "THL-1006",
 			"length_u": "48",
-			"part": "female",
+			"part": "Clarp2505-female",
 			"slot_length_u": "4",
 			"width_u": "24"
 		}

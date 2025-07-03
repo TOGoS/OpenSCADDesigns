@@ -1,4 +1,4 @@
-// Clarp2505.1.2
+// Clarp2505.1.3
 // 
 // Prototype clippy thing
 // 
@@ -12,11 +12,13 @@
 //   - I think the hole placement is a little off (forgot to *u, need to override counterbore inset)
 // v1.2
 // - Fix hole placement
+// v1.3:
+// - More specific part names
 
 width_u = 24;
 length_u = 2;
 
-part = "both"; // ["male", "female", "clurp", "both"]
+part = "Clarp2505"; // ["Clarp2505", "Clarp2505-male", "Clarp2505-female", "Clurp2507-female"]
 bottom_corner_shape = "footed"; // ["footed","beveled"]
 hole_style = "THL-1006"; 
 hole_spacing_u = 24;
@@ -180,15 +182,17 @@ function make_clurp() =
 	make_clgeneric(make_clurp_2d(), [0, length_u*u], [0,14*u,180,2*u]);
 
 function make_the_thing(part) =
-	part == "both" ? ["union",
-		["translate", [0, -4*u], make_the_thing("female")],
-		["translate", [0,  4*u], make_the_thing("male")],
+	part == "Clarp2505" ? ["union",
+		["translate", [0, -4*u], make_the_thing("Clarp2505-female")],
+		["translate", [0,  4*u], make_the_thing("Clarp2505-male")],
 	] :
-	part == "clurp" ? make_clurp() :
-	clarp_pd_to_polyhedron(
-		part == "male" ? mpd : fpd,
-		[0, length_u*u],
-		part == "male" ? [0,6*u,180,2*u] : [0,-6*u,0,2*u]
-	);
+	part == "Clurp2507-female" ? make_clurp() :
+	part == "Clarp2505-male" ? clarp_pd_to_polyhedron(
+		mpd, [0, length_u*u], [0, 6*u,180,2*u]
+	) :
+	part == "Clarp2505-female" ? clarp_pd_to_polyhedron(
+		fpd, [0, length_u*u], [0,-6*u,  0,2*u]
+	) :
+	assert(false, str("Unrecognized part: '", part, "'"));
 
 togmod1_domodule(make_the_thing(part));
