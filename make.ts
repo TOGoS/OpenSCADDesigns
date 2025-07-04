@@ -1,6 +1,8 @@
 #!/usr/bin/env deno -A
 
 import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
+import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
+import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
 
 //// Utility functions
 
@@ -242,6 +244,15 @@ function brAlias(targetNames:Iterable<string>|AsyncIterable<string>) : BuildRule
 	};
 }
 
+async function hashFile(filePath:FilePath, algo:HashAlgorithm) : Promise<string> {
+	const hasher = algo.createHasher();
+	using file = await Deno.open(filePath, { read: true });
+	for await( const chunk of file.readable ) {
+		hasher.update(toUint8Array(chunk));
+	}
+	return algo.getUrn(toUint8Array(hasher.digest()));
+}
+
 function osdBuildRules(partId:string, opts:{
 	inScadFile:FilePath,
 	cameraPosition?: Vec3<number>,
@@ -265,6 +276,8 @@ function osdBuildRules(partId:string, opts:{
 	const simplifiedStlPath = `${outDir}/${partId}.stl`;
 	const renderedPngPath = `${tempDir}/${partId}-${renderPngBuilderVersion}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
 	const simplifiedPngPath = `${outDir}/${partId}.png`;
+	const partTefPath = `${outDir}/${partId}.tef`;
+
 	let inConfigFile : FilePath | undefined;
 	if( opts.presetName != undefined ) {
 		if( (m = /^(.*?)\.scad$/.exec(opts.inScadFile)) != null ) {
@@ -334,7 +347,26 @@ function osdBuildRules(partId:string, opts:{
 				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
 		},
-		[partId]: brAlias([simplifiedStlPath, simplifiedPngPath]),
+		[partTefPath]: {
+			prereqs: [simplifiedStlPath, simplifiedPngPath, "make.ts"],
+			async invoke(ctx:BuildContext) {
+				const [pngUrn, stlUrn] = await Promise.all([simplifiedPngPath, simplifiedStlPath].map(p => hashFile(p, BITPRINT_ALGORITHM)));
+				//const stlUrn = hashFile(simplifiedStlPath, BITPRINT_ALGORITHM);
+				await Deno.remove(ctx.targetName).catch(e => {
+					return e.name == 'NotFound' ? Promise.resolve() : Promise.reject(e);
+				});
+				using writeStream = await Deno.open(ctx.targetName, {write:true, createNew:true});
+				const textEncoder = new TextEncoder;
+				writeStream.write(textEncoder.encode(
+					`=part ${partId}\n`+
+					`description: ...\n`+ // Hmm: I could read the part.json and extract descriptions!
+					`stl-file: ${partId}.stl\t${stlUrn}\n`+
+					`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${partId}.png\n`+
+					"\n"
+				));
+			}
+		},
+		[partId]: brAlias([simplifiedStlPath, simplifiedPngPath, partTefPath]),
 	};
 }
 
