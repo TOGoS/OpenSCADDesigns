@@ -545,6 +545,10 @@ const builder = new Builder({
 			cameraPosition: [-50,-50, 60],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/tograck/TagPanel1.scad", ["p2011"], {
+			cameraPosition: [-50,-50, 60],
+			imageSize: [384, 384],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

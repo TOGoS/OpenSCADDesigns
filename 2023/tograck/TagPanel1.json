@@ -1,18 +1,22 @@
 {
 	"parameterSets": {
 		"p1800": {
-			"$fn": "24",
 			"hole_style": "THL-1001",
 			"outer_offset": "-0.1",
-			"panel_thickness": "1.5875",
+			"panel_thickness_u": "1",
 			"size_atoms": "[9, 9]"
+		},
+		"p2011": {
+			"description": "Square panel for 3.5\" TOGRack with back fat",
+			"hole_style": "THL-1001",
+			"size_atoms": "[7, 7]",
+			"back_fat_u": "1"
 		},
 		"-- 1u spacers --": "",
 		"p1814": {
-			"$fn": "24",
 			"hole_style": "straight-4.5mm",
 			"outer_offset": "-0.1",
-			"panel_thickness": "1.5875",
+			"panel_thickness_u": "1",
 			"size_atoms": "[4, 1]"
 		}
 	},

@@ -1,4 +1,4 @@
-// TOGRackPanel1.1
+// TOGRackPanel1.2
 // 
 // Library for generating standard TOGRack / TOGRack2 panels
 // as described by https://www.nuke24.net/docs/2018/TOGRack.html.
@@ -8,6 +8,8 @@
 // - Initial version, based on TagPanel1.1
 // v1.1
 // - Add back_fat, back_fat_2d_mod, 2d_mod, and 3d_mod options
+// v1.2
+// - Properly handle case where panel is too narrow for any back fat
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGridLib3.scad>
@@ -58,16 +60,23 @@ function tograckpanel1_panel(
 		nominal_size,
 		bevel_size=bevel_size, outer_offset=outer_offset
 	))
-	let( back_fat_rath = tograckpanel1_panel_rath(
-		[nominal_size[0], nominal_size[1] - rail_width*2 - outer_offset*2],
-		bevel_size=bevel_size, outer_offset=outer_offset
-	))
 	let( panel_2d_raw = togpath1_rath_to_polygon(panel_rath) )
 	let( panel_2d_modded = 2d_mod(panel_2d_raw) )
 	let( panel_3d_block = togmod1_linear_extrude_z([-back_fat, thickness], panel_2d_modded))
-	// let( panel_3d = togmod1_linear_extrude_z([0, thickness], panel_2d_modded))
-	let( back_fat_2d = back_fat_2d_mod(togpath1_rath_to_polygon(back_fat_rath)) )
-	let( panel_3d = ["intersection",
+	let( back_fat_nominal_size = [nominal_size[0], nominal_size[1] - rail_width*2] )
+	let( back_fat_rath =
+		back_fat_nominal_size[0] <= 0 || back_fat_nominal_size[1] <= 0 ? undef :
+		tograckpanel1_panel_rath(
+			[nominal_size[0], nominal_size[1] - rail_width*2 - outer_offset*2],
+			bevel_size=bevel_size, outer_offset=outer_offset
+		)
+	)
+	let( back_fat_2d_raw =
+		!is_undef(back_fat_rath) ? togpath1_rath_to_polygon(back_fat_rath) :
+		["union"]
+	)
+	let( back_fat_2d = back_fat_2d_mod(back_fat_2d_raw) )
+	let( panel_3d_raw = ["intersection",
 		panel_3d_block,
 		
 		["union",
@@ -76,9 +85,7 @@ function tograckpanel1_panel(
 		]
 	])
 	3d_mod(["difference",
-		panel_3d,
-		
-		//if( back_fat > 0 ) for( ym=[-1,+1] ) ["translate", [0,ym*nominal_size[1]/2,-back_fat], togmod1_make_cuboid([nominal_size[0]*2, rail_width*2, back_fat*2])],
+		panel_3d_raw,
 		
 		for( pos = tograckpanel1_mounting_hole_positions(nominal_size, frequency=mounting_hole_frequency) )
 		["translate", [pos[0], pos[1], thickness], _mounting_hole]
