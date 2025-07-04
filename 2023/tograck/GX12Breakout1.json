@@ -2,6 +2,11 @@
 	"parameterSets": {
 		"p2011": {
 			"size_atoms": "[5, 7]"
+		},
+		"p2012": {
+			"size_atoms": "[5, 7]",
+			"panel_thickness_u": "2",
+			"back_fat_u": "2"
 		}
 	},
 	"fileFormatVersion": "1"

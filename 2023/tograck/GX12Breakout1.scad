@@ -1,10 +1,13 @@
-// GX12Breakout1.0
+// GX12Breakout1.3
 // 
 // v1.0:
 // - Copied from TagPanel1.2
+// v1.3
+// - Add back_fat_u and panel_thickness_u options, matching TagPanel1.3
 
 size_atoms = [5,7];
-panel_thickness = 1.5875; // 0.0001
+panel_thickness_u = 15; // 0.0001
+back_fat_u = 1;
 mounting_hole_style = "THL-1001"; // ["THL-1001", "THL-1004", "THL-1008", "straight-4.5mm", "straight-5mm"]
 mounting_hole_frequency = 1; // [1,2]
 outer_offset_u = -1;
@@ -23,7 +26,7 @@ function atoms_to_mm(a) = a * 127/10;
 nominal_size = [
 	atoms_to_mm(size_atoms[0]),
 	atoms_to_mm(size_atoms[1]),
-	panel_thickness
+	u_to_mm(panel_thickness_u),
 ];
 
 gx12_hole = tphl1_make_z_cylinder(zds=[[-4, 21], [0, 21], [0, 12.1], [10, 12.1]]);
@@ -35,7 +38,7 @@ gx12_hole_positions = [
 togmod1_domodule(tograckpanel1_panel(
 	nominal_size,
 	outer_offset = u_to_mm(outer_offset_u)+outer_offset,
-	back_fat = 254/160,
+	back_fat = u_to_mm(back_fat_u),
 	mounting_hole_style = mounting_hole_style,
 	mounting_hole_frequency = mounting_hole_frequency,
 	3d_mod = function(panel) ["difference",
