@@ -541,6 +541,10 @@ const builder = new Builder({
 			cameraPosition: [-20,-20, 40],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/tograck/GX12Breakout1.scad", ["p2010"], {
+			cameraPosition: [-50,-50, 60],
+			imageSize: [384, 384],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
