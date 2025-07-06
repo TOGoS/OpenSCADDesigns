@@ -1,4 +1,4 @@
-// Clarp2508.0.5
+// Clarp2508.0.6
 // 
 // Generalization of Clarp2505.
 // Experimental class of shapes defined by offset (from 'top left
@@ -15,6 +15,8 @@
 // - Clarp2508-flangeless-male shape option
 // v0.5:
 // - Flangeless male can have zero 'depth'
+// v0.6:
+// - Options for straight holes
 // 
 // TODO: Parse ms_* params from a string, like Clarp2508:2.5u,2.5u,1u,
 // so that it can be referenced by Clarp2507 or whatever.
@@ -26,6 +28,8 @@ outer_width_u = 12;
 outer_depth_u =  6;
 thickness_u = 1.0; // 0.05
 length_u = 12;
+hole_spacing_u = 4;
+hole_diameter = 0; // 0.1
 $fn = 32;
 
 module clarp2508__end_params() { }
@@ -128,11 +132,26 @@ function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thick
 
 // When this graduates from 'experimental',
 // this could be part of Clarp2505, and use clgeneric
-function clarp2508_rath_to_part(rath) = togmod1_linear_extrude_z([0, length_u*u], togpath1_rath_to_polygon(rath));
+function clarp2508_rath_to_part(rath, hole, hole_spacing_u) =
+	["difference",
+		togmod1_linear_extrude_z([0, length_u*u], togpath1_rath_to_polygon(rath)),
+		
+		for( zm=[1/2 : 1 : length_u/hole_spacing_u] ) ["translate", [0,0,zm*hole_spacing_u*u], hole],
+	];
 
-togmod1_domodule(clarp2508_rath_to_part(
-	part == "Clarp2508-flangeless-male" ? clarp2508_make_flangeless_m_rath(ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
-	part == "Clarp2508-male" ? clarp2508_make_m_rath(ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
-	part == "Clarp2508-female" ? clarp2508_make_f_rath(ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
-	assert(false, str("Unknown part: '", part, "'"))
-));
+togmod1_domodule(
+	let( hole =
+		hole_diameter > 0 ? ["rotate", [90,0,0], togmod1_linear_extrude_z([-outer_depth_u*u*2-100, outer_depth_u*u*2+100], togmod1_make_circle(d=hole_diameter))] :
+	   ["union"]
+	)
+	let( rath = 
+		part == "Clarp2508-flangeless-male" ? clarp2508_make_flangeless_m_rath(
+			ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
+		part == "Clarp2508-male" ? clarp2508_make_m_rath(
+		   ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
+		part == "Clarp2508-female" ? clarp2508_make_f_rath(
+			ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
+		assert(false, str("Unknown part: '", part, "'"))
+	)
+	clarp2508_rath_to_part(rath, hole=hole, hole_spacing_u=hole_spacing_u)
+);

@@ -13,6 +13,17 @@
 		"p2009": {
 			"part": "Clarp2508-male",
 			"ms_pos_u": "[1.5, -1.5]"
+		},
+		"p2013": {
+			"description": "Rail-like shallow Clurp2505-compatible male conduit",
+			"part": "Clarp2508-flangeless-male",
+			"ms_pos_u": "[2.5, -2.5]",
+			"thicknesS_u": "1.5",
+			"outer_width_u": "24",
+			"outer_depth_u": "0",
+			"hole_spacing_u": "8",
+			"hole_diameter": "4.5",
+			"length_u": "48"
 		}
 	},
 	"fileFormatVersion": "1"
