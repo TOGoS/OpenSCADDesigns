@@ -1,4 +1,4 @@
-// Clarp2508.0.4
+// Clarp2508.0.5
 // 
 // Generalization of Clarp2505.
 // Experimental class of shapes defined by offset (from 'top left
@@ -13,11 +13,11 @@
 // v0.4:
 // - Male shape avoids carving into flange when depth insufficient
 // - Clarp2508-flangeless-male shape option
+// v0.5:
+// - Flangeless male can have zero 'depth'
 // 
 // TODO: Parse ms_* params from a string, like Clarp2508:2.5u,2.5u,1u,
 // so that it can be referenced by Clarp2507 or whatever.
-// 
-// TODO: Male shapes should be able to handle outer_depth = 0 (then they just act like a rail)
 
 part = "Clarp2508-male"; // ["Clarp2508-male","Clarp2508-female","Clarp2508-flangeless-male"]
 ms_pos_u = [2.5, -1.5]; // 0.05
@@ -85,14 +85,17 @@ function clarp2508_make_flangeless_m_rath(ms_pos, ms_width, outer_width, outer_d
 	let(ms_points = clarp2508_ms_points(ms_pos, ms_width, x0))
 	let(ms_point_a = ms_points[0])
 	let(ms_point_z = ms_points[len(ms_points)-1])
-	let(r0 = min(ms_width, thickness)*255/256)
-	let(r1 = min(thickness*1.5, ms_pos[0]+ms_width/2))
+	let(r0 = min(ms_width, thickness)*160/256)
+	let(yf = outer_depth-thickness)
+	let(yw = ms_point_a[1]-ms_width+thickness) // edge of wall
 	["togpath1-rath", each clarp2508__mirror_rathnodes([
-		["togpath1-rathnode", [ms_point_z[0]+thickness, y1-thickness], ["round", thickness]],
-		["togpath1-rathnode", [ms_point_z[0]+thickness, ms_point_a[1]-ms_width+thickness], ["round", r0]],
-		["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
+		
+		["togpath1-rathnode", [ms_point_z[0]+thickness, yf], ["round", min(thickness, (yf-yw)*0.5)]],
+		//["togpath1-rathnode", [ms_point_z[0]+thickness, yw], ["round", min(r0, (yf-yw)*0.5)]],
+		["togpath1-rathnode", [ms_point_z[0]+thickness, ms_point_a[1]-ms_width], ["round", r0]],
+		["togpath1-rathnode", [ms_point_a[0]+ms_width , ms_point_a[1]-ms_width], ["round", r0]],
 		each [for(p=ms_points) ["togpath1-rathnode", p]],
-		["togpath1-rathnode", [ms_point_z[0],    y1  ], ["round", thickness*2]],
+		["togpath1-rathnode", [ms_point_z[0],    y1  ], ["round", min(thickness*2, 2*u)]],
 	])];
 
 function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thickness=1*u, top_inner_bevel=0.5*u, outer_bevel=2*u) =
@@ -106,7 +109,7 @@ function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thick
 	let(flange_inner_depth = outer_depth - thickness*2 )
 	let(_outer_bevel = max(0,min(outer_bevel, (outer_depth-r1)*0.6)))
 	let(ib = let(b=_outer_bevel-thickness*0.6) b + 2*thickness > outer_depth ? 0 : b)
-	//assert(ib > 0, str("Too short for this shape; maybe use flangeless-male, instead"))
+	assert(outer_depth > 0, str("Too short for this shape; maybe use flangeless-male, instead"))
 	["togpath1-rath", each clarp2508__mirror_rathnodes([
 		each flange_inner_depth > 0 ? [
 			["togpath1-rathnode", [x0+thickness, y1-thickness], if(ib > 0) ["bevel", ib], if(ib > 0)["round", ib]],
@@ -116,7 +119,7 @@ function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thick
 			["togpath1-rathnode", [ms_point_z[0]+thickness, y1-thickness], ["round", thickness]],
 		],
 		["togpath1-rathnode", [ms_point_z[0]+thickness, ms_point_a[1]-ms_width+thickness], ["round", r0]],
-		["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
+	   ["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
 		each [for(p=ms_points) ["togpath1-rathnode", p]],
 		["togpath1-rathnode", [ms_point_z[0],    0  ], /*["bevel", top_inner_bevel]*/],
 		["togpath1-rathnode", [       x0    ,    0  ], ["round", r1]],
