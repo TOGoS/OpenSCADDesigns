@@ -3,6 +3,12 @@
 		"p2014": {
 			"description": "1.5-inch long test section",
 			"length_atoms": "3"
+		},
+		"p2015": {
+			"description": "1.5-inch long test section",
+			"length_atoms": "3",
+			"hole_diameter": "4.5",
+			"hole_fn": "4"
 		}
 	},
 	"fileFormatVersion": "1"

@@ -581,7 +581,7 @@ const builder = new Builder({
 			cameraPosition: [-50,-50, 60],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/tograck/TOGRack2Section0.scad", ["p2014"], {
+		...multiOsdBuildRules("2023/tograck/TOGRack2Section0.scad", ["p2014","p2015"], {
 			cameraPosition: [-40,-50, 80],
 			imageSize: [384, 384],
 		}),
