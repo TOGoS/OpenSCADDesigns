@@ -1,4 +1,4 @@
-// TOGRack2Section0.2
+// TOGRack2Section0.3
 // 
 // Vertically-printable section of TOGRack
 // that clips to a Clarp2505-male or hangs on a MiniRail
@@ -6,12 +6,19 @@
 // v0.2:
 // - Deeper clarp cutouts
 // - Option for diamond-shaped holes
+// v0.3:
+// - Add optional floor holes
+// - Raise underside of floor to 6u, in case somebody wants to jam
+//   a clarp-to-minirail adapter in there or something.
 
 length_atoms = 3;
 total_height_u = 24;
 hole_diameter = 3.5; // 0.1
 // Set to -1 to use $fn as hole_fn also; set to 4 to make diamonds (and increase hole_diameter accordingly!)
 hole_fn = -1;
+floor_hole_diameter = 0; // 0.1
+floor_hole_spacing_u = 24;
+floor_hole_fn = 6;
 $fn = 48;
 
 module tr2s0__end_params() { }
@@ -44,6 +51,7 @@ function tr2s0__mirror_rathnodes(nodes, translation=[0,0], betwixt=[]) = [
 ];
 
 u    = 254/160;
+atom_u = 8;
 atom = 254/20;
 width_u = 3*24;
 
@@ -52,7 +60,7 @@ function make_clarp2505_cutout_rathnodes(pos) = tr2s0__mirror_rathnodes([
 	["togpath1-rathnode", [- 9  *u, 1*u]],
 	["togpath1-rathnode", [- 9  *u, 2*u]],
 	["togpath1-rathnode", [-10.5*u, 3.5*u]],
-	["togpath1-rathnode", [- 8.5*u, 5.5*u]],
+	["togpath1-rathnode", [- 8  *u, 6  *u]],
 ], pos);
 
 function make_notch_rathnodes(pos) =
@@ -107,6 +115,7 @@ function tr2s0_make_shape2d() =
 	];
 
 hole = togmod1_linear_extrude_y([-100,100], togmod1_make_circle(d=hole_diameter, $fn=!is_undef(hole_fn) && hole_fn > 0 ? hole_fn : $fn));
+floor_hole = togmod1_linear_extrude_y([-100,100], ["rotate", [0,0,90], togmod1_make_circle(d=floor_hole_diameter, $fn=!is_undef(floor_hole_fn) && floor_hole_fn > 0 ? floor_hole_fn : $fn)]);
 
 togmod1_domodule(["difference",
 	togmod1_linear_extrude_z([0, length_atoms*atom], tr2s0_make_shape2d()),
@@ -114,4 +123,7 @@ togmod1_domodule(["difference",
    for( xm=[-4*atom, -3*atom, 3*atom, 4*atom] )
 	for( zm=[0.5 : 1 : length_atoms] )
 	["translate", [xm,0,zm*atom], hole],
+
+	for( zm=[floor_hole_spacing_u/2 : floor_hole_spacing_u : length_atoms * atom_u] )
+	["translate", [0,0,zm*u], floor_hole],
 ]);

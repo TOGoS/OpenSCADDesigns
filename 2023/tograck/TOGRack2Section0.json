@@ -9,6 +9,14 @@
 			"length_atoms": "3",
 			"hole_diameter": "4.5",
 			"hole_fn": "4"
+		},
+		"p2016": {
+			"description": "6-inch long section with floor holes",
+			"length_atoms": "12",
+			"hole_diameter": "4.5",
+			"hole_fn": "4",
+			"floor_hole_diameter": "19.0",
+			"floor_hole_fn": "6"
 		}
 	},
 	"fileFormatVersion": "1"
