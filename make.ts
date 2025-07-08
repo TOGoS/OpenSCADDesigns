@@ -569,9 +569,9 @@ const builder = new Builder({
 			cameraPosition: [-20,-20, 20],
 			imageSize: [256, 256],
 		}),
-		...multiOsdBuildRules("2023/experimental/Clarp2508.scad", ["p2006","p2007","p2008","p2009","p2013","p2017"], {
+		...multiOsdBuildRules("2023/experimental/Clarp2508.scad", ["p2006","p2007","p2008","p2009","p2013","p2017","p2018"], {
 			cameraPosition: [-20,-20, 40],
-			imageSize: [256, 256],
+			imageSize: [384, 384],
 		}),
 		...multiOsdBuildRules("2023/tograck/GX12Breakout1.scad", ["p2010","p2012"], {
 			cameraPosition: [-50,-50, 60],

@@ -35,6 +35,17 @@
 			"hole_spacing_u": "8",
 			"hole_diameter": "4.5",
 			"length_u": "48"
+		},
+		"p2018": {
+			"description": "1/2-inch-deep Clurp2505-compatible female conduit",
+			"part": "Clarp2508-female",
+			"ms_pos_u": "[2.5, -2.5]",
+			"thickness_u": "1.5",
+			"outer_width_u": "24",
+			"outer_depth_u": "8",
+			"hole_spacing_u": "8",
+			"hole_diameter": "4.5",
+			"length_u": "48"
 		}
 	},
 	"fileFormatVersion": "1"
