@@ -6,7 +6,7 @@
 // - Add back_fat_u and panel_thickness_u options, matching TagPanel1.3
 
 size_atoms = [5,7];
-panel_thickness_u = 15; // 0.0001
+panel_thickness_u = 1; // 0.0001
 back_fat_u = 1;
 mounting_hole_style = "THL-1001"; // ["THL-1001", "THL-1004", "THL-1008", "straight-4.5mm", "straight-5mm"]
 mounting_hole_frequency = 1; // [1,2]

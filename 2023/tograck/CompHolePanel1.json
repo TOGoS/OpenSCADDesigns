@@ -1,0 +1,22 @@
+{
+	"parameterSets": {
+		"p2019": {
+			"description": "Single button panel",
+			"size": "[\"3atom\", \"7atom\"]",
+			"panel_basic_offset": "-1u",
+			"panel_thickness": "2u",
+			"back_fat": "2u",
+			"mounting_hole_frequency": "1",
+			"mounting_hole_style": "THL-1001",
+			"comp_col_count": "1",
+			"comp_col_spacing": "20u",
+			"comp_counterbore_diameter": "1inch",
+			"comp_neck_diameter": "12.5mm",
+			"comp_neck_length": "1.6mm",
+			"comp_row_count": "1",
+			"comp_row_spacing": "24u",
+			"outer_offset": "-0.1mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
