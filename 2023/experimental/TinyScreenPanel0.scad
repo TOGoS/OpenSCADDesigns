@@ -1,8 +1,14 @@
+// TinyScreenPanel0.2
+// 
 // Main part of screen
 // 27.3mm wide x 19.5mm tall should do for screen
 // Maybe leave 12.7mm at top and bottom for pin heads and the cable
 // Whole board is 28.5mm wide x 27.6mm tall
 // Mounting hole centers are on corners of a ~24mm square
+// 
+// Changes:
+// v0.2:
+// - Make thickness configurable
 
 glass_cutout_width_mm   = 27.3;
 glass_cutout_height_mm  = 19.5;
@@ -10,6 +16,7 @@ extra_cutout_width_mm   = 12.7;
 extra_cutout_height_mm  = 26.0;
 module_cutout_width_mm  = 28.9;
 module_cutout_height_mm = 28.0;
+thickness_mm = 3.175;
 
 $fn = 24;
 
@@ -41,7 +48,7 @@ module_cutout_2d = togmod1_make_rect([module_cutout_width_mm, module_cutout_heig
 tiny_screw_hole_2d = togmod1_make_circle(d=2);
 
 togmod1_domodule(["difference",
-	togmod1_linear_extrude_z([0,3.175], ["difference",
+	togmod1_linear_extrude_z([0,thickness_mm], ["difference",
 		block_2d,
 		glass_cutout_2d,
 		for( xm=[-1,1] ) for( ym=[-1,1] ) ["translate", [xm*12,ym*12], tiny_screw_hole_2d],

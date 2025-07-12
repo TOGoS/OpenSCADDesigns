@@ -15,7 +15,16 @@
 			"glass_cutout_width_mm": "27.6",
 			"module_cutout_height_mm": "28.3",
 			"module_cutout_width_mm": "29.2"
-      }
+		},
+		"p2024": {
+			"thickness_mm": "6.35",
+			"extra_cutout_height_mm": "26",
+			"extra_cutout_width_mm": "12.7",
+			"glass_cutout_height_mm": "20",
+			"glass_cutout_width_mm": "28",
+			"module_cutout_height_mm": "29",
+			"module_cutout_width_mm": "29"
+		}
 	},
 	"fileFormatVersion": "1"
 }

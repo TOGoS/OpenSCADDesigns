@@ -589,7 +589,7 @@ const builder = new Builder({
 			cameraPosition: [-40,-50, 80],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/experimental/TinyScreenPanel0.scad", ["p2022","p2023"], {
+		...multiOsdBuildRules("2023/experimental/TinyScreenPanel0.scad", ["p2022","p2023","p2024"], {
 			cameraPosition: [-40,-50, 80],
 			imageSize: [256, 256],
 		}),
