@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p2022": {
+			"extra_cutout_height_mm": "26",
+			"extra_cutout_width_mm": "12.7",
+			"glass_cutout_height_mm": "19.5",
+			"glass_cutout_width_mm": "27.3",
+			"module_cutout_height_mm": "28",
+			"module_cutout_width_mm": "28.9"
+		},
+		"p2023": {
+			"extra_cutout_height_mm": "26",
+			"extra_cutout_width_mm": "12.7",
+			"glass_cutout_height_mm": "19.6",
+			"glass_cutout_width_mm": "27.6",
+			"module_cutout_height_mm": "28.3",
+			"module_cutout_width_mm": "29.2"
+      }
+	},
+	"fileFormatVersion": "1"
+}

@@ -589,6 +589,10 @@ const builder = new Builder({
 			cameraPosition: [-40,-50, 80],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/experimental/TinyScreenPanel0.scad", ["p2022","p2023"], {
+			cameraPosition: [-40,-50, 80],
+			imageSize: [256, 256],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
