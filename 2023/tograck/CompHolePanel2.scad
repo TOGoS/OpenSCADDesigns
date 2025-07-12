@@ -1,4 +1,4 @@
-// CompHolePanel2.1
+// CompHolePanel2.2
 //
 // TOGRack panel with configurable component holes.
 // Complex compspecs can't be entered into OpenSCAD's customizer,
@@ -10,6 +10,8 @@
 // - Include p2012 builtin
 // v2.1
 // - Add p2019 builtin, mostly for show
+// v2.2:
+// - Add p2024 and p2025 builtins
 
 /* [Metadata] */
 
@@ -41,12 +43,17 @@ p2012_compspec = ["array", [2,2], ["20u","24u"],
 	["cb-hole", "12.1mm", "3mm", "21mm"]
 ];
 p2019_compspec = ["cb-hole", "12.5mm", "1.6mm", "1inch"];
+p2025_compspec = ["union",
+	["translate", [0,"5/8inch"], "p2024"],
+	["translate", [0,"-5/8inch"], "p2019"],
+];
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGRackPanel1.scad>
 use <../lib/TOGUnits1.scad>
+use <../lib/P2024Hole.scad>
 
 function u_to_mm(u)     = u * 254/160;
 function atoms_to_mm(a) = a * 127/10;
@@ -116,6 +123,8 @@ function compspec_to_togmod(comp) =
 	// Handle aliases:
 	comp == "p2012" ? compspec_to_togmod(p2012_compspec) :
 	comp == "p2019" ? compspec_to_togmod(p2019_compspec) :
+	comp == "p2024" ? p2024_make_hole([$top_z, $bottom_z]) :
+	comp == "p2025" ? compspec_to_togmod(p2025_compspec) :
 	assert(false, str("Unrecognized component: '", comp, "'"));
 
 togmod1_domodule(tograckpanel1_panel(
