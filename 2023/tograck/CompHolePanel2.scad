@@ -1,4 +1,4 @@
-// CompHolePanel2.0
+// CompHolePanel2.1
 //
 // TOGRack panel with configurable component holes.
 // Complex compspecs can't be entered into OpenSCAD's customizer,
@@ -7,6 +7,9 @@
 // 
 // v2.0
 // - Copied from CompHolePanel1.3
+// - Include p2012 builtin
+// v2.1
+// - Add p2019 builtin, mostly for show
 
 /* [Metadata] */
 
@@ -34,10 +37,10 @@ $fn = 24;
 
 module compholepanel2__end_params() { }
 
-p2012_compspec = 
-	["array", [2,2], ["20u","24u"],
-		["cb-hole", "12.1mm", "3mm", "21mm"]
-	];
+p2012_compspec = ["array", [2,2], ["20u","24u"],
+	["cb-hole", "12.1mm", "3mm", "21mm"]
+];
+p2019_compspec = ["cb-hole", "12.5mm", "1.6mm", "1inch"];
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -112,6 +115,7 @@ function compspec_to_togmod(comp) =
 	comp[0] == "union" ? ["union", for(i=[1:1:len(comp)-1]) compspec_to_togmod(comp[i])] :
 	// Handle aliases:
 	comp == "p2012" ? compspec_to_togmod(p2012_compspec) :
+	comp == "p2019" ? compspec_to_togmod(p2019_compspec) :
 	assert(false, str("Unrecognized component: '", comp, "'"));
 
 togmod1_domodule(tograckpanel1_panel(
