@@ -46,6 +46,49 @@
 			"hole_spacing_u": "8",
 			"hole_diameter": "4.5",
 			"length_u": "48"
+		},
+		"p203x": "1/4\"-deep male2 in chunk length increments",
+		"p2034": {
+			"description": "6-inch long Clurp2505-compatible male2 conduit",
+			"part": "Clarp2508-male2",
+			"length_u": "96",
+			"ms_pos_u": "[2.5, -2.5]",
+			"ms_width_u": "1",
+			"outer_depth_u": "4",
+			"outer_width_u": "24",
+			"thickness_u": "1.5",
+			"hole2_diameter": "9",
+			"hole2_spacing_u": "24",
+			"hole_diameter": "4.5",
+			"hole_spacing_u": "8"
+		},
+		"p2036": {
+			"description": "9-inch long Clurp2505-compatible male2 conduit",
+			"part": "Clarp2508-male2",
+			"length_u": "144",
+			"ms_pos_u": "[2.5, -2.5]",
+			"ms_width_u": "1",
+			"outer_depth_u": "4",
+			"outer_width_u": "24",
+			"thickness_u": "1.5",
+			"hole2_diameter": "9",
+			"hole2_spacing_u": "24",
+			"hole_diameter": "4.5",
+			"hole_spacing_u": "8"
+		},
+		"p2038": {
+			"description": "12-inch long Clurp2505-compatible male2 conduit",
+			"part": "Clarp2508-male2",
+			"length_u": "192",
+			"ms_pos_u": "[2.5, -2.5]",
+			"ms_width_u": "1",
+			"outer_depth_u": "4",
+			"outer_width_u": "24",
+			"thickness_u": "1.5",
+			"hole2_diameter": "9",
+			"hole2_spacing_u": "24",
+			"hole_diameter": "4.5",
+			"hole_spacing_u": "8"
 		}
 	},
 	"fileFormatVersion": "1"
