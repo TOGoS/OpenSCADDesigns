@@ -1,22 +1,28 @@
 {
 	"parameterSets": {
-		"p2014": {
-			"description": "1.5-inch long test section",
-			"length_atoms": "3"
-		},
 		"p2015": {
 			"description": "1.5-inch long test section",
 			"length_atoms": "3",
-			"hole_diameter": "4.5",
+			"hole_style": "straight-4.5mm",
 			"hole_fn": "4"
 		},
 		"p2016": {
 			"description": "6-inch long section with floor holes",
 			"length_atoms": "12",
-			"hole_diameter": "4.5",
+			"hole_style": "straight-4.5mm",
 			"hole_fn": "4",
 			"floor_hole_diameter": "19.0",
 			"floor_hole_fn": "6"
+		},
+		"p2027": {
+			"description": "1.5-inch flat section with lots of holes",
+			"length_atoms": "3",
+			"total_height_u": "8",
+			"hole_style": "THL-1001",
+			"more_holes": "true",
+			"floor_hole_diameter": "12.7",
+			"floor_hole_fn": "6",
+			"floor_hole_spacing_u": "24"
 		}
 	},
 	"fileFormatVersion": "1"
