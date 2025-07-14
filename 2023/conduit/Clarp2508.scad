@@ -1,4 +1,4 @@
-// Clarp2508.0.7
+// Clarp2508.0.8
 // 
 // Generalization of Clarp2505.
 // Experimental class of shapes defined by offset (from 'top left
@@ -20,11 +20,14 @@
 // v0.7:
 // - Clarp2508-male2 shape, which should be better suited when depth <= 4u
 // - Option for second set of holes
+// v0.8:
+// - Clarp2508-male3 shape, which is similar to male2 but avoiding
+//   unprintable overhang when printed horizontally
 // 
 // TODO: Parse ms_* params from a string, like Clarp2508:2.5u,2.5u,1u,
 // so that it can be referenced by Clarp2507 or whatever.
 
-part = "Clarp2508-male"; // ["Clarp2508-male","Clarp2508-male2","Clarp2508-female","Clarp2508-flangeless-male"]
+part = "Clarp2508-male"; // ["Clarp2508-male","Clarp2508-male2","Clarp2508-male3","Clarp2508-female","Clarp2508-flangeless-male"]
 ms_pos_u = [2.5, -1.5]; // 0.05
 ms_width_u = 1; // 0.05
 outer_width_u = 12;
@@ -135,7 +138,7 @@ function clarp2508_make_m_rath(ms_pos, ms_width, outer_width, outer_depth, thick
 		["togpath1-rathnode", [       x0    ,   y1  ], if(_outer_bevel>0)["bevel", _outer_bevel], if(_outer_bevel>0)["round", _outer_bevel]],
 	])];
 
-function clarp2508_make_m2_rath(ms_pos, ms_width, outer_width, outer_depth, thickness=1*u, top_inner_bevel=0.5*u, outer_bevel=2*u) =
+function clarp2508_make_m2_rath(ms_pos, ms_width, outer_width, outer_depth, thickness=1*u, outer_bevel=2*u) =
 	assert( outer_depth >= thickness*2 )
 	let(x0 = -outer_width/2)
 	let(x1 = -outer_width/2 + outer_bevel)
@@ -165,7 +168,49 @@ function clarp2508_make_m2_rath(ms_pos, ms_width, outer_width, outer_depth, thic
 	   ["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
 		// Outer clip:
 		each [for(p=ms_points) ["togpath1-rathnode", p]],
-		["togpath1-rathnode", [ms_point_z[0],    0  ], /*["bevel", top_inner_bevel]*/],
+		["togpath1-rathnode", [ms_point_z[0],    0  ]],
+		// Outer elbow:
+		["togpath1-rathnode", [       x1,    0  ], ["round", outer_bevel/2]],
+		each y0+outer_bevel < y1-outer_bevel ? [
+			["togpath1-rathnode", [       x0    ,  y0+outer_bevel  ], ["round", outer_bevel/2]],
+			["togpath1-rathnode", [       x0    ,  y1-outer_bevel  ], ["round", outer_bevel/2]],
+		] : [
+			["togpath1-rathnode", [       x0    ,  y0+outer_bevel  ], ["round", outer_bevel/2]],
+		],
+		["togpath1-rathnode", [       x1,   y1  ], ["round", outer_bevel/2]],
+	])];
+
+function clarp2508_make_m3_rath(ms_pos, ms_width, outer_width, outer_depth, thickness=1*u, outer_bevel=2*u) =
+	assert( outer_depth >= thickness*2 )
+	let(x0 = -outer_width/2)
+	let(x1 = -outer_width/2 + outer_bevel)
+	let(y0 =  0          )
+	let(y1 =  outer_depth)
+	let(ms_points = clarp2508_ms_points(ms_pos, ms_width, x0))
+	let(ms_point_a = ms_points[0])
+	let(ms_point_z = ms_points[len(ms_points)-1])
+	let(r0 = min(ms_width, thickness)*255/256)
+	let(iy0 = thickness*0.5, iy1 = y1 - thickness)
+	let(inner_ydiff = iy1 - iy0)
+	let(inner_bevel1 = min(ms_point_z[0]-x0, ms_point_z[0]-x0, inner_ydiff))
+	let(inner_bevel2 = min(inner_ydiff - inner_bevel1, outer_bevel-1.3))
+	assert(outer_depth > 0, str("Too short for this shape; maybe use flangeless-male, instead"))
+	["togpath1-rath", each clarp2508__mirror_rathnodes([
+		// Inner elbow:
+		each inner_ydiff > inner_bevel1 ? [
+			["togpath1-rathnode", [ms_point_z[0]-inner_bevel1+thickness + inner_bevel2, iy1             ]],
+			["togpath1-rathnode", [ms_point_z[0]-inner_bevel1+thickness               , iy1-inner_bevel2]],
+			["togpath1-rathnode", [ms_point_z[0]-inner_bevel1+thickness, thickness*0.4+inner_bevel1]],
+		] : [
+			["togpath1-rathnode", [ms_point_z[0]-inner_bevel1+thickness, thickness*0.4+inner_bevel1], ["round", min(0.5*u, inner_bevel1)]],
+		],
+		["togpath1-rathnode", [ms_point_z[0]             +thickness, thickness*0.4], ["round", min(1*u, inner_bevel1)]],
+		// Inner clip:
+		["togpath1-rathnode", [ms_point_z[0]+thickness, ms_point_a[1]-ms_width+thickness], ["round", r0]],
+	   ["togpath1-rathnode", [ms_point_a[0]+ms_width, ms_point_a[1]-ms_width], ["round", r0]],
+		// Outer clip:
+		each [for(p=ms_points) ["togpath1-rathnode", p]],
+		["togpath1-rathnode", [ms_point_z[0],    0  ]],
 		// Outer elbow:
 		["togpath1-rathnode", [       x1,    0  ], ["round", outer_bevel/2]],
 		each y0+outer_bevel < y1-outer_bevel ? [
@@ -199,6 +244,8 @@ togmod1_domodule(
 		part == "Clarp2508-male" ? clarp2508_make_m_rath(
 		   ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
 		part == "Clarp2508-male2" ? clarp2508_make_m2_rath(
+		   ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
+		part == "Clarp2508-male3" ? clarp2508_make_m3_rath(
 		   ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
 		part == "Clarp2508-female" ? clarp2508_make_f_rath(
 			ms_pos_u*u, ms_width_u*u, outer_width_u*u, outer_depth_u*u, thickness=thickness_u*u) :
