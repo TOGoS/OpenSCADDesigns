@@ -1,4 +1,4 @@
-// TOGHoleLib2.25
+// TOGHoleLib2.26
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -67,6 +67,8 @@
 //   when they want to override counterbore depth but not mess with inset of other things.
 // v2.25:
 // - tog_holelib2_slot accepts counterbore_inset parameter
+// v2.26:
+// - tog_holelib2_slot can handle type = "none" by returning ["union"]
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -315,6 +317,7 @@ function tog_holelib2__decode_holezds(
 	inset = undef,
 	counterbore_inset = undef
 ) =
+	type == "none" ? [] :
 	let(inch = 25.4)
 	// TODO: More generically parse the third token as inset, be it 3/16in or 5u
 	type == "THL-1006-3/16in" ? tog_holelib2__decode_holezds("THL-1006", inset=3/16*inch) :
@@ -346,6 +349,7 @@ function tog_holelib2_slot(
 				tog_holelib2_hole(type, depth=-zs[0]-zs[1], overhead_bore_height=zs[2]-zs[1], counterbore_inset=counterbore_inset)]] :
 
 	let( holezds = tog_holelib2__decode_holezds(type, counterbore_inset=counterbore_inset) )
+	len(holezds) < 2 ? ["union"] :
 	let( zds = [for(i=[1:1:len(holezds)-1])
 		let(hzd=holezds[i])
 		[hzd[0][0]*zs[0] + hzd[0][1]*zs[1] + hzd[0][2]*zs[2] + hzd[0][3]*1, hzd[1]]
