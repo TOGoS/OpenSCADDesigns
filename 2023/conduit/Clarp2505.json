@@ -1,26 +1,34 @@
 {
 	"parameterSets": {
 		"p2001": {
-			"$fn": "24",
-			"$tgx11_offset": "-0.1",
+			"part": "Clarp2505-male",
+			"width_u": "24",
+			"length_u": "48",
 			"bottom_corner_shape": "footed",
 			"hole_spacing_u": "24",
 			"hole_style": "THL-1006",
-			"length_u": "48",
-			"part": "Clarp2505-male",
 			"slot_length_u": "4",
-			"width_u": "24"
+			"end_offset": "0"
 		},
 		"p2002": {
-			"$fn": "24",
-			"$tgx11_offset": "-0.1",
+			"part": "Clarp2505-female",
+			"width_u": "24",
+			"length_u": "48",
 			"bottom_corner_shape": "footed",
 			"hole_spacing_u": "24",
 			"hole_style": "THL-1006",
-			"length_u": "48",
-			"part": "Clarp2505-female",
 			"slot_length_u": "4",
-			"width_u": "24"
+			"end_offset": "0"
+		},
+		"p2028": {
+			"part": "Clarp2505-female",
+			"width_u": "24",
+			"length_u": "96",
+			"bottom_corner_shape": "footed",
+			"hole_spacing_u": "24",
+			"hole_style": "THL-1006",
+			"slot_length_u": "4",
+			"end_offset": "-0.2"
 		}
 	},
 	"fileFormatVersion": "1"

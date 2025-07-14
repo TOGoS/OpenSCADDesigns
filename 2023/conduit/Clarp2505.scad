@@ -1,4 +1,4 @@
-// Clarp2505.1.3
+// Clarp2505.1.4
 // 
 // Prototype clippy thing
 // 
@@ -14,6 +14,8 @@
 // - Fix hole placement
 // v1.3:
 // - More specific part names
+// v1.4:
+// - end_offset option
 
 width_u = 24;
 length_u = 2;
@@ -23,6 +25,8 @@ bottom_corner_shape = "footed"; // ["footed","beveled"]
 hole_style = "THL-1006"; 
 hole_spacing_u = 24;
 slot_length_u = 4;
+// How far to extend the ends?
+end_offset = -0.1; // 0.1
 $tgx11_offset = -0.1;
 $fn = 24;
 
@@ -105,7 +109,7 @@ function clarp_pd_to_polypoints(pd) =
 	[for(p=pd) clarp_pd_to_vec2(p, u, $tgx11_offset)];
 
 // floor_posori = [x,y,rotation,thickness] of 'floor' (where mounting holes go)
-function make_clgeneric(shape2d, zrange, floor_posori=[0,0,0,1]) =
+function make_clgeneric(shape2d, zrange, floor_posori=[0,0,0,1], end_offset=0) =
 	let(u = togridlib3_decode([1, "u"]))
 	let(counterbore_inset = min(3.175,floor_posori[3]/2))
 	let(hole = ["render", ["rotate", [-90,0,0],
@@ -117,12 +121,12 @@ function make_clgeneric(shape2d, zrange, floor_posori=[0,0,0,1]) =
 	]])
 	let(hole_spacing = hole_spacing_u*u)
 	["difference",
-		togmod1_linear_extrude_z(zrange, shape2d),
+		togmod1_linear_extrude_z([zrange[0]-end_offset, zrange[1]+end_offset], shape2d),
 		["union", for(zc=[zrange[0]/hole_spacing + 0.5 : 1 : zrange[1]/hole_spacing]) ["translate", [floor_posori[0], floor_posori[1], zc*hole_spacing], ["rotate", [0,0,floor_posori[2]], hole]]],
 	];
 
-function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0,u]) =
-	make_clgeneric(togmod1_make_polygon(clarp_pd_to_polypoints(pd)), zrange, floor_posori);
+function clarp_pd_to_polyhedron(pd, zrange, floor_posori=[0,0,0,u], end_offset=end_offset) =
+	make_clgeneric(togmod1_make_polygon(clarp_pd_to_polypoints(pd)), zrange, floor_posori, end_offset=end_offset);
 
 function mirror_point(point) = [-point[0], point[1]];
 
@@ -179,7 +183,7 @@ function make_clurp_2d() =
 	)];
 
 function make_clurp() =
-	make_clgeneric(make_clurp_2d(), [0, length_u*u], [0,14*u,180,2*u]);
+	make_clgeneric(make_clurp_2d(), [0, length_u*u], [0,14*u,180,2*u], end_offset=end_offset);
 
 function make_the_thing(part) =
 	part == "Clarp2505" ? ["union",
