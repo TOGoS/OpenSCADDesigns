@@ -217,7 +217,7 @@ function openscadCommand(opts : {
 	]};
 }
 
-function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Commande {
+function magickCommand(inFile:FilePath, rotation:number, crushSize:number, outFile:FilePath) : Commande {
 	const subSize = (crushSize * 240/256)|0;
 	return {argv: [
 		"x:Magick",
@@ -226,8 +226,9 @@ function magickCommand(inFile:FilePath, crushSize:number, outFile:FilePath) : Co
 		'-trim',
 		'+repage',
 		// '-filter', 'Lanczos',
-		'-resize', `${subSize}x${subSize}`,
 		'-background', '#1d1f21',
+		'-rotate', `${rotation}`,
+		'-resize', `${subSize}x${subSize}`,
 		'-gravity', 'center',
 		'-extent', `${crushSize}x${crushSize}`,
 		'-dither', 'None',
@@ -257,6 +258,7 @@ function osdBuildRules(partId:string, opts:{
 	inScadFile:FilePath,
 	cameraPosition?: Vec3<number>,
 	renderSize?: Vec2<number>,
+	imageRotation?: number,
 	imageSize?: Vec2<number>,
 	presetName?: string
 }) : {[targetName:string]: BuildRule} {
@@ -284,22 +286,25 @@ function osdBuildRules(partId:string, opts:{
 			inConfigFile = `${m[1]}.json`;
 		}
 	}
+
+	const rotation = opts.imageRotation ?? 0;
+	const rotPart = rotation != 0 ? `-rot${opts.imageRotation}` : '';	
 	
 	const crushSizes = [512, 384, 256, 128];
 	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
 	for( const _size of crushSizes ) {
 		const size = [_size, _size];
-		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${size.join('x')}.png`;
+		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}${rotPart}.${size.join('x')}.png`;
 		crushedPngBuildRules[crushedPngPath] = {
 			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
 				await mkdir(tempDir);
-				await run(magickCommand(renderedPngPath, _size, ctx.targetName));
+				await run(magickCommand(renderedPngPath, rotation, _size, ctx.targetName));
 			}
 		};
 	}
 	const imageSize = opts.imageSize ?? [256, 256];
-	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}.${imageSize.join('x')}.png`;
+	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}${rotPart}.${imageSize.join('x')}.png`;
 
 	const prereqs = [];
 	prereqs.push(opts.inScadFile);
@@ -374,6 +379,7 @@ function osdBuildRules(partId:string, opts:{
 function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	cameraPosition?: Vec3<number>,
 	renderSize?: Vec2<number>,
+	imageRotation?: number,
 	imageSize?: Vec2<number>,
 }={}) : {[targetName:string]: BuildRule} {
 	return flattenObj(partIds.map(partId => osdBuildRules(partId, {
@@ -565,8 +571,13 @@ const builder = new Builder({
 			cameraPosition: [-20,-20, 20],
 			imageSize: [256, 256],
 		}),
-		...multiOsdBuildRules("2023/conduit/Clarp2508.scad", ["p2006","p2007","p2008","p2009","p2013","p2017","p2018","p2034","p2036","p2038","p2044","p2046","p2048"], {
+		...multiOsdBuildRules("2023/conduit/Clarp2508.scad", ["p2006","p2007","p2008","p2009","p2013","p2017","p2018"], {
 			cameraPosition: [-20,-20, 40],
+			imageSize: [384, 384],
+		}),
+		...multiOsdBuildRules("2023/conduit/Clarp2508.scad", ["p2034","p2036","p2038","p2044","p2046","p2048"], {
+			cameraPosition: [-20,-20, 40],
+			imageRotation: 225,
 			imageSize: [384, 384],
 		}),
 		...multiOsdBuildRules("2023/tograck/GX12Breakout1.scad", ["p2010","p2012"], {
