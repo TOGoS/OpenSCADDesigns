@@ -604,7 +604,7 @@ const builder = new Builder({
 			cameraPosition: [-40,-50,-80],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/misc/PlantLabel1.scad", ["p2029"], {
+		...multiOsdBuildRules("2023/misc/PlantLabel1.scad", ["p2029","p2050"], {
 			cameraPosition: [ 40,-50, 80],
 			imageSize: [384, 384],
 		}),

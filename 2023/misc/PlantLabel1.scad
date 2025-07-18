@@ -1,6 +1,11 @@
-// PlantLabel1.0
+// PlantLabel1.1
 // 
 // A thing you can write on and stick in the dirt.
+// 
+// Changes:
+// v1.1:
+// - Allow label and post to be the same width
+// - Adjust rounding radii to allow for arbitrarily narrow labels/posts
 
 thickness = "1/8inch";
 label_width = "3inch";
@@ -27,25 +32,30 @@ thickness_mm = togunits1_to_mm(thickness);
 hole_2d = togmod1_make_circle(d = 4.5);
 
 // TODO: Rounding will need adjustment for very small sizes
-labr = atom/2;
-postipr = 6;
+labr    = min(atom/2, labw*127/256, labh*127/256);
+postipr = min(atom/2, posw*31/256);
+hipr    = min(labr, abs(labw - posw)*63/256);
 
 togmod1_domodule(["intersection",
 	togmod1_linear_extrude_z([-1, thickness_mm+1], ["difference",
 		togpath1_rath_to_polygon(["togpath1-rath",
 			["togpath1-rathnode", [-labw/2, labh       ], ["round", labr]],
-			["togpath1-rathnode", [-labw/2,    0       ], ["round", labr]],
-			["togpath1-rathnode", [-posw/2,    0       ], ["round", labr]],
+			each labw != posw ? [
+				["togpath1-rathnode", [-labw/2,    0       ], ["round", hipr]],
+				["togpath1-rathnode", [-posw/2,    0       ], ["round", hipr]],
+			] : [],
 			["togpath1-rathnode", [-posw/2,-posh+posw/2], ["round", labr]],
 			["togpath1-rathnode", [-posw/4,-posh       ], ["round", postipr]],
 			["togpath1-rathnode", [ posw/4,-posh       ], ["round", postipr]],
 			["togpath1-rathnode", [ posw/2,-posh+posw/2], ["round", labr]],
-			["togpath1-rathnode", [ posw/2,    0       ], ["round", labr]],
-			["togpath1-rathnode", [ labw/2,    0       ], ["round", labr]],
+			each labw != posw ? [
+				["togpath1-rathnode", [ posw/2,    0       ], ["round", hipr]],
+				["togpath1-rathnode", [ labw/2,    0       ], ["round", hipr]],
+			] : [],
 			["togpath1-rathnode", [ labw/2, labh       ], ["round", labr]],
 		]),
 		
-		for( xm = [round(-labw/atom)/2 + 0.5 : 1 : round(labw/atom)/2 - 0.4] )
+		for( xm = [round(-labw/atom+1/4)/2 + 0.5 : 1 : round(labw/atom-1/4)/2 - 0.4] )
 		for( y = labh-atom/2 ) ["translate", [xm*atom,y], hole_2d]
 	]),
 	
