@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2029": {
+			"label_height": "3inch",
+			"label_width": "3inch",
+			"post_height": "3inch",
+			"post_width": "3/4inch",
+			"thickness": "1/8inch",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}
