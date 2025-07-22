@@ -608,7 +608,7 @@ const builder = new Builder({
 			cameraPosition: [ 40,-50, 80],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/experimental/QuarterInchRail0.scad", ["p2051"], {
+		...multiOsdBuildRules("2023/experimental/QuarterInchRail0.scad", ["p2051", "p2052"], {
 			cameraPosition: [ 40, 40, 40],
 			imageSize: [384, 384],
 		}),

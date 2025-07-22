@@ -1,6 +1,7 @@
 {
 	"parameterSets": {
-		"p2051": {}
+		"p2051": {},
+		"p2052": {"hole_style": "square"}
 	},
 	"fileFormatVersion": "1"
 }
