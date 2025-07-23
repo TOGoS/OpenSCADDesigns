@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2054": {
+			"block_size": "[\"1chunk\", \"1chunk\", \"1+2/6chunk\"]",
+			"slot_size": "[\"30mm\", \"8mm\", \"1+1/6chunk\"]",
+			"slot_wall_thickness": "3mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
