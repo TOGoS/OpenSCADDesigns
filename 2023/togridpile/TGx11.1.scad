@@ -1,4 +1,4 @@
-// TGx11.1.19
+// TGx11.1.20
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -13,6 +13,8 @@
 // - bottom_foot_bevel option
 // v11.1.19:
 // - cavity_type = "basic" option, to make a basic cavity
+// v11.1.20:
+// - Adjust cavity shape to make it 'Clarp2505 compatible'
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -128,21 +130,21 @@ module tgmain() {
 	function basic_cavity() =
 		let(block_size = togridlib3_decode_vector(block_size_ca))
 		let(wall_thickness = u)
-		let(bev = togridlib3_decode([1, "tgp-standard-bevel"]))
+		let(bev = max(193/64*u, togridlib3_decode([1, "tgp-standard-bevel"])))
 		tphl1_make_polyhedron_from_layer_function(
 			[
-				[                4*u, -1*u],
-				[                5*u, -0*u],
-				// TODO: Adjust based on block height, maybe use cos or something
-				[block_size[2] - 7*u, -0*u],
-				[block_size[2] - 3*u, -1*u],
-				[block_size[2] - 1*u, -2*u],
-				[block_size[2] + 2*u, -2*u],
+				[                4*u, -wall_thickness - 1*u],
+				[                5*u, -wall_thickness],
+				// TODO: Adjust sublip curve based on block height, maybe use a cosine
+				[block_size[2] - 7*u, -wall_thickness],
+				[block_size[2] - 3*u, -2*u],
+				[block_size[2] - 2*u, -3*u],
+				[block_size[2] + 2*u, -3*u],
 			],
 			function(zo) togvec0_offset_points(
 				togpath1_rath_to_polypoints(togpath1_make_rectangle_rath(
 				   [block_size[0], block_size[1]],
-					corner_ops=[["offset", -wall_thickness], ["bevel", bev], ["round", bev], ["offset", zo[1]]]
+					corner_ops=[["bevel", bev], ["round", bev], ["offset", zo[1]]]
 			   )),
 				zo[0]
 			)

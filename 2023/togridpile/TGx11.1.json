@@ -100,6 +100,21 @@
 			"shell_xs_angle": "0",
 			"shell_xs_offset": "10",
 			"top_segmentation": "block"
+		},
+		"p2053": {
+			"atom_hole_style": "none",
+			"block_height_u": "32",
+			"block_size_chunks": "[1, 1]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"top_segmentation": "block",
+			"cavity_type": "basic",
+			"item": "block",
+			"lip_height": "2.54",
+			"mode": "normal",
+			"offset": "-0.1"
 		}
 	},
 	"parameterSets": "",
