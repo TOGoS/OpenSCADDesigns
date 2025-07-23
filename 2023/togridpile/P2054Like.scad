@@ -1,10 +1,15 @@
-// P2054Like v1.0
+// P2054Like v1.1
 // 
 // TGx11.1-based holder with rectangular slots
+// 
+// v1.1:
+// - thumb_slot_diameter is now configurable
+// - slot_size can be zero
 
 block_size = ["1chunk","1chunk","1+2/6chunk"];
 slot_size = ["30mm","8mm","1+1/6chunk"];
 slot_wall_thickness = "3mm";
+thumb_slot_diameter = "3/4inch";
 
 /* [Lip] */
 
@@ -52,7 +57,10 @@ slot_wall_thickness_mm = togunits1_decode(slot_wall_thickness);
 slot_pitch_mm = slot_size_mm[1] + slot_wall_thickness_mm;
 slot_count = floor( (block_size_mm[1]-slot_wall_thickness_mm)/slot_pitch_mm );
 
-slot = togmod1_make_cuboid([slot_size_mm[0], slot_size_mm[1], slot_size_mm[2]*2]);
+slot = slot_size_mm[0] <= 0 || slot_size_mm[1] <= 0 || slot_size_mm[2] <= 0 ? ["union"] :
+	togmod1_make_cuboid([slot_size_mm[0], slot_size_mm[1], slot_size_mm[2]*2]);
+
+thumb_slot_diameter_mm = togunits1_decode(thumb_slot_diameter);
 
 togmod1_domodule(["difference",
 	tgx11_block(
@@ -65,8 +73,8 @@ togmod1_domodule(["difference",
 		bottom_v6hc_style   = bottom_v6hc_style
 	),
 	
-	["translate", [0,0,block_size_mm[2]], togmod1_linear_extrude_y([-block_size_mm[1], block_size_mm[1]],
-		togmod1_make_circle(d=19.05)
+	if( thumb_slot_diameter_mm > 0 ) ["translate", [0,0,block_size_mm[2]], togmod1_linear_extrude_y([-block_size_mm[1], block_size_mm[1]],
+		togmod1_make_circle(d=thumb_slot_diameter_mm)
 	)],
 	
    for( ym=[-slot_count/2 + 0.5 : 1 : slot_count/2 - 0.5] )

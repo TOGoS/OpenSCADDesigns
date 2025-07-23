@@ -3,7 +3,22 @@
 		"p2054": {
 			"block_size": "[\"1chunk\", \"1chunk\", \"1+2/6chunk\"]",
 			"slot_size": "[\"30mm\", \"8mm\", \"1+1/6chunk\"]",
-			"slot_wall_thickness": "3mm"
+			"slot_wall_thickness": "3mm",
+			"thumb_slot_diameter": "3/4inch"
+		},
+		"p2055": {
+			"description": "Thumb drive holder",
+			"block_size": "[\"2atom\", \"2chunk\", \"5atom\"]",
+			"slot_size": "[\"20mm\", \"11mm\", \"58mm\"]",
+			"slot_wall_thickness": "3mm",
+			"thumb_slot_diameter": "1/2inch"
+		},
+		"p2056": {
+			"description": "?? holder or just spacer",
+			"block_size": "[\"1atom\", \"2chunk\", \"5atom\"]",
+			"slot_size": "[\"7mm\", \"20mm\", \"58mm\"]",
+			"slot_wall_thickness": "3mm",
+			"thumb_slot_diameter": "0mm"
 		}
 	},
 	"fileFormatVersion": "1"
