@@ -612,7 +612,7 @@ const builder = new Builder({
 			cameraPosition: [ 40, 40, 40],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/togridpile/TGx11.1.scad", ["p2053"], {
+		...multiOsdBuildRules("2023/togridpile/TGx11.1.scad", ["p2053","p2058"], {
 			cameraPosition: [-30,-40, 30],
 			imageSize: [256, 256],
 		}),

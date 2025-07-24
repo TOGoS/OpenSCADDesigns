@@ -1,4 +1,4 @@
-// TGx11.1.20
+// TGx11.1.21
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -15,6 +15,10 @@
 // - cavity_type = "basic" option, to make a basic cavity
 // v11.1.20:
 // - Adjust cavity shape to make it 'Clarp2505 compatible'
+// v11.1.21:
+// - Option for very specifically-sized magnet holes
+// - 'clarp2505-square' as alias for 'basic' cavity, in case I ever decide
+//   that 'basic' should be something else (like whatever it was originally)
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -22,7 +26,7 @@ block_height_u = 12;
 
 bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
 top_segmentation = "block"; // ["atom","chatom","chunk","block","none"]
-atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom"]
+atom_hole_style = "none"; // ["none","straight-5mm","THL-1001-bottom","deep-THL-1001-bottom","straight-6.4mm-2.4mm"]
 bottom_shape = "footed"; // ["footed","beveled"]
 bottom_foot_bevel = 0.0; // 0.1
 bottom_v6hc_style = "v6.1"; // ["v6.1", "none"]
@@ -38,7 +42,7 @@ offset = -0.1; // 0.1
 
 /* [Cavity] */
 
-cavity_type = "none"; // ["none", "basic"]
+cavity_type = "none"; // ["none", "basic","clarp2505-square"]
 
 /* [Preview Options] */
 
@@ -113,6 +117,8 @@ module tgmain() {
 		if( atom_hole_style == "straight-5mm" ) tphl1_make_z_cylinder(d=5, zrange=[-20, block_size[2]+20]),
 		if( atom_hole_style == "THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20)],
 		if( atom_hole_style == "deep-THL-1001-bottom" ) ["rotate", [180,0,0], tog_holelib2_hole("THL-1001", depth=block_size[2]+20, inset=3)],
+		if( atom_hole_style == "straight-6.4mm-2.4mm" ) togmod1_linear_extrude_z([-1,2.4], togmod1_make_circle(d=6.2)),
+
 	];
 
 	function blok1() = tgx11_block(
@@ -152,7 +158,7 @@ module tgmain() {
 
 	function cavity() =
 		cavity_type == "none" ? ["union"] :
-		cavity_type == "basic" ? basic_cavity() :
+		cavity_type == "basic" || cavity_type == "clarp2505-square" ? basic_cavity() :
 		assert(false, str("Unrecognized cavity type: '", cavity_type, "'"));
 	
 	function blok() = ["difference",

@@ -110,9 +110,24 @@
 			"bottom_shape": "footed",
 			"bottom_v6hc_style": "none",
 			"top_segmentation": "block",
-			"cavity_type": "basic",
+			"cavity_type": "clarp2505-square",
 			"item": "block",
 			"lip_height": "2.54",
+			"mode": "normal",
+			"offset": "-0.1"
+		},
+		"p2058": {
+			"atom_hole_style": "straight-6.4mm-2.4mm",
+			"block_height_u": "28",
+			"block_size_chunks": "[1, 1]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"top_segmentation": "block",
+			"cavity_type": "clarp2505-square",
+			"item": "block",
+			"lip_height": "1.5",
 			"mode": "normal",
 			"offset": "-0.1"
 		}
