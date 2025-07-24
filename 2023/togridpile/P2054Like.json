@@ -1,6 +1,7 @@
 {
 	"parameterSets": {
 		"p2054": {
+			"description": "Holder for WeMos D1 minis (extra tall)",
 			"block_size": "[\"1chunk\", \"1chunk\", \"1+2/6chunk\"]",
 			"slot_size": "[\"30mm\", \"8mm\", \"1+1/6chunk\"]",
 			"slot_wall_thickness": "3mm",
@@ -19,6 +20,15 @@
 			"slot_size": "[\"7mm\", \"20mm\", \"58mm\"]",
 			"slot_wall_thickness": "3mm",
 			"thumb_slot_diameter": "0mm"
+		},
+		"p2057": {
+			"description": "Holder for WeMos D1 minis (more compact than p2054)",
+			"block_size": "[\"1chunk\", \"1chunk\", \"1+3/4inch\"]",
+			"magnet_hole_depth": "2.4mm",
+			"magnet_hole_diameter": "6.2mm",
+			"slot_size": "[\"30mm\", \"8mm\", \"1+1/2inch\"]",
+			"slot_wall_thickness": "3mm",
+			"thumb_slot_diameter": "3/4inch"
 		}
 	},
 	"fileFormatVersion": "1"
