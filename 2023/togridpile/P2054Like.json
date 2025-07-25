@@ -40,6 +40,28 @@
 			"thumb_slot_diameter": "3/4inch",
 			"magnet_hole_depth": "2.4mm",
 			"magnet_hole_diameter": "6.2mm"
+		},
+		"p2060": {
+			"description": "Holder for WeMos D1 minis with long headers",
+			"block_size": "[\"1chunk\", \"2chunk\", \"1+3/4inch\"]",
+			"slot_size": "[\"29mm\", \"8mm\", \"1+1/2inch\"]",
+			"slot_wall_thickness": "12mm",
+			"slot2_pitch": "9/10inch",
+			"slot2_size": "[\"1/6inch\", \"2+3/4inch\", \"1+1/4inch\"]",
+			"thumb_slot_diameter": "3/4inch",
+			"magnet_hole_depth": "2.4mm",
+			"magnet_hole_diameter": "6.2mm"
+		},
+		"p2061": {
+			"description": "Holder for WeMos D1 minis with long headers, similar to p2060 but ~twice the slots",
+			"block_size": "[\"1chunk\", \"2chunk\", \"1+3/4inch\"]",
+			"slot_size": "[\"29mm\", \"7mm\", \"1+1/2inch\"]",
+			"slot_wall_thickness": "4mm",
+			"slot2_pitch": "9/10inch",
+			"slot2_size": "[\"1/6inch\", \"2+3/4inch\", \"1+1/4inch\"]",
+			"thumb_slot_diameter": "3/4inch",
+			"magnet_hole_depth": "2.4mm",
+			"magnet_hole_diameter": "6.2mm"
 		}
 	},
 	"fileFormatVersion": "1"
