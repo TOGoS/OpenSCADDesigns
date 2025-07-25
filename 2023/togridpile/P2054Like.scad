@@ -1,4 +1,4 @@
-// P2054Like v1.2
+// P2054Like v1.3
 // 
 // TGx11.1-based holder with rectangular slots
 // 
@@ -7,11 +7,19 @@
 // - slot_size can be zero
 // v1.2:
 // - Optional magnet holes
+// v1.3:
+// - Option for slots that go the other way,
+//   spacing defined by pitch instead of wall thickness
+// - Option for square thumb slot
+// - This is so full of weird special cases to make my 'WeMos D1 mini with tall headers holder' work
+//   that it probably should have been a new design.
 
 block_size = ["1chunk","1chunk","1+2/6chunk"];
 slot_size = ["30mm","8mm","1+1/6chunk"];
 slot_wall_thickness = "3mm";
 thumb_slot_diameter = "3/4inch";
+slot2_size = ["0inch","999inch","1inch"];
+slot2_pitch = "9/10inch";
 
 /* [Lip] */
 
@@ -60,19 +68,28 @@ lip_height_mm = togunits1_decode(lip_height);
 magnet_hole_diameter_mm = togunits1_decode(magnet_hole_diameter);
 magnet_hole_depth_mm = togunits1_decode(magnet_hole_depth);
 
-slot_size_mm = togunits1_decode_vec(slot_size);
-slot_wall_thickness_mm = togunits1_decode(slot_wall_thickness);
-slot_pitch_mm = slot_size_mm[1] + slot_wall_thickness_mm;
-slot_count = floor( (block_size_mm[1]-slot_wall_thickness_mm)/slot_pitch_mm );
+function make_slots(slot_size, block_length_mm, slot_wall_thickness=undef, slot_pitch=undef, interslot_depth_mm=0 ) =
+	assert( !is_undef(slot_wall_thickness) || !is_undef(slot_pitch) )
+	let(slot_size_mm = togunits1_decode_vec(slot_size))
+	let(slot_wall_thickness_mm = is_undef(slot_wall_thickness) ? undef : togunits1_decode(slot_wall_thickness))
+	let(slot_pitch_mm = is_undef(slot_pitch) ? slot_size_mm[1] + slot_wall_thickness_mm : togunits1_decode(slot_pitch))
+	let(slot_count = round( (block_length_mm-(is_undef(slot_wall_thickness_mm)?0:slot_wall_thickness_mm))/slot_pitch_mm ))
+	let(slot = slot_size_mm[0] <= 0 || slot_size_mm[1] <= 0 || slot_size_mm[2] <= 0 ? ["union"] :
+		togmod1_make_cuboid([slot_size_mm[0], slot_size_mm[1], slot_size_mm[2]*2]))
+	["union",
+		for( ym=[-slot_count/2 + 0.5 : 1 : slot_count/2 - 0.5] )
+		["translate", [0, ym*slot_pitch_mm, 0], slot],
+		
+		if( interslot_depth_mm > 0 && slot_count > 1 ) togmod1_make_cuboid([slot_size_mm[0]-1/256, (slot_count-1)*slot_pitch_mm, interslot_depth_mm*2])
+	];
 
 atom_bottom_subtractions = [
 	if( magnet_hole_depth_mm > 0 && magnet_hole_diameter_mm > 0 ) togmod1_linear_extrude_z([-1,magnet_hole_depth_mm], togmod1_make_circle(d=magnet_hole_diameter_mm)),
 ];
 
-slot = slot_size_mm[0] <= 0 || slot_size_mm[1] <= 0 || slot_size_mm[2] <= 0 ? ["union"] :
-	togmod1_make_cuboid([slot_size_mm[0], slot_size_mm[1], slot_size_mm[2]*2]);
-
 thumb_slot_diameter_mm = togunits1_decode(thumb_slot_diameter);
+
+function swapxy(arr) = [arr[1], arr[0], arr[2]];
 
 togmod1_domodule(["difference",
 	tgx11_block(
@@ -87,9 +104,9 @@ togmod1_domodule(["difference",
 	),
 	
 	if( thumb_slot_diameter_mm > 0 ) ["translate", [0,0,block_size_mm[2]], togmod1_linear_extrude_y([-block_size_mm[1], block_size_mm[1]],
-		togmod1_make_circle(d=thumb_slot_diameter_mm)
+	   togmod1_make_circle(d=thumb_slot_diameter_mm)
 	)],
 	
-   for( ym=[-slot_count/2 + 0.5 : 1 : slot_count/2 - 0.5] )
-	["translate", [0, ym*slot_pitch_mm, block_size_mm[2]], slot],
+	["translate", [0,0,block_size_mm[2]], make_slots( slot_size, block_size_mm[1], slot_wall_thickness=slot_wall_thickness)],
+	["translate", [0,0,block_size_mm[2]], ["rotate", [0,0,90], make_slots(swapxy(slot2_size), block_size_mm[0], slot_pitch=slot2_pitch, interslot_depth_mm=thumb_slot_diameter_mm/2+0.1)]],
 ]);
