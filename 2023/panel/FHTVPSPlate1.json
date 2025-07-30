@@ -1,0 +1,9 @@
+{
+	"parameterSets": {
+		"p2062": {
+			"thickness": "6.35",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}

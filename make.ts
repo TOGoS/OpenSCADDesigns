@@ -504,7 +504,7 @@ const builder = new Builder({
 			imageSize: [256, 256],
 		}),
 		...osdBuildRules("p1941", {
-			inScadFile: "2023/experimental/WSTYPE201630Plate1.scad",
+			inScadFile: "2023/panel/WSTYPE201630Plate1.scad",
 			presetName: "p1940",
 			cameraPosition: [-20, -20, 20],
 			imageSize: [512, 512],
@@ -619,6 +619,10 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/togridpile/P2054Like.scad", ["p2054","p2055","p2056","p2057","p2059","p2060","p2061"], {
 			cameraPosition: [-30,-40, 30],
 			imageSize: [256, 256],
+		}),
+		...multiOsdBuildRules("2023/panel/FHTVPSPlate1.scad", ["p2062"], {
+			cameraPosition: [-30,-40, 50],
+			imageSize: [384, 384],
 		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
