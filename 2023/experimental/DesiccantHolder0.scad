@@ -7,6 +7,8 @@
 // - Dimensions configurable
 // v0.3:
 // - Default thread length = 1/2inch
+// v0.4:
+// - Configurable outer_thread_radius_offset
 
 height   = "2+1/4inch";
 thread_spec = "2-4+1/2-UNC";
@@ -15,6 +17,7 @@ wall_thickness = "1/16inch";
 neck_hole_diameter = "1+1/2inch";
 thread_length = "1/2inch";
 cutaway = false;
+outer_thread_radius_offset = -0.1;
 $fn = 48;
 $tgx11_offset = -0.1;
 
@@ -49,7 +52,7 @@ the_body = ["difference",
    	   togthreads2_simple_zparams([[thread_z0 - 5, 0], [height_mm, 0]], 3, 1),
 			thread_spec,
 			end_mode = "blunt",
-			r_offset = -0.1
+			r_offset = outer_thread_radius_offset
 		),
 	],
 	

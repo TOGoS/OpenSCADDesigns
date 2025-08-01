@@ -1,6 +1,9 @@
-// DesiccantHolderCap0.2
+// DesiccantHolderCap0.4
 //
 // Cap for DesiccantHolder0
+// 
+// v0.4:
+// - Configurable outer_thread_radius_offset
 
 total_height  = "3/4inch";
 thread_spec   = "2-4+1/2-UNC";
@@ -8,6 +11,7 @@ thread_length = "1/2inch";
 diameter = "2+1/8inch";
 neck_hole_diameter = "1+1/2inch";
 cutaway = false;
+inner_thread_radius_offset = 0.2;
 $fn = 48;
 $tgx11_offset = -0.1;
 
@@ -41,7 +45,7 @@ the_body = ["difference",
 	togthreads2_make_threads(
   	   togthreads2_simple_zparams([[thread_z0, 0], [height_mm, 1]], 3, 1),
 		thread_spec,
-		r_offset = 0.2
+		r_offset = inner_thread_radius_offset
 	),
 	
 	["difference",
