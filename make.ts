@@ -254,6 +254,27 @@ async function hashFile(filePath:FilePath, algo:HashAlgorithm) : Promise<string>
 	return algo.getUrn(toUint8Array(hasher.digest()));
 }
 
+async function unlink(path:FilePath) {
+	try {
+		await Deno.remove(path);
+	} catch( e ) {
+		if( (e as Error).name == 'NotFound' ) return;
+		throw e;
+	}
+}
+
+/**
+ * Make sure the parent directory exists
+ * and that the named file does *not* already exist.
+ */
+async function mkRoom(path:FilePath) {
+	const lastSlashIndex = path.lastIndexOf('/');
+	if( lastSlashIndex > 0 ) {
+		await mkdir(path.substr(0,lastSlashIndex));
+	}
+	await unlink(path);
+}
+
 function osdBuildRules(partId:string, opts:{
 	inScadFile:FilePath,
 	cameraPosition?: Vec3<number>,
@@ -319,7 +340,7 @@ function osdBuildRules(partId:string, opts:{
 		[outStlPath]: {
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
-				await mkdir(outDir);
+				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
@@ -331,7 +352,7 @@ function osdBuildRules(partId:string, opts:{
 		[renderedPngPath]: {
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
-				await mkdir(tempDir);
+				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
@@ -346,14 +367,14 @@ function osdBuildRules(partId:string, opts:{
 		[simplifiedStlPath]: {
 			prereqs: [outStlPath],
 			async invoke(ctx:BuildContext) {
-				await mkdir(outDir);
+				await mkRoom(ctx.targetName);
 				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
 		},
 		[simplifiedPngPath]: {
 			prereqs: [preferredPngPath, "make.ts"],
 			async invoke(ctx:BuildContext) {
-				await mkdir(outDir);
+				await mkRoom(ctx.targetName);
 				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
 		},
@@ -361,10 +382,7 @@ function osdBuildRules(partId:string, opts:{
 			prereqs: [simplifiedStlPath, simplifiedPngPath, "make.ts"],
 			async invoke(ctx:BuildContext) {
 				const [pngUrn, stlUrn] = await Promise.all([simplifiedPngPath, simplifiedStlPath].map(p => hashFile(p, BITPRINT_ALGORITHM)));
-				//const stlUrn = hashFile(simplifiedStlPath, BITPRINT_ALGORITHM);
-				await Deno.remove(ctx.targetName).catch(e => {
-					return e.name == 'NotFound' ? Promise.resolve() : Promise.reject(e);
-				});
+				await mkRoom(ctx.targetName);
 				using writeStream = await Deno.open(ctx.targetName, {write:true, createNew:true});
 				const textEncoder = new TextEncoder;
 				writeStream.write(textEncoder.encode(
