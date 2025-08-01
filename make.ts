@@ -624,6 +624,14 @@ const builder = new Builder({
 			cameraPosition: [-30,-40, 50],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/experimental/DesiccantHolder0.scad", ["p2063"], {
+			cameraPosition: [20,-40, 60],
+			imageSize: [384, 384],
+		}),
+		...multiOsdBuildRules("2023/experimental/DesiccantHolderCap0.scad", ["p2064"], {
+			cameraPosition: [20,-40, 60],
+			imageSize: [384, 384],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

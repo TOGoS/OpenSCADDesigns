@@ -1,17 +1,19 @@
-// DesiccantHolder0.2
+// DesiccantHolder0.3
 // 
 // Hmm, maybe the threads should be on the outside of the container
 // 
 // v0.2:
 // - Threads on outside of container
 // - Dimensions configurable
+// v0.3:
+// - Default thread length = 1/2inch
 
 height   = "2+1/4inch";
 thread_spec = "2-4+1/2-UNC";
 diameter = "2+1/8inch";
 wall_thickness = "1/16inch";
 neck_hole_diameter = "1+1/2inch";
-thread_length = "1/4inch";
+thread_length = "1/2inch";
 cutaway = false;
 $fn = 48;
 $tgx11_offset = -0.1;
@@ -30,7 +32,7 @@ u = 254/160;
 height_mm          = togunits1_to_mm(height);
 diameter_mm        = togunits1_to_mm(diameter);
 wall_thickness_mm  = togunits1_to_mm(wall_thickness);
-neck_diameter_mm   = togunits1_to_mm(neck_hole_diameter); // inch*(2-1/2);
+neck_diameter_mm   = togunits1_to_mm(neck_hole_diameter);
 cavity_diameter_mm = diameter_mm - wall_thickness_mm*2;
 neck_taper_z01     = max(0, (cavity_diameter_mm - neck_diameter_mm));
 thread_z0 = height_mm - togunits1_to_mm(thread_length);
