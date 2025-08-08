@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p2070": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"block_height": "1inch",
+			"clip_height": "3/16inch",
+			"clip_thickness": "1/16inch",
+			"cross_section": "false",
+			"include_case": "true",
+			"include_clip": "true",
+			"include_grating": "true",
+			"layer_thickness_mm": "0.4",
+			"part_offset": "50",
+			"pin_margin": "0.32mm",
+			"pin_spacing": "9/10inch",
+			"pincav_length": "8/10inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}

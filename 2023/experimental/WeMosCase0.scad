@@ -1,9 +1,11 @@
-// WeMosCase0.3
+// WeMosCase0.4
 // 
 // v0.3:
 // - Based on WeMosClip0.2
 // - Optionally includes each of case, clip, and grating,
 //   together or separated (by part_offset)
+// v0.4:
+// - Change how grating is generated to ease FDM printing
 
 // Space for a pin; should probably be about half a pin width, ie 0.3175mm
 pin_margin     = "0.32mm";
@@ -117,7 +119,7 @@ the_case = ["difference",
 ];
 
 // Hmm: Might be better for printability to use TOGratLib approach with alternating x/y beams
-the_grating = togmod1_linear_extrude_z([0, u],
+the_grating_take1 = togmod1_linear_extrude_z([0, u],
 	let( grating_hole = togmod1_make_rect([1.3, 1.3]) )
 	["difference",
 		togmod1_make_rect([25.3, 25.3]),
@@ -126,6 +128,32 @@ the_grating = togmod1_linear_extrude_z([0, u],
 		["translate", [xm*254/100, ym*254/100], grating_hole],
 	]
 );
+
+layer_thickness_mm = 0.4;
+
+the_grating_take2 =
+let(layer_count = floor(grating_thickness_mm / layer_thickness_mm))
+let(beam_width_mm = 254/200)
+let(beam_2d = togmod1_make_rect([25, beam_width_mm]))
+["union",
+	["difference",
+		togmod1_linear_extrude_z([0, u], togmod1_make_rect([25.3, 25.3])),
+		
+		["difference",
+			togmod1_linear_extrude_z([-100, 100], togmod1_make_rect([25.3 - u, 25.3 - u])),
+			
+			for( i = [0 : 1 : layer_count-1] )
+			togmod1_linear_extrude_z( [i, i+1.01]*layer_thickness_mm,
+				["rotate", [0,0,(i%2)*90], ["union",
+					for( j=[-5 : 1 : 5] ) ["translate", [0, j*254/100], beam_2d]
+				]]
+			)			
+		]
+	]
+];
+
+the_grating = the_grating_take2;
+
 
 togmod1_domodule(["difference",
 	["union",

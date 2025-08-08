@@ -663,6 +663,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/WeMosCase0.scad", ["p2070"], {
+			cameraPosition: [-40,-40, 40],
+			imageSize: [512, 512],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
