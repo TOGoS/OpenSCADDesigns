@@ -1,4 +1,4 @@
-// WeMosCase0.4
+// WeMosCase0.5
 // 
 // v0.3:
 // - Based on WeMosClip0.2
@@ -6,6 +6,17 @@
 //   together or separated (by part_offset)
 // v0.4:
 // - Change how grating is generated to ease FDM printing
+// v0.5:
+// - Changes based on findings from p2070a print, 2025-08-08T15:36-KM;
+//   all are done so that p2070 result is as it was,
+//   except for grating corner rounding
+// - Case changes:
+//   - Make pincav_floor_z configurable, default to 1/16" instead of 2/16"
+//   - Additional cutouts for USB port and plug
+// - Grating changes:
+//   - Add a bump to support the antenna end of the board
+//   - Round the corners a little bit
+//   - Layer height is configurable
 
 // Space for a pin; should probably be about half a pin width, ie 0.3175mm
 pin_margin     = "0.32mm";
@@ -14,7 +25,12 @@ clip_thickness = "1/16inch";
 clip_height    = "3/16inch";
 // Should be slightly longer than the length of the clip
 pincav_length  = "8/10inch";
+pincav_floor_z = "1/16inch";
+// For grating-generation purposes
+layer_thickness = "0.4mm";
+grating_bump_size = ["1/2inch","1/2inch","0inch"];
 
+usb_cutout_style = "none";
 include_case = true;
 include_clip = true;
 include_grating = true;
@@ -29,6 +45,7 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGUnits1.scad>
+use <../lib/TOGPolyhedronLib1.scad>
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
@@ -87,7 +104,7 @@ use <../lib/TGx11.1Lib.scad>
 
 block_height = "1inch";
 u = 254/160;
-pin_z0 = 2*u;
+pin_z0 = togunits1_to_mm(pincav_floor_z);
 block_height_mm = togunits1_to_mm(block_height);
 deck_z = pin_z0 + 6*u;
 
@@ -95,9 +112,12 @@ grating_thickness_mm = 1*u;
 
 pincav_size = [pincav_length_mm, pin_spacing_mm+pin_margin_mm*2];
 
+block_size_ca = [[1, "chunk"],[1, "chunk"],togunits1_to_ca(block_height)];
+block_size_mm = togunits1_decode_vec(block_size_ca);
+
 the_case = ["difference",
 	tgx11_block(
-		[[1, "chunk"],[1, "chunk"],togunits1_to_ca(block_height)],
+		block_size_ca,
 		bottom_segmentation = "chatom",
 		top_segmentation = "block"
 	),
@@ -115,32 +135,29 @@ the_case = ["difference",
 		])],
 		
 		togmod1_linear_extrude_x([-100, 100], ["translate", [0,deck_z - grating_thickness_mm - clip_height_mm], togmod1_make_rounded_rect([4*u, (clip_height_mm-clip_thickness_mm)*2], r=u*1.5)]),
-	]
+	],
+	
+	// USB plug outer cutout
+	if( usb_cutout_style == "v1" ) for( xm=[-1,1] ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([6.35, 12.7, 6.35], r=2)],
+	// USB plug inner cutout
+	if( usb_cutout_style == "v1" ) for( xm=[-1,1] ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([25.4, 7, 4], r=2)],
 ];
 
-// Hmm: Might be better for printability to use TOGratLib approach with alternating x/y beams
-the_grating_take1 = togmod1_linear_extrude_z([0, u],
-	let( grating_hole = togmod1_make_rect([1.3, 1.3]) )
-	["difference",
-		togmod1_make_rect([25.3, 25.3]),
-		for( ym=[-4.5 : 1 : 4.5] )
-		for( xm=[-4.5 : 1 : 4.5] )
-		["translate", [xm*254/100, ym*254/100], grating_hole],
-	]
-);
+layer_thickness_mm = togunits1_decode(layer_thickness);
 
-layer_thickness_mm = 0.4;
+grating_size_mm = [25.4, 25.4, grating_thickness_mm];
+grating_bump_size_mm = togunits1_decode_vec(grating_bump_size);
 
-the_grating_take2 =
-let(layer_count = floor(grating_thickness_mm / layer_thickness_mm))
+the_grating =
+let(layer_count = round(grating_thickness_mm / layer_thickness_mm))
 let(beam_width_mm = 254/200)
 let(beam_2d = togmod1_make_rect([25, beam_width_mm]))
 ["union",
 	["difference",
-		togmod1_linear_extrude_z([0, u], togmod1_make_rect([25.3, 25.3])),
+		togmod1_linear_extrude_z([0, grating_size_mm[2]], togmod1_make_rounded_rect([grating_size_mm[0]-0.1, grating_size_mm[1]-0.1], r=1)),
 		
 		["difference",
-			togmod1_linear_extrude_z([-100, 100], togmod1_make_rect([25.3 - u, 25.3 - u])),
+			togmod1_linear_extrude_z([-1, grating_size_mm[2]+1], togmod1_make_rect([grating_size_mm[0] - u, grating_size_mm[1] - u])),
 			
 			for( i = [0 : 1 : layer_count-1] )
 			togmod1_linear_extrude_z( [i, i+1.01]*layer_thickness_mm,
@@ -149,10 +166,18 @@ let(beam_2d = togmod1_make_rect([25, beam_width_mm]))
 				]]
 			)			
 		]
-	]
+	],
+	
+	let( grating_bump_min_dim = min(grating_bump_size_mm[0], grating_bump_size_mm[1], grating_bump_size_mm[2]) )
+	let( grating_bump_min_corner_rad = min(grating_bump_size_mm[0], grating_bump_size_mm[1], grating_bump_size_mm[2]+grating_thickness_mm)*127/256 )
+	grating_bump_min_dim <= 0 ? ["union"] :
+	["translate", [(grating_size_mm[1] - grating_bump_size_mm[0])/2, 0, (grating_bump_size_mm[2]+grating_thickness_mm)/2],
+		tphl1_make_rounded_cuboid(
+			[grating_bump_size_mm[0], grating_bump_size_mm[1], grating_bump_size_mm[2]+grating_thickness_mm],
+			r = min(3.175, grating_bump_min_corner_rad),
+			corner_shape = "ovoid1"
+		)],
 ];
-
-the_grating = the_grating_take2;
 
 
 togmod1_domodule(["difference",
