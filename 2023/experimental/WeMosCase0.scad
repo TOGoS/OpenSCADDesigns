@@ -1,4 +1,4 @@
-// WeMosCase0.5
+// WeMosCase0.6
 // 
 // v0.3:
 // - Based on WeMosClip0.2
@@ -17,6 +17,12 @@
 //   - Add a bump to support the antenna end of the board
 //   - Round the corners a little bit
 //   - Layer height is configurable
+// v0.6:
+// - Widen USB port cutout
+// - More margin around grating
+// - Option for case bump, which will replace the USB port notches
+//   on one side if antenna_support_height > 0
+// - Make the clip a wee bit shorter
 
 // Space for a pin; should probably be about half a pin width, ie 0.3175mm
 pin_margin     = "0.32mm";
@@ -28,7 +34,9 @@ pincav_length  = "8/10inch";
 pincav_floor_z = "1/16inch";
 // For grating-generation purposes
 layer_thickness = "0.4mm";
+// A bump on the grating, if you want that.  Probably you want antenna_support_height instead.
 grating_bump_size = ["1/2inch","1/2inch","0inch"];
+antenna_support_height = "0inch";
 
 usb_cutout_style = "none";
 include_case = true;
@@ -63,7 +71,7 @@ clip_thickness_mm   = togunits1_to_mm(clip_thickness);
 clip_height_mm      = togunits1_to_mm(clip_height   );
 pincav_length_mm    = togunits1_to_mm(pincav_length );
 center_gap_width_mm = 25.4/4 + 0.1;
-clip_length_mm      = pincav_length_mm - 0.3;
+clip_length_mm      = pincav_length_mm - 0.5;
 
 the_clip_2d = togpath1_rath_to_polygon(
 	let( ct = clip_thickness_mm                 )
@@ -115,18 +123,20 @@ pincav_size = [pincav_length_mm, pin_spacing_mm+pin_margin_mm*2];
 block_size_ca = [[1, "chunk"],[1, "chunk"],togunits1_to_ca(block_height)];
 block_size_mm = togunits1_decode_vec(block_size_ca);
 
-the_case = ["difference",
-	tgx11_block(
-		block_size_ca,
-		bottom_segmentation = "chatom",
-		top_segmentation = "block"
-	),
-   
-	// Main cavity
-	["translate", [0,0,togunits1_to_mm(block_height)], togmod1_make_cuboid(togunits1_decode_vec(["2inch","1+1/8inch",(block_height_mm-deck_z)*2]))],
-	
+antenna_support_height_mm = togunits1_decode(antenna_support_height);
+notch_xms = antenna_support_height_mm > 0 ? [-1] : [-1,+1];
+
+the_case_cavity = ["union",
+	["difference",
+		// Main cavity
+		["translate", [0,0,togunits1_to_mm(block_height)], togmod1_make_cuboid(togunits1_decode_vec(["2inch","1+1/8inch",(block_height_mm-deck_z)*2]))],
+		
+		if( antenna_support_height_mm > 0 ) ["translate", [block_size_mm[0]/2, 0, deck_z],
+			tphl1_make_rounded_cuboid([block_size_mm[0], 12.7, antenna_support_height_mm*2], r=antenna_support_height_mm*127/128)]
+	],
+		
 	// Grating cavity
-	["translate", [0,0,deck_z], togmod1_make_cuboid(togunits1_decode_vec(["10.08/10inch","10.08/10inch","2/16inch"]))],
+	["translate", [0,0,deck_z], togmod1_make_cuboid(togunits1_decode_vec(["10.2/10inch","10.2/10inch","2/16inch"]))],
 
    // Pin cavity
 	["difference",
@@ -138,9 +148,19 @@ the_case = ["difference",
 	],
 	
 	// USB plug outer cutout
-	if( usb_cutout_style == "v1" ) for( xm=[-1,1] ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([6.35, 12.7, 6.35], r=2)],
+	if( usb_cutout_style == "v1" ) for( xm=notch_xms ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([6.35, 15, 6.35], r=2)],
 	// USB plug inner cutout
-	if( usb_cutout_style == "v1" ) for( xm=[-1,1] ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([25.4, 7, 4], r=2)],
+	if( usb_cutout_style == "v1" ) for( xm=notch_xms ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([25.4, 9, 4], r=1)],
+];
+
+the_case = ["difference",
+	tgx11_block(
+		block_size_ca,
+		bottom_segmentation = "chatom",
+		top_segmentation = "block"
+	),
+   
+	the_case_cavity
 ];
 
 layer_thickness_mm = togunits1_decode(layer_thickness);
