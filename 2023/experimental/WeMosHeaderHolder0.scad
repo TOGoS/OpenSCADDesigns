@@ -1,8 +1,13 @@
-// WeMosHeaderHolder0.1
+// WeMosHeaderHolder0.2
 // 
 // Holds two rows of 'female dupont' headers
 // straight so that you can set your WeMos D1 mini on top
 // (CPU side down, by convention) and solder the legs on.
+// 
+// Changes:
+// v0.2:
+// - Allow header_cutout_size[0] = "auto", which makes it the full
+//   width with rounded corners, similar to the central cavity
 
 block_size      = ["1chunk","1chunk","3/8inch"];
 header_cutout_size = ["8/10inch","1/10inch","1/4inch"];
@@ -30,22 +35,33 @@ function mirror_rathnodes(nodes) = [
 	for(n=reverse_list(nodes)) [n[0], [-n[1][0], n[1][1]], for(i=[2:1:len(n)-1]) n[i]],
 ];
 
-header_cutout_size_mm        = togunits1_decode_vec(header_cutout_size       );
+block_size_ca = togunits1_vec_to_cas(block_size);
+block_size_mm = togunits1_decode_vec(block_size_ca);
 header_cutout_margin_mm      = togunits1_decode(    header_cutout_margin     );
+
+central_cavity_width_mm = block_size_mm[0] - 2*3.175;
+
+header_cutout_size_fixed = [
+	header_cutout_size[0] == "auto" ? central_cavity_width_mm - header_cutout_margin_mm*2 : header_cutout_size[0],
+	header_cutout_size[1],
+	header_cutout_size[2],
+];
+
+header_cutout_size_mm        = togunits1_decode_vec(header_cutout_size_fixed );
 header_cutout_row_spacing_mm = togunits1_decode(    header_cutout_row_spacing);
+
+
 
 // togmod1_domodule(togmod1_linear_extrude_z([0, length_mm], the_clip_2d));
 
-block_size_ca = togunits1_vec_to_cas(block_size);
-block_size_mm = togunits1_decode_vec(block_size_ca);
-
 deck_z = block_size_mm[2];
 
-header_cutout = togmod1_make_cuboid([
-	header_cutout_size_mm[0] + header_cutout_margin_mm*2,
-	header_cutout_size_mm[1] + header_cutout_margin_mm*2,
-	header_cutout_size_mm[2]*2,
-]);
+header_cutout = togmod1_linear_extrude_z([-header_cutout_size_mm[2], 1],
+	togmod1_make_rounded_rect([
+		header_cutout_size_mm[0] + header_cutout_margin_mm*2,
+		header_cutout_size_mm[1] + header_cutout_margin_mm*2,
+	], r = header_cutout_size[0] == "auto" ? min(header_cutout_size_mm[0],header_cutout_size_mm[1]+header_cutout_margin_mm*2)*127/255 : 0)
+);
 
 the_cavity = ["union",
 	// HEader holders
@@ -54,7 +70,7 @@ the_cavity = ["union",
    // Central 'decorative' cavity
 	["translate", [0,0,deck_z],
 	   tphl1_make_rounded_cuboid([
-			block_size_mm[0] - 2*3.175,
+			central_cavity_width_mm,
 			header_cutout_row_spacing_mm - header_cutout_size_mm[1] - 2*254/160,
 			(deck_z-25.4*3/16)*2
 		], r=[3.175,3.175,0], corner_shape="ovoid1")],
