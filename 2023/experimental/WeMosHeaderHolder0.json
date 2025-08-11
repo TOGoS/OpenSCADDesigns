@@ -1,0 +1,11 @@
+{
+    "parameterSets": {
+        "p2073": {
+            "block_size": "[\"1chunk\", \"1chunk\", \"3\/8inch\"]",
+            "header_cutout_margin": "0.1mm",
+            "header_cutout_row_spacing": "9\/10inch",
+            "header_cutout_size": "[\"8\/10inch\", \"1\/10inch\", \"1\/4inch\"]"
+        }
+    },
+    "fileFormatVersion": "1"
+}

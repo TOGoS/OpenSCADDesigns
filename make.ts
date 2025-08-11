@@ -668,6 +668,11 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/WeMosHeaderHolder0.scad", ["p2073"], {
+			cameraPosition: [-60,-40, 40],
+			imageSize: [384,384],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

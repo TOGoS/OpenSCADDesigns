@@ -1,4 +1,4 @@
-// TOGUnits1.2
+// TOGUnits1.3
 // 
 // For simlifying quantity parsing and unit conversion
 // 
@@ -6,6 +6,8 @@
 // - Add `togunits1_decode` function
 // v1.2:
 // - Add togunits1_decode_vec
+// v1.3:
+// - Add togunits1_vec_to_cas
 
 use <./TOGridLib3.scad>
 use <./TOGStringLib1.scad>
@@ -28,6 +30,9 @@ function togunits1_to_ca(what) =
 	togunits1__is_ca(what) ? what :
 	is_num(what) ? [what, "mm"] :
 	assert(false, str("Unrecognized quantity representation: ", what));
+
+function togunits1_vec_to_cas(whats, unit=[1,"mm"]) =
+	[for(w=whats) togunits1_to_ca(w)];
 
 function togunits1__get_transform(name) =
 	is_function(name) ? name :
