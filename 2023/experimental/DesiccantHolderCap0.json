@@ -1,0 +1,22 @@
+{
+	"parameterSets": {
+		"p2064": {
+			"diameter": "2+1/8inch",
+			"neck_hole_diameter": "1+1/2inch",
+			"thread_length": "1/2inch",
+			"thread_spec": "2-4+1/2-UNC",
+			"total_height": "3/4inch"
+		},
+		"p2066": {
+			"diameter": "2+1/8inch",
+			"neck_hole_diameter": "1+1/2inch",
+			"thread_length": "1/2inch",
+			"thread_spec": "2-4+1/2-UNC",
+			"total_height": "3/4inch",
+			"inner_thread_radius_offset": "0.2",
+         "$fn": "72"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
