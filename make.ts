@@ -673,6 +673,11 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/experimental/DesiccantHolder1.scad", ["p2075"], {
+			cameraPosition: [20,-40,-30],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

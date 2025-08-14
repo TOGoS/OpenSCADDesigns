@@ -1,0 +1,20 @@
+{
+	"parameterSets": {
+		"p2075": {
+			"$fn": "72",
+			"$tgx11_offset": "-0.1",
+			"beam_thickness": "0.6mm",
+			"central_cavity_diameter": "2inch",
+			"cutaway": "false",
+			"diameter": "2+1/8inch",
+			"floor_style": "grating",
+			"inner_thread_radius_offset": "0.2",
+			"neck_hole_diameter": "1+1/2inch",
+			"outer_thread_radius_offset": "-0.2",
+			"thread_length": "1/2inch",
+			"thread_spec": "2-4+1/2-UNC",
+			"total_height": "2+1/2inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
