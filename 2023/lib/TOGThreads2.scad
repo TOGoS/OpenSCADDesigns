@@ -1,4 +1,4 @@
-// TOGThreads2.27
+// TOGThreads2.28
 // 
 // Versions:
 // v2.25:
@@ -10,6 +10,9 @@
 // v2.27:
 // - $togthreads2_polyhedron_algorithm effectively defaults to 'v3'
 // - Remove request for apparently unused dynamic variables from documentation
+// v2.28:
+// - Fix a typo in togthreads2__get_thread_type23 so that it
+//   works when passed a string
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -307,7 +310,7 @@ function togthreads2__get_default_taper_length(spec) =
 	togthreads2__get_thread_pitch(spec)/2;
 
 function togthreads2__get_thread_type23(spec) =
-	is_string(spec) ? togthreads2__get_thread_type23(togthreads2__gegt_thread_spec(spec)) :
+	is_string(spec) ? togthreads2__get_thread_type23(togthreads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2__unc_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2__demo_to_type23(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
