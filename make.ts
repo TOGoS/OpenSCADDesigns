@@ -576,6 +576,11 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 72
 		}),
+		...multiOsdBuildRules("2023/phone-holder/BrickHolder2.scad", ["p2076","p2077"], {
+			cameraPosition: [-15,-20, 40],
+			imageSize: [384,384],
+			paletteSize: 72
+		}),
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1971", "p1972", "p1973", "p1974", "p1975", "p1976", "p1977", "p1978", "p1979"], {
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
