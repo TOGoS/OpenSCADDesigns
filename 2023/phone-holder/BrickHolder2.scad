@@ -1,4 +1,4 @@
-// BrickHolder2.12
+// BrickHolder2.13
 // 
 // Replace specialized holders with
 // standard sizes + corresponding inserts,
@@ -49,6 +49,8 @@
 // v2.12:
 // - 'standard2' front slot, which is just rounded a bit at the top,
 //   because Renee asked for that
+// v2.13:
+// - Add bottom_mounting_hole_style option
 
 description = "";
 
@@ -64,6 +66,7 @@ bottom_hole_style = "standard"; // ["none","standard","full"]
 bottom_hole_size = [-1,-1]; // 0.1
 front_slot_style = "standard"; // ["none","standard","standard2","centered-gridbeam-9mm-holes"]
 back_mounting_hole_style = "THL-1003"; // ["none","THL-1003"]
+bottom_mounting_hole_style = "none"; // ["none","THL-1003"]
 
 top_cord_slot_depth    = 0; // 0.01
 top_cord_slot_diameter = 0; // 0.01
@@ -111,10 +114,13 @@ block_size_ca = [for(d=block_size_atoms) [d, "atom"]];
 
 block_size = togridlib3_decode_vector(block_size_ca);
 
+floor_thickness_atoms = 0.5;
+floor_thickness = togridlib3_decode([floor_thickness_atoms, "atom"]);
+
 cavity_size_ca = [
 	[block_size_atoms[0] - 1  , "atom"],
 	[block_size_atoms[1] - 1  , "atom"],
-	bottom_hole_style == "full" ? [block_size_atoms[2]*2, "atom"] : [block_size_atoms[2] - 0.5, "atom"],
+	bottom_hole_style == "full" ? [block_size_atoms[2]*2, "atom"] : [block_size_atoms[2] - floor_thickness_atoms, "atom"],
 ];
 
 cavity_actual_size = [for(d=togridlib3_decode_vector(cavity_size_ca)) d - inner_offset*2];
@@ -217,13 +223,24 @@ bottom_hole_corner_r = min(bottom_hole_min_dim*127/256, 2);
 bottom_hole = bottom_hole_min_dim == 0 ? ["union"] :
 	tphl1_make_rounded_cuboid([bottom_hole_actual_size[0], bottom_hole_actual_size[1], block_size[2]*3], [bottom_hole_corner_r,bottom_hole_corner_r,0]);
 
-mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [90,0,0], tog_holelib2_hole(back_mounting_hole_style, depth=block_size[1]-cavity_actual_size[1])]);
+back_mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [90,0,0],
+	tog_holelib2_hole(back_mounting_hole_style, depth=block_size[1]-cavity_actual_size[1])]);
+bottom_mounting_hole = maybedebug(debug_holes_enabled, ["rotate", [0,0,0],
+	tog_holelib2_hole(bottom_mounting_hole_style, depth=block_size[1]-cavity_actual_size[1])]);
+
 mounting_holes = ["union",
 	for( xm=[round(-block_size[0]/atom)/2 + 0.5 : 1 : round(block_size[0]/atom)/2] )
 	let( x = xm*atom )
 	if( x-4 >= -cavity_actual_size[0]/2 && x+4 <= cavity_actual_size[0]/2 )
 	for( zm=[(bottom_hole_style == "full" ? 0.5 : 1.5) : 1 : round(block_size[2]/atom)] )
-	["translate", [xm*atom, cavity_actual_size[1]/2, zm*atom], mounting_hole]
+	["translate", [xm*atom, cavity_actual_size[1]/2, zm*atom], back_mounting_hole],
+	
+	for( xm=[round(-block_size[0]/atom)/2 + 0.5 : 1 : round(block_size[0]/atom)/2] )
+	for( ym=[round(-block_size[1]/atom)/2 + 0.5 : 1 : round(block_size[1]/atom)/2] )
+	let( x = xm*atom, y = ym*atom )
+	if( x-4 >= -cavity_actual_size[0]/2 && x+4 <= cavity_actual_size[0]/2 )
+	if( y-4 >= -cavity_actual_size[1]/2 && y+4 <= cavity_actual_size[1]/2 )
+	["translate", [xm*atom, ym*atom, floor_thickness], bottom_mounting_hole],
 ];
 
 // TODO for fanciness: Round around the hole!
