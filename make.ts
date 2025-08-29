@@ -683,6 +683,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/togridpile/GX12PortModule0.scad", ["p2078"], {
+			cameraPosition: [50, 40, 60],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

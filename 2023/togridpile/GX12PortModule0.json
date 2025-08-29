@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2078": {
+			"foot_rounding": "0.7",
+			"$tgx11_offset": "-0.1",
+			"$fn": "24"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
