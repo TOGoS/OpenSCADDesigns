@@ -668,12 +668,12 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/WeMosCase0.scad", ["p2070","p2071","p2072"], {
+		...multiOsdBuildRules("2023/togridpile/WeMosCase0.scad", ["p2070","p2071","p2072"], {
 			cameraPosition: [-60,-40, 40],
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/WeMosHeaderHolder0.scad", ["p2073","p2074"], {
+		...multiOsdBuildRules("2023/togridpile/WeMosHeaderHolder0.scad", ["p2073","p2074"], {
 			cameraPosition: [-60,-40, 40],
 			imageSize: [384,384],
 			paletteSize: 64,
