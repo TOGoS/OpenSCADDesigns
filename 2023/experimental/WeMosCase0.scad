@@ -1,4 +1,9 @@
-// WeMosCase0.6
+// WeMosCase0.6.1
+// 
+// A three-part case for holding WeMos D1 minis by their 'legs'
+// (i.e. long-legged 'dupont' headers, pins down)
+// in the form of a TOGridPile block.
+// p2072 seems to work pretty well.
 // 
 // v0.3:
 // - Based on WeMosClip0.2
@@ -23,6 +28,8 @@
 // - Option for case bump, which will replace the USB port notches
 //   on one side if antenna_support_height > 0
 // - Make the clip a wee bit shorter
+// v0.6.1:
+// - Add description comment, options for usb_cutout_style
 
 // Space for a pin; should probably be about half a pin width, ie 0.3175mm
 pin_margin     = "0.32mm";
@@ -38,7 +45,7 @@ layer_thickness = "0.4mm";
 grating_bump_size = ["1/2inch","1/2inch","0inch"];
 antenna_support_height = "0inch";
 
-usb_cutout_style = "none";
+usb_cutout_style = "none"; // ["none","v1"]
 include_case = true;
 include_clip = true;
 include_grating = true;
