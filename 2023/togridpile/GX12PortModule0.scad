@@ -1,4 +1,4 @@
-// GX12PortModule0.1
+// GX12PortModule0.1.1
 // 
 // Block for holding a GX12 port sideways,
 // e.g. for use with WeMosCase0
@@ -11,6 +11,9 @@
 // Neck hex nut side-to-side: 15mm
 // Neck hex nut corner-to-corner: 17mm
 // Bottom of flange to top of mating threads: About 7mm
+// 
+// v0.1.1
+// - Remove some dead code
 
 cross_section = false;
 
@@ -32,14 +35,6 @@ $togridlib3_unit_table = [
 	// Hey, this should only apply to the feet, not to the sides of the cup!
 	["tgp-m-outer-corner-radius", [255/64*foot_rounding,"u"]],
 	each tgx11_get_default_unit_table()
-];
-
-function reverse_list(list) =
-	[for(i=[len(list)-1 : -1 : 0]) list[i]];
-
-function mirror_rathnodes(nodes) = [
-	for(n=nodes) n,
-	for(n=reverse_list(nodes)) [n[0], [-n[1][0], n[1][1]], for(i=[2:1:len(n)-1]) n[i]],
 ];
 
 block_height = "1inch";
