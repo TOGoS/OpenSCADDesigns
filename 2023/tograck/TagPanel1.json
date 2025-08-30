@@ -30,6 +30,17 @@
 			"panel_thickness_u": "1",
 			"size_atoms": "[3, 6]"
 		},
+		"p2082": {
+			"$fn": "24",
+			"back_fat_u": "0",
+			"center_hole_slot_width": "6",
+			"center_hole_style": "straight-4.5mm",
+			"hole_style": "straight-4.5mm",
+			"outer_offset": "-0.1",
+			"outer_offset_u": "-1",
+			"panel_thickness_u": "1",
+			"size_atoms": "[3, 6]"
+		},
 		"-- 1u spacers --": "",
 		"p1814": {
 			"hole_style": "straight-4.5mm",

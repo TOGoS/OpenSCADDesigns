@@ -1,4 +1,4 @@
-// TOGHoleLib2.27
+// TOGHoleLib2.28
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -74,12 +74,17 @@
 //   countersunk hole styles to the holezds system.
 // - tog_holelib2__decode_holezds, and therefore tog_holelib2_slot,
 //   now supports 'THL-1001'
+// v2.28:
+// - Use TOGUnits1 to parse dimensions
+// - tog_holelib2__decode_holezds, and therefore tog_holelib2_slot,
+//   now supports 'straight-' + diameter, e.g. 'straight-4.5mm'
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
 use <./TOGPath1.scad>
 use <./TOGVecLib0.scad>
 use <./TOGStringLib1.scad>
+use <./TOGUnits1.scad>
 
 function tog_holelib2__countersunk_hole_2(surface_d, neck_d, head_h, depth, bore_d, overhead_bore_d, overhead_bore_height, inset=0.01) =
 	assert(bore_d <= neck_d, str("bore_d (", bore_d, ") > neck_d (", neck_d, ")"))
@@ -314,18 +319,8 @@ function tog_holelib2_hole(
 	type_name == "THL-1023" ? tog_holelib2_countersunk_hole(6.2, 3.8, 0, depth, overhead_bore_height=overhead_bore_height, inset=tog_holelib2__coalesce(cb_inset, 2)) :
 	let( tokens = togstr1_tokenize(type_name, "-", 2) )
 	tokens[0] == "straight" ? (
-		let( quantr = togstr1_parse_quantity(tokens[1]) )
-		quantr[1] == len(tokens[1]) ? (
-			let( quant = quantr[0] )
-			let( unit_den = 10 )
-			let( unit_num = 
-				quant[1] == "mm" ?  10 :
-				quant[1] == "in" ? 254 :
-				assert(false, str("Unknown unit, '", quant[1], "', in hole type '", type_name, "'"))
-			)
-			tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=unit_num * quant[0][0] / quant[0][1] / unit_den)
-		) :
-		assert(false, str("Failed to parse size from hole type '", type_name, "'"))
+		let( diam_mm = togunits1_decode(tokens[1]) )
+		tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=diam_mm)
 	) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
 
@@ -352,6 +347,14 @@ function tog_holelib2__decode_holezds(
 		[[0, 0, 1,  0        ],  7/8*inch],
 		[[0, 0, 1,  7/16*inch],    0     ],
 	] :
+	let( tokens = togstr1_tokenize(type, "-", 2) )
+	tokens[0] == "straight" ? (
+		let( diam_mm = togunits1_decode(tokens[1]) )
+		["tog-holelib2-holezds",
+			[[1, 0, 0, 0], diam_mm],
+			[[0, 0, 1, 0], diam_mm],
+		]
+	) :
 	assert(false, str("Unrecognized (to decode_holezds) hole type: ", type));
 
 // zs = [z_bottom_of_hole, z_surface, z_top_of_overhead_bore]
