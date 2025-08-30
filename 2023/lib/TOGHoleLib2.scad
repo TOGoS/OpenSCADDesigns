@@ -1,4 +1,4 @@
-// TOGHoleLib2.26
+// TOGHoleLib2.27
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -69,6 +69,11 @@
 // - tog_holelib2_slot accepts counterbore_inset parameter
 // v2.26:
 // - tog_holelib2_slot can handle type = "none" by returning ["union"]
+// v2.27
+// - Add tog_holelib2_countersunk_holezds, which should simplify porting
+//   countersunk hole styles to the holezds system.
+// - tog_holelib2__decode_holezds, and therefore tog_holelib2_slot,
+//   now supports 'THL-1001'
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -111,6 +116,19 @@ function tog_holelib2_countersunk_hole(surface_d, neck_d, head_h, depth, bore_d=
 		overhead_bore_height = _overhead_bore_height,
 		inset     = _inset
 	);
+
+function tog_holelib2_countersunk_holezds(surface_d, neck_d, head_h, bore_d, inset=0.01) =
+	let( shoulder_z = -inset )
+	let( head_dd_dz  = (neck_d - surface_d) / head_h ) // slope of diameter/z (usually positive!)
+	let( pointy_head_height = -surface_d / head_dd_dz ) // Height of head if it ended in a point
+	let( collar_z = shoulder_z - pointy_head_height + pointy_head_height * bore_d / surface_d ) // Where bore actually meets head
+	["tog-holelib2-holezds",
+		[[1, 0, 0,  0          ],    bore_d],
+		[[0, 1, 0,  collar_z   ],    bore_d],
+		[[0, 1, 0,  -inset     ], surface_d],
+		[[0, 0, 1,  0          ], surface_d],
+		[[0, 0, 1,  surface_d  ],         0], // Overhead bore taper, matching how tog_holelib2_countersunk_hole does it
+	];
 
 // Make a counterbored hole using 'overhang remedy' to persuade
 // Slicer to print it in a reasonable way even upside down,
@@ -322,6 +340,7 @@ function tog_holelib2__decode_holezds(
 	// TODO: More generically parse the third token as inset, be it 3/16in or 5u
 	type == "THL-1006-3/16in" ? tog_holelib2__decode_holezds("THL-1006", inset=3/16*inch) :
 	is_list(type) && type[0] == "tog-hgolelib2-holezds" ? type :
+	type == "THL-1001" ? tog_holelib2_countersunk_holezds(7.5, 3.5, 1.7, 4.5, inset=tog_holelib2__coalesce(inset, 0.1) ) :
 	type == "THL-1006" ? let( _inset =
 		!is_undef(counterbore_inset) ? counterbore_inset :
 		!is_undef(inset) ? inset : 3.175
