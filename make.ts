@@ -688,6 +688,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/togridpile/ChunkyPlate0.scad", ["p2079","p2080"], {
+			cameraPosition: [-20, -40, 30],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

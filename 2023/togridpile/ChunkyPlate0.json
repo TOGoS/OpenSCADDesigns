@@ -1,0 +1,33 @@
+{
+	"parameterSets": {
+		"p2080": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"block_size": "[\"2chunk\", \"1chunk\", \"1/4inch\"]",
+			"bottom_foot_bevel": "0.4mm",
+			"bottom_segmentation": "chatom",
+			"bottom_v6hc_style": "v6.1",
+			"foot_rounding": "0.7",
+			"lip_height": "-1.5",
+			"notch_depth": "1/8inch",
+			"notch_width": "1/4inch",
+			"top_segmentation": "chunk",
+			"top_v6hc_style": "v6.1"
+		},
+		"p2079": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"block_size": "[\"2chunk\", \"1chunk\", \"1/4inch\"]",
+			"bottom_foot_bevel": "0.4mm",
+			"bottom_segmentation": "chatom",
+			"bottom_v6hc_style": "none",
+			"foot_rounding": "0.7",
+			"lip_height": "1.5",
+			"notch_depth": "1/8inch",
+			"notch_width": "1/4inch",
+			"top_segmentation": "chunk",
+			"top_v6hc_style": "none"
+		}
+	},
+	"fileFormatVersion": "1"
+}

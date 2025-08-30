@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.19
+// TGx11.1Lib - v11.1.20
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -47,6 +47,15 @@
 // v11.1.19:
 // - Don't try to bevel corners when rounding radius would make it impossible;
 //   this allows for round atom bottoms by setting rounding radius to a large value
+// v11.1.20:
+// - Why am I not allowed to increment the middle number lmao.  Anyway,
+// - tgx11_block accepts top_v6hc_style, defaulting to "v6.1", as before
+// - tgx11_block accepts top_shape, defaulting to bottom_shape, as before
+// - tgx11_block interprets negative lip height as a block that's male on the top;
+//   previously negative lip heights just truncated the block,
+//   which is not especially useful.
+// - Fix 'Unrecognized v6hc_style' error message, which previously and
+//   erroneously indicated 'bottom_shape' as the problem
 
 module __tgx11lib_end_params() { }
 
@@ -266,7 +275,7 @@ let(v6hc =
 		togridlib3_decode_vector([[1, "atom"], [1,"atom"]]),
 		gender=$tgx11_gender, offset=$tgx11_offset
 	)] :
-	assert(false, str("Unrecognized bottom_shape '", bottom_shape, "' (expected 'footed' or 'beveled')"))
+	assert(false, str("Unrecognized v6hc_style '", v6hc_style, "' (expected 'none' or 'v6.1')"))
 )
 let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
@@ -345,11 +354,14 @@ function tgx11_block_bottom(
  * and the gender of the top will be the inverse.
  */
 function tgx11_block(
-	block_size_ca, bottom_shape="footed",
+	block_size_ca,
+	bottom_shape="footed",
 	lip_height = 2.54,
 	atom_bottom_subtractions=[],
 	bottom_segmentation = "atom",
-	bottom_v6hc_style = "v6.1",
+	bottom_v6hc_style = "v6.1", // For bottoms, you might want the narrower one, which is, uhhh
+	top_v6hc_style = "v6.1", // For tops, you might want the wider one, which is, uhh
+	top_shape = undef,
 	bottom_foot_bevel = 0,
 	top_segmentation = "atom"
 ) =
@@ -359,10 +371,12 @@ let(atom_xms = [-block_size_atoms[0]/2+0.5:1:block_size_atoms[0]/2])
 let(atom_yms = [-block_size_atoms[1]/2+0.5:1:block_size_atoms[1]/2])
 let($tgx11_gender = tgx11__get_gender())
 let(atom = togridlib3_decode([1,"atom"]))
+let(positive_lip_height = lip_height > 0 ? lip_height : 0)
+let(top_shape_eff = is_undef(top_shape) ? bottom_shape : top_shape)
 // TODO: Taper top and bottom all cool?
 ["difference",
 	["intersection",
-		tphl1_extrude_polypoints([-1,block_size[2]+lip_height], tgx11_chunk_xs_points(
+		tphl1_extrude_polypoints([-1,block_size[2]+positive_lip_height], tgx11_chunk_xs_points(
 			size = block_size,
 			offset = $tgx11_offset
 		)),
@@ -377,6 +391,12 @@ let(atom = togridlib3_decode([1,"atom"]))
 			v6hc_style = bottom_v6hc_style,
 			foot_bevel = bottom_foot_bevel
 		),
+		if( lip_height < 0 ) ["translate", [0,0,block_size[2]], ["rotate", [0,180,0], tgx11_block_bottom(
+			block_size_ca,
+			bottom_shape = top_shape_eff,
+			segmentation = top_segmentation,
+			v6hc_style = top_v6hc_style
+		)]],
 	],
 	
 	if( len(atom_bottom_subtractions) > 0 )
@@ -384,9 +404,13 @@ let(atom = togridlib3_decode([1,"atom"]))
 	for(xm=atom_xms) for(ym=atom_yms) ["translate", [xm*atom, ym*atom, 0], atom_bottom_subtraction],
 	
 	if( lip_height > 0 ) ["translate", [0,0,block_size[2]], tgx11_block_bottom(
-		block_size_ca, bottom_shape=bottom_shape,
+		block_size_ca,
+		bottom_shape = top_shape_eff,
 		segmentation = top_segmentation,
-		$tgx11_offset=-$tgx11_offset, $tgx11_gender=tgx11__invert_gender($tgx11_gender))],
+		v6hc_style = top_v6hc_style,
+		$tgx11_offset = -$tgx11_offset,
+		$tgx11_gender = tgx11__invert_gender($tgx11_gender)
+	)],
 ];
 
 function tgx11_get_default_unit_table() = [
