@@ -19,6 +19,17 @@
 			"panel_thickness_u": "2",
 			"back_fat_u": "2"
 		},
+		"p2081": {
+			"$fn": "24",
+			"back_fat_u": "0",
+			"center_hole_slot_width": "6",
+			"center_hole_style": "THL-1001",
+			"hole_style": "THL-1001",
+			"outer_offset": "-0.1",
+			"outer_offset_u": "-1",
+			"panel_thickness_u": "1",
+			"size_atoms": "[3, 6]"
+		},
 		"-- 1u spacers --": "",
 		"p1814": {
 			"hole_style": "straight-4.5mm",
