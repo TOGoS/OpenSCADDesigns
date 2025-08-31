@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p1844": {
+			"block_height": "24u",
+			"block_size_chunks": "[1, 1]"
+		},
+		"p1845": {
+			"block_height": "48u",
+			"block_size_chunks": "[3, 2]"
+		},
+		"p2083": {
+			"block_height": "48u",
+			"block_size_chunks": "[2, 2]",
+			"lip_height": "1.5mm",
+			"$tgx11_offset": "-0.2"
+		}
+	},
+	"fileFormatVersion": "1"
+}

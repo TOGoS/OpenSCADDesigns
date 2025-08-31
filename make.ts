@@ -693,6 +693,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/togridpile/P1844Like.scad", ["p2083"], {
+			cameraPosition: [-20, -40, 40],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

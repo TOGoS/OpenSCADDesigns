@@ -1,4 +1,4 @@
-// p1844 v1.1
+// p1844 v1.2
 // 
 // v1.0:
 // - Copy TGx11.1.19
@@ -6,9 +6,17 @@
 // v1.1:
 // - bottom_foot_bevel = 0.4
 // - bottom_v6hc_style = "none"
+// v1.2:
+// - Rename to P1844Like
+// - Delete some dead code
+// - Make lip_height, $tgx11_offset configurable
+// - Replace block_height_u with block_height in whatever units you want
 
 block_size_chunks = [2,2];
-block_height_u = 12;
+block_height = "12u";
+lip_height = "2.54mm";
+
+$tgx11_offset = -0.1; // 0.1
 
 module __p1844_end_params() { }
 
@@ -19,14 +27,10 @@ bottom_shape = "footed"; // ["footed","beveled"]
 bottom_foot_bevel = 0.4; // 0.1
 bottom_v6hc_style = "none"; // ["v6.1", "none"]
 
-lip_height = 2.54;
-
 // 'shell-xs' makes a cross section of the 'shell' between the ideal shape and the offset one
 mode = "normal"; // ["normal", "shell-xs"]
 shell_xs_angle = 0;
 shell_xs_offset = 10;
-
-offset = -0.1; // 0.1
 
 /* [Bottom] */
 
@@ -55,13 +59,9 @@ use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGVecLib0.scad>
+use <../lib/TOGUnits1.scad>
 
-function test_plate(size) =
-	let(u = togridlib3_decode([1,"u"]))
-	["linear-extrude-zs", [0, tgx11__bare_column_height()], ["difference",
-		tgx11_v6c_polygon(size, gender="m", offset=5+offset),
-		tgx11_v6c_polygon(size, gender="f", offset=0-offset),
-	]];
+lip_height_mm = togunits1_decode(lip_height);
 
 function bottom_hole_positions(size_chunks) =
 let( chunk = togridlib3_decode([1,"chunk"]) )
@@ -80,13 +80,13 @@ function bottom_holes(size_chunks) =
 			["translate", pos, bottom_hole]
 	];
 	
-
+block_height_ca = togunits1_to_ca(block_height);
 
 module tgmain() {
 	block_size_ca = [
 		[block_size_chunks[0], "chunk"],
 		[block_size_chunks[1], "chunk"],
-		[block_height_u, "u"],
+		block_height_ca,
 	];
 	block_size = togridlib3_decode_vector(block_size_ca);
 	u = togridlib3_decode([1,"u"]);
@@ -137,7 +137,7 @@ module tgmain() {
 		bottom_v6hc_style   = bottom_v6hc_style,
 		top_segmentation = top_segmentation,
 		atom_bottom_subtractions = atom_bottom_subtractions,
-		lip_height = lip_height,
+		lip_height = lip_height_mm,
 		$tgx11_gender = "m"
 	);
 	
@@ -174,28 +174,8 @@ module tgmain() {
 		cavity(),
 		bottom_holes(block_size_chunks)
 	];
-
-	what = ["hand+glove",
-		blok(),
-		test_plate(block_size),
-		blok($tgx11_offset=0),
-	];
 	
-	hand  = (what[0] == "hand+glove") ? what[1] : what;
-	glove = (what[0] == "hand+glove") ? what[2] : ["union"];
-	unoffset_hand = (what[0] == "hand+glove" && len(what) >= 4) ? what[3] : ["union"];
-	assert(hand[0] != "hand+glove");
-
-	shell = ["difference", unoffset_hand, hand];
-	shell_xs = ["intersection",
-	   shell,
-		["rotate", [0,0,shell_xs_angle], ["translate", [block_size[0]/2+shell_xs_offset, 0, 0], togmod1_make_cuboid([block_size[0], block_size[1]*2, block_size[2]*2])]]
-	];
-	
-	subject =
-		mode == "normal" ? hand :
-		mode == "shell-xs" ? shell_xs :
-		assert(false, str("Unrecognized mode '", mode, "'"));
+	subject = blok();
 	
 	togmod1_domodule(subject);
 	
@@ -205,6 +185,5 @@ module tgmain() {
 
 tgmain(
 	$togridlib3_unit_table = tgx11_get_default_unit_table(),
-	$tgx11_offset = offset,
 	$fn = $preview ? preview_fn : render_fn
 );
