@@ -1,4 +1,4 @@
-// P2054Like v1.4
+// P2054Like v1.5
 // 
 // TGx11.1-based holder with rectangular slots
 // 
@@ -15,10 +15,14 @@
 //   that it probably should have been a new design.
 // v1.4:
 // - Skip the 'unavoidable' sharp thumb slot corners when slot2_size is zero in any dimension
+// v1.5:
+// - Add slot_xy_shape option, which can be "oval" to round the corners of the slots
+// - Desharpen edges of thumb slot
 
 block_size = ["1chunk","1chunk","1+2/6chunk"];
 slot_size = ["30mm","8mm","1+1/6chunk"];
 slot_wall_thickness = "3mm";
+slot_xy_shape = "rect"; // ["rect","oval"]
 thumb_slot_diameter = "3/4inch";
 // Optional slots along the Y axis.  Kind of a hack.
 slot2_size = ["0inch","999inch","1inch"];
@@ -77,14 +81,19 @@ function vec_is_nonzero(vec, off=0) =
 	vec[off] == 0 ? false :
 	vec_is_nonzero(vec, off+1);
 
-function make_slots(slot_size, block_length_mm, slot_wall_thickness=undef, slot_pitch=undef, interslot_depth_mm=0 ) =
+function make_slots(slot_size, block_length_mm, slot_wall_thickness=undef, slot_pitch=undef, interslot_depth_mm=0, slot_xy_shape="rect" ) =
 	assert( !is_undef(slot_wall_thickness) || !is_undef(slot_pitch) )
 	let(slot_size_mm = togunits1_decode_vec(slot_size))
 	let(slot_wall_thickness_mm = is_undef(slot_wall_thickness) ? undef : togunits1_decode(slot_wall_thickness))
 	let(slot_pitch_mm = is_undef(slot_pitch) ? slot_size_mm[1] + slot_wall_thickness_mm : togunits1_decode(slot_pitch))
 	let(slot_count = round( (block_length_mm-(is_undef(slot_wall_thickness_mm)?0:slot_wall_thickness_mm))/slot_pitch_mm ))
 	let(slot = slot_size_mm[0] <= 0 || slot_size_mm[1] <= 0 || slot_size_mm[2] <= 0 ? ["union"] :
-		togmod1_make_cuboid([slot_size_mm[0], slot_size_mm[1], slot_size_mm[2]*2]))
+		togmod1_linear_extrude_z(
+		   [-slot_size_mm[2], slot_size_mm[2]],
+			slot_xy_shape == "rect" ? togmod1_make_rect([slot_size_mm[0], slot_size_mm[1]]) :
+		   togmod1_make_rounded_rect([slot_size_mm[0], slot_size_mm[1]], r=min(slot_size_mm[0],slot_size_mm[1])*127/256)
+		)
+	)
 	["union",
 		for( ym=[-slot_count/2 + 0.5 : 1 : slot_count/2 - 0.5] )
 		["translate", [0, ym*slot_pitch_mm, 0], slot],
@@ -112,11 +121,15 @@ togmod1_domodule(["difference",
 		atom_bottom_subtractions = atom_bottom_subtractions
 	),
 	
-	if( thumb_slot_diameter_mm > 0 ) ["translate", [0,0,block_size_mm[2]], togmod1_linear_extrude_y([-block_size_mm[1], block_size_mm[1]],
-	   togmod1_make_circle(d=thumb_slot_diameter_mm)
+	if( thumb_slot_diameter_mm > 0 ) ["translate", [0,0,block_size_mm[2]+lip_height_mm], togmod1_linear_extrude_y([-block_size_mm[1], block_size_mm[1]],
+		["union",
+		   togmod1_make_rounded_rect([thumb_slot_diameter_mm, thumb_slot_diameter_mm+lip_height_mm*2], r=thumb_slot_diameter_mm*127/256),
+			// Corner desharpening using 'seem to work for p2084 at least' numbers:
+			for( xm=[-1,+1] ) ["translate", [xm*(thumb_slot_diameter_mm/2-1), 0.01], togmod1_make_circle(d=(2+lip_height_mm)*2, $fn=4)],
+		]
 	)],
 	
-	["translate", [0,0,block_size_mm[2]], make_slots( slot_size, block_size_mm[1], slot_wall_thickness=slot_wall_thickness)],
+	["translate", [0,0,block_size_mm[2]], make_slots( slot_size, block_size_mm[1], slot_wall_thickness=slot_wall_thickness, slot_xy_shape=slot_xy_shape)],
 	
 	if( vec_is_nonzero(slot2_size_mm) )
 	["translate", [0,0,block_size_mm[2]], ["rotate", [0,0,90], make_slots(swapxy(slot2_size), block_size_mm[0], slot_pitch=slot2_pitch, interslot_depth_mm=thumb_slot_diameter_mm/2+0.1)]],

@@ -62,6 +62,22 @@
 			"thumb_slot_diameter": "3/4inch",
 			"magnet_hole_depth": "2.4mm",
 			"magnet_hole_diameter": "6.2mm"
+		},
+		"p2084": {
+			"description": "Holder for SD cards",
+			"block_size": "[\"1chunk\", \"1chunk\", \"1chunk\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "chatom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"lip_height": "1.5mm",
+			"magnet_hole_depth": "2.4mm",
+			"magnet_hole_diameter": "6.2mm",
+			"slot_size": "[\"28mm\", \"2.5mm\", \"34mm\"]",
+			"slot_wall_thickness": "2.5mm",
+			"slot_xy_shape": "oval",
+			"thumb_slot_diameter": "3/4inch",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"
