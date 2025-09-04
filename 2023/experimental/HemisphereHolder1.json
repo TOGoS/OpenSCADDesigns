@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2085": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.1",
+			"bottom_segmentation": "chatom",
+			"hole_z_offset": "1/2chunk",
+			"platform_thickness": "1chunk",
+			"size": "[\"6inch\", \"6inch\", \"1chunk\"]"
+		}
+	},
+	"fileFormatVersion": "1"
+}

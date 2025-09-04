@@ -698,6 +698,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/HemisphereHolder1.scad", ["p2085"], {
+			cameraPosition: [-30, +40, 40],
+			imageSize: [384, 384],
+			paletteSize: 96,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
