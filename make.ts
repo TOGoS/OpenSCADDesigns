@@ -703,6 +703,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 96,
 		}),
+		...multiOsdBuildRules("2023/experimental/tripodishCameraMount0.scad", ["p2086"], {
+			cameraPosition: [-40, -30, 30],
+			imageSize: [256, 256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

@@ -1,0 +1,9 @@
+{
+	"parameterSets": {
+		"p2086": {
+			"$fn": "32",
+			"bottom_hole_style": "straight-9mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
