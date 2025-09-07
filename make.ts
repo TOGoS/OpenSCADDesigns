@@ -698,7 +698,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/HemisphereHolder1.scad", ["p2085"], {
+		...multiOsdBuildRules("2023/experimental/HemisphereHolder1.scad", ["p2087"], {
 			cameraPosition: [-30, +40, 40],
 			imageSize: [384, 384],
 			paletteSize: 96,

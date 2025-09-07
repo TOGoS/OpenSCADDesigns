@@ -1,6 +1,9 @@
-// HemisphereHolder1.0
+// HemisphereHolder1.1
 // 
 // Holder for spherical things with diameter > 4.5", e.g. p1461
+//
+// v1.1:
+// - Bevel around hole on both sides
 
 $fn = 48;
 
@@ -66,8 +69,10 @@ togmod1_domodule(["difference",
 	let(bevsize=6.35) tphl1_make_z_cylinder(zds=[
 		[-size_mm[2]/2           - 100, hole_diameter_mm + 100],
 		[-size_mm[2]/2 + bevsize - 100, hole_diameter_mm + 100],
-		[-size_mm[2]/2 + bevsize      , hole_diameter_mm],
-		[ size_mm[2]/2           + 100, hole_diameter_mm],
+		[-size_mm[2]/2 + bevsize      , hole_diameter_mm      ],
+		[ size_mm[2]/2 - bevsize      , hole_diameter_mm      ],
+		[ size_mm[2]/2 - bevsize + 100, hole_diameter_mm + 100],
+		[ size_mm[2]/2           + 100, hole_diameter_mm + 100],
 	]),
 	
 	for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2-0.4] )
