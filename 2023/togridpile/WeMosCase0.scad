@@ -1,4 +1,4 @@
-// WeMosCase0.6.1
+// WeMosCase0.7
 // 
 // A three-part case for holding WeMos D1 minis by their 'legs'
 // (i.e. long-legged 'dupont' headers, pins down)
@@ -30,6 +30,14 @@
 // - Make the clip a wee bit shorter
 // v0.6.1:
 // - Add description comment, options for usb_cutout_style
+// v0.7:
+// - Start process of moving cavity generation to a TGPSCC0 library,
+//   so that different cavities can be more easily mixed and matched
+//   in different designs
+//   - 'cavity_generator' = "tgpscc0" to generate the case cavity using the library
+//   - Not all options are passed in; e.g. library acts as if pincav_length hardcoded to 8/10".
+// - Categorize 'block', 'experimental', and 'detail' parameters
+// - lip_height option
 
 // Space for a pin; should probably be about half a pin width, ie 0.3175mm
 pin_margin     = "0.32mm";
@@ -53,9 +61,22 @@ part_offset = 0;
 
 cross_section = false;
 
-$fn = 24;
-$tgx11_offset = -0.1;
+/* [Block] */
 
+lip_height = "2.54mm";
+
+/* [Experimental] */
+
+cavity_generator = "original"; // ["original","tgpscc0"]
+
+/* [Detail] */
+
+$tgx11_offset = -0.1;
+$fn = 24;
+
+module wemoscase0__end_params() { }
+
+use <../lib/TGPSCC0.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
@@ -79,6 +100,7 @@ clip_height_mm      = togunits1_to_mm(clip_height   );
 pincav_length_mm    = togunits1_to_mm(pincav_length );
 center_gap_width_mm = 25.4/4 + 0.1;
 clip_length_mm      = pincav_length_mm - 0.5;
+lip_height_mm       = togunits1_to_mm(lip_height    );
 
 the_clip_2d = togpath1_rath_to_polygon(
 	let( ct = clip_thickness_mm                 )
@@ -131,9 +153,11 @@ block_size_ca = [[1, "chunk"],[1, "chunk"],togunits1_to_ca(block_height)];
 block_size_mm = togunits1_decode_vec(block_size_ca);
 
 antenna_support_height_mm = togunits1_decode(antenna_support_height);
+
+
 notch_xms = antenna_support_height_mm > 0 ? [-1] : [-1,+1];
 
-the_case_cavity = ["union",
+the_case_cavity = cavity_generator == "original" ? ["union",
 	["difference",
 		// Main cavity
 		["translate", [0,0,togunits1_to_mm(block_height)], togmod1_make_cuboid(togunits1_decode_vec(["2inch","1+1/8inch",(block_height_mm-deck_z)*2]))],
@@ -158,13 +182,19 @@ the_case_cavity = ["union",
 	if( usb_cutout_style == "v1" ) for( xm=notch_xms ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([6.35, 15, 6.35], r=2)],
 	// USB plug inner cutout
 	if( usb_cutout_style == "v1" ) for( xm=notch_xms ) ["translate", [xm*block_size_mm[0]/2,0,deck_z], tphl1_make_rounded_cuboid([25.4, 9, 4], r=1)],
-];
+] :
+cavity_generator == "tgpscc0" ? ["translate", [0,0,block_size_mm[2]], ["intersection",
+	tgpscc0_make_cavity_limit(block_size_mm, lip_height=lip_height_mm),
+	tgpscc0_make_wemos_cutout(floor_z = -block_size_mm[2] + 1*u)]
+] :
+assert(false, str("Unrecognized cavity algorithm: '", cavity_generator, "'"));
 
 the_case = ["difference",
 	tgx11_block(
 		block_size_ca,
 		bottom_segmentation = "chatom",
-		top_segmentation = "block"
+		top_segmentation = "block",
+		lip_height = lip_height_mm
 	),
    
 	the_case_cavity
