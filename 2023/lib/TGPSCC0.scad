@@ -1,15 +1,20 @@
-// TGPSCC0.1
+// TGPSCC0.2
 // 
 // 'TOGridPile Small Component Cavities'
 // 
 // Library of component cutouts for making cases similar to WeMosCase0, etc.
+// 
+// v0.2:
+// - Round ends and top of cavity limit
 
 // Preliminary design:
 // Components cut a cavity slightly wider than what they need.
 // The union of those cavities will then be intersected with a Y-limited
 // cuboid that is the actual cavity width common to all the sections.
 
+use <./Flangify0.scad>
 use <./TOGMod1Constructors.scad>
+use <./TOGPolyhedronLib1.scad>
 use <./TOGUnits1.scad>
 
 inch = 25.4;
@@ -18,18 +23,24 @@ function tgpscc0_make_cavity_limit(
 	block_size = togunits1_decode_vec(["1chunk", "1chunk", "10chunk"]),
 	cavity_width = togunits1_decode("1+1/8inch"),
 	lip_height = 2.54
-) =
-	// TODO: Flare the top/bottom and ends!
-	togmod1_linear_extrude_x([-block_size[0], block_size[0]],
-		togmod1_make_polygon([
-			[ cavity_width/2, -block_size[2]*2],
-			[ cavity_width/2,         0 + $tgx11_offset - 0.1],
-			[ cavity_width/2 + 100, 100 + $tgx11_offset - 0.1],
-			[-cavity_width/2 - 100, 100 + $tgx11_offset - 0.1],
-			[-cavity_width/2,         0 + $tgx11_offset - 0.1],
-			[-cavity_width/2, -block_size[2]*2],
-		])
-	);
+) = ["rotate", [90,0,90],
+   flangify0_extrude_z(
+		flangify0_spec_to_zrs(flangify0_extend(10, 10, ["zdopses",
+			["zdops", [-block_size[0]/2, 10]],
+			["zdops", [-block_size[0]/2,  0], ["round", 3, 8]],
+			["zdops", [ block_size[0]/2,  0], ["round", 3, 8]],
+			["zdops", [ block_size[0]/2, 10]],
+		])),
+		["togpath1-rath",
+			["togpath1-rathnode", [ cavity_width/2, -block_size[2]*2]],
+			["togpath1-rathnode", [ cavity_width/2,         0 + $tgx11_offset], ["round", 3.1, 8]],
+			["togpath1-rathnode", [ cavity_width/2 + 100, 100 + $tgx11_offset]],
+			["togpath1-rathnode", [-cavity_width/2 - 100, 100 + $tgx11_offset]],
+			["togpath1-rathnode", [-cavity_width/2,         0 + $tgx11_offset], ["round", 3.1, 8]],
+			["togpath1-rathnode", [-cavity_width/2, -block_size[2]*2]],
+		]
+	)
+];
 
 function tgpscc0_make_wemos_cutout(
 	usb_cutout_style="none",

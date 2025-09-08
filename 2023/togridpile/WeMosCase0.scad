@@ -1,4 +1,4 @@
-// WeMosCase0.7
+// WeMosCase0.8
 // 
 // A three-part case for holding WeMos D1 minis by their 'legs'
 // (i.e. long-legged 'dupont' headers, pins down)
@@ -38,6 +38,8 @@
 //   - Not all options are passed in; e.g. library acts as if pincav_length hardcoded to 8/10".
 // - Categorize 'block', 'experimental', and 'detail' parameters
 // - lip_height option
+// v0.8:
+// - Pass more parameters through to tgpscc0_make_wemos_cutout
 
 // Space for a pin; should probably be about half a pin width, ie 0.3175mm
 pin_margin     = "0.32mm";
@@ -185,8 +187,14 @@ the_case_cavity = cavity_generator == "original" ? ["union",
 ] :
 cavity_generator == "tgpscc0" ? ["translate", [0,0,block_size_mm[2]], ["intersection",
 	tgpscc0_make_cavity_limit(block_size_mm, lip_height=lip_height_mm),
-	tgpscc0_make_wemos_cutout(floor_z = -block_size_mm[2] + 1*u)]
-] :
+	tgpscc0_make_wemos_cutout(
+		deck_z  = deck_z-block_size_mm[2],
+		floor_z = pin_z0-block_size_mm[2],
+		pincav_size = pincav_size,
+		antenna_support_height = antenna_support_height_mm,
+		usb_cutout_style = usb_cutout_style
+	)
+]] :
 assert(false, str("Unrecognized cavity algorithm: '", cavity_generator, "'"));
 
 the_case = ["difference",
