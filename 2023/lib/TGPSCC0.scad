@@ -1,4 +1,4 @@
-// TGPSCC0.2
+// TGPSCC0.3
 // 
 // 'TOGridPile Small Component Cavities'
 // 
@@ -6,6 +6,8 @@
 // 
 // v0.2:
 // - Round ends and top of cavity limit
+// v0.3:
+// - Slightly less rounding, to avoid CGAL errors
 
 // Preliminary design:
 // Components cut a cavity slightly wider than what they need.
@@ -26,17 +28,18 @@ function tgpscc0_make_cavity_limit(
 ) = ["rotate", [90,0,90],
    flangify0_extrude_z(
 		flangify0_spec_to_zrs(flangify0_extend(10, 10, ["zdopses",
-			["zdops", [-block_size[0]/2, 10]],
-			["zdops", [-block_size[0]/2,  0], ["round", 3, 8]],
-			["zdops", [ block_size[0]/2,  0], ["round", 3, 8]],
-			["zdops", [ block_size[0]/2, 10]],
+			["zdops", [-block_size[0]/2-0, 10]],
+			["zdops", [-block_size[0]/2-0,  0], ["round", 3, 8]],
+			["zdops", [ block_size[0]/2+0,  0], ["round", 3, 8]],
+			["zdops", [ block_size[0]/2+0, 10]],
 		])),
 		["togpath1-rath",
+			// In practice, the rounding causes CGAL errors.  -_-
 			["togpath1-rathnode", [ cavity_width/2, -block_size[2]*2]],
-			["togpath1-rathnode", [ cavity_width/2,         0 + $tgx11_offset], ["round", 3.1, 8]],
-			["togpath1-rathnode", [ cavity_width/2 + 100, 100 + $tgx11_offset]],
-			["togpath1-rathnode", [-cavity_width/2 - 100, 100 + $tgx11_offset]],
-			["togpath1-rathnode", [-cavity_width/2,         0 + $tgx11_offset], ["round", 3.1, 8]],
+			["togpath1-rathnode", [ cavity_width/2,         0 + $tgx11_offset - 0.1], /*["round", 3.1, 8]*/],
+			["togpath1-rathnode", [ cavity_width/2 + 100, 100 + $tgx11_offset - 0.1]],
+			["togpath1-rathnode", [-cavity_width/2 - 100, 100 + $tgx11_offset - 0.1]],
+			["togpath1-rathnode", [-cavity_width/2,         0 + $tgx11_offset - 0.1], /*["round", 3.1, 8]*/],
 			["togpath1-rathnode", [-cavity_width/2, -block_size[2]*2]],
 		]
 	)
