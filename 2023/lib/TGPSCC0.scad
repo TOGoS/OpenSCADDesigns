@@ -1,4 +1,4 @@
-// TGPSCC0.3
+// TGPSCC0.4
 // 
 // 'TOGridPile Small Component Cavities'
 // 
@@ -8,6 +8,8 @@
 // - Round ends and top of cavity limit
 // v0.3:
 // - Slightly less rounding, to avoid CGAL errors
+// v0.4:
+// - Add tgpscc0_make_gx12_cutout
 
 // Preliminary design:
 // Components cut a cavity slightly wider than what they need.
@@ -16,6 +18,7 @@
 
 use <./Flangify0.scad>
 use <./TOGMod1Constructors.scad>
+use <./TOGPath1.scad>
 use <./TOGPolyhedronLib1.scad>
 use <./TOGUnits1.scad>
 
@@ -84,4 +87,24 @@ function tgpscc0_make_wemos_cutout(
 		if( usb_cutout_style == "v1" ) for( xm=notch_xms ) ["translate", [xm*chunk/2,0,deck_z], tphl1_make_rounded_cuboid([6.35, 15, 6.35], r=2)],
 		// USB plug inner cutout
 		if( usb_cutout_style == "v1" ) for( xm=notch_xms ) ["translate", [xm*chunk/2,0,deck_z], tphl1_make_rounded_cuboid([25.4, 9, 4], r=1)],
+	];
+
+function tgpscc0_make_gx12_cutout(
+	block_size = togunits1_decode_vec(["1chunk","1chunk","1chunk"]),
+	limit_cavity_width = 25.4,
+	neck_hole_diameter = 12.5
+) =
+	["union",
+		// 'neck hole'
+		["translate", [             0  ,0,-block_size[2]/2], ["rotate",[0,90,0],tphl1_make_z_cylinder(zrange=[-block_size[0],block_size[0]], d=neck_hole_diameter)]],
+		// Interior cutout
+		// ["translate", [-block_size[0]/2,0, 0              ], tphl1_make_rounded_cuboid([(block_size[0]-7-4)*2, cavity_width, (block_size[2]-4.2)*2], r=[2,2,0])],
+		togmod1_linear_extrude_z([-block_size[2]+4.2, 50], togpath1_rath_to_polygon(["togpath1-rath",
+			["togpath1-rathnode",[-block_size[0]      ,-block_size[1]/2         ]],
+			["togpath1-rathnode",[ block_size[0]/2-7-4,-limit_cavity_width/2-0.1], ["round", 3]],
+			["togpath1-rathnode",[ block_size[0]/2-7-4,+limit_cavity_width/2+0.1], ["round", 3]],
+			["togpath1-rathnode",[-block_size[0]      ,+block_size[1]/2         ]],
+		])),
+		// Exterior cutout
+		["translate", [ block_size[0]/2,0,-block_size[2]/2], tphl1_make_rounded_cuboid([7*2, block_size[1]-12.7, block_size[2]*2], r=[2,2,0])],
 	];
