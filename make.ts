@@ -708,6 +708,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/togridpile/TGPSCC0.scad", ["p2088"], {
+			cameraPosition: [-40, -30, 50],
+			imageSize: [384, 384],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

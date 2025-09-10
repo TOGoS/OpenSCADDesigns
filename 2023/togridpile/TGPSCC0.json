@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p2088": {
+			"description": "Basic WeMos + GX12 port",
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"block_height": "1inch",
+			"components": "[\"wemos\", \"gx12port\"]",
+			"cross_section": "false",
+			"foot_rounding": "0.5",
+			"lip_height": "1.5mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}

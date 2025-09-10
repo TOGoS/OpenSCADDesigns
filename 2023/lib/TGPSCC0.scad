@@ -67,7 +67,7 @@ function tgpscc0_make_wemos_cutout(
 	["union",
 		["difference",
 			// Main cavity
-			togmod1_make_cuboid([2*inch,2*inch,-deck_z*2]),
+			togmod1_make_cuboid([1.5*inch+0.1,1.5*inch+0.1,-deck_z*2]),
 			
 			if( antenna_support_height > 0 ) ["translate", [chunk/2, 0, deck_z],
 				tphl1_make_rounded_cuboid([chunk, 12.7, antenna_support_height*2], r=antenna_support_height*127/128)]
@@ -92,18 +92,20 @@ function tgpscc0_make_wemos_cutout(
 function tgpscc0_make_gx12_cutout(
 	block_size = togunits1_decode_vec(["1chunk","1chunk","1chunk"]),
 	limit_cavity_width = 25.4,
-	neck_hole_diameter = 12.5
+	neck_hole_diameter = 12.5,
+	floor_z = undef
 ) =
+	let(floor_z_eff = !is_undef(floor_z) ? floor_z : -block_size[2] + 4.2)
 	["union",
 		// 'neck hole'
-		["translate", [             0  ,0,-block_size[2]/2], ["rotate",[0,90,0],tphl1_make_z_cylinder(zrange=[-block_size[0],block_size[0]], d=neck_hole_diameter)]],
+		["translate", [             0  ,0,-block_size[2]/2], ["rotate",[0,90,0],tphl1_make_z_cylinder(zrange=[-block_size[0]/2-0.05,block_size[0]/2+0.05], d=neck_hole_diameter)]],
 		// Interior cutout
 		// ["translate", [-block_size[0]/2,0, 0              ], tphl1_make_rounded_cuboid([(block_size[0]-7-4)*2, cavity_width, (block_size[2]-4.2)*2], r=[2,2,0])],
-		togmod1_linear_extrude_z([-block_size[2]+4.2, 50], togpath1_rath_to_polygon(["togpath1-rath",
-			["togpath1-rathnode",[-block_size[0]      ,-block_size[1]/2         ]],
+		togmod1_linear_extrude_z([floor_z_eff, 50], togpath1_rath_to_polygon(["togpath1-rath",
+			["togpath1-rathnode",[-block_size[0]/2-0.1,-block_size[1]/2         ]],
 			["togpath1-rathnode",[ block_size[0]/2-7-4,-limit_cavity_width/2-0.1], ["round", 3]],
 			["togpath1-rathnode",[ block_size[0]/2-7-4,+limit_cavity_width/2+0.1], ["round", 3]],
-			["togpath1-rathnode",[-block_size[0]      ,+block_size[1]/2         ]],
+			["togpath1-rathnode",[-block_size[0]/2-0.1,+block_size[1]/2         ]],
 		])),
 		// Exterior cutout
 		["translate", [ block_size[0]/2,0,-block_size[2]/2], tphl1_make_rounded_cuboid([7*2, block_size[1]-12.7, block_size[2]*2], r=[2,2,0])],
