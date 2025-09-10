@@ -52,6 +52,27 @@
 			"pincav_floor_z": "1/16inch",
 			"pincav_length": "8/10inch",
 			"usb_cutout_style": "v1"
+		},
+		"p2089": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"antenna_support_height": "0inch",
+			"cavity_generator": "original",
+			"clip_height": "3/16inch",
+			"clip_thickness": "1/16inch",
+			"cross_section": "false",
+			"grating_bump_size": "[\"1/2inch\", \"1/2inch\", \"0inch\"]",
+			"include_case": "false",
+			"include_clip": "true",
+			"include_grating": "true",
+			"layer_thickness": "0.2mm",
+			"lip_height": "2.54mm",
+			"part_offset": "19",
+			"pin_margin": "0.32mm",
+			"pin_spacing": "9/10inch",
+			"pincav_floor_z": "1/16inch",
+			"pincav_length": "8/10inch",
+			"usb_cutout_style": "none"
 		}
 	},
 	"fileFormatVersion": "1"

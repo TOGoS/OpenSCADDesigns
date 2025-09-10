@@ -668,7 +668,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/togridpile/WeMosCase0.scad", ["p2070","p2071","p2072"], {
+		...multiOsdBuildRules("2023/togridpile/WeMosCase0.scad", ["p2070","p2071","p2072","p2089"], {
 			cameraPosition: [-60,-40, 40],
 			imageSize: [512, 512],
 			paletteSize: 128,
