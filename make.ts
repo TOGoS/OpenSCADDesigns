@@ -713,6 +713,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/experimental/Bookmark0.scad", ["p2090"], {
+			cameraPosition: [-30, -30, 60],
+			imageSize: [384, 384],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

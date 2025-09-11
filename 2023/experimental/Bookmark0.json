@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2090": {
+			"slot_inset_x": "1/4inch",
+			"slot_inset_y": "1/2inch",
+			"thickness": "0.4mm",
+			"width": "1.5inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
