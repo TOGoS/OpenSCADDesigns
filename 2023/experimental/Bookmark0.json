@@ -4,6 +4,15 @@
 			"slot_inset_x": "1/4inch",
 			"slot_inset_y": "1/2inch",
 			"thickness": "0.4mm",
+			"width": "1.5inch",
+			"outer_offset": "0mm"
+		},
+		"p2091": {
+			"$fn": "48",
+			"slot_inset_x": "1/4inch",
+			"slot_inset_y": "1/2inch",
+			"slot_width": "2mm",
+			"thickness": "0.4mm",
 			"width": "1.5inch"
 		}
 	},

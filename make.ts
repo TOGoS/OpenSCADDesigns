@@ -713,7 +713,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 64,
 		}),
-		...multiOsdBuildRules("2023/experimental/Bookmark0.scad", ["p2090"], {
+		...multiOsdBuildRules("2023/experimental/Bookmark0.scad", ["p2090","p2091"], {
 			cameraPosition: [-30, -30, 60],
 			imageSize: [384, 384],
 			paletteSize: 64,
