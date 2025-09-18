@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p2092": {
+			"$fn": "24",
+			"hole_diameter": "9/32inch",
+			"knob_ff_diameter": "1inch",
+			"knob_side_count": "6",
+			"nut_ff_diameter": "7/16inch",
+			"nut_margin": "0.1mm",
+			"nut_side_count": "6",
+			"thickness": "1/2inch"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}
