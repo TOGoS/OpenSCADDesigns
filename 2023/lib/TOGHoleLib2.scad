@@ -2,6 +2,10 @@
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
+// 
+// [2025-09-18]: HMM, maybe what we need is an inset parameter
+// that indicates the Z position of the bottom of the head.
+// That might be less different for countersink/counterbored holes?
 //
 // Changes:
 // v2.0:

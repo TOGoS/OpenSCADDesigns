@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.8
+// MonitorMountRouterJig-v1.9
 // 
 // Versions:
 // v1.0:
@@ -39,12 +39,14 @@
 // - Add gridbeam_hole_countersink_inset parameter, which can be set
 //   to a negative number to skip countersinking of the gridbeam holes
 //   on panel-printables.
+// v1.9:
+// - Add alignment_hole_style
 
 // MMP-2310: original; MMP-2311: more alignment holes
 style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
-/* [Panel] **/
+/* [Panel] */
 
 panel_corner_radius = 19.05  ; // 0.01
 panel_thickness     = 19.05  ; // 0.01
@@ -55,6 +57,9 @@ slot_diameter       = 8;
 
 // Inset for gridbeam hole countersinks, used when mode = "panel-printable" instead of counterbores.  Set to -3 or lower to not (really) countersink them.
 gridbeam_hole_countersink_inset = 1; // 0.01
+
+// "default" is similar to THL-1001, but with a bevel on the bottom; otherwise, use TOGHoleLib2 hole styles.
+alignment_hole_style = "default";
 alignment_hole_countersink_inset = 1; // 0.01
 
 /* [Router Template] */
@@ -156,6 +161,7 @@ function get_panel_info(style) =
 	style == "MMP-2316" ? make_2312ish([7.5*inch, 7.5*inch]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -178,6 +184,11 @@ function make_thl_1001(pos=[0,0,0]) = tphl1_make_polyhedron_from_layers([
 	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+   0  ]),
 	circle_points_with_z(7.5/2, [pos[0], pos[1], pos[2]+  10  ])
 ]);
+
+function make_alignment_hole(position) =
+	["translate", position, tog_holelib2_hole(alignment_hole_style == "default" ? "THL-1001" : alignment_hole_style,
+		inset=alignment_hole_countersink_inset)];
+	//make_thl_1001(position);
 
 // Countersunk on top,
 // widened on bottom for heat-set insert
@@ -272,8 +283,9 @@ function decode_cut_for_panel(
 				fat_polyline_to_togmod(r=slot_diameter/2, points=points)]
 		]
 	)
-	let( make_alignment_hole = function(pos)
-		make_panel_assembly_hole([pos[0],pos[1],panel_thickness-alignment_hole_countersink_inset])
+	let( make_panel_alignment_hole = function(pos)
+		alignment_hole_style == "default" ? make_panel_assembly_hole([pos[0],pos[1],panel_thickness-alignment_hole_countersink_inset]) :
+		make_alignment_hole([pos[0],pos[1],panel_thickness])
 	)
 	let( make_thl_1002_slot = function(points)
 		assert(is_list(points) && len(points) == 1)
@@ -286,7 +298,7 @@ function decode_cut_for_panel(
 	) :
 	cutdesc[0] == "back-counterbored-slot"  ?	make_counterbored_slot(cutdesc[1], 0) :
 	cutdesc[0] == "normal-slot"             ? make_counterbored_slot(cutdesc[1]) :
-	cutdesc[0] == "alignment-hole"          ? make_alignment_hole(cutdesc[1]) :
+	cutdesc[0] == "alignment-hole"          ? make_panel_alignment_hole(cutdesc[1]) :
 	cutdesc[0] == "polygonal-hole"          ? make_polygonal_hole(cutdesc[1], 0) :
 	cutdesc[0] == "template-matchfit-groove-x" ? ["union"] :
 	cutdesc[0] == "template-matchfit-groove-y" ? ["union"] :
@@ -334,7 +346,7 @@ function make_the_template(hull_shape_2d, cuts, mode, thickness) = ["difference"
 	["linear-extrude-zs", [0, thickness], make_the_template_2d(hull_shape_2d, cuts, mode)],
 	
 	for(cut=cuts) each
-		cut[0] == "alignment-hole" ? [make_thl_1001([cut[1][0], cut[1][1], thickness-alignment_hole_countersink_inset])] :
+		cut[0] == "alignment-hole" ? [make_alignment_hole([cut[1][0], cut[1][1], thickness])] :
 		cut[0] == "template-matchfit-groove-x" ? (thickness >= 12.7 ? [make_matchfit_groove_x(cut[1])] : []) :
 		cut[0] == "template-matchfit-groove-y" ? (thickness >= 12.7 ? [make_matchfit_groove_y(cut[1])] : []) :
 		[],
