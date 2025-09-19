@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.9
+// MonitorMountRouterJig-v1.10
 // 
 // Versions:
 // v1.0:
@@ -41,9 +41,16 @@
 //   on panel-printables.
 // v1.9:
 // - Add alignment_hole_style
+// v1.10:
+// - GF-2582 = an 8x2-chunk 'fence'
+// 
+// TODO: Option for pockets around rows of alignment holes in templates
+// TODO: Option for less rounded corners and bowtie connections in template edges
+// TODO: Option for sharper conrers in general;
+//   not sure if that should be associated with the part or not
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316","GF-2582"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] */
@@ -81,9 +88,11 @@ render_fn = 72;
 
 module __end_params() { }
 
-inch = 25.4;
+inch  = 25.4;
+chunk = 38.1;
 
 height = 9*inch;
+
 top_y = height/2;
 top_gb_hole_y = top_y - 3/4*inch;
 top_monmount_hole_y = top_y - 9/4*inch;
@@ -102,7 +111,7 @@ function get_alignment_hole_positions(style) =
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 function make_2312ish(size) =
-let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
+let(size_chunks = [round(size[0]/chunk), round(size[1]/chunk)])
 [size, [
 	// Slots
 	// Special case.
@@ -125,6 +134,20 @@ let(size_chunks = [round(size[0]/(1.5*inch)), round(size[1]/(1.5*inch))])
 	for( xm=[-size_chunks[0]/2+1 : 0.5 : size_chunks[0]/2-1] ) for( ym=[-size_chunks[1]/2+1 : 1 : size_chunks[1]/2-1] )
 		if( xm != 0 ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
 ]];
+
+function make_gf25xx(size_chunks) =
+let( size = size_chunks * chunk )
+[size, [
+	for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2-0.5] )
+	["normal-slot", [
+		for( ym=[-size_chunks[1]/2+0.5, size_chunks[1]/2-0.5] ) [xm*chunk, ym*chunk]
+	]],
+	
+	for( xm=[-size_chunks[0]/2+1 : 1 : size_chunks[0]/2-1] )
+	for( ym=[-size_chunks[1]/2+0.5 : 0.5 : size_chunks[1]/2-0.5] )
+	["alignment-hole", [xm*chunk, ym*chunk]],
+]];
+
 
 function template_matchfit_groove(x=undef, y=undef) =
 	assert(is_undef(x) || is_undef(y))
@@ -159,6 +182,7 @@ function get_panel_info(style) =
 	style == "MMP-2314" ? make_2312ish([6.0*inch, 12*inch]) :
 	style == "MMP-2315" ? make_2315ish([6.0*inch,  6*inch], [1*inch,3*inch]) :
 	style == "MMP-2316" ? make_2312ish([7.5*inch, 7.5*inch]) :
+	style == "GF-2582" ? make_gf25xx([8,2]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 use <../lib/TOGHoleLib2.scad>
@@ -342,11 +366,13 @@ function make_the_template_2d(hull_shape_2d, cuts, mode) =
 	mode == "back-template"  ? decode_template_2d_cuts([-1,1,1], hull_shape_2d, cuts, function (c) decode_cut_for_back_template(c) ) :
 	assert(str("Don't know how to make template in mode '", mode, "'"));
 
-function make_the_template(hull_shape_2d, cuts, mode, thickness) = ["difference",
+function make_the_template(hull_shape_2d, cuts, mode, thickness) =
+let( alignment_hole=["render", make_alignment_hole([0, 0, thickness])] )
+["difference",
 	["linear-extrude-zs", [0, thickness], make_the_template_2d(hull_shape_2d, cuts, mode)],
 	
 	for(cut=cuts) each
-		cut[0] == "alignment-hole" ? [make_alignment_hole([cut[1][0], cut[1][1], thickness])] :
+		cut[0] == "alignment-hole" ? [["translate", [cut[1][0], cut[1][1]], alignment_hole]] :
 		cut[0] == "template-matchfit-groove-x" ? (thickness >= 12.7 ? [make_matchfit_groove_x(cut[1])] : []) :
 		cut[0] == "template-matchfit-groove-y" ? (thickness >= 12.7 ? [make_matchfit_groove_y(cut[1])] : []) :
 		[],

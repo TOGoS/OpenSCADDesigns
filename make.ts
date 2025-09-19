@@ -723,6 +723,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/routing-template/MonitorMountRouterJig-v1.scad", ["p2093"], {
+			cameraPosition: [-30, -30, 60],
+			imageSize: [384, 384],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
