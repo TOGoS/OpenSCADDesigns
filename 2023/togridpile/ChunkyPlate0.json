@@ -27,6 +27,21 @@
 			"notch_width": "1/4inch",
 			"top_segmentation": "chunk",
 			"top_v6hc_style": "none"
+		},
+		"p2094": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"block_size": "[\"2chunk\", \"1chunk\", \"1/4inch\"]",
+			"bottom_foot_bevel": "0.4mm",
+			"bottom_segmentation": "chatom",
+			"bottom_v6hc_style": "none",
+			"cross_section": "false",
+			"foot_rounding": "0.7",
+			"lip_height": "-1.5",
+			"notch_depth": "1/8inch",
+			"notch_width": "1/4inch",
+			"top_segmentation": "block",
+			"top_v6hc_style": "v6.1"
 		}
 	},
 	"fileFormatVersion": "1"
