@@ -728,6 +728,11 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/misc/BoreSizer0.scad", ["p2095"], {
+			cameraPosition: [-30, -30, 60],
+			imageSize: [256, 256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
