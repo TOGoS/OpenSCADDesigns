@@ -1,6 +1,25 @@
-import { createHash, Hasher } from 'https://deno.land/std@0.119.0/hash/mod.ts';
+import * as stdHash from 'https://deno.land/std@0.119.0/hash/mod.ts';
 import { toUint8Array } from './bufutil.ts';
 import * as base32 from './base32.ts';
+
+type Hash = Uint8Array;
+type Digestable = string|Uint8Array|ArrayBuffer;
+
+class UnrecognizedScheme extends Error { }
+
+export interface Hasher {
+  update(data: Digestable): this;
+  digest(): Uint8Array;
+  toString(): string;
+}
+
+export function createHash(name:stdHash.SupportedAlgorithm) {
+		// 2025-09-04: Something in the library changed (angry face)
+	// so that things that previously were okay no longer type check.
+	// In practice, the Hashers created by std@0.119.0 createHash
+	// are compatible with this usage:
+	return stdHash.createHash(name) as any as Hasher;
+}
 
 type PostSectorPath = string;
 
@@ -10,11 +29,6 @@ export interface HashAlgorithm {
 	getUrn(hash:Hash) : string;
 	decodeUrn(urn:string) : Hash;
 }
-
-type Hash = Uint8Array;
-type Digestable = string|Uint8Array|ArrayBuffer;
-
-class UnrecognizedScheme extends Error { }
 
 export class TreeHasher implements Hasher {
 	protected buffer:Uint8Array;
