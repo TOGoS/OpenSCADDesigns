@@ -728,7 +728,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 64,
 		}),
-		...multiOsdBuildRules("2023/misc/BoreSizer0.scad", ["p2095"], {
+		...multiOsdBuildRules("2023/misc/BoreSizer0.scad", ["p2095","p2096"], {
 			cameraPosition: [-30, -30, 60],
 			imageSize: [256, 256],
 			paletteSize: 64,

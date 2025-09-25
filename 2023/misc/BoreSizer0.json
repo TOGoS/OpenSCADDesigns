@@ -6,6 +6,13 @@
 			"diameter_decrement": "1/16inch",
 			"section_count": "8",
 			"section_height": "3/8inch"
+		},
+		"p2096": {
+			"$fn": "72",
+			"base_diameter": "1inch",
+			"diameter_decrement": "1/32inch",
+			"section_count": "8",
+			"section_height": "3/8inch"
 		}
 	},
 	"fileFormatVersion": "1"
