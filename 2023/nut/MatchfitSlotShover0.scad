@@ -1,8 +1,11 @@
-// MatchfitSlotShover0.1
+// MatchfitSlotShover0.2
 // 
 // A device that can be shoved along a Matchfit dovetail slot
 // to make sure that it is large enough and/or knock out or
 // squish down small bits that might be in the way.
+// 
+// v0.2:
+// - Fix that point data was being interpreted as mm instead of 1/32"
 
 outer_offset = "0mm";
 total_length = "3inch";
@@ -53,7 +56,7 @@ togmod1_domodule(["difference",
 	tphl1_make_polyhedron_from_layer_function(z_offsets, function(zo)
 		togvec0_offset_points(
 			togpath1_rath_to_polypoints(["togpath1-rath",
-				for( p=basic_shape_data ) ["togpath1-rathnode", offset_sd_point(p, zo[1]), ["round", 1, 8]]
+				for( p=basic_shape_data ) ["togpath1-rathnode", offset_sd_point(p*254/320, zo[1]), ["round", 1, 8]]
 			]),
 			zo[0]
 		)

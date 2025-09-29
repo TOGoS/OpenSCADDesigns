@@ -733,7 +733,9 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
-		...multiOsdBuildRules("2023/nut/MatchfitSlotShover0.scad", ["p2097","p2098"], {
+		...osdBuildRules("p2099", {
+			inScadFile: "2023/nut/MatchfitSlotShover0.scad",
+			presetName: "p2098",
 			cameraPosition: [ 30, -40, 30],
 			imageSize: [256, 256],
 			paletteSize: 64,
