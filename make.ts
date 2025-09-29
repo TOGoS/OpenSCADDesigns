@@ -733,6 +733,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/nut/MatchfitSlotShover0.scad", ["p2097","p2098"], {
+			cameraPosition: [ 30, -40, 30],
+			imageSize: [256, 256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

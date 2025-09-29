@@ -1,11 +1,21 @@
-// MatchfitHexHeadNut-v1.2
+// MatchfitHexHeadNut-v1.2.1
 //
+// Long 'nut' that fits into a matchfit dovetail slot,
+// with a hole for a standard 1/4" bolt head
+//
+// Matchfit dovetail slots are 3/8" deep, bottom 1/2" wide at the bottom,
+// with sides 14deg from vertical.  The top corners are usually rounded
+// a bit; otherwise the slot would be top would be 5/16" wide.
+// tan(14deg) = 1/4, so the walls slope inwards at dx/dy=1/4.
+// 
 // v1.1:
 // - Default bottom_margin reduced to 0.5mm,
 //   hex_head_diameter increased by 0.4mm
 // v1.2:
 // - Make hex_head_depth configurable,
 //   default to 4.7mm
+// v1.2.1:
+// - Add some documentation
 
 bottom_margin     =  0.5; // 0.1
 top_margin        =  1.0; // 0.1
