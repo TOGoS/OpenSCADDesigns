@@ -1,14 +1,23 @@
 {
 	"parameterSets": {
-		"p2097": {
+		"p2100": {
+			"_comment": "Fixed p2097",
 			"outer_offset": "0mm",
 			"taper_inset": "2mm",
 			"taper_length": "1inch",
 			"top_protrusion": "1/4inch",
 			"total_length": "3inch"
 		},
-		"p2098": {
+		"p2099": {
+			"_comment": "Fixed p2098",
 			"outer_offset": "-0.2mm",
+			"taper_inset": "2mm",
+			"taper_length": "1inch",
+			"top_protrusion": "1/4inch",
+			"total_length": "3inch"
+		},
+		"p2101": {
+			"outer_offset": "-0.1mm",
 			"taper_inset": "2mm",
 			"taper_length": "1inch",
 			"top_protrusion": "1/4inch",
