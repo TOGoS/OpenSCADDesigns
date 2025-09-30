@@ -1,4 +1,4 @@
-// MatchfitSlotShover0.2
+// MatchfitSlotShover0.3
 // 
 // A device that can be shoved along a Matchfit dovetail slot
 // to make sure that it is large enough and/or knock out or
@@ -6,12 +6,21 @@
 // 
 // v0.2:
 // - Fix that point data was being interpreted as mm instead of 1/32"
+// v0.3:
+// - Make hole_style configurable
+// - Make both ends taperable
 
 outer_offset = "0mm";
 total_length = "3inch";
 taper_length = "1inch";
 taper_inset = "2mm";
 top_protrusion = "1/4inch";
+hole_style = "THL-1005";
+
+taper_back_end = false;
+taper_front_end = true;
+
+$fn = 32;
 
 module matchfitslotshover0__end_params() { }
 
@@ -45,12 +54,21 @@ function offset_sd_point( sdat, offset ) =
 	[sdat[0][0] + offset*sdat[1][0], sdat[0][1] + offset*sdat[1][1]];
 
 z_offsets = [
-	[                                0, outer_offset_mm                 ],
-	[total_length_mm - taper_length_mm, outer_offset_mm                 ],
-	[total_length_mm                  , outer_offset_mm - taper_inset_mm],
+	each taper_back_end ? [
+		[                                0, outer_offset_mm - taper_inset_mm],
+		[                  taper_length_mm, outer_offset_mm                 ],
+	] : [
+		[                                0, outer_offset_mm                 ],
+	],
+	each taper_front_end ? [
+		[total_length_mm - taper_length_mm, outer_offset_mm                 ],
+		[total_length_mm                  , outer_offset_mm - taper_inset_mm],
+	] : [
+		[total_length_mm                  , outer_offset_mm                 ],
+	],
 ];
 
-hole = ["rotate", [90,0,0], ["render", tog_holelib2_hole("THL-1005", inset=5, depth=100)]];
+hole = ["rotate", [90,0,0], ["render", tog_holelib2_hole(hole_style, inset=5, depth=100)]];
 
 togmod1_domodule(["difference",
 	tphl1_make_polyhedron_from_layer_function(z_offsets, function(zo)

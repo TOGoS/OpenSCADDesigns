@@ -22,6 +22,17 @@
 			"taper_length": "1inch",
 			"top_protrusion": "1/4inch",
 			"total_length": "3inch"
+		},
+		"p2102": {
+			"$fn": "32",
+			"hole_style": "straight-3mm",
+			"outer_offset": "0mm",
+			"taper_back_end": "true",
+			"taper_front_end": "true",
+			"taper_inset": "1.5mm",
+			"taper_length": "1inch",
+			"top_protrusion": "1/4inch",
+			"total_length": "3inch"
 		}
 	},
 	"fileFormatVersion": "1"

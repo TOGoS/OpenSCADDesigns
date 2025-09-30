@@ -733,7 +733,7 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
-		...multiOsdBuildRules("2023/nut/MatchfitSlotShover0.scad", ["p2099","p2100","p2101"], {
+		...multiOsdBuildRules("2023/nut/MatchfitSlotShover0.scad", ["p2099","p2100","p2101","p2102"], {
 			cameraPosition: [ 30, -40, 30],
 			imageSize: [256, 256],
 			paletteSize: 64,
