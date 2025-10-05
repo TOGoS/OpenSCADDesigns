@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p2103": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"fc_height": "1+1/2inch",
+			"fc_thickness": "3/4inch",
+			"height": "6chunk",
+			"panel_thickness": "1/8inch",
+			"width": "1chunk"
+		}
+	},
+	"parameterSets": "",
+	"fileFormatVersion": "1"
+}

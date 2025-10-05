@@ -738,6 +738,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/french-cleat/FCUnipanel0.scad", ["p2103"], {
+			cameraPosition: [-40, -30, 40],
+			imageSize: [256, 256],
+			paletteSize: 32,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
