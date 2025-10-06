@@ -1,0 +1,16 @@
+{
+	"parameterSets": {
+		"p2107": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"bottom_hole_style": "THL-1001",
+			"column_extra_depth": "1u",
+			"column_extra_depth_dxdy": "0.5",
+			"floor_thickness": "1u",
+			"lip_height": "1.5u",
+			"outer_offset": "-0.1",
+			"size_chunks": "[4, 4]"
+		}
+	},
+	"fileFormatVersion": "1"
+}
