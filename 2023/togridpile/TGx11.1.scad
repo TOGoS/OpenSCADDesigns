@@ -1,4 +1,4 @@
-// TGx11.1.21
+// TGx11.1.22
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -19,6 +19,8 @@
 // - Option for very specifically-sized magnet holes
 // - 'clarp2505-square' as alias for 'basic' cavity, in case I ever decide
 //   that 'basic' should be something else (like whatever it was originally)
+// v11.1.22:
+// - Allow offset to be adjusted in 1/40mm increments
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -38,7 +40,7 @@ mode = "normal"; // ["normal", "shell-xs"]
 shell_xs_angle = 0;
 shell_xs_offset = 10;
 
-offset = -0.1; // 0.1
+offset = -0.1; // 0.025
 
 /* [Cavity] */
 

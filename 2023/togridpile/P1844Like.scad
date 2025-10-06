@@ -11,12 +11,14 @@
 // - Delete some dead code
 // - Make lip_height, $tgx11_offset configurable
 // - Replace block_height_u with block_height in whatever units you want
+// v1.3:
+// - Allow $tgx11_offset to be adjusted in 1/40mm increments
 
 block_size_chunks = [2,2];
 block_height = "12u";
 lip_height = "2.54mm";
 
-$tgx11_offset = -0.1; // 0.1
+$tgx11_offset = -0.1; // 0.025
 
 module __p1844_end_params() { }
 
