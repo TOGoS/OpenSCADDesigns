@@ -473,6 +473,11 @@ const p192xBuildRules = flattenObj(map(
 // Something like this.
 const builder = new Builder({
 	rules: {
+		...multiOsdBuildRules("2023/bowtie/RoundBowtie0.scad", ["p1857","p2109"], {
+			cameraPosition: [-20,-20, 30],
+			imageSize: [256,256],
+			paletteSize: 64,
+		}),
 		...osdBuildRules("p1859", {
 			inScadFile: "2023/experimental/ThreadTest2.scad",
 			presetName: "p1859",

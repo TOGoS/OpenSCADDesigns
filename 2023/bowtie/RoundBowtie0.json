@@ -66,6 +66,17 @@
 			"diamond_r": "6.35",
 			"offset": "-0.03",
 			"$fn": "48"
+		},
+		"p2109": {
+			"$fn": "48",
+			"base_thickness": "0",
+			"base_width": "12.7",
+			"center_hole_d": "4.5",
+			"center_hole_style": "straight",
+			"diamond_r": "6.35",
+			"lobe_count": "2",
+			"offset": "-0.03",
+			"thickness": "3.17"
 		}
 	},
 	"parameterSets": "",
