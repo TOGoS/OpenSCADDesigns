@@ -1,10 +1,12 @@
-// TOGridPileMinimalBaseplate4.1
+// TOGridPileMinimalBaseplate4.2
 // 
 // With experimental 'tall' lips that cups
 // rest on instead of resting on the floor.
 // 
 // v4.1:
 // - Option for bowtie cutouts
+// v4.2:
+// - Option for ridges around bowtie cutouts
 
 size_chunks = [4,4];
 
@@ -12,9 +14,16 @@ lip_height = "1.5u";
 column_extra_depth = "1u";
 column_extra_depth_dxdy = 0; // [0:0.01:1]
 floor_thickness = "1u";
-bottom_hole_style = "THL-1001";
-bowtie_cutout_style = "none"; // ["none","round"]
 
+/* [Floor holes] */
+bottom_hole_style = "THL-1001";
+
+/* [Bowtie connector cutouts] */
+bowtie_cutout_style = "none"; // ["none","round"]
+bowtie_ridge_height = "max";
+bowtie_ridge_width = "1u";
+
+/* [Detail] */
 outer_offset  = -0.10; // 0.025
 bowtie_offset = -0.10; // 0.025
 $tgx11_offset = -0.15; // 0.025
@@ -44,6 +53,11 @@ virtual_floor_thickness_mm = floor_thickness_mm+column_extra_depth_mm;
 
 total_height_mm = floor_thickness_mm + column_extra_depth_mm + lip_height_mm;
 
+bowtie_ridge_height_mm = min(
+	virtual_floor_thickness_mm,
+	bowtie_ridge_height == "max" ? 999 : togunits1_to_mm(bowtie_ridge_height)
+);
+bowtie_ridge_width_mm = togunits1_to_mm(bowtie_ridge_width);
 
 echo(str("Total height: ", total_height_mm, "mm"));
 echo(str("Virtual floor thickness: ", virtual_floor_thickness_mm, "mm"));
@@ -59,6 +73,12 @@ round_bowtie_cutout = tphl1_make_polyhedron_from_layer_function([
 	zo[0]
 ));
 
+bowtie_addback =
+	bowtie_ridge_height_mm <= floor_thickness_mm || bowtie_ridge_width_mm <= 0 || bowtie_cutout_style == "none" ? ["union"] :
+	bowtie_cutout_style == "round" ? togmod1_linear_extrude_z([0, bowtie_ridge_height_mm],
+		roundbowtie0_make_bowtie_2d(6.35, offset=bowtie_ridge_width_mm-bowtie_offset)
+	) :
+	assert(false, str("Invalid bowtie_cutout_style: '", bowtie_cutout_style, "'"));
 bowtie_cutout =
 	bowtie_cutout_style == "none" ? ["union"] :
 	bowtie_cutout_style == "round" ? round_bowtie_cutout :
@@ -119,9 +139,16 @@ bowtie_posrots = [
 togmod1_domodule(["difference",
 	outer_hull,
 	
-	for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] )
-	for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2] )
-	["translate", [xm,ym]*chunk, chunk_subtraction],
+	["difference",
+		["union",
+			for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] )
+			for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2] )
+			["translate", [xm,ym]*chunk, chunk_subtraction],
+		],
+		
+		for( posrot=bowtie_posrots )
+		["translate", posrot[0], ["rotate", posrot[1], bowtie_addback]],
+	],
 
 	for( posrot=bowtie_posrots )
 	["translate", posrot[0], ["rotate", posrot[1], bowtie_cutout]],

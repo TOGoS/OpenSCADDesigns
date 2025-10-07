@@ -743,7 +743,7 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 32,
 		}),
-		...multiOsdBuildRules("2023/togridpile/TOGridPileMinimalBaseplate4.scad", ["p2107"], {
+		...multiOsdBuildRules("2023/togridpile/TOGridPileMinimalBaseplate4.scad", ["p2107","p2108"], {
 			cameraPosition: [-40, -30, 60],
 			imageSize: [512, 512],
 			paletteSize: 32,
