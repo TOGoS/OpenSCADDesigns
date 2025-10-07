@@ -1,7 +1,10 @@
-// TOGridPileMinimalBaseplate4.0
+// TOGridPileMinimalBaseplate4.1
 // 
 // With experimental 'tall' lips that cups
 // rest on instead of resting on the floor.
+// 
+// v4.1:
+// - Option for bowtie cutouts
 
 size_chunks = [4,4];
 
@@ -10,8 +13,10 @@ column_extra_depth = "1u";
 column_extra_depth_dxdy = 0; // [0:0.01:1]
 floor_thickness = "1u";
 bottom_hole_style = "THL-1001";
+bowtie_cutout_style = "none"; // ["none","round"]
 
 outer_offset  = -0.10; // 0.025
+bowtie_offset = -0.10; // 0.025
 $tgx11_offset = -0.15; // 0.025
 $fn = 24;
 
@@ -24,6 +29,7 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TOGVecLib0.scad>
+use <../lib/RoundBowtie0.scad>
 
 chunk = togunits1_to_mm([1,"chunk"]);
 atom  = togunits1_to_mm([1,"atom"]);
@@ -34,15 +40,41 @@ size_mm = size_chunks * chunk;
 lip_height_mm         = togunits1_to_mm(lip_height);
 column_extra_depth_mm = togunits1_to_mm(column_extra_depth);
 floor_thickness_mm    = togunits1_to_mm(floor_thickness);
+virtual_floor_thickness_mm = floor_thickness_mm+column_extra_depth_mm;
 
 total_height_mm = floor_thickness_mm + column_extra_depth_mm + lip_height_mm;
 
-echo(str("Total height: ", total_height_mm, "mm"));
-echo(str("Effective thickness: ", floor_thickness_mm+column_extra_depth_mm, "mm"));
 
-outer_hull = togmod1_linear_extrude_z([0, total_height_mm], togpath1_rath_to_polygon(
-	togpath1_make_rectangle_rath(size_mm, [["round", 2*u]])
+echo(str("Total height: ", total_height_mm, "mm"));
+echo(str("Virtual floor thickness: ", virtual_floor_thickness_mm, "mm"));
+
+bowtie_rath = roundbowtie0_make_bowtie_rath(6.35, offset=-bowtie_offset);
+//bowtie_cutout_2d = ["render", roundbowtie0_make_bowtie_2d(6.35, offset=-bowtie_offset)];
+round_bowtie_cutout = tphl1_make_polyhedron_from_layer_function([
+	[-1, 0],
+	[virtual_floor_thickness_mm, 0],
+	[total_height_mm + 1, total_height_mm + 1 - virtual_floor_thickness_mm],
+], function(zo) togvec0_offset_points(
+	togpath1_rath_to_polypoints(togpath1_offset_rath(bowtie_rath, zo[1] - bowtie_offset)),
+	zo[0]
 ));
+
+bowtie_cutout =
+	bowtie_cutout_style == "none" ? ["union"] :
+	bowtie_cutout_style == "round" ? round_bowtie_cutout :
+	assert(false, str("Invalid bowtie_cutout_style: '", bowtie_cutout_style, "'"));
+
+outer_hull = togmod1_linear_extrude_z([0, total_height_mm], ["difference",
+	togpath1_rath_to_polygon(
+		togpath1_make_rectangle_rath(size_mm, [["round", 2*u]])
+	),
+/*	
+	for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2-0.5] )
+	for( ym=[-size_chunks[1]/2, size_chunks[1]/2] )
+	["translate", [xm,ym]*chunk, ["rotate", [0,0,90], bowtie_cutout_2d]],
+*/
+]);
+
 
 chunk_main_subtraction =
 let(z0 = floor_thickness_mm)
@@ -74,11 +106,24 @@ chunk_subtraction = ["union",
 	["translate", [xm*atom,ym*atom,floor_thickness_mm], screw_hole]
 ];
 
+bowtie_posrots = [
+	for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2-0.5] )
+	for( ym=[-size_chunks[1]/2, size_chunks[1]/2] )
+	[[xm,ym]*chunk, [0,0,90]],
+
+	for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2-0.5] )
+	for( xm=[-size_chunks[0]/2, size_chunks[0]/2] )
+	[[xm,ym]*chunk, [0,0,0]],
+];
+
 togmod1_domodule(["difference",
 	outer_hull,
 	
 	for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] )
 	for( xm=[-size_chunks[0]/2+0.5 : 1 : size_chunks[0]/2] )
 	["translate", [xm,ym]*chunk, chunk_subtraction],
+
+	for( posrot=bowtie_posrots )
+	["translate", posrot[0], ["rotate", posrot[1], bowtie_cutout]],
 ]);
 
