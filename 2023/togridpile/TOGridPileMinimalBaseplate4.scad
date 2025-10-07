@@ -1,4 +1,4 @@
-// TOGridPileMinimalBaseplate4.2
+// TOGridPileMinimalBaseplate4.3
 // 
 // With experimental 'tall' lips that cups
 // rest on instead of resting on the floor.
@@ -7,6 +7,8 @@
 // - Option for bowtie cutouts
 // v4.2:
 // - Option for ridges around bowtie cutouts
+// v4.3:
+// - Option for bottom hole membranes
 
 size_chunks = [4,4];
 
@@ -17,6 +19,8 @@ floor_thickness = "1u";
 
 /* [Floor holes] */
 bottom_hole_style = "THL-1001";
+// Set to extrusion layer thickness, e.g. 0.3mm, to make a single-layer membrane, which you'll have to punch through, but that might print more nicely
+bottom_hole_membrane_thickness = "0mm";
 
 /* [Bowtie connector cutouts] */
 bowtie_cutout_style = "none"; // ["none","round"]
@@ -117,7 +121,10 @@ tphl1_make_polyhedron_from_layer_function([
 
 // screw_hole = ["render", tphl1_make_z_cylinder(zrange=[-floor_thickness_mm-1, +floor_thickness_mm+1], d=5)];
 
-screw_hole = ["render", tog_holelib2_hole(bottom_hole_style)];
+bottom_hole_membrane_thickness_mm = togunits1_to_mm(bottom_hole_membrane_thickness);
+screw_hole = ["render", tog_holelib2_hole(bottom_hole_style,
+	depth = bottom_hole_membrane_thickness_mm <= 0 ? floor_thickness_mm + 1 : floor_thickness_mm-bottom_hole_membrane_thickness_mm
+)];
 
 chunk_subtraction = ["union",
 	chunk_main_subtraction,
