@@ -1,0 +1,22 @@
+{
+	"parameterSets": {
+		"p2114": {
+			"$fn": "36",
+			"$tgx11_offset": "-0.1",
+			"bowtie_cutout_style": "round",
+			"bowtie_offset": "-0.1",
+			"edge_bevel": "0.5mm",
+			"size": "[\"3inch\", \"1/2inch\", \"1/8inch\"]"
+		},
+		"p2115": {
+			"$fn": "36",
+			"$tgx11_offset": "-0.1",
+			"bowtie_cutout_style": "none",
+			"bowtie_offset": "-0.1",
+			"corner_bevel": "2mm",
+			"edge_bevel": "0.5mm",
+			"size": "[\"3inch\", \"3/8inch\", \"1/8inch\"]"
+		}
+	},
+	"fileFormatVersion": "1"
+}
