@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.20
+// TGx11.1Lib - v11.1.21
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -56,6 +56,8 @@
 //   which is not especially useful.
 // - Fix 'Unrecognized v6hc_style' error message, which previously and
 //   erroneously indicated 'bottom_shape' as the problem
+// v11.1.21:
+// - Fix lip_height < 0 case to not shorten the top of the block
 
 module __tgx11lib_end_params() { }
 
@@ -384,7 +386,7 @@ let(top_shape_eff = is_undef(top_shape) ? bottom_shape : top_shape)
 			[
 				block_size_ca[0],
 				block_size_ca[1],
-				[togridlib3_decode(block_size_ca[2], [1, "mm"]) + lip_height, "mm"]
+				[togridlib3_decode(block_size_ca[2], [1, "mm"]) + positive_lip_height, "mm"]
 			],
 			segmentation = bottom_segmentation,
 			bottom_shape = bottom_shape,
