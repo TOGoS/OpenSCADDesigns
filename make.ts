@@ -753,7 +753,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 32,
 		}),
-		...multiOsdBuildRules("2023/togridpile/EdgeSpacer0.scad", ["p2114","p2115"], {
+		...multiOsdBuildRules("2023/togridpile/EdgeSpacer0.scad", ["p2114","p2115","p2116"], {
 			cameraPosition: [-40, -30, 60],
 			imageSize: [256, 256],
 			paletteSize: 32,
