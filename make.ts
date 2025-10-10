@@ -758,6 +758,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 32,
 		}),
+		...multiOsdBuildRules("2023/togridpile/MarkerHolder2.scad", ["p2118"], {
+			cameraPosition: [-40, -30, 60],
+			imageSize: [512, 512],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

@@ -1,8 +1,12 @@
-// MarkerHolder2.0
+// MarkerHolder2.1
+// 
+// v2.1:
+// - Round edges more nicely
 
 block_size = ["4chunk", "1chunk", "1inch"];
 slot_depth = "0.85inch";
 slot_width = "0.75inch";
+thumb_slot_width = "1chunk";
 
 bottom_foot_bevel = 0.4; // 0.1
 foot_rounding = 0.5; // [0.25:0.1:1]
@@ -10,11 +14,15 @@ foot_rounding = 0.5; // [0.25:0.1:1]
 $tgx11_offset = -0.15;
 $fn = 24;
 
+module __markerholder2__end_params() { }
+
+use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
-use <../lib/TGx11.1Lib.scad>
-use <../lib/TOGUnits1.scad>
+use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGUnits1.scad>
+use <../lib/TOGVecLib0.scad>
 
 $togridlib3_unit_table = [
 	["tgp-m-outer-corner-radius", [255/64*foot_rounding,"u"]],
@@ -25,8 +33,29 @@ block_size_ca = togunits1_vec_to_cas(block_size);
 block_size_mm = togunits1_vec_to_mms(block_size_ca);
 slot_width_mm = togunits1_to_mm(slot_width);
 slot_depth_mm = togunits1_to_mm(slot_depth);
+thumb_slot_width_mm = togunits1_to_mm(thumb_slot_width);
 atom          = togunits1_to_mm([1,"atom"]);
 chunk         = togunits1_to_mm([1,"chunk"]);
+
+function better_slot_rath(size, bev=3.175, offset=0) =
+let( bottom_r = min(size[0], size[1]-bev)*127/256 )
+["togpath1-rath",
+	["togpath1-rathnode", [-size[0]/2 - bev*10,  bev*9  ],                             ["offset", offset]],
+	["togpath1-rathnode", [-size[0]/2         , -bev    ],                             ["offset", offset]],
+	["togpath1-rathnode", [-size[0]/2         , -size[1]], ["round", bottom_r, $fn/4], ["offset", offset]],
+	["togpath1-rathnode", [ size[0]/2         , -size[1]], ["round", bottom_r, $fn/4], ["offset", offset]],
+	["togpath1-rathnode", [ size[0]/2         , -bev    ],                             ["offset", offset]],
+	["togpath1-rathnode", [ size[0]/2 + bev*10,  bev*9  ],                             ["offset", offset]],
+];
+
+function better_slot_z(zrange, size, bev=3.175) =
+	tphl1_make_polyhedron_from_layer_function(
+		is_num(zrange) ? [[-zrange/2, 0], [zrange/2, 0]] : zrange,
+		function(zo) togvec0_offset_points(
+			togpath1_rath_to_polypoints(better_slot_rath(size, bev, zo[1])),
+			zo[0]
+		)
+	);
 
 togmod1_domodule(
 	let(block_hull = tgx11_block(block_size_ca,
@@ -37,17 +66,28 @@ togmod1_domodule(
 		top_segmentation = "block"
 	))
 	let( slot_bottom_r = min(slot_width_mm, slot_depth_mm*2)*127/256 )
-	// TODO: Round top corners of slot
 	// TODO: Round intersection of slots
 	// Basically: make a custom polyhedron from a cross shape
-	let(slot = ["translate", [0,0,block_size_mm[2]], tphl1_make_rounded_cuboid(
-		[block_size_mm[0]-6.35, slot_width_mm, slot_depth_mm*2],
-		r = [0, slot_bottom_r, slot_bottom_r]
-	)])
-	let(thumb_slot = ["translate", [0,0,block_size_mm[2]], tphl1_make_rounded_cuboid(
-		[chunk, block_size_mm[1]*2, min(slot_depth_mm, block_size_mm[2]-atom)*2],
-		r = min(slot_width_mm, slot_depth_mm*2)*127/256
-	)])
+	let(slot = ["translate", [0,0,block_size_mm[2]],
+		["rotate-xyz", [90,0,90],
+			better_slot_z(block_size_mm[0]-6.35, [slot_width_mm, slot_depth_mm], bev=2)]])
+	let(thumb_slot = ["translate", [0,0,block_size_mm[2]],
+		["rotate-xyz", [90,0,0], better_slot_z(
+			let(obev=2)
+			let(ibev=2)
+			[
+				[-block_size_mm[1]/2-obev , obev*2],
+				[-block_size_mm[1]/2+obev , 0],
+				[-slot_width_mm/2-ibev    , 0],
+				[-slot_width_mm/2+ibev*0.5, ibev*1.5],
+				[ slot_width_mm/2-ibev*0.5, ibev*1.5],
+				[ slot_width_mm/2+ibev    , 0],
+				[ block_size_mm[1]/2-obev , 0],
+				[ block_size_mm[1]/2+obev , obev*2],
+			],
+			[thumb_slot_width_mm, min(slot_depth_mm, block_size_mm[2]-atom)], bev=2)
+		]
+	])
 	["difference",
 		block_hull,
 		
