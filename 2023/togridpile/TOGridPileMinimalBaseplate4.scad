@@ -1,4 +1,4 @@
-// TOGridPileMinimalBaseplate4.3
+// TOGridPileMinimalBaseplate4.4
 // 
 // With experimental 'tall' lips that cups
 // rest on instead of resting on the floor.
@@ -9,6 +9,8 @@
 // - Option for ridges around bowtie cutouts
 // v4.3:
 // - Option for bottom hole membranes
+// v4.4:
+// - Option for cake holes
 
 size_chunks = [4,4];
 
@@ -78,7 +80,7 @@ round_bowtie_cutout = tphl1_make_polyhedron_from_layer_function([
 ));
 
 bowtie_addback =
-	bowtie_ridge_height_mm <= floor_thickness_mm || bowtie_ridge_width_mm <= 0 || bowtie_cutout_style == "none" ? ["union"] :
+	bowtie_ridge_height_mm <= 0 || bowtie_ridge_width_mm <= 0 || bowtie_cutout_style == "none" ? ["union"] :
 	bowtie_cutout_style == "round" ? togmod1_linear_extrude_z([0, bowtie_ridge_height_mm],
 		roundbowtie0_make_bowtie_2d(6.35, offset=bowtie_ridge_width_mm-bowtie_offset)
 	) :
@@ -121,16 +123,39 @@ tphl1_make_polyhedron_from_layer_function([
 
 // screw_hole = ["render", tphl1_make_z_cylinder(zrange=[-floor_thickness_mm-1, +floor_thickness_mm+1], d=5)];
 
+
+cake = togmod1_make_polygon(togpath1_rath_to_polypoints(
+let(cops=[["round", 3.175], ["offset", -25.4/15]])
+["togpath1-rath",
+	["togpath1-rathnode", [0.5*chunk, -0.5*chunk], each cops],
+	["togpath1-rathnode", [0.5*chunk, +0.5*chunk], each cops],
+	["togpath1-rathnode", [0        ,  0        ], each cops],
+]));
+// Four triangles
+cakes = ["union",
+   for( r=[0:90:270] ) ["rotate", [0,0,r], cake]
+];
+
+
+
 bottom_hole_membrane_thickness_mm = togunits1_to_mm(bottom_hole_membrane_thickness);
-screw_hole = ["render", tog_holelib2_hole(bottom_hole_style,
-	depth = bottom_hole_membrane_thickness_mm <= 0 ? floor_thickness_mm + 1 : floor_thickness_mm-bottom_hole_membrane_thickness_mm
+
+bottom_hole_bottom_z = bottom_hole_membrane_thickness_mm <= 0 ? -1 : bottom_hole_membrane_thickness_mm;
+
+function make_screw_hole(style) = ["render", tog_holelib2_hole(style,
+	depth = floor_thickness_mm - bottom_hole_bottom_z
 )];
+
 
 chunk_subtraction = ["union",
 	chunk_main_subtraction,
 	
-	for( ym=[-1,0,1] ) for( xm=[-1,0,1] )
-	["translate", [xm*atom,ym*atom,floor_thickness_mm], screw_hole]
+	bottom_hole_style == "cake" ? togmod1_linear_extrude_z([bottom_hole_bottom_z, total_height_mm+1], cakes) :
+	
+	let(screw_hole = make_screw_hole(bottom_hole_style)) ["union",
+		for( ym=[-1,0,1] ) for( xm=[-1,0,1] )
+			["translate", [xm*atom,ym*atom,floor_thickness_mm], screw_hole]
+	]
 ];
 
 bowtie_posrots = [

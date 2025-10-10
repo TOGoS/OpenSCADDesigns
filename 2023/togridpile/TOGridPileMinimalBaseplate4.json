@@ -72,6 +72,22 @@
 			"lip_height": "1.5u",
 			"outer_offset": "-0.1",
 			"size_chunks": "[4, 1]"
+		},
+		"p2117": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"bottom_hole_membrane_thickness": "0.3mm",
+			"bottom_hole_style": "cake",
+			"bowtie_cutout_style": "round",
+			"bowtie_offset": "-0.1",
+			"bowtie_ridge_height": "1.5u",
+			"bowtie_ridge_width": "2u",
+			"column_extra_depth": "0.5u",
+			"column_extra_depth_dxdy": "0.5",
+			"floor_thickness": "1.5u",
+			"lip_height": "1.5u",
+			"outer_offset": "-0.1",
+			"size_chunks": "[3, 3]"
 		}
 	},
 	"fileFormatVersion": "1"
