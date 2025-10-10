@@ -1,4 +1,4 @@
-// TOGUnits1.3
+// TOGUnits1.4
 // 
 // For simlifying quantity parsing and unit conversion
 // 
@@ -8,6 +8,8 @@
 // - Add togunits1_decode_vec
 // v1.3:
 // - Add togunits1_vec_to_cas
+// v1.4:
+// - Add togunits1_vec_to_mms
 
 use <./TOGridLib3.scad>
 use <./TOGStringLib1.scad>
@@ -51,3 +53,4 @@ function togunits1_decode_vec(whats, unit=[1,"mm"], xf=undef) =
 	[for(w=whats) xf1(togunits1_decode(w, unit_ca))];
 
 function togunits1_to_mm(what) = togunits1_decode(what, [1,"mm"]);
+function togunits1_vec_to_mms(what) = togunits1_decode_vec(what, [1,"mm"]);
