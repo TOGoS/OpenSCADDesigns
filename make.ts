@@ -387,7 +387,7 @@ function osdBuildRules(partId:string, opts:{
 				const textEncoder = new TextEncoder;
 				writeStream.write(textEncoder.encode(
 					`=part ${partId}\n`+
-					`description: ...\n`+ // Hmm: I could read the part.json and extract descriptions!
+					`short-description: ...\n`+ // Hmm: I could read the part.json and extract descriptions!
 					`stl-file: ${partId}.stl\t${stlUrn}\n`+
 					`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${partId}.png\n`+
 					"\n"
