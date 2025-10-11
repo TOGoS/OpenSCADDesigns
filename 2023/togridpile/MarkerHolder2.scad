@@ -1,12 +1,16 @@
-// MarkerHolder2.1
+// MarkerHolder2.2
 // 
 // v2.1:
 // - Round edges more nicely
+// v2.2:
+// - Allow different thumb slot placement
 
 block_size = ["4chunk", "1chunk", "1inch"];
 slot_depth = "0.85inch";
 slot_width = "0.75inch";
 thumb_slot_width = "1chunk";
+thumb_slot_depth = "1atom";
+thumb_slot_position = "0inch";
 
 bottom_foot_bevel = 0.4; // 0.1
 foot_rounding = 0.5; // [0.25:0.1:1]
@@ -34,11 +38,13 @@ block_size_mm = togunits1_vec_to_mms(block_size_ca);
 slot_width_mm = togunits1_to_mm(slot_width);
 slot_depth_mm = togunits1_to_mm(slot_depth);
 thumb_slot_width_mm = togunits1_to_mm(thumb_slot_width);
+thumb_slot_depth_mm = togunits1_to_mm(thumb_slot_depth);
+thumb_slot_x_mm = togunits1_to_mm(thumb_slot_position);
 atom          = togunits1_to_mm([1,"atom"]);
 chunk         = togunits1_to_mm([1,"chunk"]);
 
 function better_slot_rath(size, bev=3.175, offset=0) =
-let( bottom_r = min(size[0], size[1]-bev)*127/256 )
+let( bottom_r = min(size[0]*127/256, (size[1]-bev)*255/256) )
 ["togpath1-rath",
 	["togpath1-rathnode", [-size[0]/2 - bev*10,  bev*9  ],                             ["offset", offset]],
 	["togpath1-rathnode", [-size[0]/2         , -bev    ],                             ["offset", offset]],
@@ -71,7 +77,7 @@ togmod1_domodule(
 	let(slot = ["translate", [0,0,block_size_mm[2]],
 		["rotate-xyz", [90,0,90],
 			better_slot_z(block_size_mm[0]-6.35, [slot_width_mm, slot_depth_mm], bev=2)]])
-	let(thumb_slot = ["translate", [0,0,block_size_mm[2]],
+	let(thumb_slot = ["translate", [thumb_slot_x_mm,0,block_size_mm[2]],
 		["rotate-xyz", [90,0,0], better_slot_z(
 			let(obev=2)
 			let(ibev=2)
@@ -85,7 +91,7 @@ togmod1_domodule(
 				[ block_size_mm[1]/2-obev , 0],
 				[ block_size_mm[1]/2+obev , obev*2],
 			],
-			[thumb_slot_width_mm, min(slot_depth_mm, block_size_mm[2]-atom)], bev=2)
+			[thumb_slot_width_mm, thumb_slot_depth_mm], bev=2)
 		]
 	])
 	["difference",

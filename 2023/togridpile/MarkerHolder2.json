@@ -9,6 +9,18 @@
 			"slot_depth": "0.87inch",
 			"slot_width": "0.75inch",
 			"thumb_slot_width": "1chunk"
+		},
+		"p2119": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"block_size": "[\"4chunk\", \"1chunk\", \"1inch\"]",
+			"bottom_foot_bevel": "0.4",
+			"foot_rounding": "0.7",
+			"slot_depth": "0.87inch",
+			"slot_width": "0.75inch",
+			"thumb_slot_depth": "11/16inch",
+			"thumb_slot_position": "-3/4inch",
+			"thumb_slot_width": "1inch"
 		}
 	},
 	"parameterSets": "",
