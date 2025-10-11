@@ -1,4 +1,4 @@
-// TOGPath1.104
+// TOGPath1.105
 //
 // Functions for transforming 2D paths
 // 
@@ -23,6 +23,8 @@
 // - Added handy utility functions to make some common uses easier:
 //   - togpath1_rath_to_polygon
 //   - togpath1_make_rounded_beveled_rect
+// v1.105:
+// - Don't 'fix leading offsets' when offset is the last op of a rathnode.
 
 use <./TOGComplexLib1.scad>
 
@@ -470,7 +472,7 @@ function togpath1__apply_leading_offsets(rath) =
 	for(i=[0:1:len(points)-1])
 	each
 		let( node = rath[i+1] )
-			len(node) > 2 && node[2][0] == "offset" ? (
+			len(node) > 3 && node[2][0] == "offset" ? (
 				let( pa = points[ (i-1+len(points))%len(points) ] )
 				let( pb = points[ (i              )           ] )
 				let( pc = points[ (i+1            )%len(points) ] )
