@@ -758,7 +758,7 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 32,
 		}),
-		...multiOsdBuildRules("2023/togridpile/MarkerHolder2.scad", ["p2118","p2119"], {
+		...multiOsdBuildRules("2023/togridpile/MarkerHolder2.scad", ["p2118","p2119","p2120"], {
 			cameraPosition: [-40, -30, 60],
 			imageSize: [512, 512],
 			paletteSize: 128,
