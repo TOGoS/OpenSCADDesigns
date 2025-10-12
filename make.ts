@@ -763,6 +763,11 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/gridbeam/ChunkBeam-v1.scad", partIdRange('p',2121,2129), {
+			cameraPosition: [-40, -30, 40],
+			imageSize: [256, 256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

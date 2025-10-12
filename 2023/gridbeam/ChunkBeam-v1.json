@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p2121": {
+			"atom_pitch": "3/4inch",
+			"chunk_pitch_atoms": "1",
+			"hole_diameter": "4.5mm",
+			"length_chunks": "1",
+			"longitudinal_hole_diameter": "4.5mm"
+		},
+		"p2129": {
+			"atom_pitch": "3/4inch",
+			"chunk_pitch_atoms": "3",
+			"hole_diameter": "4.5mm",
+			"length_chunks": "3",
+			"longitudinal_hole_diameter": "4.5mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
