@@ -34,6 +34,22 @@
 			"thumb_slot_position": "-3/4inch",
 			"thumb_slot_top_width": "2inch",
 			"thumb_slot_width": "1inch"
+		},
+		"p2122": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"block_size": "[\"4chunk\", \"2chunk\", \"1inch\"]",
+			"bottom_foot_bevel": "0.4",
+			"foot_rounding": "0.7",
+			"interchunk_bottom_ridge_floor_width": "0.15inch",
+			"interchunk_bottom_ridge_floor_z": "0.17inch",
+			"slot_depth": "0.87inch",
+			"slot_max_corner_radius": "0.25inch",
+			"slot_width": "2.27inch",
+			"thumb_slot_depth": "11/16inch",
+			"thumb_slot_position": "-3/4inch",
+			"thumb_slot_top_width": "2inch",
+			"thumb_slot_width": "1inch"
 		}
 	},
 	"parameterSets": "",

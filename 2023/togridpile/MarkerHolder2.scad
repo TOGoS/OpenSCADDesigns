@@ -1,4 +1,4 @@
-// MarkerHolder2.3
+// MarkerHolder2.4
 // 
 // v2.1:
 // - Round edges more nicely
@@ -7,14 +7,19 @@
 // v2.3:
 // - Option for thumb_slot_top_width; if blank, slot sides are 'straight'
 // - Slight alterations to bevels and such
+// v2.4:
+// - Configurable slot_max_corner_radius
 
 block_size = ["4chunk", "1chunk", "1inch"];
 slot_depth = "0.85inch";
 slot_width = "0.75inch";
+slot_max_corner_radius = "99inch";
 thumb_slot_width = "1chunk";
 thumb_slot_top_width = "";
 thumb_slot_depth = "1atom";
 thumb_slot_position = "0inch";
+interchunk_bottom_ridge_floor_z = "0.2inch";
+interchunk_bottom_ridge_floor_width = "0.2inch";
 
 bottom_foot_bevel = 0.4; // 0.1
 foot_rounding = 0.5; // [0.25:0.1:1]
@@ -39,18 +44,24 @@ $togridlib3_unit_table = [
 
 block_size_ca = togunits1_vec_to_cas(block_size);
 block_size_mm = togunits1_vec_to_mms(block_size_ca);
+block_size_chunks = togunits1_decode_vec(block_size_ca, [1,"chunk"], function(d) round(d));
 slot_width_mm = togunits1_to_mm(slot_width);
 slot_depth_mm = togunits1_to_mm(slot_depth);
+slot_max_corner_radius_mm = togunits1_to_mm(slot_max_corner_radius);
 thumb_slot_bottom_width_mm = togunits1_to_mm(thumb_slot_width);
 thumb_slot_top_width_mm    = thumb_slot_top_width == "" ? thumb_slot_bottom_width_mm : togunits1_to_mm(thumb_slot_top_width);
 thumb_slot_depth_mm = togunits1_to_mm(thumb_slot_depth);
 thumb_slot_x_mm = togunits1_to_mm(thumb_slot_position);
+
+interchunk_bottom_ridge_floor_z_mm     = togunits1_to_mm(interchunk_bottom_ridge_floor_z);
+interchunk_bottom_ridge_floor_width_mm = togunits1_to_mm(interchunk_bottom_ridge_floor_width);
+
 atom          = togunits1_to_mm([1,"atom"]);
 chunk         = togunits1_to_mm([1,"chunk"]);
 
-function better_slot_rath(depth, botwidth, topwidth, bev=3.175, offset=0) =
+function better_slot_rath(depth, botwidth, topwidth, bev=3.175, max_bottom_r=999, offset=0) =
 depth <= 0 || botwidth <= 0 || topwidth <= 0 ? ["togpath1-rath"] :
-let( bottom_r = min(botwidth*96/256, (depth-bev)*255/256) )
+let( bottom_r = min(max_bottom_r, botwidth*96/256, (depth-bev)*255/256) )
 ["togpath1-rath",
 	["togpath1-rathnode", [-topwidth/2 - bev*10,  bev*9  ],                             ["offset", offset]],
 	["togpath1-rathnode", [-topwidth/2         , -bev    ],                             ["offset", offset]],
@@ -70,6 +81,16 @@ function better_slot_z(zrange, rath_func) =
 		)
 	);
 
+interchunk_bottom_ridge = togmod1_linear_extrude_x([-block_size_mm[0], block_size_mm[0]], togmod1_make_polygon(
+let( x0 = interchunk_bottom_ridge_floor_width_mm )
+let( z0 = interchunk_bottom_ridge_floor_z_mm )
+[
+	[ x0 + 10, z0 - 10],
+	[ x0     , z0     ],
+	[-x0     , z0     ],
+	[-x0 - 10, z0 - 10],
+]));
+
 togmod1_domodule(
 	let(block_hull = tgx11_block(block_size_ca,
 	   bottom_segmentation = "chatom",
@@ -82,10 +103,19 @@ togmod1_domodule(
 	let( slot_bottom_r = min(slot_width_mm, slot_depth_mm*2)*127/256 )
 	// TODO: Round intersection of slots
 	// Basically: make a custom polyhedron from a cross shape
-	let(slot = ["translate", [0,0,block_size_mm[2]],
-		["rotate-xyz", [90,0,90],
-			better_slot_z(block_size_mm[0]-6.35, function(offset) better_slot_rath( slot_depth_mm, slot_width_mm, slot_width_mm, bev=1.6, offset=offset))
-		]])
+	let(slot = ["difference",
+		["translate", [0,0,block_size_mm[2]],
+			["rotate-xyz", [90,0,90],
+				better_slot_z(block_size_mm[0]-6.35, function(offset) better_slot_rath(
+				   slot_depth_mm, slot_width_mm, slot_width_mm,
+					bev=1.6, max_bottom_r=slot_max_corner_radius_mm, offset=offset
+			   ))
+			]
+		],
+
+		for(ym=[-block_size_chunks[1]/2 + 1 : 1 : block_size_chunks[2] - 1])
+		["translate", [0, ym*chunk, 0], interchunk_bottom_ridge],
+	])
 	let(thumb_slot = ["translate", [thumb_slot_x_mm,0,block_size_mm[2]],
 		["rotate-xyz", [90,0,0], better_slot_z(
 			let(obev=2)

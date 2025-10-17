@@ -758,12 +758,12 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 32,
 		}),
-		...multiOsdBuildRules("2023/togridpile/MarkerHolder2.scad", ["p2118","p2119","p2120"], {
+		...multiOsdBuildRules("2023/togridpile/MarkerHolder2.scad", ["p2118","p2119","p2120","p2122"], {
 			cameraPosition: [-40, -30, 60],
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/gridbeam/ChunkBeam-v1.scad", partIdRange('p',2121,2129), {
+		...multiOsdBuildRules("2023/gridbeam/ChunkBeam-v1.scad", ["p2121","p2126","p2129"], {
 			cameraPosition: [-40, -30, 40],
 			imageSize: [256, 256],
 			paletteSize: 64,
