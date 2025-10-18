@@ -768,6 +768,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/panel/GX12SolderingHolder0.scad", ["p2123"], {
+			cameraPosition: [-30, -40, 40],
+			imageSize: [256, 256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

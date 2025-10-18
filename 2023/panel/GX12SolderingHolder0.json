@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2123": {
+			"$fn": "48",
+			"size_chunks": "[4, 2]",
+			"thickness": "1/8inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
