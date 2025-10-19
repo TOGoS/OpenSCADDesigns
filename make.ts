@@ -773,6 +773,11 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/experimental/UDPickleJarHolder0.scad", ["p2125"], {
+			cameraPosition: [-40, -30, 30],
+			imageSize: [512, 512],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

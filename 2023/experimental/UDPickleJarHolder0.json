@@ -1,0 +1,18 @@
+{
+	"parameterSets": {
+		"p2125": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"block_height": "2atom",
+			"block_size_chunks": "[4, 4]",
+			"bolt_hole_style": "THL-1006",
+			"bottom_segmentation": "chunk",
+			"pj_od": "95",
+			"pjl_id": "69",
+			"pjl_od": "86",
+			"pjl_thickness": "12.7",
+			"top_segmentation": "chunk"
+		}
+	},
+	"fileFormatVersion": "1"
+}
