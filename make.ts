@@ -778,6 +778,11 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/misc/SieveBlock0.scad", ["p2130","p2131"], {
+			cameraPosition: [-40, -20, 60],
+			imageSize: [512, 512],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

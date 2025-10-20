@@ -1,0 +1,27 @@
+{
+	"parameterSets": {
+		"p2130": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"beam_spacing": "12",
+			"beam_thickness_x": "1.2",
+			"beam_thickness_z": "0.8",
+			"block_height": "1inch",
+			"block_size_chunks": "[3, 3]",
+			"grating_thickness": "1/4inch",
+			"wall_thickness": "1/4inch"
+		},
+		"p2131": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"beam_spacing": "6",
+			"beam_thickness_x": "1.2",
+			"beam_thickness_z": "0.8",
+			"block_height": "1inch",
+			"block_size_chunks": "[3, 3]",
+			"grating_thickness": "1/4inch",
+			"wall_thickness": "1/4inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
