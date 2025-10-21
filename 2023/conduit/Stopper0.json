@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2127": {
+			"$fn": "48",
+			"outer_diameter": "12.7",
+			"screw_hole_style": "THL-1008",
+			"screw_hole_top_z": "6.35",
+			"total_height": "25.4"
+		}
+	},
+	"fileFormatVersion": "1"
+}

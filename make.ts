@@ -783,6 +783,11 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/conduit/Stopper0.scad", ["p2127"], {
+			cameraPosition: [-15, -15, 100],
+			imageSize: [256, 256],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
