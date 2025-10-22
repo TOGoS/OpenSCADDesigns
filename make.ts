@@ -778,14 +778,14 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/misc/SieveBlock0.scad", ["p2130","p2131"], {
-			cameraPosition: [-40, -20, 60],
-			imageSize: [512, 512],
-			paletteSize: 128,
-		}),
 		...multiOsdBuildRules("2023/conduit/Stopper0.scad", ["p2127"], {
 			cameraPosition: [-15, -15, 100],
 			imageSize: [256, 256],
+			paletteSize: 128,
+		}),
+		...multiOsdBuildRules("2023/misc/SieveBlock0.scad", ["p2130","p2131","p2132","p2133","p2134","p2135"], {
+			cameraPosition: [-40, -20, 60],
+			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),

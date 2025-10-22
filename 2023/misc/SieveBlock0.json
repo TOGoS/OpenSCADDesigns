@@ -8,6 +8,7 @@
 			"beam_thickness_z": "0.8",
 			"block_height": "1inch",
 			"block_size_chunks": "[3, 3]",
+			"bottom_foot_bevel": "0mm",
 			"grating_thickness": "1/4inch",
 			"wall_thickness": "1/4inch"
 		},
@@ -19,6 +20,55 @@
 			"beam_thickness_z": "0.8",
 			"block_height": "1inch",
 			"block_size_chunks": "[3, 3]",
+			"bottom_foot_bevel": "0mm",
+			"grating_thickness": "1/4inch",
+			"wall_thickness": "1/4inch"
+		},
+		"p2132": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"beam_spacing": "9",
+			"beam_thickness_x": "1.2",
+			"beam_thickness_z": "0.8",
+			"block_height": "1inch",
+			"block_size_chunks": "[3, 3]",
+			"bottom_foot_bevel": "0.6mm",
+			"grating_thickness": "1/4inch",
+			"wall_thickness": "1/4inch"
+		},
+		"p2133": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"beam_spacing": "3",
+			"beam_thickness_x": "1.2",
+			"beam_thickness_z": "0.8",
+			"block_height": "1inch",
+			"block_size_chunks": "[3, 3]",
+			"bottom_foot_bevel": "0.6mm",
+			"grating_thickness": "1/4inch",
+			"wall_thickness": "1/4inch"
+		},
+		"p2134": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"beam_spacing": "4",
+			"beam_thickness_x": "1.2",
+			"beam_thickness_z": "0.8",
+			"block_height": "1inch",
+			"block_size_chunks": "[3, 3]",
+			"bottom_foot_bevel": "0.6mm",
+			"grating_thickness": "1/4inch",
+			"wall_thickness": "1/4inch"
+		},
+		"p2135": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.15",
+			"beam_spacing": "5",
+			"beam_thickness_x": "1.2",
+			"beam_thickness_z": "0.8",
+			"block_height": "1inch",
+			"block_size_chunks": "[3, 3]",
+			"bottom_foot_bevel": "0.6mm",
 			"grating_thickness": "1/4inch",
 			"wall_thickness": "1/4inch"
 		}
