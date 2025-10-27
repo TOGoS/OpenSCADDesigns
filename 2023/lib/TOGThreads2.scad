@@ -1,4 +1,4 @@
-// TOGThreads2.28
+// TOGThreads2.29
 // 
 // Versions:
 // v2.25:
@@ -13,6 +13,8 @@
 // v2.28:
 // - Fix a typo in togthreads2__get_thread_type23 so that it
 //   works when passed a string
+// v2.28.1:
+// - Stub out function for metric threads
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -253,6 +255,14 @@ function togthreads2__unc_to_type23(basic_diameter, tpi) =
 	let( rmax = r2 + has )
 	["togthreads2.3-type", P, [[rmint, -P*7/16], [rmax, -P/16], [rmax, P/16], [rmint, P*7/16]], rmin, r];
 
+function togthreads2__metric_to_type23(major_diameter, pitch) =
+	// See:
+	// - https://en.wikipedia.org/wiki/ISO_metric_screw_thread,
+	// - https://upload.wikimedia.org/wikipedia/commons/4/4b/ISO_and_UTS_Thread_Dimensions.svg
+	let( min_radius = assert(false, "TODO: min_radius for metric threads"))
+	let( polypoints = assert(false, "TODO: polypoints for metric threads"))
+	["togthreads2.3-type", pitch, polypoints, min_radius, major_diameter];
+
 ////
 
 use <../lib/TOGStringLib1.scad>
@@ -283,6 +293,7 @@ togthreads2_thread_types = [
 	["threads2-demo", ["demo", 20, 5]],
 	["#6-32-UNC", ["unc", 0.138, 32]],
 	["#8-32-UNC", ["unc", 0.168, 32]],
+	["M25x2", ["metric", 25, 2]]
 ];
 
 function togthreads2__get_thread_spec(name, index=0) =
@@ -312,6 +323,7 @@ function togthreads2__get_default_taper_length(spec) =
 function togthreads2__get_thread_type23(spec) =
 	is_string(spec) ? togthreads2__get_thread_type23(togthreads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc"  ? togthreads2__unc_to_type23(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "metric"? togthreads2__metric_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2__demo_to_type23(spec[1], spec[2]) :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
