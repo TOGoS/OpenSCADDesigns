@@ -793,7 +793,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/TwoPartPortLid0.scad", ["p2128","p2141"], {
+		...multiOsdBuildRules("2023/experimental/TwoPartPortLid0.scad", ["p2128","p2141","p2144"], {
 			cameraPosition: [-40, -20, 30],
 			imageSize: [512, 512],
 			paletteSize: 128,
