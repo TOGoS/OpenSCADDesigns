@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2128": {
+			"$fn": "48",
+			"hole_diameter": "1/2inch",
+			"outer_diameter": "1+3/32inch",
+			"slot_bevel": "0.5",
+			"slot_bevel_offset": "-0.12mm",
+			"total_thickness": "1/12inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
