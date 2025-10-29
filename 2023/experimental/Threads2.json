@@ -729,6 +729,24 @@
 			"outer_threads": "1+1/4-7-UNC",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "38.10"
+		},
+		"p2148": {
+			"$fn": "64",
+			"$tphl1_vertex_deduplication_enabled": "false",
+			"description": "octagonal 'ring' for 1+1/4\"-7-UNC bolts with 7/16\" threads and 1/16\" lip",
+			"floor_thickness": "1.5",
+			"floor_thread_radius_offset": "0.3",
+			"floor_threads": "straight-1inch",
+			"handedness": "right",
+			"head_height": "12.7",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "12.7"
 		}
 	},
 	"parameterSets": "",
