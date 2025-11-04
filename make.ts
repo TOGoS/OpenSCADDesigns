@@ -803,6 +803,11 @@ const builder = new Builder({
 			cameraPosition: [10,-20,20],
 			imageSize: [256,256],
 		}),
+		...osdBuildRules("p2150", {
+			inScadFile: "2023/experimental/TubePort0.scad",
+			cameraPosition: [20,-20,40],
+			imageSize: [512,512],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

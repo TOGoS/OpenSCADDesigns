@@ -1,4 +1,4 @@
-// TubePort0.2
+// TubePort0.3
 // 
 // Idea:
 // - Port is an inset cylinder with threads and a snig tube-sized hole
@@ -11,8 +11,11 @@
 // v0.2:
 // - Add full block
 // - Slightly larger hole through bolt
+// v0.3:
+// - TOGridPile block shapes, just so they can stack somewhere a little more nicely when not in use
 
 $fn = 48;
+$tgx11_offset = -0.15;
 
 module __tubeport0__end_params() { }
 
@@ -21,6 +24,9 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGThreads2.scad>
 use <../lib/TOGHoleLib2.scad>
+use <../lib/TGx11.1Lib.scad>
+
+$togridlib3_unit_table = tgx11_get_default_unit_table();
 
 inch = 25.4;
 chunk = 38.1;
@@ -40,11 +46,19 @@ bolt_cap_width = inch;
 bolt_cap_thickness = 6.35;
 bolt_thread_length = inch/2;
 
+function tubeport2_make_block(size) =
+let( size_ca = [[round(size[0]/chunk),"chunk"], [round(size[1]/chunk),"chunk"], [size[2],"mm"]] )
+["translate", [0,0,-size[2]/2], tgx11_block(size_ca,
+	bottom_segmentation = "chunk",
+	bottom_foot_bevel = 0.4,
+	top_segmentation = "none"
+)];
+
 the_half_block =
 let( connector_hole = tog_holelib2_hole("THL-1005", depth=half_block_size_mm[2]+1, inset=6.35) )
 let( top_z = half_block_size_mm[2]/2 )
 ["difference",
-	tphl1_make_rounded_cuboid(half_block_size_mm, r=[inch*3/16, inch*3/16, 1], corner_shape="ovoid1"),
+	tubeport2_make_block(half_block_size_mm),
 	
 	tphl1_make_z_cylinder(zds=[
 		[-chunk                          , tube_diameter],
@@ -68,7 +82,7 @@ let( bot_z = -full_block_size_mm[2]/2 )
 let( top_z =  full_block_size_mm[2]/2 )
 let( connector_hole = tog_holelib2_hole("THL-1005", depth=full_block_size_mm[2]+1, inset=6.35) )
 ["difference",
-	tphl1_make_rounded_cuboid(full_block_size_mm, r=[inch*3/16, inch*3/16, 1], corner_shape="ovoid1"),
+	tubeport2_make_block(full_block_size_mm),
 	
 	["intersection",
 		togthreads2_make_threads(
