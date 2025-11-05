@@ -816,6 +816,11 @@ const builder = new Builder({
 			cameraPosition: [20,-20,40],
 			imageSize: [512,512],
 		}),
+		...multiOsdBuildRules("2023/experimental/MasonJarLid0.scad", ["p2156"], {
+			cameraPosition: [20,-20,40],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 		...multiOsdBuildRules("2023/experimental/TubePort1.scad", ["p2157","p2158"], {
 			cameraPosition: [20,-20,40],
 			imageSize: [512, 512],
