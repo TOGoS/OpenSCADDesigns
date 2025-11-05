@@ -1,4 +1,4 @@
-// Threads2.28
+// Threads2.30
 // 
 // New screw threads proto-library
 // 
@@ -109,6 +109,8 @@
 // - Option for 'head M-holes' (head_mhole_diameter, head_mhole_spacing)
 // v2.28:
 // - Threads don't extend as deep into tall heads
+// v2.30:
+// - Support (via TOGThreads2.30) 'cylinder-zds:...' thread specs
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>

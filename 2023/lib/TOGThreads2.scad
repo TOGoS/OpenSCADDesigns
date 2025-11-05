@@ -1,4 +1,4 @@
-// TOGThreads2.29
+// TOGThreads2.30
 // 
 // Versions:
 // v2.25:
@@ -15,6 +15,8 @@
 //   works when passed a string
 // v2.28.1:
 // - Stub out function for metric threads
+// v2.30:
+// - Add support for zds:1mm,2mm;3mm,4mm;... 'thread' specs
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -266,6 +268,7 @@ function togthreads2__metric_to_type23(major_diameter, pitch) =
 ////
 
 use <../lib/TOGStringLib1.scad>
+use <../lib/TOGUnits1.scad>
 use <../lib/TOGridLib3.scad>
 
 function togthreads2__parse_num(feh, index=0) =
@@ -296,6 +299,15 @@ togthreads2_thread_types = [
 	["M25x2", ["metric", 25, 2]]
 ];
 
+function toghtreads2__parse_zds(zds_str) =
+	let( pair_strs = togstr1_tokenize(zds_str, ";") )
+	["cylinder-zds", [
+		for( pair_str=pair_strs )
+		let( str_pair=togstr1_tokenize(pair_str, ",") )
+		assert(len(str_pair) == 2, str("Expected two components in zds string, but got ", str_pair, " from '", pair_str, "'"))
+		[for(c=str_pair) togunits1_to_mm(c)]
+	]];
+
 function togthreads2__get_thread_spec(name, index=0) =
 	togthreads2_thread_types[index][0] == name ? togthreads2_thread_types[index][1] :
 	index+1 < len(togthreads2_thread_types) ? togthreads2__get_thread_spec(name, index+1) :
@@ -306,6 +318,8 @@ function togthreads2__get_thread_spec(name, index=0) =
 		undef
 	)
 	is_num(uncdiam) ? ["unc", uncdiam, togthreads2__decode_num(kq[1])] :
+	let( kq = togstr1_tokenize(name, ":", 2) )
+	kq[0] == "cylinder-zds" && len(kq) == 2 ? toghtreads2__parse_zds(kq[1]) :
 	assert(false, str("Failed to parse thread spec ''", name, "' (not in list or recognized format)"));
 
 function togthreads2__get_thread_pitch(spec) =
@@ -332,7 +346,8 @@ function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", 
 	let( spec1 = is_string(spec) ? togthreads2__get_thread_spec(spec) : spec )
 	spec1[0] == "none" ? ["union"] :
 	let( zrange = togthreads2__zparams_to_zrange(zparams) )
-	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset) :
+	spec1[0] == "straight-d" ? tphl1_make_z_cylinder(zrange=zrange, d=spec1[1]+r_offset*2) :
+	spec1[0] == "cylinder-zds" ? tphl1_make_z_cylinder(zds=[for(zd=spec1[1]) [zd[0], zd[1]+r_offset*2]]) :
 	let( type23 = togthreads2__get_thread_type23(spec1) )
 	togthreads2__get_polyhedron_algorithm() == "v2" ?
 		togthreads2__mkthreads_v2(
