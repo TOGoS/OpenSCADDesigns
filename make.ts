@@ -322,7 +322,7 @@ function osdBuildRules(partId:string, opts:{
 		crushedPngBuildRules[crushedPngPath] = {
 			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
-				await mkdir(tempDir);
+				await mkRoom(ctx.targetName);
 				await run(magickCommand(renderedPngPath, rotation, _size, ctx.targetName, {
 					paletteSize: paletteSize
 				}));
