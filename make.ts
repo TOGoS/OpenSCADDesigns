@@ -28,6 +28,7 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 // TODO: Check for env vars, search for the .com if not specified
 const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
+const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
 type FilePath = string;
 
@@ -131,6 +132,11 @@ async function run(cmd:Commande) : Promise<void> {
 	
 	if( cmd.argv[0] == "x:MkDirs" ) {
 		return Promise.all(cmd.argv.slice(1).map(p => mkdir(p))).then(() => RESOLVED_PROMISE);
+	} else if( cmd.argv[0] == "x:Readonlify" ) {
+		// Windows version:
+		cmd = {
+			argv: [ATTRIB_EXE, "+r", ...cmd.argv.slice(1)]
+		};
 	} else if( cmd.argv[0] == "x:Hardlink" ) {
 		const src = cmd.argv[1];
 		const dst = cmd.argv[2];
@@ -326,6 +332,7 @@ function osdBuildRules(partId:string, opts:{
 				await run(magickCommand(renderedPngPath, rotation, _size, ctx.targetName, {
 					paletteSize: paletteSize
 				}));
+				await run({argv: ["x:Readonlify", ctx.targetName]});
 			}
 		};
 	}
