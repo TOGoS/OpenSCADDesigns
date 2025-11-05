@@ -328,6 +328,7 @@ function osdBuildRules(partId:string, opts:{
 		crushedPngBuildRules[crushedPngPath] = {
 			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
+				// await mkdir(tempDir);
 				await mkRoom(ctx.targetName);
 				await run(magickCommand(renderedPngPath, rotation, _size, ctx.targetName, {
 					paletteSize: paletteSize
@@ -814,6 +815,11 @@ const builder = new Builder({
 			inScadFile: "2023/experimental/TubePort0.scad",
 			cameraPosition: [20,-20,40],
 			imageSize: [512,512],
+		}),
+		...multiOsdBuildRules("2023/experimental/TubePort1.scad", ["p2157","p2158"], {
+			cameraPosition: [20,-20,40],
+			imageSize: [512, 512],
+			paletteSize: 128,
 		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
