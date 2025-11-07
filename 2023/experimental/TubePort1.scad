@@ -1,4 +1,4 @@
-// TubePort1.4
+// TubePort1.5
 // 
 // Similar idea to TubePort0,
 // but using external 1+1/4"-UNC threads,
@@ -6,6 +6,9 @@
 // 
 // v1.4:
 // - Forked from TubePort0.3
+// v1.5:
+// - Bolt2 shape, which lacks a head
+// - slicey_mcthickness parameter
 
 $fn = 48;
 $tgx11_offset = -0.15;
@@ -13,7 +16,10 @@ $tgx11_offset = -0.15;
 port_hole_diameter = "6.55mm";
 port_hole_count = 2; // [0:1:4]
 
-part_name = "Bolt"; // ["Bolt","Cap"]
+part_name = "Bolt"; // ["Bolt","Bolt2","Cap"]
+
+// Take the middle this much in the Y dimension; may be useful for printing sideways!
+slicey_mcthickness = "999mm";
 
 /* [Bolt parameters] */
 
@@ -50,6 +56,7 @@ cap_rim_thickness_mm = togunits1_to_mm(cap_rim_thickness);
 cap_rim_diameter_mm  = togunits1_to_mm(cap_rim_diameter);
 cap_stem_diameter_mm = togunits1_to_mm(cap_stem_diameter);
 cap_total_height_mm  = togunits1_to_mm(cap_total_height);
+slicey_mcthickness_mm = togunits1_to_mm(slicey_mcthickness);
 
 bolt_cap_width_mm = chunk;
 bolt_cap_thickness_mm = 6.35;
@@ -59,6 +66,13 @@ function get_port_hole_xy_positions(count) =
 	count == 1 ? [[0,0]] :
 	let( dist = inch/4 )
 	[for(i=[0:1:count-1]) let(a=i*360/count) dist*[cos(a),sin(a)]];
+
+function make_symmetrical_port_hole(length) = tphl1_make_z_cylinder(zds=[
+	[-length/2 - 1          , port_hole_diameter_mm + donut_bevel*2 + 2],
+	[-length/2 + donut_bevel, port_hole_diameter_mm],
+	[ length/2 - donut_bevel, port_hole_diameter_mm],
+	[ length/2 + 1          , port_hole_diameter_mm + donut_bevel*2 + 2],
+]);
 
 function make_port_hole(depth) = tphl1_make_z_cylinder(zds=[
 	[-depth         , port_hole_diameter_mm],
@@ -93,11 +107,11 @@ function make_polygon_base(sidecount, width, height) =
 	);
 
 
-the_bolt =
+function make_the_bolt() =
 let( total_height_mm = bolt_cap_thickness_mm + bolt_thread_length_mm )
 let( port_hole = make_port_hole(total_height_mm+1) )
 ["difference",
-	["union",
+	["intersection", slicey_mccuboid, ["union",
 		make_polygon_base(8, bolt_cap_width_mm, bolt_cap_thickness_mm),
 		//["translate", [0,0,bolt_cap_thickness_mm/2], tphl1_make_rounded_cuboid([bolt_cap_width_mm, bolt_cap_width_mm, bolt_cap_thickness_mm], r=[inch*3/16, inch*3/16, 1], corner_shape="ovoid1")],
 		togthreads2_make_threads(
@@ -105,28 +119,48 @@ let( port_hole = make_port_hole(total_height_mm+1) )
 			bolt_thread_style,
 			bolt_thread_r_offset
 		)
-	],
+	]],
 	
 	make_port_hole_array(total_height_mm+1, port_hole_count, [0,0,total_height_mm]),
 ];
 
-the_cap =
+slicey_mccuboid = togmod1_make_cuboid([1000,slicey_mcthickness_mm,1000]);
+
+function make_the_bolt_2() =
+let( total_height_mm = bolt_thread_length_mm )
+let( port_hole_xy_positions = get_port_hole_xy_positions(port_hole_count) )
+let( port_hole = make_symmetrical_port_hole(total_height_mm) )
+["difference",
+	["intersection", slicey_mccuboid, ["union",
+		togthreads2_make_threads(
+			togthreads2_simple_zparams([[-total_height_mm/2, -1], [total_height_mm/2, -1]], 3, extend=0),
+			bolt_thread_style,
+			bolt_thread_r_offset
+		)
+	]],
+	
+	for( pos=port_hole_xy_positions )
+		["translate", [pos[0],pos[1],0], port_hole],
+];
+
+function make_the_cap() =
 let( port_hole = make_port_hole(cap_rim_thickness_mm+1) )
 let( cap_bevel_mm = (cap_rim_diameter_mm - cap_stem_diameter_mm)/2 )
 ["difference",
-	tphl1_make_z_cylinder(zds=[
+	["intersection", slicey_mccuboid, tphl1_make_z_cylinder(zds=[
 		[               0                 , cap_stem_diameter_mm],
 		// Bevel for auto-centering!
 		[cap_total_height_mm-1-cap_bevel_mm, cap_stem_diameter_mm],
 		[cap_total_height_mm-1, cap_rim_diameter_mm],
 		[cap_total_height_mm                   , cap_rim_diameter_mm],
-	]),
+	])],
 	
 	make_port_hole_array(cap_total_height_mm+1, port_hole_count, [0,0,cap_total_height_mm]),
 ];
 
 togmod1_domodule(["union",
-	part_name == "Bolt" ? the_bolt :
-	part_name == "Cap" ? the_cap :
+	part_name == "Bolt" ? make_the_bolt() :
+	part_name == "Bolt2" ? make_the_bolt_2() :
+	part_name == "Cap" ? make_the_cap() :
 	assert(false, str("Unknown part: '", part_name, "'"))
 ]);

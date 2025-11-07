@@ -18,6 +18,15 @@
 			"part_name": "Cap",
 			"port_hole_count": "2",
 			"port_hole_diameter": "7mm"
+		},
+		"p2160": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"bolt_thread_length": "3inch",
+			"part_name": "Bolt2",
+			"port_hole_count": "2",
+			"port_hole_diameter": "7mm",
+			"slicey_mcthickness": "3/4inch"
 		}
 	},
 	"fileFormatVersion": "1"
