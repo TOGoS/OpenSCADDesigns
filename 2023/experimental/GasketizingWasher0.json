@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2161": {
+			"$fn": "72",
+			"gasket_thickness": "2mm",
+			"inner_diameter": "32mm",
+			"inner_wall_thickness": "1mm",
+			"outer_diameter": "50.8mm",
+			"washer_thickness": "3mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
