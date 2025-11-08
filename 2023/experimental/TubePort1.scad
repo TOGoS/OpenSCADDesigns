@@ -1,4 +1,4 @@
-// TubePort1.5
+// TubePort1.6
 // 
 // Similar idea to TubePort0,
 // but using external 1+1/4"-UNC threads,
@@ -9,6 +9,10 @@
 // v1.5:
 // - Bolt2 shape, which lacks a head
 // - slicey_mcthickness parameter
+// v1.6:
+// - Slight donut bevel on bottoms of things
+//   - TODO: Only if there's enough length to bevel!
+// - Option for bolt cap flange
 
 $fn = 48;
 $tgx11_offset = -0.15;
@@ -24,6 +28,8 @@ slicey_mcthickness = "999mm";
 /* [Bolt parameters] */
 
 bolt_thread_length = "3/4inch";
+// If wider than the bolt head, adds a built-in round flange under (over) the bolt head
+bolt_cap_flange_diameter = "0inch";
 
 /* [Cap parameters] */
 
@@ -49,6 +55,7 @@ chunk = togunits1_to_mm("1chunk");
 bolt_thread_length_mm = togunits1_to_mm(bolt_thread_length);
 bolt_thread_style = "1+1/4-7-UNC";
 bolt_thread_r_offset = -0.1;
+bolt_cap_flange_diameter_mm = togunits1_to_mm(bolt_cap_flange_diameter);
 port_hole_diameter_mm = togunits1_to_mm(port_hole_diameter);
 donut_bevel = 3.175;
 
@@ -74,10 +81,14 @@ function make_symmetrical_port_hole(length) = tphl1_make_z_cylinder(zds=[
 	[ length/2 + 1          , port_hole_diameter_mm + donut_bevel*2 + 2],
 ]);
 
-function make_port_hole(depth) = tphl1_make_z_cylinder(zds=[
-	[-depth         , port_hole_diameter_mm],
-	[0 - donut_bevel, port_hole_diameter_mm],
-	[0 + 1          , port_hole_diameter_mm + donut_bevel*2 + 2],
+function make_port_hole(depth) =
+let( tdbev = donut_bevel   )
+let( bdbev = donut_bevel/2 )
+tphl1_make_z_cylinder(zds=[
+	[-depth - 1      , port_hole_diameter_mm + bdbev*2 + 2],
+	[-depth + bdbev  , port_hole_diameter_mm],
+	[     0 - tdbev  , port_hole_diameter_mm],
+	[     0 + 1      , port_hole_diameter_mm + tdbev*2 + 2],
 ]);
 
 function make_port_hole_array(depth, port_hole_count, position=[0,0,0]) =
@@ -106,22 +117,28 @@ function make_polygon_base(sidecount, width, height) =
 		height, r=r2
 	);
 
-
 function make_the_bolt() =
-let( total_height_mm = bolt_cap_thickness_mm + bolt_thread_length_mm )
-let( port_hole = make_port_hole(total_height_mm+1) )
+let( flange_overhang_mm = max(0, bolt_cap_flange_diameter_mm - bolt_cap_width_mm)/2 )
+let( flange_top_z = bolt_cap_flange_diameter_mm > 0 ? 1 + flange_overhang_mm + bolt_cap_thickness_mm : bolt_cap_thickness_mm )
+let( total_height_mm = flange_top_z + bolt_thread_length_mm )
+let( port_hole = make_port_hole(total_height_mm) )
 ["difference",
 	["intersection", slicey_mccuboid, ["union",
-		make_polygon_base(8, bolt_cap_width_mm, bolt_cap_thickness_mm),
+		if( flange_top_z > bolt_cap_thickness_mm ) tphl1_make_z_cylinder(zds=[
+		   [bolt_cap_thickness_mm - 0.4                 , bolt_cap_width_mm - 0.4],
+		   [bolt_cap_thickness_mm + flange_overhang_mm    , bolt_cap_flange_diameter_mm],
+		   [bolt_cap_thickness_mm + flange_overhang_mm + 1, bolt_cap_flange_diameter_mm],
+		]),
+		make_polygon_base(8, bolt_cap_width_mm, max(bolt_cap_thickness_mm, flange_top_z - 0.5)),
 		//["translate", [0,0,bolt_cap_thickness_mm/2], tphl1_make_rounded_cuboid([bolt_cap_width_mm, bolt_cap_width_mm, bolt_cap_thickness_mm], r=[inch*3/16, inch*3/16, 1], corner_shape="ovoid1")],
 		togthreads2_make_threads(
-			togthreads2_simple_zparams([[bolt_cap_thickness_mm-0.5, 0], [total_height_mm, -1]], 3, extend=0),
+			togthreads2_simple_zparams([[flange_top_z-0.5, 0], [total_height_mm, -1]], 3, extend=0),
 			bolt_thread_style,
 			bolt_thread_r_offset
 		)
 	]],
 	
-	make_port_hole_array(total_height_mm+1, port_hole_count, [0,0,total_height_mm]),
+	make_port_hole_array(total_height_mm, port_hole_count, [0,0,total_height_mm]),
 ];
 
 slicey_mccuboid = togmod1_make_cuboid([1000,slicey_mcthickness_mm,1000]);
@@ -144,7 +161,7 @@ let( port_hole = make_symmetrical_port_hole(total_height_mm) )
 ];
 
 function make_the_cap() =
-let( port_hole = make_port_hole(cap_rim_thickness_mm+1) )
+let( port_hole = make_port_hole(cap_rim_thickness_mm) )
 let( cap_bevel_mm = (cap_rim_diameter_mm - cap_stem_diameter_mm)/2 )
 ["difference",
 	["intersection", slicey_mccuboid, tphl1_make_z_cylinder(zds=[
@@ -155,7 +172,7 @@ let( cap_bevel_mm = (cap_rim_diameter_mm - cap_stem_diameter_mm)/2 )
 		[cap_total_height_mm                   , cap_rim_diameter_mm],
 	])],
 	
-	make_port_hole_array(cap_total_height_mm+1, port_hole_count, [0,0,cap_total_height_mm]),
+	make_port_hole_array(cap_total_height_mm, port_hole_count, [0,0,cap_total_height_mm]),
 ];
 
 togmod1_domodule(["union",

@@ -826,7 +826,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/TubePort1.scad", ["p2160"], {
+		...multiOsdBuildRules("2023/experimental/TubePort1.scad", ["p2160","p2163"], {
 			cameraPosition: [-20,-30,40],
 			imageSize: [512, 512],
 			paletteSize: 128,
