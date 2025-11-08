@@ -7,6 +7,13 @@
 			"inner_wall_thickness": "1mm",
 			"outer_diameter": "50.8mm",
 			"washer_thickness": "3mm"
+		},
+		"p2162": {
+			"$fn": "72",
+			"gasket_thickness": "0mm",
+			"inner_diameter": "32mm",
+			"outer_diameter": "50.8mm",
+			"washer_thickness": "3mm"
 		}
 	},
 	"fileFormatVersion": "1"

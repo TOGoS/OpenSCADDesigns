@@ -1,12 +1,17 @@
-// GasketizingWasher0.1
+// GasketizingWasher0.2
 //
 // Fill it with goop, clamp it down, make a gasket?
+// 
+// v0.2:
+// - Allow for zero-thickness inner wall, outer wall, and/or gasket
+//   (which turn it more and more into a simple flat washer)
 
 inner_diameter = "32mm";
 inner_wall_thickness = "1mm";
 outer_diameter = "50.8mm";
 washer_thickness = "3mm";
 gasket_thickness = "2mm";
+outer_wall_thickness = "2mm";
 $fn = 72;
 
 module __gasketizingwasher0__end_params() { }
@@ -21,17 +26,26 @@ inner_wall_thickness_mm = togunits1_decode(inner_wall_thickness);
 outer_diameter_mm       = togunits1_decode(outer_diameter);
 washer_thickness_mm     = togunits1_decode(washer_thickness);
 gasket_thickness_mm     = togunits1_decode(gasket_thickness);
+outer_wall_thickness_mm = togunits1_decode(outer_wall_thickness);
 
 togmod1_domodule(
 	let( z0 = 0, z1 = gasket_thickness_mm, z2 = gasket_thickness_mm + washer_thickness_mm )
 	let( the_hull = tphl1_make_z_cylinder(zds=[
 		[z2, inner_diameter_mm                            ],
-		[z0 + inner_wall_thickness_mm/2, inner_diameter_mm],
-		[z0, inner_diameter_mm + inner_wall_thickness_mm  ],
-		[z0, inner_diameter_mm + inner_wall_thickness_mm*2],
-		[z1, inner_diameter_mm + inner_wall_thickness_mm*2],
-		[z1, outer_diameter_mm - gasket_thickness_mm*2    ],
-		[z0, outer_diameter_mm                            ],
+		each (inner_wall_thickness_mm > 0 && z1 > z0) ? [
+			[z0 + inner_wall_thickness_mm/2, inner_diameter_mm],
+			[z0, inner_diameter_mm + inner_wall_thickness_mm  ],
+			[z0, inner_diameter_mm + inner_wall_thickness_mm*2],
+			[z1, inner_diameter_mm + inner_wall_thickness_mm*2],
+		] : [
+			[z1, inner_diameter_mm                            ],
+		],
+		each (outer_wall_thickness_mm > 0 && z1 > z0) ? [
+			[z1, outer_diameter_mm - gasket_thickness_mm*2    ],
+			[z0, outer_diameter_mm                            ],
+		] : [
+			[z1, outer_diameter_mm                            ],
+		],
 		[z2, outer_diameter_mm                            ],
 		[z2, inner_diameter_mm                            ],
 	], cap_top=false, cap_bottom=false))

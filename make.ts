@@ -831,7 +831,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/GasketizingWasher0.scad", ["p2161"], {
+		...multiOsdBuildRules("2023/experimental/GasketizingWasher0.scad", ["p2161","p2162"], {
 			cameraPosition: [-20,-30,-30],
 			imageSize: [512, 512],
 			paletteSize: 128,
