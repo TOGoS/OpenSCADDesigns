@@ -1,3 +1,12 @@
+// TOGStringLib1.5
+// 
+// Functions for parsing quantities
+// and other misc. string handling.
+// 
+// v1.5
+// - togstr1_parse_quantity will treat unit-only strings as meaning 1/1 of that unit.
+//   e.g. togstr1_parse_quantity("foot") = [[[1,1], "foot", 4]]
+
 function togstr1__todo(message) = assert(false, str("TODO: ", message));
 
 module togstr1__assert_eq(a, b) {
@@ -62,6 +71,7 @@ function togstr1_parse_decimal_number(str, index=0) =
 togstr1__assert_eq( [[   36,   1], 2], togstr1_parse_decimal_number( "36"   ) );
 togstr1__assert_eq( [[ 3524, 100], 5], togstr1_parse_decimal_number( "35.24") );
 togstr1__assert_eq( [[-3524, 100], 6], togstr1_parse_decimal_number("-35.24") );
+togstr1__assert_eq( [[    0,   1], 0], togstr1_parse_decimal_number( "NotANumber") );
 
 function togstr1__gcd(a, b) = b == 0 ? abs(a) : togstr1__gcd(b, a % b);
 
@@ -97,9 +107,10 @@ function togstr1_parse_rational_number(str, index=0) =
 	str[numr[1]] == "+" ?
 		let(numrb = togstr1_parse_rational_number(str, numr[1]+1))
 		[togstr1__add_rat(numr[0], numrb[0]), numrb[1]]	:
-	str[numr[1]] != "/" ? numr :
-	let( denr = togstr1_parse_decimal_number(str, numr[1]+1) )
-	[togstr1__divide_rat(numr[0], denr[0]), denr[1]];
+	str[numr[1]] == "/" ?
+		let( denr = togstr1_parse_decimal_number(str, numr[1]+1) )
+		[togstr1__divide_rat(numr[0], denr[0]), denr[1]] :
+	numr;
 
 togstr1__assert_eq( [[   123,  1],3], togstr1_parse_rational_number( "123") );
 togstr1__assert_eq( [[   123,  1],4], togstr1_parse_rational_number("+123") );
@@ -109,6 +120,7 @@ togstr1__assert_eq( [[ 12345,100],6], togstr1_parse_rational_number("123.45") );
 togstr1__assert_eq( [[  2469, 40],8], togstr1_parse_rational_number("123.45/2") );
 togstr1__assert_eq( [[-  823,160],10], togstr1_parse_rational_number("-123.45/24") );
 togstr1__assert_eq( [[     4,  3],5], togstr1_parse_rational_number( "1+1/3") );
+togstr1__assert_eq( [[     0,  1],0], togstr1_parse_rational_number( "NotANumber!!") );
 
 
 /** Return [[[num, den], unit], end_index] */
@@ -117,9 +129,11 @@ function togstr1_parse_quantity(str) =
 	// For now, just let the unit be the rest of the string;
 	// can revisit to stop at delimiters if needed in the future.
 	assert( numr[1] < len(str), str("Quantity string missing unit: '", str, "'"))
-	let( unit = togstr1_slice(str, numr[1], len(str)) ) 
-	[[numr[0], unit], len(str)];
+	let( unit = togstr1_slice(str, numr[1], len(str)) )
+	let( quant = numr[1] > 0 ? numr[0] : [1,1] ) // No number = 1 (possibly this should be an error instead)
+	[[quant, unit], len(str)];
 
 togstr1__assert_eq( [[[  3,  1], "acre"],  5], togstr1_parse_quantity("3acre") );
 togstr1__assert_eq( [[[  3,  5], "acre"],  7], togstr1_parse_quantity("3/5acre") );
 togstr1__assert_eq( [[[301,500], "acre"], 10], togstr1_parse_quantity("3.01/5acre") );
+togstr1__assert_eq( [[[  1,  1], "acre"],  4], togstr1_parse_quantity("acre") ); // Should either treat as one or throw an error!
