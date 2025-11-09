@@ -12,6 +12,12 @@
 // - Add togunits1_vec_to_mms
 // v1.5:
 // - Remove unused `unit` parameter from `togunits1_vec_to_cas`
+// 
+// Reserved but not-yet-actually-used globals:
+// - $togunits1_default_unit - default unit when interpreting "0"
+//   - See TOGStringLib1
+// - $togunits1_default_implied_unit - when interpreting quantities without unit, assume they have this one
+//   - This might be a bad idea, so never implemented!
 
 use <./TOGridLib3.scad>
 use <./TOGStringLib1.scad>

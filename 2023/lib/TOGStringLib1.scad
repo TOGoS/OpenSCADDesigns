@@ -1,4 +1,4 @@
-// TOGStringLib1.5
+// TOGStringLib1.6
 // 
 // Functions for parsing quantities
 // and other misc. string handling.
@@ -6,6 +6,12 @@
 // v1.5
 // - togstr1_parse_quantity will treat unit-only strings as meaning 1/1 of that unit.
 //   e.g. togstr1_parse_quantity("foot") = [[[1,1], "foot", 4]]
+// v1.6:
+// - togstr1_parse_quantity allows unit name to be omitted when quantity is zero and $togunits1_default_unit is defined
+// 
+// Globals: $togunits1_default_unit - affects what 'unit' is returned
+// when interpreting numbers or strings that lack the unit.
+
 
 function togstr1__todo(message) = assert(false, str("TODO: ", message));
 
@@ -128,7 +134,8 @@ function togstr1_parse_quantity(str) =
 	let( numr = togstr1_parse_rational_number(str) )
 	// For now, just let the unit be the rest of the string;
 	// can revisit to stop at delimiters if needed in the future.
-	assert( numr[1] < len(str), str("Quantity string missing unit: '", str, "'"))
+	numr[1] > 0 && numr[1] == len(str) && numr[0][0] == 0 && !is_undef($togunits1_default_unit) ? [[[0,1], $togunits1_default_unit], numr[1]] :
+	assert( numr[1] < len(str), str("Quantity string missing unit: '", str, "'; note that '0' is acceptable if $togunits1_default_unit is defined"))
 	let( unit = togstr1_slice(str, numr[1], len(str)) )
 	let( quant = numr[1] > 0 ? numr[0] : [1,1] ) // No number = 1 (possibly this should be an error instead)
 	[[quant, unit], len(str)];
@@ -137,3 +144,4 @@ togstr1__assert_eq( [[[  3,  1], "acre"],  5], togstr1_parse_quantity("3acre") )
 togstr1__assert_eq( [[[  3,  5], "acre"],  7], togstr1_parse_quantity("3/5acre") );
 togstr1__assert_eq( [[[301,500], "acre"], 10], togstr1_parse_quantity("3.01/5acre") );
 togstr1__assert_eq( [[[  1,  1], "acre"],  4], togstr1_parse_quantity("acre") ); // Should either treat as one or throw an error!
+togstr1__assert_eq( [[[  0,  1],"hectare"],1], togstr1_parse_quantity("0", $togunits1_default_unit="hectare") ); // Zero is fine if $togunits1_default_unit is defined
