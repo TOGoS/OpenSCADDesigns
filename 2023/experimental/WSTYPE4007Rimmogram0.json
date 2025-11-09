@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p2164": {
+			"$fn": "48",
+			"algorithm": "Rath",
+			"inner_flange_thickness": "2mm",
+			"max_rath_round": "1e+6",
+			"mounting_hole_style": "none",
+			"outer_size": "[\"13.5inch\", \"8.5inch\", \"1/4inch\"]"
+		},
+		"p2165": {
+			"$fn": "48",
+			"algorithm": "Rath",
+			"inner_flange_thickness": "2mm",
+			"max_rath_round": "1e+6",
+			"mounting_hole_style": "THL-1005",
+			"outer_size": "[\"13.5inch\", \"9inch\", \"3/8inch\"]"
+		}
+	},
+	"fileFormatVersion": "1"
+}

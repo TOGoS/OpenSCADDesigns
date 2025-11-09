@@ -836,11 +836,10 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...osdBuildRules("p2164", {
-			inScadFile: "2023/experimental/WSTYPE4007Rimmogram0.scad",
+		...multiOsdBuildRules("2023/experimental/WSTYPE4007Rimmogram0.scad", ["p2164","p2165"], {
 			cameraPosition: [0,0,60],
 			imageSize: [512, 512],
-			paletteSize: 128,
+			paletteSize: 32,
 		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
