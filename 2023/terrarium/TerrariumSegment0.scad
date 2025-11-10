@@ -1,4 +1,4 @@
-// TerrariumSegment0.8.1
+// TerrariumSegment0.9
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -35,6 +35,11 @@
 // v0.8.1:
 // - Factor out terrariumsegment0_make_squavoiden
 // - squavoiden_to_hole_positions assumes 1/2 atom for hole inset if undefined
+// v0.9
+// - Fixes to flange generation for short-in-the-Z cases
+// - Refactor to allow for pre-assembly transformations, e.g. to add ports
+// - Even with fixes, CGAL trips up with the p2167 preset.
+//   Try OpenSCAD 2024 with 'manifold' enabled.  It's faster, anyway.
 
 size_atoms = [9,9,9];
 floor_thickness = 0;
@@ -42,6 +47,8 @@ wall_inset = 3.2;
 wall_thickness = 2;
 // 12.7 is a good minimum; 22.2 to allow something rest on top
 inner_flange_depth = 12.7;
+// May add more flexible configuration option later!
+port_config = "none"; // ["none","P2167Like"]
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -203,7 +210,16 @@ function make_terrarium_section(
 	inner_flange_depth = 12.7,
 	floor_thickness = 0,
 	wall_inset = 3.175,
-	wall_thickness = 2
+	wall_thickness = 2,
+	flange_extend = 0, // Extend flanges outside the bounding box by this much (because you're going to intersect with something later)
+	assembler = function(flanges, outer_wall, screw_holes, cavity, screw_hole_xy_positions) ["difference",
+		["union",
+			flanges,
+			outer_wall,
+		],
+		["union", each screw_holes],
+		cavity
+	]
 ) =
 	let(size = togridlib3_decode_vector(size_ca))
 	let(atom = togridlib3_decode([1, "atom"]))
@@ -213,15 +229,18 @@ function make_terrarium_section(
 	
 	let(flangdat = let(
 		sh = flange_straight_height,
-		fd = flange_depth
+		fd = flange_depth,
+		fe = flange_extend,
+		efd = min(fd, (size[2]-sh*2) / 2 + 1)
 	) [
-		[-size[2]/2      , - 0  ],
-		[-size[2]/2+sh   , - 0  ],
-		[-size[2]/2+sh+fd, -fd  ],
-		[ size[2]/2-sh-fd, -fd  ],
-		[ size[2]/2-sh   , - 0  ],
-		[ size[2]/2      , - 0  ]
+		[-size[2]/2-fe    , + fe  ],
+		[-size[2]/2+sh    , -  0  ],
+		[-size[2]/2+sh+efd, -efd  ],
+		[ size[2]/2-sh-efd, -efd  ],
+		[ size[2]/2-sh    , -  0  ],
+		[ size[2]/2+fe    , + fe  ]
 	])
+	// TODO: Assert that iflangdat's z positions are monotonic
 	let(flanges = tphl1_make_polyhedron_from_layer_function(flangdat, function(zo) togvec0_offset_points(
 		togpath1_rath_to_polypoints(["togpath1-rath",
 			for( c=corners )
@@ -233,15 +252,21 @@ function make_terrarium_section(
 		sh = flange_straight_height,
 		fd = inner_flange_depth,
 		floor_z = floor_thickness <= 0 ? -size[2] : -size[2]/2+floor_thickness,
-		bb_z    = -size[2]/2 + max(sh, floor_thickness)
+		// Bottom base
+		bb_z    = -size[2]/2 + max(sh, floor_thickness),
+		// Top base
+		tb_z    = size[2]/2 - sh,
+		// Effective flange depth, accounting for how much space we have
+		efd = min(fd, (tb_z - bb_z)/2 - 1)
 	) [
 		if( floor_z < bb_z ) [floor_z, -fd],
 		[ bb_z           , -fd ],
-		[ bb_z + fd      ,  0  ],
-		[ size[2]/2-sh-fd,  0  ],
-		[ size[2]/2-sh   , -fd ],
+		[ bb_z + efd     , -fd + efd],
+		[ tb_z - efd     , -fd + efd],
+		[ tb_z           , -fd ],
 		[ size[2]        , -fd ]
 	])
+	// TODO: Assert that iflangdat's z positions are monotonic
 	let( cavity_flanged = tphl1_make_polyhedron_from_layer_function(iflangdat, function(zo) togvec0_offset_points(
 		togpath1_rath_to_polypoints(["togpath1-rath",
 			for( c=corners )
@@ -265,33 +290,110 @@ function make_terrarium_section(
 	let( cavity = ["intersection", cavity_walled, cavity_flanged] )
 	
 	let( screw_hole = tog_holelib2_hole("THL-1005", depth=30, overhead_bore_height=10) )
+	let( screw_hole_xy_positions = skip_ends(screw_hole_positions,1) )
 	let( screw_holes = [
 		for( zm=[-1, 1] )
 		// for( c=corners )
 		// ["translate", [c[0]*(size[0]/2 - atom/2), c[1]*(size[1]/2 - atom/2), size[2]/2 + zm*size[2]/2+(flange_straight_height+atom/4)], ["scale", [1,1,-zm], screw_hole]]
-		for( hp=skip_ends(screw_hole_positions,1) )
+		for( hp=screw_hole_xy_positions )
 		["scale", [1,1,zm], ["translate", [hp[0], hp[1], -size[2]/2 + flange_straight_height+atom/4], screw_hole]]
 	])
-	["difference",
-		["union",
-			flanges,
-			outer_wall
-		],
-		["union", each screw_holes],
-		cavity
-	];
-
+	assembler(flanges=flanges, outer_wall=outer_wall, screw_holes=screw_holes, cavity=cavity, screw_hole_xy_positions=screw_hole_xy_positions);
 
 atom = 12.7;
 
 squavoiden_1 = ["squavoiden", [100,50], [-20,+20], generate_edge_hole_positions(10,3)*10, [-20,+20], [-45,0,+45]];
+
+function make_assembler(outer_additions=[], inner_additions=[], final_subtractions=[], final_intersections=[]) =
+	function(flanges, outer_wall, screw_holes, cavity, screw_hole_xy_positions) ["intersection",
+		["difference",
+			["union",
+				["difference",
+					["union",
+						flanges,
+						outer_wall,
+					],
+					["union", each screw_holes],
+				],
+				each outer_additions,
+			],
+			["difference",
+				cavity,
+				each inner_additions
+			],
+			each final_subtractions
+		],
+		each final_intersections
+	];
+
+// Slight modifications for avoiding CGAL errors
+flange_extend = 2;
+final_intersection_box =
+	let( atom = togridlib3_decode([1, "atom"]) )
+	let( size_mm = size_atoms*atom )
+	togmod1_make_cuboid(size_mm);
+
+/* // As it was previously defined
+vanilla_assembler = function(flanges, outer_wall, screw_holes, cavity, screw_hole_xy_positions) ["difference",
+	["union",
+		flanges,
+		outer_wall,
+	],
+	["union", each screw_holes],
+	cavity
+];
+*/
+
+vanilla_assembler = make_assembler(
+	final_intersections = [final_intersection_box]
+);
+
+p2167_assembler =
+	let( atom = togridlib3_decode([1, "atom"]) )
+	let( port_y_positions = [-4.5*atom, 4.5*atom] )
+	let( size_mm = size_atoms*atom )
+	let( outer_additions=[for(y=port_y_positions)
+		["translate", [0,y,0],
+			["rotate", [0,90,0], tphl1_make_z_cylinder(zds=[
+				[-size_mm[0]/2- 5, 38.1-10],
+				[-size_mm[0]/2+20, 38.1+40],
+				[ size_mm[0]/2-20, 38.1+40],
+				[ size_mm[0]/2+ 5, 38.1-10],
+			])]
+		]
+	])
+	let( inner_additions=[for(y=port_y_positions) for(x=[-size_mm[0]/2,size_mm[0]/2])
+	   ["translate", [x,y,0],
+			["rotate", [0,90,0], tphl1_make_z_cylinder(zds=[
+				[-inner_flange_depth, 38.1                       ],
+				[                  0, 38.1 + inner_flange_depth*2],
+				[ inner_flange_depth, 38.1                       ],
+			])]
+		]
+	])
+	let( final_subtractions = [for(y=port_y_positions)
+		["translate", [0,y,0],
+			["rotate", [0,90,0], tphl1_make_z_cylinder(d=32.5, zrange=[-size_mm[0], size_mm[0]])],
+		]
+	])
+	make_assembler(
+		outer_additions = outer_additions,
+		inner_additions = inner_additions,
+		final_subtractions = final_subtractions,
+		final_intersections = [final_intersection_box]
+	);
 
 thing_1 = make_terrarium_section(
 	size_ca = [for(dim=size_atoms) [dim, "atom"]],
 	floor_thickness = floor_thickness,
 	wall_inset = wall_inset,
 	wall_thickness = wall_thickness,
-	inner_flange_depth = inner_flange_depth
+	inner_flange_depth = inner_flange_depth,
+	flange_extend = flange_extend,
+	assembler =
+		port_config == "none" ? vanilla_assembler :
+		port_config == "P2167Like" ? p2167_assembler :
+		assert(false, str("Unrecognized port configuration: '", port_config, "'"))
 );
 
 thing_3 = render_squavoiden(squavoiden_1);
