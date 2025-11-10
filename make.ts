@@ -26,6 +26,7 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 
 
 // TODO: Check for env vars, search for the .com if not specified
+// TODO: Update to use OpenSCAD2024 with --manifold (possibly treat as separate program and with different nonces)
 const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
