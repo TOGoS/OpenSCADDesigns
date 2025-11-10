@@ -15,6 +15,15 @@
 			"max_rath_round": "1e+6",
 			"mounting_hole_style": "THL-1005",
 			"outer_size": "[\"13.5inch\", \"9inch\", \"3/8inch\"]"
+		},
+		"p2166": {
+			"$fn": "48",
+			"$togunits1_default_unit": "mm",
+			"algorithm": "Rath",
+			"inner_flange_thickness": "2mm",
+			"max_rath_round": "1e+6",
+			"mounting_hole_style": "straight-5mm",
+			"outer_size": "[\"13.5inch\", \"9inch\", \"3/8inch\"]"
 		}
 	},
 	"fileFormatVersion": "1"
