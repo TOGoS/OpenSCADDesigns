@@ -1,4 +1,4 @@
-// TubePort1.6
+// TubePort1.7
 // 
 // Similar idea to TubePort0,
 // but using external 1+1/4"-UNC threads,
@@ -13,6 +13,8 @@
 // - Slight donut bevel on bottoms of things
 //   - TODO: Only if there's enough length to bevel!
 // - Option for bolt cap flange
+// v1.7
+// - bolt_total_length as an alternative to bolt_thread_length
 
 $fn = 48;
 $tgx11_offset = -0.15;
@@ -28,6 +30,8 @@ slicey_mcthickness = "999mm";
 /* [Bolt parameters] */
 
 bolt_thread_length = "3/4inch";
+// Alternative to specifying bolt_thread_length; empty string means undefined and use the other one
+bolt_total_length = "";
 // If wider than the bolt head, adds a built-in round flange under (over) the bolt head
 bolt_cap_flange_diameter = "0inch";
 
@@ -49,10 +53,17 @@ use <../lib/TOGUnits1.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGVecLib0.scad>
 
+$togunits1_default_unit = "mm";
+
 inch  = togunits1_to_mm("1inch");
 chunk = togunits1_to_mm("1chunk");
 
-bolt_thread_length_mm = togunits1_to_mm(bolt_thread_length);
+function is_blank(v) = is_undef(v) || v == "";
+
+bolt_thread_length_mm = is_blank(bolt_thread_length) ? undef : togunits1_to_mm(bolt_thread_length);
+bolt_total_length_mm = is_blank(bolt_total_length) ? undef : togunits1_to_mm(bolt_total_length);
+assert( is_undef(bolt_thread_length_mm) || is_undef(bolt_total_length_mm), "Only one of bolt_thread_length or bolt_total_length should be defined" );
+
 bolt_thread_style = "1+1/4-7-UNC";
 bolt_thread_r_offset = -0.1;
 bolt_cap_flange_diameter_mm = togunits1_to_mm(bolt_cap_flange_diameter);
@@ -118,9 +129,11 @@ function make_polygon_base(sidecount, width, height) =
 	);
 
 function make_the_bolt() =
+assert( !is_undef(bolt_total_length_mm) || !is_undef(bolt_thread_length_mm), "Neither bolt_total_length_mm nor bolt_thread_length_mm is defined")
 let( flange_overhang_mm = max(0, bolt_cap_flange_diameter_mm - bolt_cap_width_mm)/2 )
 let( flange_top_z = bolt_cap_flange_diameter_mm > 0 ? 1 + flange_overhang_mm + bolt_cap_thickness_mm : bolt_cap_thickness_mm )
-let( total_height_mm = flange_top_z + bolt_thread_length_mm )
+let( total_height_mm = !is_undef(bolt_total_length_mm) ? bolt_total_length_mm : flange_top_z + bolt_thread_length_mm )
+echo( flange_top_z=flange_top_z, total_height_mm=total_height_mm )
 let( port_hole = make_port_hole(total_height_mm) )
 ["difference",
 	["intersection", slicey_mccuboid, ["union",
@@ -144,7 +157,9 @@ let( port_hole = make_port_hole(total_height_mm) )
 slicey_mccuboid = togmod1_make_cuboid([1000,slicey_mcthickness_mm,1000]);
 
 function make_the_bolt_2() =
-let( total_height_mm = bolt_thread_length_mm )
+assert( !is_undef(bolt_total_length_mm) || !is_undef(bolt_thread_length_mm), "Neither bolt_total_length_mm nor bolt_thread_length_mm is defined")
+let( total_height_mm = !is_undef(bolt_total_length_mm) ? bolt_total_length_mm : bolt_thread_length_mm )
+echo( total_height_mm=total_height_mm )
 let( port_hole_xy_positions = get_port_hole_xy_positions(port_hole_count) )
 let( port_hole = make_symmetrical_port_hole(total_height_mm) )
 ["difference",

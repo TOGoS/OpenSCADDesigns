@@ -36,6 +36,26 @@
 			"part_name": "Bolt",
 			"port_hole_count": "2",
 			"port_hole_diameter": "6.55mm"
+		},
+		"p2168": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"bolt_cap_flange_diameter": "2inch",
+			"bolt_thread_length": "",
+			"bolt_total_length": "2inch",
+			"part_name": "Bolt",
+			"port_hole_count": "2",
+			"port_hole_diameter": "6.55mm"
+		},
+		"p2169": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"bolt_cap_flange_diameter": "2inch",
+			"bolt_thread_length": "",
+			"bolt_total_length": "2+1/2inch",
+			"part_name": "Bolt",
+			"port_hole_count": "2",
+			"port_hole_diameter": "6.55mm"
 		}
 	},
 	"fileFormatVersion": "1"
