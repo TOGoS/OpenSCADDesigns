@@ -1,4 +1,4 @@
-// WSTYPE4007Rimmogram0.2
+// WSTYPE4007Rimmogram0.3
 //
 // Can I model one of these well enough to
 // print something that fits around the rim?
@@ -6,6 +6,8 @@
 // v0.2:
 // - Add mounting holes along edges
 // - Size customizable
+// v0.3:
+// - Allow 'bottom-up:...' mounting_hole_style
 
 algorithm = "Rath"; // ["Rath","Intersection"]
 
@@ -74,7 +76,21 @@ inner_shape = ["union",
 	],
 ];
 
-mounting_hole = tog_holelib2_hole(mounting_hole_style, depth=100);
+use <../lib/TOGStringLib1.scad>
+
+function parsey_mcholey(spec) =
+	let( tokz = togstr1_tokenize(spec, ":", 2) )
+	tokz[0] == "bottom-up" ? ["bottom-up", tokz[1]] :
+	["top-down", spec];
+
+function trot(tz, rx, thing) = ["translate", [0,0,tz], ["rotate", [rx,0,0], thing]];
+	
+
+mounting_mcholey = parsey_mcholey(mounting_hole_style);
+mounting_hole =
+	mounting_mcholey[0] == "bottom-up" ? trot(0*outer_size_mm[2], 180, tog_holelib2_hole(mounting_mcholey[1], depth=outer_size_mm[2]+1)) :
+	mounting_mcholey[0] == "top-down"  ? trot(1*outer_size_mm[2],   0, tog_holelib2_hole(mounting_mcholey[1], depth=outer_size_mm[2]+1)) :
+	assert(false, str("Bad mcholey thing: ", mounting_mcholey));
 
 function defloor(z, zmin, zunder) = z > zmin ? z : zunder;
 
@@ -86,5 +102,5 @@ togmod1_domodule(["difference",
 	for( ym=[-outer_size_atoms[1]/2+0.5 : 1 : outer_size_atoms[1]/2-0.5] )
 	for( xm=[-outer_size_atoms[0]/2+0.5 : 1 : outer_size_atoms[0]/2-0.5] )
 	if( abs(ym) > 8 || abs(xm) > 13 )
-	["translate", [xm*atom, ym*atom, outer_size_mm[2]], mounting_hole],
+	["translate", [xm*atom, ym*atom, 0], mounting_hole],
 ]);

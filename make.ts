@@ -842,7 +842,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/WSTYPE4007Rimmogram0.scad", ["p2164","p2165","p2166"], {
+		...multiOsdBuildRules("2023/experimental/WSTYPE4007Rimmogram0.scad", ["p2164","p2165","p2166","p2170"], {
 			cameraPosition: [0,0,60],
 			imageSize: [512, 512],
 			paletteSize: 32,
