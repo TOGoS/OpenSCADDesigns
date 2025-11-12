@@ -1,4 +1,4 @@
-// TubePort1.7
+// TubePort1.7.1
 // 
 // Similar idea to TubePort0,
 // but using external 1+1/4"-UNC threads,
@@ -15,6 +15,8 @@
 // - Option for bolt cap flange
 // v1.7
 // - bolt_total_length as an alternative to bolt_thread_length
+// v1.7.1
+// - Print thread_length_mm
 
 $fn = 48;
 $tgx11_offset = -0.15;
@@ -133,7 +135,7 @@ assert( !is_undef(bolt_total_length_mm) || !is_undef(bolt_thread_length_mm), "Ne
 let( flange_overhang_mm = max(0, bolt_cap_flange_diameter_mm - bolt_cap_width_mm)/2 )
 let( flange_top_z = bolt_cap_flange_diameter_mm > 0 ? 1 + flange_overhang_mm + bolt_cap_thickness_mm : bolt_cap_thickness_mm )
 let( total_height_mm = !is_undef(bolt_total_length_mm) ? bolt_total_length_mm : flange_top_z + bolt_thread_length_mm )
-echo( flange_top_z=flange_top_z, total_height_mm=total_height_mm )
+echo( flange_top_z=flange_top_z, total_height_mm=total_height_mm, thread_length_mm=(total_height_mm - flange_top_z) )
 let( port_hole = make_port_hole(total_height_mm) )
 ["difference",
 	["intersection", slicey_mccuboid, ["union",
