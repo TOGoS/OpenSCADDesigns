@@ -26,7 +26,12 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 
 
 // TODO: Check for env vars, search for the .com if not specified
-// TODO: Update to use OpenSCAD2024 with --manifold (possibly treat as separate program and with different nonces)
+// TODO: Update to use OpenSCAD2024 with --manifold
+// - possibly treat as separate program and with different nonces,
+//   since some shapes *don't* work with that version,
+//   and either way, it's probably good to record exactly which
+//   version of OpenSCAD should be used to generate each shape,
+//   for almost-reproducibility (output seems a little nondeterministic) and such.
 const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
