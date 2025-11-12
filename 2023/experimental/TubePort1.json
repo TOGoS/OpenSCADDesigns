@@ -56,6 +56,18 @@
 			"part_name": "Bolt",
 			"port_hole_count": "2",
 			"port_hole_diameter": "6.55mm"
+		},
+		"p2171": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"bolt_cap_flange_diameter": "0inch",
+			"bolt_thread_length": "1.5inch",
+			"bolt_total_length": "",
+			"part_name": "Bolt2",
+			"port_hole_blockage_thickness": "auto",
+			"port_hole_count": "2",
+			"port_hole_diameter": "7mm",
+			"slicey_mcthickness": "3/4inch"
 		}
 	},
 	"fileFormatVersion": "1"

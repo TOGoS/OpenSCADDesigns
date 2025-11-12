@@ -1,4 +1,4 @@
-// TubePort1.7.1
+// TubePort1.8
 // 
 // Similar idea to TubePort0,
 // but using external 1+1/4"-UNC threads,
@@ -17,12 +17,16 @@
 // - bolt_total_length as an alternative to bolt_thread_length
 // v1.7.1
 // - Print thread_length_mm
+// v1.8
+// - Option for a blockage halfway along the tube
 
 $fn = 48;
 $tgx11_offset = -0.15;
 
 port_hole_diameter = "6.55mm";
 port_hole_count = 2; // [0:1:4]
+// "auto" to guess a reasonable thickness for a blockage
+port_hole_blockage_thickness = "0mm";
 
 part_name = "Bolt"; // ["Bolt","Bolt2","Cap"]
 
@@ -87,22 +91,37 @@ function get_port_hole_xy_positions(count) =
 	let( dist = inch/4 )
 	[for(i=[0:1:count-1]) let(a=i*360/count) dist*[cos(a),sin(a)]];
 
-function make_symmetrical_port_hole(length) = tphl1_make_z_cylinder(zds=[
+function generate_blockage_for_hole(hole_zrange, blockage_thickness) =
+	let( hole_length = hole_zrange[1]-hole_zrange[0] )
+	let( zmid = (hole_zrange[0]+hole_zrange[1])/2 )
+	let( bt =
+		blockage_thickness == "auto" ? max(2, min(hole_length/3, hole_length-25.4)) :
+		togunits1_to_mm(blockage_thickness)
+	)
+	bt > 0 ? echo(port_hole_blockage_thickness_mm=bt) tphl1_make_z_cylinder(zrange=[zmid-bt/2, zmid+bt/2], d=port_hole_diameter_mm*3, $fn=4) :
+	["union"];
+
+function make_symmetrical_port_hole(length) =
+let(cyl = tphl1_make_z_cylinder(zds=[
 	[-length/2 - 1          , port_hole_diameter_mm + donut_bevel*2 + 2],
 	[-length/2 + donut_bevel, port_hole_diameter_mm],
 	[ length/2 - donut_bevel, port_hole_diameter_mm],
 	[ length/2 + 1          , port_hole_diameter_mm + donut_bevel*2 + 2],
-]);
+]))
+let( blockage = generate_blockage_for_hole([-length/2, length/2], port_hole_blockage_thickness) )
+["difference", cyl, blockage];
 
 function make_port_hole(depth) =
 let( tdbev = donut_bevel   )
 let( bdbev = donut_bevel/2 )
-tphl1_make_z_cylinder(zds=[
+let( cyl = tphl1_make_z_cylinder(zds=[
 	[-depth - 1      , port_hole_diameter_mm + bdbev*2 + 2],
 	[-depth + bdbev  , port_hole_diameter_mm],
 	[     0 - tdbev  , port_hole_diameter_mm],
 	[     0 + 1      , port_hole_diameter_mm + tdbev*2 + 2],
-]);
+]))
+let( blockage = generate_blockage_for_hole([-depth, 0], port_hole_blockage_thickness) )
+["difference", cyl, blockage];
 
 function make_port_hole_array(depth, port_hole_count, position=[0,0,0]) =
 	let( positions = get_port_hole_xy_positions(port_hole_count) )
