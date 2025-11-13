@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p2172": {
+			"$fn": "72",
+			"part_type": "DoublePlug",
+			"post_diameter": "1/4inch",
+			"post_mid_r_offset": "-0.1mm",
+			"post_r_offset": "-0.1mm",
+			"total_length": "1inch"
+		},
+		"p2173": {
+			"$fn": "72",
+			"part_type": "SinglePlug",
+			"post_diameter": "1/4inch",
+			"post_mid_r_offset": "-0.1mm",
+			"post_r_offset": "-0.1mm",
+			"total_length": "1inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
