@@ -68,6 +68,29 @@
 			"port_hole_count": "2",
 			"port_hole_diameter": "7mm",
 			"slicey_mcthickness": "3/4inch"
+		},
+		"p2176": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"cap_rim_diameter": "19/32inch",
+			"cap_rim_thickness": "1/8inch",
+			"cap_stem_diameter": "15/32inch",
+			"cap_total_height": "1/4inch",
+			"part_name": "Cap",
+			"port_hole_count": "1",
+			"port_hole_diameter": "7mm",
+			"slicey_mcthickness": "999mm"
+		},
+		"p2177": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"bolt_cap_flange_diameter": "0inch",
+			"bolt_thread_length": "1+1/2inch",
+			"bolt_thread_style": "3/4-10-UNC",
+			"part_name": "Bolt2",
+			"port_hole_count": "1",
+			"port_hole_diameter": "6.75mm",
+			"slicey_mcthickness": "1/2inch"
 		}
 	},
 	"fileFormatVersion": "1"

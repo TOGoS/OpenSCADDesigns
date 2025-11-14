@@ -832,7 +832,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/terrarium/TubePort1.scad", ["p2160","p2163","p2168","p2169","p2171"], {
+		...multiOsdBuildRules("2023/terrarium/TubePort1.scad", ["p2160","p2163","p2168","p2169","p2171","p2176","p2177"], {
 			cameraPosition: [-20,-30,40],
 			imageSize: [512, 512],
 			paletteSize: 128,
