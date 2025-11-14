@@ -1,4 +1,4 @@
-// TubePort1.8
+// TubePort1.9
 // 
 // Similar idea to TubePort0,
 // but using external 1+1/4"-UNC threads,
@@ -19,6 +19,8 @@
 // - Print thread_length_mm
 // v1.8
 // - Option for a blockage halfway along the tube
+// v1.9
+// - Allow bolt_thread_style to be customized
 
 $fn = 48;
 $tgx11_offset = -0.15;
@@ -32,6 +34,8 @@ part_name = "Bolt"; // ["Bolt","Bolt2","Cap"]
 
 // Take the middle this much in the Y dimension; may be useful for printing sideways!
 slicey_mcthickness = "999mm";
+
+bolt_thread_style = "1+1/4-7-UNC";
 
 /* [Bolt parameters] */
 
@@ -70,7 +74,6 @@ bolt_thread_length_mm = is_blank(bolt_thread_length) ? undef : togunits1_to_mm(b
 bolt_total_length_mm = is_blank(bolt_total_length) ? undef : togunits1_to_mm(bolt_total_length);
 assert( is_undef(bolt_thread_length_mm) || is_undef(bolt_total_length_mm), "Only one of bolt_thread_length or bolt_total_length should be defined" );
 
-bolt_thread_style = "1+1/4-7-UNC";
 bolt_thread_r_offset = -0.1;
 bolt_cap_flange_diameter_mm = togunits1_to_mm(bolt_cap_flange_diameter);
 port_hole_diameter_mm = togunits1_to_mm(port_hole_diameter);
