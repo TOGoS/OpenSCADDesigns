@@ -1,4 +1,8 @@
-// HollowRail0.1
+// HollowRail0.2
+// 
+// v0.2
+// - Skip generating cavity when appropriate
+// - Make diamond holes a little smaller, 4mm instead of 4.5mm
 // 
 // TODO: Round some bits more
 // TODO: Bulkheads every 3 atoms or so in the cavity
@@ -29,7 +33,7 @@ bottom_thickness_mm  = togunits1_to_mm(bottom_thickness);
 end_thickness_mm  = togunits1_to_mm(end_thickness);
 atom_mm = togunits1_to_mm([1, "atom"]);
 
-hole = togmod1_linear_extrude_z([-height_mm, height_mm], togmod1_make_circle(d=4.5, $fn=4));
+hole = togmod1_linear_extrude_z([-height_mm, height_mm], togmod1_make_circle(d=4, $fn=4));
 
 togmod1_domodule(["difference",
 	tphl1_make_rounded_cuboid([
@@ -38,6 +42,7 @@ togmod1_domodule(["difference",
 		height_mm + $tgx11_offset*2,
 	], r=[2,0,2]),
 	
+	if( back_thickness_mm < width_mm && height_mm - top_thickness_mm - bottom_thickness_mm > 0 )
 	togmod1_linear_extrude_x([-length_mm/2+end_thickness_mm, length_mm/2-end_thickness_mm], togmod1_make_polygon(
 		let(y0 = -width_mm/2 + back_thickness_mm, y1 = +width_mm/2 + 1)
 		let(z0 = -height_mm/2 + bottom_thickness_mm, z1 = height_mm/2 - top_thickness_mm)

@@ -1,0 +1,15 @@
+{
+	"fileFormatVersion": "1",
+	"parameterSets": {
+		"p2175": {
+			"$fn": "24",
+			"$tgx11_offset": "-0.1",
+			"back_thickness": "3/32inch",
+			"bottom_thickness": "1/2inch",
+			"end_thickness": "1u",
+			"height": "3inch",
+			"length": "18atom",
+			"top_thickness": "1/2inch"
+		}
+	}
+}
