@@ -1,4 +1,4 @@
-// TerrariumSegment0.10
+// TerrariumSegment0.12
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -42,6 +42,11 @@
 //   Try OpenSCAD 2024 with 'manifold' enabled.  It's faster, anyway.
 // v0.10:
 // - Options for outer_flange_slope, inner_flange_slope
+// v0.11:
+// - P2167Like ports are 3" apart instead of 4.5",
+//   and add their own screw holes + columns
+// v0.12:
+// - Round corners with r=1/2inch
 
 size_atoms = [9,9,9];
 floor_thickness = 0;
@@ -336,12 +341,12 @@ function make_assembler(outer_additions=[], inner_additions=[], final_subtractio
 		each final_intersections
 	];
 
-// Slight modifications for avoiding CGAL errors
 flange_extend = 2;
+
 final_intersection_box =
 	let( atom = togridlib3_decode([1, "atom"]) )
 	let( size_mm = size_atoms*atom )
-	togmod1_make_cuboid(size_mm);
+	togmod1_linear_extrude_z([-size_mm[2]/2, size_mm[2]/2], togmod1_make_rounded_rect([size_mm[0], size_mm[1]], r=atom/2));
 
 /* // As it was previously defined
 vanilla_assembler = function(flanges, outer_wall, screw_holes, cavity, screw_hole_xy_positions) ["difference",
@@ -360,8 +365,13 @@ vanilla_assembler = make_assembler(
 
 p2167_assembler =
 	let( atom = togridlib3_decode([1, "atom"]) )
-	let( port_y_positions = [-4.5*atom, 4.5*atom] )
+	let( port_y_positions = [-3*atom, 3*atom] )
 	let( size_mm = size_atoms*atom )
+	let( extra_hole = tphl1_make_z_cylinder(zrange=[-size_mm[2], size_mm[2]], d=5) )
+	let( extra_hole_column = tphl1_make_z_cylinder(zrange=[-size_mm[2], size_mm[2]], d=9) )
+	let( extra_hole_positions = [for(y=port_y_positions) for(ym=[-1.5,1.5])
+		[(-size_atoms[0]/2+0.5) * atom, y + ym * atom] // If you move the ports, you'll need to adjust this!
+	] )
 	let( outer_additions=[for(y=port_y_positions)
 		["translate", [0,y,0],
 			["rotate", [0,90,0], tphl1_make_z_cylinder(zds=[
@@ -370,7 +380,8 @@ p2167_assembler =
 				[ size_mm[0]/2-20, 38.1+40],
 				[ size_mm[0]/2+ 5, 38.1-10],
 			])]
-		]
+		],
+		for( pos=extra_hole_positions ) ["translate", pos, extra_hole_column],
 	])
 	let( inner_additions=[for(y=port_y_positions) for(x=[-size_mm[0]/2,size_mm[0]/2])
 	   ["translate", [x,y,0],
@@ -379,12 +390,14 @@ p2167_assembler =
 				[                  0, 38.1 + inner_flange_depth*2],
 				[ inner_flange_depth, 38.1                       ],
 			])]
-		]
+		],
+		for( pos=extra_hole_positions ) ["translate", pos, extra_hole_column],
 	])
 	let( final_subtractions = [for(y=port_y_positions)
 		["translate", [0,y,0],
 			["rotate", [0,90,0], tphl1_make_z_cylinder(d=32.5, zrange=[-size_mm[0], size_mm[0]])],
-		]
+		],
+		for( pos=extra_hole_positions ) ["translate", pos, extra_hole],
 	])
 	make_assembler(
 		outer_additions = outer_additions,
@@ -408,7 +421,6 @@ thing_1 = make_terrarium_section(
 
 thing_3 = render_squavoiden(squavoiden_1);
 
-//thing = ["intersection", thing_1, ["translate", [0,0,-200], togmod1_make_cuboid([400,400,400])]];
 thing = thing_1;
 
 togmod1_domodule(thing);
