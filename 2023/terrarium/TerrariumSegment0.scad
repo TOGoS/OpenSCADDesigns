@@ -1,4 +1,4 @@
-// TerrariumSegment0.9
+// TerrariumSegment0.10
 // 
 // A section of a terrarium that can be bolted together
 // with other sections or other 1/2" gridbeam components.
@@ -40,11 +40,17 @@
 // - Refactor to allow for pre-assembly transformations, e.g. to add ports
 // - Even with fixes, CGAL trips up with the p2167 preset.
 //   Try OpenSCAD 2024 with 'manifold' enabled.  It's faster, anyway.
+// v0.10:
+// - Options for outer_flange_slope, inner_flange_slope
 
 size_atoms = [9,9,9];
 floor_thickness = 0;
 wall_inset = 3.2;
 wall_thickness = 2;
+// dy/dx of outer flange
+outer_flange_slope = 1; // 0.001
+// dy/dx of inner flange
+inner_flange_slope = 1; // 0.001
 // 12.7 is a good minimum; 22.2 to allow something rest on top
 inner_flange_depth = 12.7;
 // May add more flexible configuration option later!
@@ -206,7 +212,7 @@ function make_terrarium_section(
 	size_ca = [[9, "atom"], [9, "atom"], [9, "atom"]],
 	flange_corner_radius = 6.35,
 	flange_straight_height = 3.175,
-	flange_depth = 25.4,
+	flange_depth = 25.4, // Pick a big number; it will be clamped as needed
 	inner_flange_depth = 12.7,
 	floor_thickness = 0,
 	wall_inset = 3.175,
@@ -230,13 +236,15 @@ function make_terrarium_section(
 	let(flangdat = let(
 		sh = flange_straight_height,
 		fd = flange_depth,
+		fh = flange_depth * outer_flange_slope,
 		fe = flange_extend,
-		efd = min(fd, (size[2]-sh*2) / 2 + 1)
+		efh = min(fh, (size[2]-sh*2) / 2 + 1),
+		efd = fd * efh/fh
 	) [
 		[-size[2]/2-fe    , + fe  ],
 		[-size[2]/2+sh    , -  0  ],
-		[-size[2]/2+sh+efd, -efd  ],
-		[ size[2]/2-sh-efd, -efd  ],
+		[-size[2]/2+sh+efh, -efd  ],
+		[ size[2]/2-sh-efh, -efd  ],
 		[ size[2]/2-sh    , -  0  ],
 		[ size[2]/2+fe    , + fe  ]
 	])
@@ -251,18 +259,20 @@ function make_terrarium_section(
 	let(iflangdat = let(
 		sh = flange_straight_height,
 		fd = inner_flange_depth,
+		fh = inner_flange_depth * inner_flange_slope,
 		floor_z = floor_thickness <= 0 ? -size[2] : -size[2]/2+floor_thickness,
 		// Bottom base
 		bb_z    = -size[2]/2 + max(sh, floor_thickness),
 		// Top base
 		tb_z    = size[2]/2 - sh,
 		// Effective flange depth, accounting for how much space we have
-		efd = min(fd, (tb_z - bb_z)/2 - 1)
+		efh = min(fh, (tb_z - bb_z)/2 - 1),
+		efd = fd * efh/fh
 	) [
 		if( floor_z < bb_z ) [floor_z, -fd],
 		[ bb_z           , -fd ],
-		[ bb_z + efd     , -fd + efd],
-		[ tb_z - efd     , -fd + efd],
+		[ bb_z + efh     , -fd + efd],
+		[ tb_z - efh     , -fd + efd],
 		[ tb_z           , -fd ],
 		[ size[2]        , -fd ]
 	])
