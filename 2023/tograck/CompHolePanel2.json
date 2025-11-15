@@ -10,6 +10,18 @@
 			"mounting_hole_frequency": "1",
 			"mounting_hole_style": "THL-1001",
 			"outer_offset": "-0.1mm"
+		},
+		"p2179": {
+			"description": "4+1/2\" square TOGRack panel with 3/4-10-UNC holes along edges",
+			"size": "[\"9atom\", \"9atom\"]",
+			"panel_basic_offset": "-1u",
+			"panel_thickness": "2u",
+			"back_fat": "2u",
+			"compspec": "p2179",
+			"mounting_hole_frequency": "1",
+			"mounting_hole_style": "THL-1001",
+			"$fn": "48",
+			"outer_offset": "-0.1mm"
 		}
 	},
 	"fileFormatVersion": "1"
