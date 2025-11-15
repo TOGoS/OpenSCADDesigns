@@ -658,7 +658,7 @@ const builder = new Builder({
 			cameraPosition: [-40,-50, 80],
 			imageSize: [256, 256],
 		}),
-		...multiOsdBuildRules("2023/tograck/CompHolePanel2.scad", ["p2025","p2179"], {
+		...multiOsdBuildRules("2023/tograck/CompHolePanel2.scad", ["p2025"], {
 			cameraPosition: [-40,-50,-80],
 			imageSize: [384, 384],
 		}),
@@ -851,6 +851,10 @@ const builder = new Builder({
 			cameraPosition: [-20,-40,40],
 			imageSize: [256,256],
 			paletteSize: 32,
+		}),
+		...multiOsdBuildRules("2023/tograck/CompHolePanel2.scad", ["p2179"], {
+			cameraPosition: [-40,-50, 80],
+			imageSize: [384, 384],
 		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
