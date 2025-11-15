@@ -847,7 +847,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 32,
 		}),
-		...multiOsdBuildRules("2023/plug/QuarterInchIrrigationPlug0.scad", ["p2172", "p2173"], {
+		...multiOsdBuildRules("2023/plug/QuarterInchIrrigationPlug0.scad", ["p2172","p2173","p2178"], {
 			cameraPosition: [-20,-40,40],
 			imageSize: [256,256],
 			paletteSize: 32,

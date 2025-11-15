@@ -15,6 +15,15 @@
 			"post_mid_r_offset": "-0.1mm",
 			"post_r_offset": "-0.1mm",
 			"total_length": "1inch"
+		},
+		"p2178": {
+			"$fn": "72",
+			"cap_diameter": "3/8inch",
+			"part_type": "SinglePlug",
+			"post_diameter": "1/4inch",
+			"post_mid_r_offset": "-0.1mm",
+			"post_r_offset": "-0.1mm",
+			"total_length": "1inch"
 		}
 	},
 	"fileFormatVersion": "1"
