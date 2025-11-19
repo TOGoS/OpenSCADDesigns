@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2180": {
+			"$fn": "32",
+			"$tgx11_offset": "-0.1",
+			"block_size": "[\"1+1/2inch\", \"1+1/2inch\", \"3/4inch\"]",
+			"mr_offset": "0.2"
+		}
+	},
+	"fileFormatVersion": "1"
+}
