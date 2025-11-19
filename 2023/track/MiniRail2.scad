@@ -1,9 +1,11 @@
-// MiniRail2.0
+// MiniRail2.1
 // 
 // MiniRail with back thingy
 // 
 // v2.0
 // - Initial [re]design
+// v2.1
+// - Alternative bowtie Y placements
 // 
 // TODO: Option for magnet holes?
 // Maybe put the membrane between the magnet and screw holes
@@ -19,6 +21,7 @@ panel_thickness = "1/4inch";
 
 bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
 bowtie_style = "none"; // ["none", "round"]
+bowtie_y_placement = "center"; // ["none","center","chunk","atom"]
 
 /* [Detail] */
 
@@ -58,6 +61,14 @@ rail_thickness_mm  = togunits1_to_mm("1/4inch");
 bottom_membrane_thickness_mm = togunits1_to_mm(bottom_membrane_thickness);
 bowtie_offset_mm   = togunits1_to_mm(bowtie_offset);
 mr_offset_mm       = togunits1_to_mm(minirail_edge_x_offset);
+
+bowtie_y_positions =
+	bowtie_y_placement == "none" ? [] :
+	bowtie_y_placement == "center" ? [0] :
+	bowtie_y_placement == "atom" || bowtie_y_placement == "chunk" ?
+		let(pwa = round(togunits1_decode(panel_width, unit=bowtie_y_placement)))
+		[for(xm = [-pwa/2+0.5 : 1 : pwa/2-0.5]) togunits1_decode([xm,bowtie_y_placement])] :
+	assert(false, str("Unrecognized bowtie Y placement: '", bowtie_y_placement, "'"));
 
 function minirail2_make_rath(xoffset=0) =
 	let( rcops = [["round", 1.6]] )
@@ -149,6 +160,6 @@ togmod1_domodule(
 		for( ym=[-1, 1] )
 		["translate", [xm*atom, ym*atom, panel_thickness_mm], phole],
 				
-		for( x=[-x0, x0] ) ["translate", [x,0,0], bowtie_cutout],
+		for( x=[-x0, x0] ) for(y=bowtie_y_positions) ["translate", [x,y,0], bowtie_cutout],
 	]
 );

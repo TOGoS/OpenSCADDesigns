@@ -11,6 +11,19 @@
 			"minirail_edge_x_offset": "-0.2mm",
 			"panel_thickness": "1/4inch",
 			"panel_width": "1chunk"
+		},
+		"p2183": {
+			"$fn": "32",
+			"$tgx11_offset": "-0.15",
+			"bottom_membrane_thickness": "0.3mm",
+			"bottom_segmentation": "chatom",
+			"bowtie_offset": "-0.03mm",
+			"bowtie_style": "round",
+			"bowtie_y_placement": "atom",
+			"length": "6inch",
+			"minirail_edge_x_offset": "-0.2mm",
+			"panel_thickness": "1/4inch",
+			"panel_width": "1chunk"
 		}
 	},
 	"fileFormatVersion": "1"
