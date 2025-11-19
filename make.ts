@@ -860,6 +860,10 @@ const builder = new Builder({
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],
 		}),
+		...multiOsdBuildRules("2023/track/MiniRail2.scad", ["p2181"], {
+			cameraPosition: [-40,-50, 50],
+			imageSize: [384, 384],
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
