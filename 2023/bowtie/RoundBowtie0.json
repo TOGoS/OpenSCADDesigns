@@ -88,6 +88,14 @@
 			"lobe_count": "2",
 			"offset": "-0.03",
 			"thickness": "2.38"
+		},
+		"p2182": {
+			"description": "1/2\" tall, simple bowtie",
+			"thickness": "12.7",
+			"center_hole_style": "THL-1001",
+			"diamond_r": "6.35",
+			"offset": "-0.03",
+			"$fn": "48"
 		}
 	},
 	"parameterSets": "",
