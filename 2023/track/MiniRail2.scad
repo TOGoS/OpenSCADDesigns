@@ -1,11 +1,14 @@
-// MiniRail2.1
+// MiniRail2.2
 // 
 // MiniRail with back thingy
 // 
 // v2.0
 // - Initial [re]design
 // v2.1
-// - Alternative bowtie Y placements
+// - Alternatieve bowtie Y placements
+// v2.2
+// - THL-1004s instead of THL-1001s
+// - Inset alll the bolt hole a little bit
 // 
 // TODO: Option for magnet holes?
 // Maybe put the membrane between the magnet and screw holes
@@ -119,9 +122,9 @@ togmod1_domodule(
 	)] )
 	// Hole stuff
 	let( hole_z0 = bottom_membrane_thickness_mm > 0 ? bottom_membrane_thickness_mm : -1 )
-	let( mhole = ["render", tog_holelib2_hole("THL-1002", depth=z1-hole_z0)] )
-	let( ahole = ["render", tog_holelib2_hole("THL-1001", depth=z1-hole_z0)] )
-	let( phole = ["render", tog_holelib2_hole("THL-1001", depth=panel_thickness_mm-hole_z0)] )
+	let( mhole = ["render", tog_holelib2_hole("THL-1002", inset=2, depth=z1-hole_z0)] )
+	let( ahole = ["render", tog_holelib2_hole("THL-1004", inset=2, depth=z1-hole_z0)] )
+	let( phole = ["render", tog_holelib2_hole("THL-1004", inset=1, depth=panel_thickness_mm-hole_z0)] )
 	let( mhole_pitch = togunits1_to_mm("chunk"), mhole0_x_offset_mholes=0.5 )
 	let( length_mholes = round(length_mm*2/mhole_pitch)/2 )
 	let( length_atoms = round(length_mm/atom) )

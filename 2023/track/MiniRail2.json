@@ -1,6 +1,6 @@
 {
 	"parameterSets": {
-		"p2181": {
+		"p2184": {
 			"$fn": "32",
 			"$tgx11_offset": "-0.15",
 			"bottom_membrane_thickness": "0.3mm",
@@ -12,7 +12,7 @@
 			"panel_thickness": "1/4inch",
 			"panel_width": "1chunk"
 		},
-		"p2183": {
+		"p2185": {
 			"$fn": "32",
 			"$tgx11_offset": "-0.15",
 			"bottom_membrane_thickness": "0.3mm",
