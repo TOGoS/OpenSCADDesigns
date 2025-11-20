@@ -1,4 +1,4 @@
-// MiniRail2.2
+// MiniRail2.3
 // 
 // MiniRail with back thingy
 // 
@@ -9,6 +9,8 @@
 // v2.2
 // - THL-1004s instead of THL-1001s
 // - Inset alll the bolt hole a little bit
+// v2.3
+// - Customizable pinhole_height
 // 
 // TODO: Option for magnet holes?
 // Maybe put the membrane between the magnet and screw holes
@@ -25,6 +27,7 @@ panel_thickness = "1/4inch";
 bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
 bowtie_style = "none"; // ["none", "round"]
 bowtie_y_placement = "center"; // ["none","center","chunk","atom"]
+pinhole_height = "";
 
 /* [Detail] */
 
@@ -45,6 +48,8 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TGx11.1Lib.scad>
+
+function is_blank(x) = is_undef(x) || x == "";
 
 function mirror_rathnodes(nodes) =
 	[for(i=[len(nodes)-1 : -1 : 0])
@@ -100,7 +105,8 @@ togmod1_domodule(
 	let( mhole0_x_offset_mholes = 0.5  )
 	let(    ph0_x_offset_mholes = 0.75 )
 	let( ahole0_x_offset_mholes = 1    )
-	let( ph_dx = atom/2 + 0.4, ph_dz = rail_thickness_mm/2 )
+	let( ph_dx = atom/2 + 0.4 )
+	let( ph_dz = !is_blank(pinhole_height) ? togunits1_to_mm(pinhole_height) : rail_thickness_mm/2 )
 	let( bev = 2 )
 	// Basic shape
 	let( body = tphl1_make_polyhedron_from_layer_function([
@@ -114,7 +120,7 @@ togmod1_domodule(
 		[for(p=points) [xo[0], p[0], p[1]]]
 	))
 	// TOGridPile bottom
-	let( tgp_bottom = ["render", tgx11_block(
+	let( tgp_bottom = bottom_segmentation == "none" ? undef : ["render", tgx11_block(
 	   togunits1_vec_to_cas([length, panel_width, [z1+10,"mm"]]),
 		bottom_segmentation = bottom_segmentation,
 		bottom_v6hc_style = "none",
