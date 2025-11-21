@@ -38,6 +38,21 @@
 			"panel_thickness": "1/4inch",
 			"panel_width": "1chunk",
 			"pinhole_height": "4mm"
+		},
+		"p2187": {
+			"$fn": "32",
+			"$tgx11_offset": "-0.15",
+			"bottom_membrane_thickness": "0.3mm",
+			"bottom_segmentation": "none",
+			"bowtie_offset": "-0.03mm",
+			"bowtie_style": "round",
+			"bowtie_x_placement": "chunk",
+			"bowtie_y_placement": "center",
+			"length": "5chunk",
+			"minirail_edge_x_offset": "-0.2mm",
+			"panel_thickness": "1/4inch",
+			"panel_width": "1chunk",
+			"pinhole_height": "3.6mm"
 		}
 	},
 	"fileFormatVersion": "1"

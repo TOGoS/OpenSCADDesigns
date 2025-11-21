@@ -1,4 +1,4 @@
-// MiniRail2.3
+// MiniRail2.4
 // 
 // MiniRail with back thingy
 // 
@@ -11,6 +11,8 @@
 // - Inset alll the bolt hole a little bit
 // v2.3
 // - Customizable pinhole_height
+// v2.4
+// - bowtie_x_placement
 // 
 // TODO: Option for magnet holes?
 // Maybe put the membrane between the magnet and screw holes
@@ -27,6 +29,7 @@ panel_thickness = "1/4inch";
 bottom_segmentation = "chatom"; // ["atom","chatom","chunk","block","none"]
 bowtie_style = "none"; // ["none", "round"]
 bowtie_y_placement = "center"; // ["none","center","chunk","atom"]
+bowtie_x_placement = "none"; // ["none","center","chunk","atom"]
 pinhole_height = "";
 
 /* [Detail] */
@@ -70,13 +73,13 @@ bottom_membrane_thickness_mm = togunits1_to_mm(bottom_membrane_thickness);
 bowtie_offset_mm   = togunits1_to_mm(bowtie_offset);
 mr_offset_mm       = togunits1_to_mm(minirail_edge_x_offset);
 
-bowtie_y_positions =
-	bowtie_y_placement == "none" ? [] :
-	bowtie_y_placement == "center" ? [0] :
-	bowtie_y_placement == "atom" || bowtie_y_placement == "chunk" ?
-		let(pwa = round(togunits1_decode(panel_width, unit=bowtie_y_placement)))
-		[for(xm = [-pwa/2+0.5 : 1 : pwa/2-0.5]) togunits1_decode([xm,bowtie_y_placement])] :
-	assert(false, str("Unrecognized bowtie Y placement: '", bowtie_y_placement, "'"));
+function edge_positions(placement, sidelen) =
+	placement == "none" ? [] :
+	placement == "center" ? [0] :
+	placement == "atom" || placement == "chunk" ?
+		let(pwa = round(togunits1_decode(sidelen, unit=placement)))
+		[for(xm = [-pwa/2+0.5 : 1 : pwa/2-0.5]) togunits1_decode([xm,placement])] :
+	assert(false, str("Unrecognized edge placement: '", placement, "'"));
 
 function minirail2_make_rath(xoffset=0) =
 	let( rcops = [["round", 1.6]] )
@@ -100,7 +103,8 @@ togmod1_domodule(
 	let( length_mm          = togunits1_to_mm(length) )
 	let( z0 = 0, z1 = panel_thickness_mm + rail_thickness_mm )
 	let( pz1 = panel_thickness_mm )
-	let( x0 = length_mm/2 )
+	let( x1 = length_mm/2 )
+	let( y1 = panel_width_mm/2 )
 	let( atom = togunits1_to_mm("atom") )
 	let( mhole0_x_offset_mholes = 0.5  )
 	let(    ph0_x_offset_mholes = 0.75 )
@@ -110,10 +114,10 @@ togmod1_domodule(
 	let( bev = 2 )
 	// Basic shape
 	let( body = tphl1_make_polyhedron_from_layer_function([
-		[-x0      , -bev],
-		[-x0 + bev,  0  ],
-		[ x0 - bev,  0  ],
-		[ x0      , -bev],
+		[-x1      , -bev],
+		[-x1 + bev,  0  ],
+		[ x1 - bev,  0  ],
+		[ x1      , -bev],
 	], function(xo)
 		let( rath = minirail2_make_rath(xo[1]) )
 		let( points = togpath1_rath_to_polypoints(rath) )
@@ -147,6 +151,11 @@ togmod1_domodule(
 		bowtie_style == "round" ? ["linear-extrude-zs", [z0-1, z1+1], roundbowtie0_make_bowtie_2d(6.35, lobe_count=2, offset=-bowtie_offset_mm)] :
 		assert(false, str("Unrecognized bowtie style: '", bowtie_style, "'"))
 	)
+	let( bowtie_posrots = [
+		for( y = edge_positions(bowtie_y_placement, panel_width) ) for( x=[-x1, x1] ) [[x, y, 0],  0],
+		// Hackily place the X edge ones lower so they don't cut into the rail
+		for( x = edge_positions(bowtie_x_placement,      length) ) for( y=[-y1, y1] ) [[x, y, panel_thickness_mm-(z1+1)+0.1], 90],
+	] )
 	// Assemble!
 	["difference",
 		["intersection",
@@ -168,7 +177,7 @@ togmod1_domodule(
 		for( xm=[-length_atoms/2 + 0.5 : 1 : length_atoms/2 - 0.5] )
 		for( ym=[-1, 1] )
 		["translate", [xm*atom, ym*atom, panel_thickness_mm], phole],
-				
-		for( x=[-x0, x0] ) for(y=bowtie_y_positions) ["translate", [x,y,0], bowtie_cutout],
+		
+	   for( posrot = bowtie_posrots ) ["translate", posrot[0], ["rotate", [0,0,posrot[1]], bowtie_cutout]],
 	]
 );
