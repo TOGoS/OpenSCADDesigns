@@ -489,7 +489,7 @@ const builder = new Builder({
 	rules: {
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p1889","p2142","p2143","p2145","p2146","p2148","p2159",
-			"p2201","p2202","p2203","p2204","p2205","p2206","p2207","p2208",
+			"p2201","p2202","p2203","p2204","p2205","p2206","p2207","p2208","p2209",
 		], {
 			cameraPosition: [-60,-120, 140],
 			imageSize: [256,256],
@@ -864,6 +864,10 @@ const builder = new Builder({
 			imageSize: [384, 384],
 		}),
 		...multiOsdBuildRules("2023/track/MiniRail2.scad", ["p2184","p2185","p2186","p2187","p2188"], {
+			cameraPosition: [-40,-50, 50],
+			imageSize: [384, 384],
+		}),
+		...multiOsdBuildRules("2023/board-clip/EdgeDrillJig2.scad", ["p2189"], {
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],
 		}),
