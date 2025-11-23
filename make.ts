@@ -487,7 +487,10 @@ const p192xBuildRules = flattenObj(map(
 // Something like this.
 const builder = new Builder({
 	rules: {
-		...multiOsdBuildRules("2023/experimental/Threads2.scad", ["p1889","p2142","p2143","p2145","p2146","p2148","p2159"], {
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p1889","p2142","p2143","p2145","p2146","p2148","p2159",
+			"p2201","p2202","p2203","p2204","p2205","p2206",
+		], {
 			cameraPosition: [-60,-120, 140],
 			imageSize: [256,256],
 			paletteSize: 64,
