@@ -861,6 +861,38 @@
 			"outer_threads": "2+3/4-4-UNC",
 			"total_height": "25.4",
 			"$fn": "96"
+		},
+		"p2207": {
+			"description": "Attempt at mason jar threads - widemouth (outer), regular (inner)",
+			"floor_thickness": "6.35",
+			"floor_thread_radius_offset": "0.2",
+			"floor_threads": "1+1/4-7-UNC",
+			"head_height": "6.35",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "88.9",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "THL-1030-70mm-66mm-1/4inch-60",
+			"outer_thread_radius_offset": "-0.2",
+			"outer_threads": "THL-1030-86mm-82mm-1/4inch-60",
+			"total_height": "25.4",
+			"$fn": "96"
+		},
+		"p2208": {
+			"description": "Attempt at mason jar threads - widemouth (inner)",
+			"floor_thickness": "6.35",
+			"floor_thread_radius_offset": "0.2",
+			"floor_threads": "1+1/4-7-UNC",
+			"head_height": "25.4",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "88.9",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "THL-1030-86mm-82mm-1/4inch-60",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "straight-50mm",
+			"total_height": "25.4",
+			"$fn": "96"
 		}
 	},
 	"parameterSets": "",

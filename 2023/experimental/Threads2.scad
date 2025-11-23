@@ -1,4 +1,4 @@
-// Threads2.30
+// Threads2.31
 // 
 // New screw threads proto-library
 // 
@@ -111,6 +111,9 @@
 // - Threads don't extend as deep into tall heads
 // v2.30:
 // - Support (via TOGThreads2.30) 'cylinder-zds:...' thread specs
+// v2.31:
+// - Support (via TOGThreads2.30) 'THL-1030-...' thread specs
+// - Remove "corner-to-center = " logging
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -215,7 +218,6 @@ function make_polygon_base(sidecount, width, height) =
 	let( r1 = min(3, width/10) )
 	let( r2 = min(0.6, r1/2) )
 	let( c_to_c_r = width/2 / cos(360/sidecount/2) )
-	echo(str("corner-to-center = ", c_to_c_r))
 	make_rath_base(
 		togpath1_make_polygon_rath(r=c_to_c_r, $fn=sidecount, corner_ops=[["round", r1]], rotation=90+180/sidecount),
 		height, r=r2

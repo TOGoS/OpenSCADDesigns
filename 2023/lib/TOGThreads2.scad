@@ -1,4 +1,4 @@
-// TOGThreads2.30
+// TOGThreads2.31
 // 
 // Versions:
 // v2.25:
@@ -17,6 +17,8 @@
 // - Stub out function for metric threads
 // v2.30:
 // - Add support for zds:1mm,2mm;3mm,4mm;... 'thread' specs
+// v2.31:
+// - Add support for THL-1030-<MAJ>-<MIN>-<PITCH>-<ANGLE> thread specs
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -308,11 +310,32 @@ function toghtreads2__parse_zds(zds_str) =
 		[for(c=str_pair) togunits1_to_mm(c)]
 	]];
 
+// ["THL","1030",maj,min,pitch,angle] (strings with units, except angle, where 'degrees' is implied
+// -> ["togthreads2.3-type", PITCH, pointscross_section_polypoints, MIN, MAJ]
+function togthreads2__thl1030_to_type23(kq) =
+	assert(len(kq) == 6, str("Expected 6 parts in tokenized THL-1030 spec, got: ", kq))
+	let( majd = togunits1_to_mm(kq[2]) )
+	let( mind = togunits1_to_mm(kq[3]) )
+	let( pitch = togunits1_to_mm(kq[4]) )
+	let( angle = togthreads2__decode_num(kq[5]) )
+	let( cosin = cos(angle) )
+	let( midr = (majd+mind)/4 )
+	let( rdif = (majd-mind)*144/256 ) // Let the ridges stick in/out, be clipped by min/maj
+	let( zdif = cosin*rdif )
+	let( points = [
+		[midr-rdif/2, -pitch/4 - zdif/2],
+		[midr+rdif/2, -pitch/4 + zdif/2],
+		[midr+rdif/2, +pitch/4 - zdif/2],
+		[midr-rdif/2, +pitch/4 + zdif/2],
+	])
+	["togthreads2.3-type", pitch, points, mind/2, majd/2];
+
 function togthreads2__get_thread_spec(name, index=0) =
 	togthreads2_thread_types[index][0] == name ? togthreads2_thread_types[index][1] :
 	index+1 < len(togthreads2_thread_types) ? togthreads2__get_thread_spec(name, index+1) :
-	let( kq = togstr1_tokenize(name, "-", 3) )
+	let( kq = togstr1_tokenize(name, "-") )
 	kq[0] == "straight" && len(kq) == 2 ? ["straight-d", togthreads2__decode_dim(kq[1])] :
+	kq[0] == "THL" && kq[1] == "1030" ? togthreads2__thl1030_to_type23(kq) :
 	let(uncdiam =
 		len(kq) == 3 && kq[2] == "UNC" ?	let( diamr = togthreads2__parse_num(kq[0]) ) diamr[0] :
 		undef
@@ -326,6 +349,7 @@ function togthreads2__get_thread_pitch(spec) =
 	is_string(spec) ? togthreads2__get_thread_pitch(togthreads2__get_thread_spec(spec)) :
 	is_list(spec) && spec[0] == "unc" ? 25.4 / spec[2] :
 	is_list(spec) && spec[0] == "demo" ? spec[2] :
+	is_list(spec) && spec[0] == "togthreads2.3-type" ? spec[1] :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 function togthreads2__get_default_taper_length(spec) =
@@ -339,6 +363,7 @@ function togthreads2__get_thread_type23(spec) =
 	is_list(spec) && spec[0] == "unc"  ? togthreads2__unc_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "metric"? togthreads2__metric_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "demo" ? togthreads2__demo_to_type23(spec[1], spec[2]) :
+	is_list(spec) && spec[0] == "togthreads2.3-type" ? spec :
 	assert(false, str("Unrecognized thread spec: ", spec));
 
 // TODO: Allow 'spec' to be a type23

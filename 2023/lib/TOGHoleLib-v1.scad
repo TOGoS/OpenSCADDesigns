@@ -168,6 +168,7 @@ tog_holelib_hole_types = [
 	// ["THL-1023", "Counterbored for M3 pan-head screws"],
 	// ["THL-1024", "Counterbored for M4 pan-head screws"],
 	// ["THL-1025", "Counterbored for M5 pan-head screws"],
+	// ["THL-1030-MAJ-MIN-PITCH-ANGLE", "Wacky threads"],
 ];
 
 function tog_holelib_get_hole_types() = tog_holelib_hole_types;
