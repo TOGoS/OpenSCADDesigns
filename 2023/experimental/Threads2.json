@@ -904,6 +904,17 @@
 			"inner_threads": "THL-1030-86mm-82mm-1/4inch-60",
 			"total_height": "38.1",
 			"$fn": "96"
+		},
+		"p2190": {
+			"description": "Bushing for 5mm drill bit with 1/2-13-UNC outer threads",
+			"head_height": "0",
+			"inner_thread_radius_offset": "0",
+			"inner_threads": "straight-5mm",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1/2-13-UNC",
+			"slicey_mcthickness": "5/16inch",
+			"total_height": "19.05",
+			"$fn": "64"
 		}
 	},
 	"parameterSets": "",

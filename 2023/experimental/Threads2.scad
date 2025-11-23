@@ -1,4 +1,4 @@
-// Threads2.31
+// Threads2.32
 // 
 // New screw threads proto-library
 // 
@@ -114,12 +114,15 @@
 // v2.31:
 // - Support (via TOGThreads2.30) 'THL-1030-...' thread specs
 // - Remove "corner-to-center = " logging
+// v2.32:
+// - slicey_mcthickness option
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGThreads2.scad>
+use <../lib/TOGUnits1.scad>
 
 // Put your comment about this preset here
 description = "";
@@ -146,6 +149,9 @@ head_surface_offset = -0.1;
 head_mhole_diameter = 0; // 0.1
 head_mhole_spacing = 32; // 0.1
 
+// Truncate the piece in the Y dimension to this thickness, if non-blank
+slicey_mcthickness = "";
+
 thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 
 // This is here so I can see if disabling vertex deduplication speeds things up at all.
@@ -161,6 +167,12 @@ module __threads2_end_params() { }
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 $tgx11_offset = head_surface_offset;
 $togthreads2_polyhedron_algorithm = thread_polyhedron_algorithm;
+
+inf = 65536; // 4294967296; // Nice round 'close enough to infinity' number
+
+slicey_mcthickness_mm = is_undef(slicey_mcthickness) || slicey_mcthickness == "" ? inf : togunits1_to_mm(slicey_mcthickness);
+
+slicey_mcintersector = togmod1_make_cuboid([inf, slicey_mcthickness_mm, inf]);
 
 the_post =
 	let( spec = togthreads2__get_thread_spec(outer_threads) )
@@ -260,16 +272,19 @@ the_head_mholes =
 		 ]
 	);
 
-togmod1_domodule(["difference",
-	["union",
-		the_post,
-		the_cap
-	],
-	the_hole,
-	the_floor_hole,
-	the_headside_holes,
-	if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
-	the_head_mholes,
+togmod1_domodule(["intersection",
+	if( slicey_mcthickness_mm < inf ) slicey_mcintersector,
+	["difference",
+		["union",
+			the_post,
+			the_cap
+		],
+		the_hole,
+		the_floor_hole,
+		the_headside_holes,
+		if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
+		the_head_mholes,
+	]
 ]);
 
 // # cylinder(d=10, h=total_height);
