@@ -567,7 +567,6 @@
 		"p1858": {
 			"$fn": "64",
 			"$tphl1_vertex_deduplication_enabled": "false",
-			"cross_section": "false",
 			"description": "40mm fan holder w/ 1+1/4-UNC threads",
 			"handedness": "right",
 			"head_height": "6.35",
@@ -604,7 +603,6 @@
 		"p1893": {
 			"description": "Filament dryer port replacement candidate - 5/16-18-UNC",
 			"$tphl1_vertex_deduplication_enabled": "false",
-			"cross_section": "false",
 			"floor_thickness": "3.17",
 			"floor_thread_radius_offset": "0.4",
 			"floor_threads": "straight-2mm",
@@ -622,7 +620,6 @@
 		},
 		"p1894": {
 			"description": "5/16-18-UNC nut (0.2mm inner radius offset)",
-			"cross_section": "false",
 			"handedness": "right",
 			"head_height": "3.1",
 			"head_shape": "hexagon",
@@ -940,8 +937,69 @@
 			"outer_threads": "3/4-10-UNC",
 			"total_height": "19.05",
 			"$fn": "96"
+		},
+		"p2193": {
+			"description": "Bushing for 5mm drill bit with 1/2-13-UNC outer threads",
+			"head_height": "0",
+			"inner_thread_radius_offset": "0",
+			"inner_threads": "straight-5mm",
+			"outer_thread_radius_offset": "-0.2",
+			"outer_thread_inset": "1.5",
+			"outer_thread_taper_length": "1.5",
+			"outer_threads": "1/2-13-UNC",
+			"slicey_mcthickness": "5/16inch",
+			"total_height": "19.05",
+			"$fn": "64"
+		},
+		"p2194": {
+			"description": "3/4\" bolt with 1\" outer threads and 3/4\" inner threads",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "3/4-10-UNC",
+			"inner_thread_inset": "3",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1-8-UNC",
+			"outer_thread_inset": "3",
+			"total_height": "19.05",
+			"$fn": "96"
+		},
+		"p2195": {
+			"description": "3/4\" bolt with 3/4\" outer threads and 1/2\" inner threads",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "1/2-13-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "3/4-10-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "19.05",
+			"$fn": "96"
+		},
+		"p2196": {
+			"description": "3/4\" bolt with 3/4\" outer threads and 1/2\" inner threads with a quarter cut out",
+			"cross_section": "true",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "1/2-13-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "3/4-10-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "19.05",
+			"$fn": "96"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }

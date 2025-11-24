@@ -496,6 +496,13 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2193","p2194","p2195","p2196",
+		], {
+			cameraPosition: [ 60, 120, 140],
+			imageSize: [512,512],
+			paletteSize: 64,
+		}),
 		...multiOsdBuildRules("2023/bowtie/RoundBowtie0.scad", ["p1857","p2109","p2112","p2182"], {
 			cameraPosition: [-20,-20, 30],
 			imageSize: [256,256],
