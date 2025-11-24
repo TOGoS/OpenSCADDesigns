@@ -6,6 +6,8 @@ import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
 
 //// Utility functions
 
+let skipScadReruns = false;
+
 function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
 	for( const x of input ) yield fn(x);
 }
@@ -275,6 +277,18 @@ async function unlink(path:FilePath) {
 	}
 }
 
+const readTextFile = Deno.readTextFile;
+
+async function fileExists(path:FilePath) {
+	return Deno.stat(path).then( stat => true, (err:Error) => {
+		if( err.name == "NotFound" ) {
+			return false;
+		} else {
+			return Promise.reject(err);
+		}
+	});
+}
+
 /**
  * Make sure the parent directory exists
  * and that the named file does *not* already exist.
@@ -354,6 +368,9 @@ function osdBuildRules(partId:string, opts:{
 		[outStlPath]: {
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
+				const exists = await fileExists(ctx.targetName);
+				if( exists && skipScadReruns ) return;
+				
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
 					inScadPath: opts.inScadFile,
@@ -366,6 +383,9 @@ function osdBuildRules(partId:string, opts:{
 		[renderedPngPath]: {
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
+				const exists = await fileExists(ctx.targetName);
+				if( exists && skipScadReruns ) return;
+				
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
 					inScadPath: opts.inScadFile,
@@ -396,12 +416,26 @@ function osdBuildRules(partId:string, opts:{
 			prereqs: [simplifiedStlPath, simplifiedPngPath, "make.ts"],
 			async invoke(ctx:BuildContext) {
 				const [pngUrn, stlUrn] = await Promise.all([simplifiedPngPath, simplifiedStlPath].map(p => hashFile(p, BITPRINT_ALGORITHM)));
+				let descriptionFromConfig:string|undefined = undefined;
+				if( inConfigFile != undefined ) {
+					// console.log(`# Attempting to read ${inConfigFile} for description...`);
+					const configText = await readTextFile(inConfigFile);
+					// if(configText == undefined ) console.log("# No config text");
+					const config:any = JSON.parse(configText);
+					// if( config == undefined ) console.log("# No config");
+					// console.log("# Config: ", config );
+					const partConfig = config?.parameterSets?.[partId];
+					// console.log(`# Part config: ${JSON.stringify(partConfig)}`);
+					descriptionFromConfig = partConfig?.description;
+				}
+				const description = descriptionFromConfig ?? "...";
+				
 				await mkRoom(ctx.targetName);
 				using writeStream = await Deno.open(ctx.targetName, {write:true, createNew:true});
 				const textEncoder = new TextEncoder;
 				writeStream.write(textEncoder.encode(
 					`=part ${partId}\n`+
-					`short-description: ...\n`+ // Hmm: I could read the part.json and extract descriptions!
+					`short-description: ${description}\n`+ // Hmm: I could read the part.json and extract descriptions!
 					`stl-file: ${partId}.stl\t${stlUrn}\n`+
 					`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${partId}.png\n`+
 					"\n"
@@ -884,5 +918,12 @@ const builder = new Builder({
 });
 
 if( import.meta.main ) {
-	Deno.exit(await builder.processCommandLine(Deno.args));
+	let args = Deno.args;
+	// Use this when you know the shape is unchanged,
+	// even if perhaps the .scad or .json has been updated:
+	if( args[0] == "--skip-scad-reruns" ) {
+		skipScadReruns = true;
+		args = args.slice(1);
+	}
+	Deno.exit(await builder.processCommandLine(args));
 }
