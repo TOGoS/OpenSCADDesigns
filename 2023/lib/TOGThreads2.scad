@@ -1,4 +1,4 @@
-// TOGThreads2.31
+// TOGThreads2.33
 // 
 // Versions:
 // v2.25:
@@ -19,6 +19,10 @@
 // - Add support for zds:1mm,2mm;3mm,4mm;... 'thread' specs
 // v2.31:
 // - Add support for THL-1030-<MAJ>-<MIN>-<PITCH>-<ANGLE> thread specs
+// v2.33:
+// - togthreads2_simple_zparams takes optional `inset` parameter
+// - togthreads2__mkthreads_v3 checks zparams for Z monotonicity,
+//   to reduce mystery CGAL errors
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -160,8 +164,14 @@ function togthreads2__zparams_to_zrange(zparams) =
 	assert( is_list(zparams) && len(zparams) >= 2, str("zparams must be list of length >= 2; got ", zparams) )
 	[togthreads2__zparam_to_z(zparams[0]), togthreads2__zparam_to_z(zparams[len(zparams)-1])];
 
+function togthreads2__check_zparams(zparams, prev_z=undef, i=0) =
+	len(zparams) == i ? zparams :
+	assert( is_undef(prev_z) || zparams[i][0] > prev_z, str("Zparams Z values not monotonic at index ", i, ": ", zparams))
+	togthreads2__check_zparams(zparams, zparams[i][0], i+1);
+
 function togthreads2__normalize_zparams(zparams) =
-	[ for(zp=zparams) is_list(zp) ? zp : is_num(zp) ? [zp, 0] : assert(false, str("Expected [z,t] or z for zparam, got ", zp, "'")) ];
+	let( norm = [ for(zp=zparams) is_list(zp) ? zp : is_num(zp) ? [zp, 0] : assert(false, str("Expected [z,t] or z for zparam, got ", zp, "'")) ] )
+	togthreads2__check_zparams(zparams);
 
 // zparams: [z0, z1] (z range) or [[z0, t0], ...., [zn, tn]] (z,t control points, where t = -1..1)
 // type23: a Type23 thread spec
@@ -400,27 +410,47 @@ function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", 
  *   where taper_direction = -1 (inward), 0 (straight), or 1 (outward)
  * - taper_length = vertical length of taper, in mm
  * - extend = distance to extend past the ends when positive taper (default = 1mm)
+ * - inset = distance from tapered ends to beginning of taper
  */
-function togthreads2_simple_zparams(end_zts, taper_length, extend=1) =
-	let( z0 = end_zts[0][0], z1 = end_zts[1][0] )
-	let( t0 = end_zts[0][1], t1 = end_zts[1][1] )
-	let( taper_amt = 1 )
-	let( taper_l   = taper_length ) // Make it fit in the column
+function togthreads2_simple_zparams(end_zts, taper_length, extend=1, inset=0) =
+	let( tbot = end_zts[0][1], ttop = end_zts[1][1] )
+	let( zb3 = end_zts[0][0], zt3 = end_zts[1][0] ) // Nominal endpoints
+	// Extended ends:
+	let( zb4 = zb3 - (tbot <= 0 ? 0 : extend      ),
+	     zt4 = zt3 + (ttop <= 0 ? 0 : extend      ) )
+	// Far ends of tapers / near end of inset:
+	let( zb2 = zb3 + (tbot == 0 ? 0 : inset       ),
+	     zt2 = zt3 - (ttop == 0 ? 0 : inset       ) )
+	// Close ends of tapers:
+	let( zb1 = zb2 + (tbot == 0 ? 0 : taper_length),
+	     zt1 = zt2 - (ttop == 0 ? 0 : taper_length) )
+	// Midpoint between near ends of tapers, from which to adjust everything:
+	let( zmid = (zb1 + zt1)/2 )
+	// Clamp to avoid invalid polyhedrons:
+	let( _zb1 = min(zmid-0.1, zb1), _zt1 = max(zmid+0.1, zt1) )
+	let( _zb2 = min(_zb1-0.1, zb2), _zt2 = max(_zt1+0.1, zt2) )
+	let( _zb3 = min(_zb2    , zb3), _zt3 = max(_zt2    , zt3) )
+	let( _zb4 = min(_zb3    , zb4), _zt4 = max(_zt3    , zt4) )
+	assert( _zb2 < _zt2 )
 	[
-		each t0 == 0 ? [
-			[z0        ,  0],
+		each tbot == 0 ? [
+			[_zb3,  0    ],
 		] : [
-			if( t0 > 0 )
-			[z0-extend , t0*2],
-			[z0        , t0],
-			[z0+taper_l,  0],
+			if( _zb4 < _zb3 )
+			[_zb4, tbot*2],
+			if( _zb3 < _zb2 )
+			[_zb3, tbot  ],
+			[_zb2, tbot  ],
+			[_zb1,   0   ],
 		],
-		each t1 == 0 ? [
-			[z1        ,  0],
+		each ttop == 0 ? [
+			[_zt3,  0    ],
 		] : [
-			[z1-taper_l,  0],
-			[z1        , t1],
-			if( t1 > 0 )
-			[z1+extend , t1*2],
+			[_zt1,  0    ],
+			[_zt2, ttop  ],
+			if( _zt3 > _zt2 )
+			[_zt3, ttop  ],
+			if( _zt4 > _zt3 )
+			[_zt4, ttop*2],
 		],
 	];

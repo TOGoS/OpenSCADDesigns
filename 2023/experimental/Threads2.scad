@@ -1,4 +1,4 @@
-// Threads2.32
+// Threads2.33
 // 
 // New screw threads proto-library
 // 
@@ -116,6 +116,8 @@
 // - Remove "corner-to-center = " logging
 // v2.32:
 // - slicey_mcthickness option
+// v2.33:
+// - taper_length and inset parameters for inner and outer threads
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -131,8 +133,14 @@ handedness = "right"; // ["right","left"]
 // e.g. "straight-5mm", "1+1/4-7-UNC"
 outer_threads = "1+1/4-7-UNC";
 outer_thread_radius_offset = -0.1;
+outer_thread_inset = 0;
+// Length along screw of outer threads' taper; -1 for 'default'
+outer_thread_taper_length = -1;
 inner_threads = "1/2-13-UNC";
 inner_thread_radius_offset =  0.3;
+inner_thread_inset = 0;
+// Length along screw of inner threads' taper; -1 for 'default'
+inner_thread_taper_length = -1;
 floor_thickness = 0; // 0.01
 floor_threads = "3/8-16-UNC";
 floor_thread_radius_offset =  0.3;
@@ -176,25 +184,25 @@ slicey_mcintersector = togmod1_make_cuboid([inf, slicey_mcthickness_mm, inf]);
 
 the_post =
 	let( spec = togthreads2__get_thread_spec(outer_threads) )
-	let( taper_length = togthreads2__get_default_taper_length(spec) )
+	let( taper_length = outer_thread_taper_length != -1 ? outer_thread_taper_length : togthreads2__get_default_taper_length(spec) )
 	let( top_z = total_height )
 	let( bottom_z = max(0, head_height/2, head_height-1) )
 	togthreads2_make_threads(
 		togthreads2_simple_zparams([
 			[bottom_z, bottom_z == 0 ? -1 : 0],
 			[   top_z,                 -1    ],
-		], taper_length),
+		], taper_length=taper_length, extend=1, inset=outer_thread_inset),
 		outer_threads, r_offset=outer_thread_radius_offset, end_mode="blunt", thread_origin_z = head_height
 	);
 
 the_hole =
 	let( spec = togthreads2__get_thread_spec(inner_threads) )
-	let( taper_length = togthreads2__get_default_taper_length(spec) )
+	let( taper_length = inner_thread_taper_length != -1 ? inner_thread_taper_length : togthreads2__get_default_taper_length(spec) )
 	togthreads2_make_threads(
 		togthreads2_simple_zparams([
 			[floor_thickness, floor_thickness > 0 ? 0 : 1],
 			[total_height   ,                           1],
-		], taper_length),
+		], taper_length=taper_length, extend=1, inset=inner_thread_inset),
 		inner_threads, r_offset=inner_thread_radius_offset, end_mode="blunt", thread_origin_z = total_height
 	);
 
