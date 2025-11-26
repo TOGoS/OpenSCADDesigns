@@ -1000,7 +1000,7 @@
 			"total_height": "19.05",
 			"$fn": "96"
 		},
-		"p2197": {
+		"p2199": {
 			"description": "connector for 2+1/8\" dessicant holders",
 			"cross_section": "false",
 			"handedness": "right",
@@ -1011,7 +1011,7 @@
 			"inner_thread_radius_offset": "0.3",
 			"inner_threads": "2-4+1/2-UNC",
 			"inner_thread_inset": "2",
-			"total_height": "50.8",
+			"total_height": "25.4",
 			"$fn": "96"
 		}
 	},
