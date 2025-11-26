@@ -1,4 +1,4 @@
-// Hook3.2
+// Hook3.3
 // 
 // Hook intended for mounting on hatomic-backed FCs.
 // 
@@ -9,6 +9,8 @@
 // - Increase overhead bore height to punch through hook
 // - Lower back corner is square, for stremgth
 // - Multiple hooks!
+// v3.3:
+// - Fix that an extra hook would be generated just past the top of the hull
 // 
 // For the future:
 // Maybe allow multiple hooks along the back?
@@ -76,7 +78,7 @@ let( majorpc = max($fn,64)/4 )
 ];
 
 hook_positions = [
-	for(ym=[0 : hook_spacing_atoms : back_height_atoms])
+	for(ym=[0 : hook_spacing_atoms : back_height_atoms-0.5])
 	y0 + ym*atom
 ];
 

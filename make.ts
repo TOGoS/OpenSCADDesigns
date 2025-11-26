@@ -25,7 +25,8 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 	return res;
 }
 
-
+type OpenSCADCmd = "x:OpenSCAD202101Com" | "x:OpenSCAD20240727Com";
+type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for more
 
 // TODO: Check for env vars, search for the .com if not specified
 // TODO: Update to use OpenSCAD2024 with --manifold
@@ -34,7 +35,8 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 //   and either way, it's probably good to record exactly which
 //   version of OpenSCAD should be used to generate each shape,
 //   for almost-reproducibility (output seems a little nondeterministic) and such.
-const OPENSCAD_COM = "C:/Program Files/OpenSCAD/openscad.com";
+const OPENSCAD202101_COM = "C:/Program Files/OpenSCAD/openscad.com";
+const OPENSCAD20240727_COM = "C:/Apps/OpenSCAD-2024.07.27-x86-64/openscad.exe"
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
@@ -166,7 +168,8 @@ async function run(cmd:Commande) : Promise<void> {
 	}
 	
 	const realExe =
-		cmd.argv[0] == "x:OpenSCADCom" ? OPENSCAD_COM :
+		cmd.argv[0] == "x:OpenSCAD202101Com" ? OPENSCAD202101_COM :
+		cmd.argv[0] == "x:OpenSCAD20240727Com" ? OPENSCAD20240727_COM :
 		cmd.argv[0] == "x:Magick" ? MAGICK_EXE :
 		cmd.argv[0];
 	
@@ -181,8 +184,10 @@ async function run(cmd:Commande) : Promise<void> {
 }
 		
 function openscadCommand(opts : {
+	openScadCmd : OpenSCADCmd,
 	inScadPath : FilePath,
 	inConfigPath? : FilePath,
+	featuresEnabled : string[],
 	presetName? : string,
 	renderSize?: Vec2<number>,
 	cameraPosition?: Vec3<number>,
@@ -201,7 +206,7 @@ function openscadCommand(opts : {
 	
 	const presetArgs = opts.presetName != undefined && opts.inConfigPath != undefined  ?
 		["-p", opts.inConfigPath, "-P", opts.presetName] : [];
-		
+	
 	const imgSizeArgs = opts.renderSize != undefined ?
 		[`--imgsize=${opts.renderSize[0]},${opts.renderSize[1]}`] : [];
 	
@@ -216,18 +221,27 @@ function openscadCommand(opts : {
 		'--colorscheme=Tomorrow Night',
 	] : [];
 	
+	const featureOpts = opts.featuresEnabled.flatMap(f => ["--enable",f]);
+	
 	return {argv: [
 		"x:MaxConcurrency:OpenSCAD:2",
-		"x:OpenSCADCom",
+		opts.openScadCmd,
 		"--hardwarnings",
-		// "--backend=manifold",
+		...featureOpts,
 		...presetArgs,
-		"--render", opts.inScadPath,
+		// OpenSCAD 2021 seemed to treat the option following '--render'
+		// as the input .scad filename.
+		// If you try to do that with OpenSCAD 2024.07.27, it prints the usage text and exits,
+		// annoyingly not giving specifics about what's wrong with the command.
+		// Both versions seem to accept this format, with a useless argument to `--render`,
+		// and the input .scad path passed as the last argument.
+		"--render=useless-render-argument",
 		...outStlArgs,
 		...colorSchemeArgs,
 		...imgSizeArgs,
 		...cameraArgs,
 		...outPngArgs,
+		opts.inScadPath,
 	]};
 }
 
@@ -302,7 +316,9 @@ async function mkRoom(path:FilePath) {
 }
 
 function osdBuildRules(partId:string, opts:{
-	inScadFile:FilePath,
+	openScadCmd?: OpenSCADCmd,
+	featuresEnabled?: OpenSCADFeatureName[],
+	inScadFile: FilePath,
 	cameraPosition?: Vec3<number>,
 	renderSize?: Vec2<number>,
 	imageRotation?: number,
@@ -322,10 +338,25 @@ function osdBuildRules(partId:string, opts:{
 	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
 	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
 	const paletteSize = opts.paletteSize ?? 36;
+
+	const openScadCmd = opts.openScadCmd ?? "x:OpenSCAD202101Com";
+
+	let scadVariantSuffix = "";
+	switch( openScadCmd ) {
+	case "x:OpenSCAD202101Com":
+		break;
+	case "x:OpenSCAD20240727Com":
+		scadVariantSuffix += "+scad20240227";
+		break;
+	default:
+		throw new Error(`Unrecognized openScadCmd: '${openScadCmd}'`);
+	}
+	const featuresEnabled = opts.featuresEnabled ?? [];
+	for( let feat of featuresEnabled ) scadVariantSuffix += '+' + feat;
 	
-	const outStlPath = `${tempDir}/${partId}-${stlBuilderVersion}.stl`;
+	const outStlPath = `${tempDir}/${partId}-${stlBuilderVersion}${scadVariantSuffix}.stl`;
 	const simplifiedStlPath = `${outDir}/${partId}.stl`;
-	const renderedPngPath = `${tempDir}/${partId}-${renderPngBuilderVersion}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
+	const renderedPngPath = `${tempDir}/${partId}-${renderPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
 	const simplifiedPngPath = `${outDir}/${partId}.png`;
 	const partTefPath = `${outDir}/${partId}.tef`;
 
@@ -344,7 +375,7 @@ function osdBuildRules(partId:string, opts:{
 	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
 	for( const _size of crushSizes ) {
 		const size = [_size, _size];
-		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${size.join('x')}.png`;
+		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${size.join('x')}.png`;
 		crushedPngBuildRules[crushedPngPath] = {
 			prereqs: [renderedPngPath],
 			invoke: async (ctx:BuildContext) => {
@@ -358,7 +389,7 @@ function osdBuildRules(partId:string, opts:{
 		};
 	}
 	const imageSize = opts.imageSize ?? [256, 256];
-	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${imageSize.join('x')}.png`;
+	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${imageSize.join('x')}.png`;
 
 	const prereqs = [];
 	prereqs.push(opts.inScadFile);
@@ -373,6 +404,8 @@ function osdBuildRules(partId:string, opts:{
 				
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
+					openScadCmd,
+					featuresEnabled,
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
 					presetName: opts.presetName,
@@ -388,6 +421,8 @@ function osdBuildRules(partId:string, opts:{
 				
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
+					openScadCmd,
+					featuresEnabled,
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
 					presetName: opts.presetName,
@@ -448,6 +483,8 @@ function osdBuildRules(partId:string, opts:{
 
 /** Build rules for multiple presets (and otherwise same settings) for one .scad */
 function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
+	openScadCmd?: OpenSCADCmd,
+	featuresEnabled?: OpenSCADFeatureName[],
 	cameraPosition?: Vec3<number>,
 	renderSize?: Vec2<number>,
 	imageRotation?: number,
@@ -658,6 +695,22 @@ const builder = new Builder({
 			cameraPosition: [-20,-20, 30],
 			imageSize: [384, 384],
 		}),
+		
+		// TODO: Use 2024 for both of 'em.
+		// Just testing to make sure my commands still work either way.
+		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2068"], {
+			openScadCmd: "x:OpenSCAD20240727Com",
+			featuresEnabled: ["manifold"],
+			cameraPosition: [20,-20, 30],
+			imageSize: [384, 384],
+		}),
+		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2069"], {
+			// openScadCmd: "x:OpenSCAD20240727Com",
+			// featuresEnabled: ["manifold"],
+			cameraPosition: [20,-20, 30],
+			imageSize: [384, 384],
+		}),
+		
 		...multiOsdBuildRules("2023/spacer/UnistrutMountingWasher1.scad", ["p1992"], {
 			cameraPosition: [-10,-20, 20],
 			imageSize: [256, 256],

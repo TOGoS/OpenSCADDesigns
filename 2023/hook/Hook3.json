@@ -10,6 +10,28 @@
 			"thickness": "5",
 			"width_atoms": "2",
 			"$fn": "24"
+		},
+		"p2068": {
+			"$fn": "24",
+			"back_height_atoms": "16",
+			"back_hole_style": "THL-1001",
+			"depth_atoms": "3",
+			"description": "8-inch back with three 1.5-inch x 10mm hooks, 10mm thick",
+			"front_height": "10",
+			"hook_spacing_atoms": "4",
+			"thickness": "10",
+			"width_atoms": "2"
+		},
+		"p2069": {
+			"$fn": "24",
+			"back_height_atoms": "12",
+			"back_hole_style": "THL-1001",
+			"depth_atoms": "3",
+			"description": "6-inch back with three 1.5-inch x 10mm hooks, 10mm thick",
+			"front_height": "10",
+			"hook_spacing_atoms": "4",
+			"thickness": "10",
+			"width_atoms": "2"
 		}
 	},
 	"fileFormatVersion": "1"
