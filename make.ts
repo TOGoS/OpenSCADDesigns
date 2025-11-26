@@ -696,17 +696,9 @@ const builder = new Builder({
 			imageSize: [384, 384],
 		}),
 		
-		// TODO: Use 2024 for both of 'em.
-		// Just testing to make sure my commands still work either way.
-		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2068"], {
+		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2068","p2069"], {
 			openScadCmd: "x:OpenSCAD20240727Com",
 			featuresEnabled: ["manifold"],
-			cameraPosition: [20,-20, 30],
-			imageSize: [384, 384],
-		}),
-		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2069"], {
-			// openScadCmd: "x:OpenSCAD20240727Com",
-			// featuresEnabled: ["manifold"],
 			cameraPosition: [20,-20, 30],
 			imageSize: [384, 384],
 		}),
