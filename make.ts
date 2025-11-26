@@ -463,7 +463,7 @@ function osdBuildRules(partId:string, opts:{
 					// console.log(`# Part config: ${JSON.stringify(partConfig)}`);
 					descriptionFromConfig = partConfig?.description;
 				}
-				const description = descriptionFromConfig ?? "...";
+				const description = descriptionFromConfig?.replaceAll('"','-inch') ?? "...";
 				
 				await mkRoom(ctx.targetName);
 				using writeStream = await Deno.open(ctx.targetName, {write:true, createNew:true});
