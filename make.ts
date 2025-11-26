@@ -687,7 +687,12 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 72
 		}),
-		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1971", "p1972", "p1973", "p1974", "p1975", "p1976", "p1977", "p1978", "p1979"], {
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", [
+			"p1971", "p1972", "p1973", "p1974", "p1975", "p1976", "p1977", "p1978", "p1979",
+			"p2210",
+		], {
+			// Must be done with OpenSCAD2021 due to '_ca' parameters that OpenSCAD 2024 ignores.
+			openScadCmd: "x:OpenSCAD202101Com",
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [384, 384],
 		}),
