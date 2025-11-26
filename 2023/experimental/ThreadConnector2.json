@@ -46,6 +46,23 @@
 			"upper_outer_thread_height": "6.35",
 			"upper_outer_thread_radius_offset": "-0.1",
 			"upper_outer_threads": "3/4-10-UNC"
+		},
+		"p2198": {
+			"inner_thread_radius_offset": "0.1",
+			"inner_threads": "straight-1.5inch",
+			"lower_outer_thread_height": "12.7",
+			"lower_outer_thread_inset": "2",
+			"lower_outer_thread_radius_offset": "-0.1",
+			"lower_outer_threads": "2-4+1/2-UNC",
+			"preview_fn": "24",
+			"render_fn": "72",
+			"ring_height": "6.35",
+			"ring_side_count": "8",
+			"ring_width": "50.8",
+			"upper_outer_thread_height": "12.7",
+			"upper_outer_thread_inset": "2",
+			"upper_outer_thread_radius_offset": "-0.1",
+			"upper_outer_threads": "2-4+1/2-UNC"
 		}
 	},
 	"fileFormatVersion": "1"
