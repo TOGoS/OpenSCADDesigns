@@ -1001,7 +1001,7 @@
 			"$fn": "96"
 		},
 		"p2199": {
-			"description": "connector for 2+1/8\" dessicant holders",
+			"description": "outer connector for 2+1/8\" dessicant holders",
 			"cross_section": "false",
 			"handedness": "right",
 			"head_height": "25.4",
