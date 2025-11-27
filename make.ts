@@ -968,7 +968,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 		}),
 		...multiOsdBuildRules("2023/experimental/ThreadConnector2.scad", [
-			"p2211",
+			"p2211","p2213",
 		], {
 			openScadCmd: "x:OpenSCAD20240727Com",
 			featuresEnabled: ["manifold"],
