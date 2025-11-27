@@ -976,6 +976,15 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2212",
+		], {
+			openScadCmd: "x:OpenSCAD20240727Com",
+			featuresEnabled: ["manifold"],
+			cameraPosition: [ 60, 120, 140],
+			imageSize: [512,512],
+			paletteSize: 192,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

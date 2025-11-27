@@ -1,4 +1,4 @@
-// Threads2.33
+// Threads2.34
 // 
 // New screw threads proto-library
 // 
@@ -118,6 +118,8 @@
 // - slicey_mcthickness option
 // v2.33:
 // - taper_length and inset parameters for inner and outer threads
+// v2.34:
+// - 'circle' is now an option for head_shape
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -148,7 +150,7 @@ total_height = 19.05;
 
 head_width   = 38.1;
 head_height  =  6.35;
-head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","togridpile-chunk"]
+head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","circle","togridpile-chunk"]
 headside_threads = "none";
 headside_thread_radius_offset =  0.3;
 head_surface_offset = -0.1;
@@ -267,6 +269,7 @@ function make_base(shape, width, height) =
 	shape == "octagon"  ? make_polygon_base(  8, width, height ) :
 	shape == "nonagon"  ? make_polygon_base(  9, width, height ) :
 	shape == "decagon"  ? make_polygon_base( 10, width, height ) :
+	shape == "circle"   ? make_polygon_base( $fn, width, height ) :
 	shape == "togridpile-chunk" ? make_togridpile_chunk(width,height) :
 	assert(false, str("Unsupported head shape: '", shape, "'"));
 
