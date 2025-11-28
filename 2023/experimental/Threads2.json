@@ -1027,6 +1027,38 @@
 			"inner_thread_inset": "2",
 			"total_height": "25.4",
 			"$fn": "144"
+		},
+		"p2214": {
+			"description": "1+1/2\" bolt with 1+1/2\" outer threads and 1+1/4\" inner threads",
+			"handedness": "right",
+			"head_height": "12.7",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "44.45",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "1+1/4-7-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1/2-6-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "38.1",
+			"$fn": "144"
+		},
+		"p2215": {
+			"description": "3\" bolt with 1+1/2\" outer threads and 1\" inner threads and standard hex head",
+			"handedness": "right",
+			"head_height": "25.4",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "57.15",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "1-8-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1/2-6-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "76.2",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
