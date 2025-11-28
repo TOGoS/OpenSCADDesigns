@@ -959,7 +959,9 @@ const builder = new Builder({
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/board-clip/EdgeDrillJig2.scad", ["p2189"], {
+		...multiOsdBuildRules("2023/board-clip/EdgeDrillJig2.scad", ["p2189","p2216","p2217","p2218"], {
+			openScadCmd: "x:OpenSCAD20240727Com",
+			featuresEnabled: ["manifold"],
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],
 		}),

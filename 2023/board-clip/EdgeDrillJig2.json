@@ -1,7 +1,7 @@
 {
 	"parameterSets": {
 		"p2189": {
-			"$fn": "32",
+			"description": "1\"-8 and 3/4\"-10 holes 3/4\" from corner",
 			"thickness": "3/8inch",
 			"width": "2chunk",
 			"x_hole_r_offset": "0.2mm",
@@ -9,7 +9,50 @@
 			"x_length": "1+1/2inch",
 			"y_hole_r_offset": "0.2mm",
 			"y_hole_style": "3/4-10-UNC",
-			"y_length": "1+1/2inch"
+			"y_length": "1+1/2inch",
+			"$fn": "32"
+		},
+		"p2216": {
+			"description": "3/4\"-10 holes 1/2\" from corner",
+			"thickness": "3/8inch",
+			"width": "2chunk",
+			"x_hole_r_offset": "0.25mm",
+			"x_hole_style": "3/4-10-UNC",
+			"x_length": "1+1/2inch",
+			"y_hole_r_offset": "0.25mm",
+			"y_hole_style": "3/4-10-UNC",
+			"y_hole_position": "1/2inch",
+			"y_length": "1+1/2inch",
+			"edge_notch_depth": "1/8inch",
+			"$fn": "32"
+		},
+		"p2217": {
+			"description": "3/4\"-10 holes 3/8\" from corner",
+			"thickness": "3/8inch",
+			"width": "2chunk",
+			"x_hole_r_offset": "0.25mm",
+			"x_hole_style": "3/4-10-UNC",
+			"x_length": "1+1/2inch",
+			"y_hole_r_offset": "0.25mm",
+			"y_hole_style": "3/4-10-UNC",
+			"y_hole_position": "3/8inch",
+			"y_length": "1+1/4inch",
+			"edge_notch_depth": "1/8inch",
+			"$fn": "32"
+		},
+		"p2218": {
+			"description": "3/4\"-10 holes 1/4\" from corner",
+			"thickness": "3/8inch",
+			"width": "2chunk",
+			"x_hole_r_offset": "0.25mm",
+			"x_hole_style": "3/4-10-UNC",
+			"x_length": "1+1/2inch",
+			"y_hole_r_offset": "0.25mm",
+			"y_hole_style": "3/4-10-UNC",
+			"y_hole_position": "1/4inch",
+			"y_length": "1inch",
+			"edge_notch_depth": "1/8inch",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
