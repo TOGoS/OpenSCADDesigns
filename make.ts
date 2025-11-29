@@ -42,8 +42,8 @@ type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for mor
 
 // See also: `SynthGen2100/P0019/packages/sgutils@0.1/tdarx/openscad.ts`
 // which is where this naming convention (minus the version) is copied from.
-const OPENSCAD202101_COM   = Deno.env.get("OPENSCAD_202101_CLI_EXE"  ) ?? "C:/Program Files/OpenSCAD/openscad.com";
-const OPENSCAD20240727_COM = Deno.env.get("OPENSCAD_20240727_CLI_EXE") ?? "C:/Apps/OpenSCAD-2024.07.27-x86-64/openscad.exe";
+const OPENSCAD202101_COM   = Deno.env.get("OPENSCAD_202101_CLI_EXE"  ) ?? "x:UnconfiguredCommand:OPENSCAD_202101_CLI_EXE"  ;
+const OPENSCAD20240727_COM = Deno.env.get("OPENSCAD_20240727_CLI_EXE") ?? "x:UnconfiguredCommand:OPENSCAD_20240727_CLI_EXE";
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
@@ -179,6 +179,11 @@ async function run(cmd:Commande) : Promise<void> {
 		cmd.argv[0] == OPENSCAD20240727_CMD ? OPENSCAD20240727_COM :
 		cmd.argv[0] == "x:Magick" ? MAGICK_EXE :
 		cmd.argv[0];
+		
+	if( (m = /^x:UnconfiguredCommand:(.*)$/.exec(realExe)) != null ) {
+		const missingEnvVar = m[1];
+		throw new Error(`Please set environment variable: ${missingEnvVar}`);
+	}
 	
 	console.log(`Spawning: ${quotedArgv([realExe, ...cmd.argv.slice(1)])}`);
 	
