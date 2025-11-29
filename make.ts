@@ -40,15 +40,10 @@ type OpenSCADCmd =
 
 type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for more
 
-// TODO: Check for env vars, search for the .com if not specified
-// TODO: Update to use OpenSCAD2024 with --manifold
-// - possibly treat as separate program and with different nonces,
-//   since some shapes *don't* work with that version,
-//   and either way, it's probably good to record exactly which
-//   version of OpenSCAD should be used to generate each shape,
-//   for almost-reproducibility (output seems a little nondeterministic) and such.
-const OPENSCAD202101_COM = "C:/Program Files/OpenSCAD/openscad.com";
-const OPENSCAD20240727_COM = "C:/Apps/OpenSCAD-2024.07.27-x86-64/openscad.exe"
+// See also: `SynthGen2100/P0019/packages/sgutils@0.1/tdarx/openscad.ts`
+// which is where this naming convention (minus the version) is copied from.
+const OPENSCAD202101_COM   = Deno.env.get("OPENSCAD_202101_CLI_EXE"  ) ?? "C:/Program Files/OpenSCAD/openscad.com";
+const OPENSCAD20240727_COM = Deno.env.get("OPENSCAD_20240727_CLI_EXE") ?? "C:/Apps/OpenSCAD-2024.07.27-x86-64/openscad.exe";
 const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
