@@ -1010,6 +1010,14 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/ThreadConnector2.scad", [
+			"p2223",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [ 60, 120, 100],
+			imageSize: [256,256],
+			paletteSize: 64,
+		}),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p2212", "p2220",
 		], {

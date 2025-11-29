@@ -98,6 +98,24 @@
 			"upper_outer_thread_inset": "2",
 			"upper_outer_thread_radius_offset": "-0.1",
 			"upper_outer_threads": "2-4+1/2-UNC"
+		},
+		"p2223": {
+			"description": "two-ended bushing for #7 (or other ~5mm) bit, with 1/4\"-long 3/4\"-10 outer threads",
+			"inner_thread_radius_offset": "0.1",
+			"inner_threads": "straight-5mm",
+			"lower_outer_thread_height": "6.35",
+			"lower_outer_thread_inset": "0.5",
+			"lower_outer_thread_radius_offset": "-0.15",
+			"lower_outer_threads": "3/4-10-UNC",
+			"ring_height": "6.35",
+			"ring_side_count": "8",
+			"ring_width": "25.4",
+			"upper_outer_thread_height": "6.35",
+			"upper_outer_thread_inset": "0.5",
+			"upper_outer_thread_radius_offset": "-0.15",
+			"upper_outer_threads": "3/4-10-UNC",
+			"preview_fn": "24",
+			"render_fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
