@@ -1059,6 +1059,22 @@
 			"outer_thread_inset": "2",
 			"total_height": "76.2",
 			"$fn": "144"
+		},
+		"p2220": {
+			"description": "5/8-inch tall ring to hold caps on 2\"-4+1/2 threads",
+			"handedness": "right",
+			"floor_thickness": "2",
+			"floor_thread_radius_offset": "0.2",
+			"floor_threads": "straight-1+1/2inch",
+			"head_height": "15.875",
+			"head_shape": "circle",
+			"head_surface_offset": "-0.1",
+			"head_width": "53.975",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "2-4+1/2-UNC",
+			"inner_thread_inset": "1",
+			"total_height": "15.875",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
