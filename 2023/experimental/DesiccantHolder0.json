@@ -16,7 +16,19 @@
 			"thread_spec": "2-4+1/2-UNC",
 			"wall_thickness": "1/16inch",
 			"outer_thread_radius_offset": "-0.2",
-         "$fn": "72"
+			"$fn": "72"
+		},
+		"p2219": {
+			"description": "DessicantHolder0 with 1/16\" inset threads",
+			"diameter": "2+1/8inch",
+			"height": "2+1/4inch",
+			"neck_hole_diameter": "1+1/2inch",
+			"thread_length": "1/2inch",
+			"thread_spec": "2-4+1/2-UNC",
+			"wall_thickness": "1/16inch",
+			"outer_thread_radius_offset": "-0.2",
+			"outer_thread_inset": "1.6mm",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

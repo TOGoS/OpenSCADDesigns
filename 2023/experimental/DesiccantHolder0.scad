@@ -1,4 +1,4 @@
-// DesiccantHolder0.4
+// DesiccantHolder0.5
 // 
 // Hmm, maybe the threads should be on the outside of the container
 // 
@@ -9,6 +9,8 @@
 // - Default thread length = 1/2inch
 // v0.4:
 // - Configurable outer_thread_radius_offset
+// v0.5:
+// - Configurable thread inset
 
 height   = "2+1/4inch";
 thread_spec = "2-4+1/2-UNC";
@@ -18,10 +20,14 @@ neck_hole_diameter = "1+1/2inch";
 thread_length = "1/2inch";
 cutaway = false;
 outer_thread_radius_offset = -0.1;
+outer_thread_inset = "0";
+outer_thread_taper_length = "3mm";
 $fn = 48;
 $tgx11_offset = -0.1;
 
 module desiccantholder0__end_params() { }
+
+$togunits1_default_unit = "mm";
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -38,7 +44,12 @@ wall_thickness_mm  = togunits1_to_mm(wall_thickness);
 neck_diameter_mm   = togunits1_to_mm(neck_hole_diameter);
 cavity_diameter_mm = diameter_mm - wall_thickness_mm*2;
 neck_taper_z01     = max(0, (cavity_diameter_mm - neck_diameter_mm));
-thread_z0 = height_mm - togunits1_to_mm(thread_length);
+outer_thread_inset_mm          = togunits1_to_mm(outer_thread_inset);
+outer_thread_taper_length_mm   = togunits1_to_mm(outer_thread_taper_length);
+thread_z0          = height_mm - togunits1_to_mm(thread_length);
+
+// For 'backward compatibility' (i.e. old presets still make the same dumb shapes):
+top_zp = outer_thread_inset_mm == 0 ? 0 : -1;
 
 the_body = ["difference",
 	["union",
@@ -49,7 +60,12 @@ the_body = ["difference",
 			[thread_z0, diameter_mm       + $tgx11_offset*2],
 		]),
 		togthreads2_make_threads(
-   	   togthreads2_simple_zparams([[thread_z0 - 5, 0], [height_mm, 0]], 3, 1),
+			togthreads2_simple_zparams(
+				[[thread_z0 - 5, 0], [height_mm, top_zp]],
+				extend=1,
+				taper_length=outer_thread_taper_length_mm,
+				inset=outer_thread_inset_mm
+			),
 			thread_spec,
 			end_mode = "blunt",
 			r_offset = outer_thread_radius_offset
