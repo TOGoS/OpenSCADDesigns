@@ -25,7 +25,19 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 	return res;
 }
 
-type OpenSCADCmd = "x:OpenSCAD202101Com" | "x:OpenSCAD20240727Com";
+const OPENSCAD202101_CMD = "x:OpenSCAD202101Com" as const;
+const OPENSCAD20240727_CMD = "x:OpenSCAD20240727Com" as const;
+const OPENSCAD2024_MANIFOLD_CMD = "x:OpenSCAD20240727Com+Manifold" as const;
+const DEFAULT_OPENSCAD_CMD = OPENSCAD202101_CMD;
+
+type BaseOpenSCADCmd =
+	typeof OPENSCAD202101_CMD |
+	typeof OPENSCAD20240727_CMD;
+
+type OpenSCADCmd =
+	BaseOpenSCADCmd |
+	typeof OPENSCAD2024_MANIFOLD_CMD;
+
 type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for more
 
 // TODO: Check for env vars, search for the .com if not specified
@@ -168,8 +180,8 @@ async function run(cmd:Commande) : Promise<void> {
 	}
 	
 	const realExe =
-		cmd.argv[0] == "x:OpenSCAD202101Com" ? OPENSCAD202101_COM :
-		cmd.argv[0] == "x:OpenSCAD20240727Com" ? OPENSCAD20240727_COM :
+		cmd.argv[0] == OPENSCAD202101_CMD ? OPENSCAD202101_COM :
+		cmd.argv[0] == OPENSCAD20240727_CMD ? OPENSCAD20240727_COM :
 		cmd.argv[0] == "x:Magick" ? MAGICK_EXE :
 		cmd.argv[0];
 	
@@ -315,6 +327,21 @@ async function mkRoom(path:FilePath) {
 	await unlink(path);
 }
 
+function toBaseScadCmdAndImplicitFeatures(cmd: OpenSCADCmd) : { openScadCmd: BaseOpenSCADCmd, implicitFeatures: OpenSCADFeatureName[] } {
+	// Support a combined "OpenSCAD + Manifold" alias by returning the base
+	// OpenSCAD command plus an implicit "manifold" feature, otherwise return
+	// the command unchanged with no implicit features.
+	if( cmd === OPENSCAD2024_MANIFOLD_CMD ) {
+		return { openScadCmd: OPENSCAD20240727_CMD, implicitFeatures: ["manifold"] };
+	}
+	return { openScadCmd: cmd, implicitFeatures: [] };
+}
+
+function normalizeFeatureList(input: Iterable<string>) : string[] {
+	// Remove duplicates and sort using default string sort.
+	return Array.from(new Set(input)).sort();
+}
+
 function osdBuildRules(partId:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	featuresEnabled?: OpenSCADFeatureName[],
@@ -339,20 +366,27 @@ function osdBuildRules(partId:string, opts:{
 	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
 	const paletteSize = opts.paletteSize ?? 36;
 
-	const openScadCmd = opts.openScadCmd ?? "x:OpenSCAD202101Com";
-
+	const { openScadCmd, implicitFeatures } =
+		toBaseScadCmdAndImplicitFeatures(opts.openScadCmd ?? DEFAULT_OPENSCAD_CMD);
+	
 	let scadVariantSuffix = "";
+	
 	switch( openScadCmd ) {
-	case "x:OpenSCAD202101Com":
+	case OPENSCAD202101_CMD:
 		break;
-	case "x:OpenSCAD20240727Com":
-		scadVariantSuffix += "+scad20240227";
+	case OPENSCAD20240727_CMD:
+		scadVariantSuffix += "+scad20240727"; // Typo lol
 		break;
 	default:
 		throw new Error(`Unrecognized openScadCmd: '${openScadCmd}'`);
 	}
-	const featuresEnabled = opts.featuresEnabled ?? [];
-	for( let feat of featuresEnabled ) scadVariantSuffix += '+' + feat;
+	
+	const featuresEnabled = normalizeFeatureList([
+		...implicitFeatures,
+		...(opts.featuresEnabled ?? []),
+	]);
+	
+	for( const feat of featuresEnabled ) scadVariantSuffix += '+' + feat;
 	
 	const outStlPath = `${tempDir}/${partId}-${stlBuilderVersion}${scadVariantSuffix}.stl`;
 	const simplifiedStlPath = `${outDir}/${partId}.stl`;
@@ -702,8 +736,7 @@ const builder = new Builder({
 		}),
 		
 		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2068","p2069"], {
-			openScadCmd: "x:OpenSCAD20240727Com",
-			featuresEnabled: ["manifold"],
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [20,-20, 30],
 			imageSize: [384, 384],
 		}),
@@ -778,6 +811,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 		}),
 		...multiOsdBuildRules("2023/experimental/DesiccantHolder0.scad", ["p2063","p2065"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [20,-40, 60],
 			imageSize: [384, 384],
 			paletteSize: 128,
@@ -960,8 +994,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 		}),
 		...multiOsdBuildRules("2023/board-clip/EdgeDrillJig2.scad", ["p2189","p2216","p2217","p2218"], {
-			openScadCmd: "x:OpenSCAD20240727Com",
-			featuresEnabled: ["manifold"],
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],
 		}),
@@ -972,8 +1005,7 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/experimental/ThreadConnector2.scad", [
 			"p2211","p2213",
 		], {
-			openScadCmd: "x:OpenSCAD20240727Com",
-			featuresEnabled: ["manifold"],
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [ 60, 120, 140],
 			imageSize: [512,512],
 			paletteSize: 128,
@@ -981,8 +1013,7 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p2212",
 		], {
-			openScadCmd: "x:OpenSCAD20240727Com",
-			featuresEnabled: ["manifold"],
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [ 60, 120, 140],
 			imageSize: [512,512],
 			paletteSize: 192,
@@ -991,8 +1022,7 @@ const builder = new Builder({
 			// Maybe good camera settings for hex heads
 			"p2214","p2215",
 		], {
-			openScadCmd: "x:OpenSCAD20240727Com",
-			featuresEnabled: ["manifold"],
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-60, -60, 140],
 			imageSize: [512,512],
 			paletteSize: 192,
