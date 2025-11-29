@@ -1027,6 +1027,14 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 192,
 		}),
+		...multiOsdBuildRules("2023/experimental/DesiccantHolderLid1.scad", [
+			"p2221","p2222",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-60, -60, 140],
+			imageSize: [256,256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
