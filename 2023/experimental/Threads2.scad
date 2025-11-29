@@ -1,4 +1,4 @@
-// Threads2.34
+// Threads2.35
 // 
 // New screw threads proto-library
 // 
@@ -120,6 +120,8 @@
 // - taper_length and inset parameters for inner and outer threads
 // v2.34:
 // - 'circle' is now an option for head_shape
+// v2.35:
+// - To match TOGThreads2.35, which fixes a bug in zparams normalization
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>

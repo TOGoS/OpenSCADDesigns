@@ -1,4 +1,4 @@
-// TOGThreads2.33
+// TOGThreads2.35
 // 
 // Versions:
 // v2.25:
@@ -23,6 +23,9 @@
 // - togthreads2_simple_zparams takes optional `inset` parameter
 // - togthreads2__mkthreads_v3 checks zparams for Z monotonicity,
 //   to reduce mystery CGAL errors
+// v2.35:
+// - Fix that togthreads2__normalize_zparams was checking and
+//   returning the passed-in list instead of the normalized one
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -166,12 +169,14 @@ function togthreads2__zparams_to_zrange(zparams) =
 
 function togthreads2__check_zparams(zparams, prev_z=undef, i=0) =
 	len(zparams) == i ? zparams :
+	assert( is_num(zparams[i][0]), str("Z part of zparam should be a number; got: ", zparams[i][0]) )
+	assert( is_num(zparams[i][1]), str("Offset part of zparam should be a number; got: ", zparams[i][1]) )
 	assert( is_undef(prev_z) || zparams[i][0] > prev_z, str("Zparams Z values not monotonic at index ", i, ": ", zparams))
 	togthreads2__check_zparams(zparams, zparams[i][0], i+1);
 
 function togthreads2__normalize_zparams(zparams) =
 	let( norm = [ for(zp=zparams) is_list(zp) ? zp : is_num(zp) ? [zp, 0] : assert(false, str("Expected [z,t] or z for zparam, got ", zp, "'")) ] )
-	togthreads2__check_zparams(zparams);
+	togthreads2__check_zparams(norm);
 
 // zparams: [z0, z1] (z range) or [[z0, t0], ...., [zn, tn]] (z,t control points, where t = -1..1)
 // type23: a Type23 thread spec
@@ -213,8 +218,10 @@ function togthreads2__mkthreads_v3(zparams, type23, direction="right", r_offset=
 		"; $fn/pitch = ", $fn/pitch,
 		"; height * $fn/pitch = ", (thread_zrange[1]-thread_zrange[0])*$fn/pitch
 	))
+	assert( is_num(r_offset) )
 	let( outer_zds = [
-		for(zp=zps) let(outer_r = r_offset + max_radius + min(0, zp[1]) * (max_radius-min_radius)) [zp[0], outer_r*2]
+		for(zp=zps) assert( is_num(zp[1]), str("Expected zp[1] to be a number; got: ", zp[1]) )
+		   let(outer_r = r_offset + max_radius + min(0, zp[1]) * (max_radius-min_radius)) [zp[0], outer_r*2]
 	])
 	let( inner_zds = [
 		let(zp=zps[0]         ) let(inner_r = r_offset + min_radius + max(0, zp[1]) * (max_radius-min_radius)) [zp[0]-10, inner_r*2],
