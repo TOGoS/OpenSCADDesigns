@@ -1043,6 +1043,13 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/experimental/NutDriver0.scad", [
+			"p2224",
+		], {
+			cameraPosition: [-60, -60, 160],
+			imageSize: [256,256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

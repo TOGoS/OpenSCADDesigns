@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2224": {
+			"description": "9/16\" nut driver?",
+			"$fn": "144",
+			"hex_depth": "3/8inch",
+			"hex_offset": "0.1",
+			"square_depth": "1.5inch",
+			"square_offset": "0.2"
+		}
+	},
+	"fileFormatVersion": "1"
+}
