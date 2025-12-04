@@ -1058,6 +1058,13 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/gridbeam/SmallPlatformBracket0.scad", [
+			"p2227"
+		], {
+			cameraPosition: [-30, -60, 60],
+			imageSize: [256,256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
