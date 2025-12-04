@@ -8,6 +8,16 @@
 			"width": "3inch",
 			"thickness": "1/2inch",
 			"$fn": "144"
+		},
+		"p2226": {
+			"description": "3\"-wide x 4+1/2\"-long x 1/2\" thick spray bottle holder thingy with 0.3mm bottom membrane",
+			"chin_width": "50mm",
+			"neck_width": "46mm",
+			"length": "4.5inch",
+			"width": "3inch",
+			"thickness": "1/2inch",
+			"bottom_membrane_thickness": "0.3mm",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

@@ -1,4 +1,4 @@
-// SprayBottleHolder0.1
+// SprayBottleHolder0.2
 // 
 // For these spray bottles that I have in the Farmhouse office.
 // 
@@ -9,10 +9,14 @@
 // - narrow part under that: 45mm wide, tapering back out to 49mm
 //   over...at least 10mm, and beyond
 // - bottle :: about 3+1/2"
+// 
+// v0.2:
+// - Option for bottom_membrane_thickness
 
 width     = "3inch";
 length    = "4.5inch";
 thickness = "1/2inch";
+bottom_membrane_thickness = "0";
 
 chin_width = "50mm";
 
@@ -31,14 +35,19 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TOGVecLib0.scad>
 
+$togunits1_default_unit = "mm";
+
 width_mm  = togunits1_to_mm(width);
 length_mm = togunits1_to_mm(length);
 thickness_mm = togunits1_to_mm(thickness);
 chin_width_mm = togunits1_to_mm(chin_width);
 neck_width_mm = togunits1_to_mm(neck_width);
+bottom_membrane_thickness_mm = togunits1_to_mm(bottom_membrane_thickness);
 
 center_inset_mm = width_mm/2;
 chin_inset_mm = 2;
+
+hole_z0 = bottom_membrane_thickness_mm == 0 ? -thickness_mm : -thickness_mm/2 + bottom_membrane_thickness_mm;
 
 togmod1_domodule(
 	let( z1 = thickness_mm/2 )
@@ -48,8 +57,8 @@ togmod1_domodule(
 	let( atom = togunits1_to_mm("atom"), chunk = togunits1_to_mm("chunk") )
 	let( size_chunks = [round(width_mm/chunk), round(length_mm/chunk)] )
 	let( size_atoms  = [round(width_mm/atom), round(length_mm/atom)] )
-	let( atom_hole   = ["render", tphl1_make_z_cylinder(zrange=[-thickness_mm, thickness_mm], d=4.5)] )
-	let( chunk_hole  = ["render", tphl1_make_z_cylinder(zrange=[-thickness_mm, thickness_mm], d=9  )] )
+	let( atom_hole   = ["render", tphl1_make_z_cylinder(zrange=[hole_z0, thickness_mm], d=4.5)] )
+	let( chunk_hole  = ["render", tphl1_make_z_cylinder(zrange=[hole_z0, thickness_mm], d=9  )] )
 	["difference",
 		tphl1_make_rounded_cuboid([width_mm, length_mm, thickness_mm], r=[6.35,6.35,2], corner_shape="cone2"),
 		
