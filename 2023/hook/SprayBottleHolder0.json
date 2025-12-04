@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p2225": {
+			"description": "3\"-wide x 4+1/2\"-long x 1/2\" thick spray bottle holder thingy",
+			"chin_width": "50mm",
+			"neck_width": "46mm",
+			"length": "4.5inch",
+			"width": "3inch",
+			"thickness": "1/2inch",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}

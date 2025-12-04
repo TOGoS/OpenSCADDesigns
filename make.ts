@@ -1050,6 +1050,14 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 64,
 		}),
+		...multiOsdBuildRules("2023/hook/SprayBottleHolder0.scad", [
+			"p2225",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Just because it's faster
+			cameraPosition: [-30, -60, 60],
+			imageSize: [256,256],
+			paletteSize: 64,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
