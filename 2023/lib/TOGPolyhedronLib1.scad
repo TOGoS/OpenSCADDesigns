@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.11
+// TOGPolyhedronLib1.12
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -42,6 +42,10 @@
 //   they are all unique.
 // v1.11:
 // - tphl1_make_z_cylinder: Option to not cap_bottom and/or cap_top
+// v1.12:
+// - tphl1_make_rounded_cuboid can generate cuboids with beveled,
+//   instead of rounded, top/bottom edges, either by specifying corner_shape="cone2"
+//   or by passing in 1 for z_quarter_fn.
 
 // Winding order:
 // 
@@ -197,8 +201,9 @@ use <./TOGMod1Constructors.scad>
  *    "ellipsoid"  --  non-spherical corners are simply scaled spheres
  *    "ovoid1"     --  radius of left/right|front/back top/bottom edges are min(rx|ry, rz), respectively
  *    "ovoid2"     --  radius of top/bottom edges are rz
+ *    "cone2"      --  top/bottom are sloped inward by rz (same effect as "ovoid2" with a low z_fn)
  */
-function tphl1_make_rounded_cuboid(size, r, corner_shape="ellipsoid") =
+function tphl1_make_rounded_cuboid(size, r, corner_shape="ellipsoid", z_quarter_fn=undef) =
 	assert(tal1_is_vec_of_num(size, 3), "tphl1_make_rounded_cuboid: size should be a Vec3<Num>")
 	let(radii = tal1_assert_for_each(
 		is_list(r) ? r : is_num(r) ? [r, r, r] : assert(false, "r(adius) should be list<num> or num"),
@@ -212,11 +217,12 @@ function tphl1_make_rounded_cuboid(size, r, corner_shape="ellipsoid") =
 		corner_shape == "ellipsoid" ? radii :
 		corner_shape == "ovoid1" ? [min(radii[0], radii[2]), min(radii[1], radii[2])] :
 		corner_shape == "ovoid2" ? [radii[2], radii[2]] :
+		corner_shape == "cone2"  ? [radii[2], radii[2]] :
 		assert(false, str("Unrecognized corner shape: '", corner_shape, "'"))
 	)
 	// Need to be consistent when asking for rounded rect points,
 	// lest rounding errors give different results for different layers
-	let(quarterfn = max(ceil($fn/4), 1))
+	let(quarterfn = max(corner_shape == "cone2" ? 1 : !is_undef(z_quarter_fn) ? round(z_quarter_fn) : ceil($fn/4), 1))
 	tphl1_make_polyhedron_from_layer_function(
 		radii[2] == 0 ? [
 			[-size[2]/2, 90],
