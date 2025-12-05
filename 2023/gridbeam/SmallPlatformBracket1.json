@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2229": {
+			"description": "1x1x2-chunk bracket with 1/4-inch walls and 1/2-13-UNC connector holes",
+			"height": "2chunk",
+			"inner_thread_radius_offset": "0.2",
+			"$fn": "32",
+			"$tgx11_offset": "-0.1"
+		}
+	},
+	"fileFormatVersion": "1"
+}
