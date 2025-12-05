@@ -1,4 +1,4 @@
-// TOGUnits1.5
+// TOGUnits1.6
 // 
 // For simlifying quantity parsing and unit conversion
 // 
@@ -12,6 +12,8 @@
 // - Add togunits1_vec_to_mms
 // v1.5:
 // - Remove unused `unit` parameter from `togunits1_vec_to_cas`
+// v1.6:
+// - togunits1_decode accepts `xf` parameter, same as togunits1_decode_vec
 // 
 // Reserved but not-yet-actually-used globals:
 // - $togunits1_default_unit - default unit when interpreting "0"
@@ -51,9 +53,10 @@ function togunits1__get_transform(name) =
 	name == "ceil" ? function(n) ceil(n) :
 	assert(false, str("Unrecognized transform: '", name, "'"));
 
-function togunits1_decode(what, unit=[1,"mm"]) =
+function togunits1_decode(what, unit=[1,"mm"], xf=undef) =
 	let( ca = togunits1_to_ca(what) )
-	togridlib3_decode(ca, unit=togunits1_to_ca(unit));
+	let( xf1 = togunits1__get_transform(xf) )
+	xf1(togridlib3_decode(ca, unit=togunits1_to_ca(unit)));
 
 function togunits1_decode_vec(whats, unit=[1,"mm"], xf=undef) =
 	let( unit_ca = togunits1_to_ca(unit) )
