@@ -1073,6 +1073,14 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/misc/CrudBump0.scad", [
+			"p2231","p2232",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Just because it's faster
+			cameraPosition: [-30, -60, 60],
+			imageSize: [256,256],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

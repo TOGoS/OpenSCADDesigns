@@ -1,0 +1,27 @@
+{
+	"parameterSets": {
+		"p2231": {
+			"description": "little 1/2-13-UNC bolt with 1/4\" threads, 1/2\" shaft, round head, and 1/4\" square drive",
+			"$fn": "64",
+			"head_diameter": "3/4inch",
+			"head_height": "3/16inch",
+			"shaft_diameter": "9/32inch",
+			"shaft_length": "1/2inch",
+			"thread_length": "1/4inch",
+			"thread_radius_offset": "-0.2mm",
+			"thread_style": "1/2-13-UNC"
+		},
+		"p2232": {
+			"description": "little 1/2-13-UNC bolt with 1/2\" threads, round head, and 1/4\" square drive",
+			"$fn": "64",
+			"head_diameter": "3/4inch",
+			"head_height": "3/16inch",
+			"shaft_diameter": "9/32inch",
+			"shaft_length": "0",
+			"thread_length": "1/2inch",
+			"thread_radius_offset": "-0.2mm",
+			"thread_style": "1/2-13-UNC"
+		}
+	},
+	"fileFormatVersion": "1"
+}
