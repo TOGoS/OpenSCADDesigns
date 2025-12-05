@@ -1066,7 +1066,7 @@ const builder = new Builder({
 			paletteSize: 64,
 		}),
 		...multiOsdBuildRules("2023/gridbeam/SmallPlatformBracket1.scad", [
-			"p2229"
+			"p2230"
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Just because it's faster
 			cameraPosition: [-30, -60, 0],

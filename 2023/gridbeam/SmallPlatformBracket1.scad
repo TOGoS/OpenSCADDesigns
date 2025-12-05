@@ -1,4 +1,4 @@
-// SmallPlatformBracket1.1
+// SmallPlatformBracket1.2
 // 
 // Did you want to attach something to a gridbeam
 // using one bolt without it wiggling all over?
@@ -6,6 +6,8 @@
 // v1.1:
 // - Forked from SmallPlatformBracket0.1
 // - Maybe this one is front-only
+// v1.2:
+// - Back holes every 1/2 chunk
 
 height = "2chunk";
 
@@ -106,10 +108,10 @@ togmod1_domodule(
 		for( xm=[0] ) for( ym=[0] )
 		["translate", [xm,ym]*chunk, threaded_dunk_hole],
 		
-		for( xm=[0] ) for( ym=[0,1] ) for( zm=[-height_chunks/2 + 0.5 : 1 : height_chunks/2] )
+		for( xm=[0] ) for( ym=[0,1] ) for( zm=[-height_chunks/2 + 0.5 : 1 : height_chunks/2-0.5] )
 		["translate", [xm,ym,zm]*chunk, ["rotate", [0,90,0], x_hole]],
 		
-		for( xm=[0] ) for( ym=[0] ) for( zm=[-height_chunks/2 + 0.5 : 1 : height_chunks/2] )
+		for( xm=[0] ) for( ym=[0] ) for( zm=[-height_chunks/2 + 0.5 : 0.5 : height_chunks/2-0.5] )
 		["translate", [xm,ym,zm]*chunk, ["rotate", [-90,0,0], y_hole]],
 	]
 );
