@@ -1,4 +1,4 @@
-// SprayBottleHolder0.2
+// SprayBottleHolder0.3
 // 
 // For these spray bottles that I have in the Farmhouse office.
 // 
@@ -12,11 +12,15 @@
 // 
 // v0.2:
 // - Option for bottom_membrane_thickness
+// v0.3:
+// - Option for 'dunk hole' (i.e. a 1/2" hole with 21mm counterbore)
+// - More small holes
 
 width     = "3inch";
 length    = "4.5inch";
 thickness = "1/2inch";
 bottom_membrane_thickness = "0";
+dunk_hole_style = "none"; // ["none","dunk"]
 
 chin_width = "50mm";
 
@@ -59,6 +63,11 @@ togmod1_domodule(
 	let( size_atoms  = [round(width_mm/atom), round(length_mm/atom)] )
 	let( atom_hole   = ["render", tphl1_make_z_cylinder(zrange=[hole_z0, thickness_mm], d=4.5)] )
 	let( chunk_hole  = ["render", tphl1_make_z_cylinder(zrange=[hole_z0, thickness_mm], d=9  )] )
+	let( dunk_hole   =
+		dunk_hole_style == "none" ? ["union"] :
+		dunk_hole_style == "dunk" ? ["render", tphl1_make_z_cylinder(zds=[[hole_z0,12.7],[0,12.7],[0,21],[100,21]])] :
+		assert(false, str("Unrecognized dunk_hole_style: '", dunk_hole_style, "'"))
+	)
 	["difference",
 		tphl1_make_rounded_cuboid([width_mm, length_mm, thickness_mm], r=[6.35,6.35,2], corner_shape="cone2"),
 		
@@ -90,13 +99,20 @@ togmod1_domodule(
 			),
 			z1 + zo[0]
 		)),
+
+		for( xm=[0] )
+		for( ym=[1] )
+		["translate", [xm,ym]*chunk, dunk_hole],
 	   
-		for( xm=[-size_atoms[0]/2 + 0.5 : 1 : size_atoms[0]/2] )
-		for( ym=[-size_atoms[1]/2 + size_atoms[0] - 0.5 : 1 : size_atoms[1]/2] )
-		["translate", [xm,ym]*atom, atom_hole],
-		
 		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2] )
 		for( ym=[-size_chunks[1]/2 + size_chunks[0] + 0.5 : 1 : size_chunks[1]/2] )
 		["translate", [xm,ym]*chunk, chunk_hole],
+		
+		for( xm=[-size_atoms[0]/2 + 0.5 : 1 : size_atoms[0]/2] )
+		for( ym=[-size_atoms[1]/2 + 0.5 : 1 : size_atoms[1]/2] )
+		if( dunk_hole == ["union"] || abs(xm) > 1 || ym != 3 )
+		let( x = xm*atom, y = ym*atom )
+		if( abs(x) > neck_width_mm/2 + 6 || y > 0 )
+		["translate", [x,y], atom_hole],
 	]
 );

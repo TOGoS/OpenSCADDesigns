@@ -1051,7 +1051,7 @@ const builder = new Builder({
 			paletteSize: 64,
 		}),
 		...multiOsdBuildRules("2023/hook/SprayBottleHolder0.scad", [
-			"p2225","p2226",
+			"p2225","p2226","p2228",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Just because it's faster
 			cameraPosition: [-30, -60, 60],
