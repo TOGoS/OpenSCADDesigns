@@ -1,4 +1,4 @@
-// P2054Like v1.5
+// P2054Like v1.6
 // 
 // TGx11.1-based holder with rectangular slots
 // 
@@ -18,15 +18,21 @@
 // v1.5:
 // - Add slot_xy_shape option, which can be "oval" to round the corners of the slots
 // - Desharpen edges of thumb slot
+// v1.6:
+// - slot_placement_algorithm: 'v1' for something a little more sensible
+// - outer_wall_min_thickness: if positive, will prevent slots from spilling out
 
 block_size = ["1chunk","1chunk","1+2/6chunk"];
 slot_size = ["30mm","8mm","1+1/6chunk"];
 slot_wall_thickness = "3mm";
+outer_wall_min_thickness = "0";
 slot_xy_shape = "rect"; // ["rect","oval"]
 thumb_slot_diameter = "3/4inch";
 // Optional slots along the Y axis.  Kind of a hack.
 slot2_size = ["0inch","999inch","1inch"];
 slot2_pitch = "9/10inch";
+// v0 is weird but relied-on for some presets; you may want v1 for new designs.
+slot_placement_algorithm = "v0"; // ["v0","v1"]
 
 /* [Lip] */
 
@@ -61,6 +67,8 @@ use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGUnits1.scad>
 
+$togunits1_default_unit = "mm";
+
 $fn = $preview ? preview_fn : render_fn;
 
 $togridlib3_unit_table = [
@@ -74,6 +82,7 @@ block_size_mm = togridlib3_decode_vector(block_size_ca);
 lip_height_mm = togunits1_decode(lip_height);
 magnet_hole_diameter_mm = togunits1_decode(magnet_hole_diameter);
 magnet_hole_depth_mm = togunits1_decode(magnet_hole_depth);
+outer_wall_min_thickness_mm = togunits1_decode(outer_wall_min_thickness);
 
 slot2_size_mm = togunits1_decode_vec(slot2_size);
 function vec_is_nonzero(vec, off=0) =
@@ -81,12 +90,21 @@ function vec_is_nonzero(vec, off=0) =
 	vec[off] == 0 ? false :
 	vec_is_nonzero(vec, off+1);
 
-function make_slots(slot_size, block_length_mm, slot_wall_thickness=undef, slot_pitch=undef, interslot_depth_mm=0, slot_xy_shape="rect" ) =
+function make_slots(slot_size, available_space_mm, slot_wall_thickness=undef, slot_pitch=undef, slot_count=undef, interslot_depth_mm=0, slot_xy_shape="rect" ) =
 	assert( !is_undef(slot_wall_thickness) || !is_undef(slot_pitch) )
 	let(slot_size_mm = togunits1_decode_vec(slot_size))
 	let(slot_wall_thickness_mm = is_undef(slot_wall_thickness) ? undef : togunits1_decode(slot_wall_thickness))
 	let(slot_pitch_mm = is_undef(slot_pitch) ? slot_size_mm[1] + slot_wall_thickness_mm : togunits1_decode(slot_pitch))
-	let(slot_count = round( (block_length_mm-(is_undef(slot_wall_thickness_mm)?0:slot_wall_thickness_mm))/slot_pitch_mm ))
+	let(slot_count =
+		!is_undef(slot_count) ? slot_count :
+		slot_placement_algorithm == "v0" ? round(
+			(available_space_mm - (is_undef(slot_wall_thickness_mm) ? 0 : slot_wall_thickness_mm))/slot_pitch_mm
+		) :
+		slot_placement_algorithm == "v1" ? floor(
+			(available_space_mm + (is_undef(slot_wall_thickness_mm) ? 0 : slot_wall_thickness_mm))/slot_pitch_mm
+		) :
+		assert(false, str("Unrecognized slot placement algorithm: '", slot_placement_algorithm, "'"))
+	)
 	let(slot = slot_size_mm[0] <= 0 || slot_size_mm[1] <= 0 || slot_size_mm[2] <= 0 ? ["union"] :
 		togmod1_linear_extrude_z(
 		   [-slot_size_mm[2], slot_size_mm[2]],
@@ -129,8 +147,8 @@ togmod1_domodule(["difference",
 		]
 	)],
 	
-	["translate", [0,0,block_size_mm[2]], make_slots( slot_size, block_size_mm[1], slot_wall_thickness=slot_wall_thickness, slot_xy_shape=slot_xy_shape)],
+	["translate", [0,0,block_size_mm[2]], make_slots( slot_size, block_size_mm[1]-outer_wall_min_thickness_mm*2, slot_wall_thickness=slot_wall_thickness, slot_xy_shape=slot_xy_shape)],
 	
 	if( vec_is_nonzero(slot2_size_mm) )
-	["translate", [0,0,block_size_mm[2]], ["rotate", [0,0,90], make_slots(swapxy(slot2_size), block_size_mm[0], slot_pitch=slot2_pitch, interslot_depth_mm=thumb_slot_diameter_mm/2+0.1)]],
+	["translate", [0,0,block_size_mm[2]], ["rotate", [0,0,90], make_slots(swapxy(slot2_size), block_size_mm[0]-outer_wall_min_thickness_mm*2, slot_pitch=slot2_pitch, interslot_depth_mm=thumb_slot_diameter_mm/2+0.1, slot_count=2)]],
 ]);

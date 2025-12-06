@@ -78,6 +78,23 @@
 			"slot_xy_shape": "oval",
 			"thumb_slot_diameter": "3/4inch",
 			"$tgx11_offset": "-0.1"
+		},
+		"p2233": {
+			"description": "awkwardly-sized box for holding microfiber cloths?",
+			"block_size": "[\"7atom\", \"1chunk\", \"9atom\"]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"foot_rounding": "0.5",
+			"lip_height": "1.5mm",
+			"outer_wall_min_thickness": "1/8inch",
+			"slot_placement_algorithm": "v1",
+			"slot_size": "[\"6.5atom\", \"9mm\", \"8.5atom\"]",
+			"slot_wall_thickness": "2mm",
+			"slot_xy_shape": "rect",
+			"thumb_slot_diameter": "1inch",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"
