@@ -486,6 +486,7 @@ function osdBuildRules(partId:string, opts:{
 			async invoke(ctx:BuildContext) {
 				const [pngUrn, stlUrn] = await Promise.all([simplifiedPngPath, simplifiedStlPath].map(p => hashFile(p, BITPRINT_ALGORITHM)));
 				let descriptionFromConfig:string|undefined = undefined;
+				let commentsFromConfig:string[] = [];
 				if( inConfigFile != undefined ) {
 					// console.log(`# Attempting to read ${inConfigFile} for description...`);
 					const configText = await readTextFile(inConfigFile);
@@ -494,10 +495,14 @@ function osdBuildRules(partId:string, opts:{
 					// if( config == undefined ) console.log("# No config");
 					// console.log("# Config: ", config );
 					const partConfig = config?.parameterSets?.[partId];
-					// console.log(`# Part config: ${JSON.stringify(partConfig)}`);
-					descriptionFromConfig = partConfig?.description;
+					if( partConfig ) {
+						// console.log(`# Part config: ${JSON.stringify(partConfig)}`);
+						descriptionFromConfig = partConfig.description;
+						if( Array.isArray(partConfig.comments) ) commentsFromConfig = partConfig.comments;
+					}
 				}
 				const description = descriptionFromConfig?.replaceAll('"','-inch') ?? "...";
+				const bodyText = commentsFromConfig.map(c => `${c}\n`).join('');
 				
 				await mkRoom(ctx.targetName);
 				using writeStream = await Deno.open(ctx.targetName, {write:true, createNew:true});
@@ -507,7 +512,8 @@ function osdBuildRules(partId:string, opts:{
 					`short-description: ${description}\n`+ // Hmm: I could read the part.json and extract descriptions!
 					`stl-file: ${partId}.stl\t${stlUrn}\n`+
 					`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${partId}.png\n`+
-					"\n"
+					"\n" +
+					bodyText
 				));
 			}
 		},
