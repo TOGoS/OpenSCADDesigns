@@ -1075,6 +1075,21 @@
 			"inner_thread_inset": "1",
 			"total_height": "15.875",
 			"$fn": "144"
+		},
+		"p2234": {
+			"description": "THL-1030-86mm-82mm-1/4inch-60 nut",
+			"comments": [
+				"Can be used to connect two widemouth mason jars together.",
+				"It's p2099, but with 0.4mm radius offset instead of 0.3mm."
+			],
+			"head_height": "38.1",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "88.9",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "THL-1030-86mm-82mm-1/4inch-60",
+			"total_height": "38.1",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
