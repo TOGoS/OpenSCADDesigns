@@ -1,0 +1,9 @@
+{
+	"parameterSets": {
+		"p2235": {
+			"$fn": "144",
+			"drive_offset": "-0.3"
+		}
+	},
+	"fileFormatVersion": "1"
+}
