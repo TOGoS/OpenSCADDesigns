@@ -1091,7 +1091,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/experimental/DrillyMcSandCone0.scad", [
-			"p2235",
+			"p2236","p2238",
 		], {
 			cameraPosition: [-30, -30, 15],
 			imageSize: [256,256],

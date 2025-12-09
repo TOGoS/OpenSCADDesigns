@@ -1,8 +1,18 @@
 {
 	"parameterSets": {
-		"p2235": {
+		"p2236": {
 			"$fn": "144",
-			"drive_offset": "-0.3"
+			"drive_diameter": "12.7",
+			"drive_offset": "-0.1",
+			"major_diameter": "15",
+			"nose_angle": "60"
+		},
+		"p2238": {
+			"$fn": "144",
+			"drive_diameter": "12.7",
+			"drive_offset": "-0.1",
+			"major_diameter": "15",
+			"nose_angle": "80"
 		}
 	},
 	"fileFormatVersion": "1"
