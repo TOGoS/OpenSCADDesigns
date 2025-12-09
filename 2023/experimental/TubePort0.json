@@ -1,0 +1,22 @@
+{
+	"parameterSets": {
+		"p2240": {
+			"description": "bolt for use with a p2237/p2239 washer",
+			"part": "bolt",
+			"bolt_thread_length": "1/2inch",
+			"donut_bevel": "1/16inch",
+			"$fn": "48",
+			"$tgx11_offset": "-0.15"
+		},
+		"p2241": {
+			"description": "3-inch 'full block', with a 1/2\"-deep 3/4\" port on each end",
+			"part": "full-block",
+			"block_height": "2chunk",
+			"donut_bevel": "1/8inch",
+			"port_depth": "5/8inch",
+			"$fn": "48",
+			"$tgx11_offset": "-0.15"
+		}
+	},
+	"fileFormatVersion": "1"
+}

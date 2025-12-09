@@ -1104,6 +1104,14 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/TubePort0.scad", [
+			"p2240","p2241",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Just because it's faster
+			cameraPosition: [-30, -30, 60],
+			imageSize: [256,256],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });
