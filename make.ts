@@ -1097,6 +1097,13 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/TubePort0Washer0.scad", [
+			"p2237","p2239",
+		], {
+			cameraPosition: [-30, -30, 60],
+			imageSize: [256,256],
+			paletteSize: 128,
+		}),
 		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
 	},
 });

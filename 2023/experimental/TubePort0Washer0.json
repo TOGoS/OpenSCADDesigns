@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p2237": {
+                	"description": "O-ring-squishing washer for p2150-style ports (1/4\" hole)",
+			"hole_diameter": "1/4inch",
+			"$fn": "144"
+		},
+		"p2239": {
+                	"description": "O-ring-squishing washer for p2150-style ports (solid)",
+			"hole_diameter": "0",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
