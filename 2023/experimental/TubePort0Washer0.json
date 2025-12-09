@@ -9,6 +9,11 @@
                 	"description": "O-ring-squishing washer for p2150-style ports (solid)",
 			"hole_diameter": "0",
 			"$fn": "144"
+		},
+		"p2242": {
+			"description": "O-ring-squishing washer for p2150-style ports (1/4\"+0.3mm hole)",
+			"hole_diameter": "6.65mm",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

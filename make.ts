@@ -1098,7 +1098,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/experimental/TubePort0Washer0.scad", [
-			"p2237","p2239",
+			"p2237","p2239","p2242",
 		], {
 			cameraPosition: [-30, -30, 60],
 			imageSize: [256,256],
