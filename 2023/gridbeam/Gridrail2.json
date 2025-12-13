@@ -1,6 +1,7 @@
 {
 	"parameterSets": {
 		"p1957": {
+			"description": "4.5-inch gridrail with counterbored holes and rounded ends",
 			"length_chunks": "3",
 			"chunk_pitch": "38.1",
 			"hole_style": "THL-1006",
@@ -10,6 +11,7 @@
 			"$fn": "32"
 		},
 		"p1958": {
+			"description": "6-inch gridrail with counterbored holes and rounded ends",
 			"length_chunks": "4",
 			"chunk_pitch": "38.1",
 			"hole_style": "THL-1006",
@@ -17,6 +19,26 @@
 			"xy_corner_radius": "100",
 			"z_corner_radius": "3.2",
 			"$fn": "32"
+		},
+		"p2244": {
+			"description": "12-inch gridrail with counterbored holes and rounded ends",
+			"length_chunks": "8",
+			"chunk_pitch": "38.1",
+			"hole_style": "THL-1006",
+			"thickness": "19.05",
+			"xy_corner_radius": "100",
+			"z_corner_radius": "3.2",
+			"$fn": "96"
+		},
+		"p2245": {
+			"description": "9-inch gridrail with counterbored holes and rounded ends",
+			"length_chunks": "6",
+			"chunk_pitch": "38.1",
+			"hole_style": "THL-1006",
+			"thickness": "19.05",
+			"xy_corner_radius": "100",
+			"z_corner_radius": "3.2",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"
