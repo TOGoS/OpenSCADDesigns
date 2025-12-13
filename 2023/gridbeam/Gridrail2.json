@@ -39,6 +39,16 @@
 			"xy_corner_radius": "100",
 			"z_corner_radius": "3.2",
 			"$fn": "96"
+		},
+		"p2247": {
+			"description": "10+1/2-inch gridrail with counterbored holes and rounded ends",
+			"length_chunks": "7",
+			"chunk_pitch": "38.1",
+			"hole_style": "THL-1006",
+			"thickness": "19.05",
+			"xy_corner_radius": "100",
+			"z_corner_radius": "3.2",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"
