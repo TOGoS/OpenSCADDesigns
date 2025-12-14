@@ -1,0 +1,27 @@
+{
+	"parameterSets": {
+		"p2147": {
+			"$fn": "48",
+			"floor_thickness": "6.35",
+			"inner_diameter": "30",
+			"outer_diameter": "31.75",
+			"total_height": "19.05"
+		},
+		"p2249": {
+			"$fn": "96",
+			"floor_thickness": "6.35",
+			"inner_diameter": "30",
+			"outer_diameter": "37.9",
+			"total_height": "19.05"
+		},
+		"p2250": {
+			"description": "Adapter ring for ~30mm bar to fit into 1+1/2\" hole",
+			"floor_thickness": "0",
+			"inner_diameter": "30.2",
+			"outer_diameter": "37.9",
+			"total_height": "38.1",
+			"$fn": "96"
+		}
+	},
+	"fileFormatVersion": "1"
+}
