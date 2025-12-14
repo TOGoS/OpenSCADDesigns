@@ -1114,7 +1114,14 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 128,
 		}),
-		"all": brAlias(["p1859", "p186x", "p187x", "p188x"]),
+		...multiOsdBuildRules("2023/experimental/BarHolder1.scad", [
+			"p2248",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-20, -30, 60],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
