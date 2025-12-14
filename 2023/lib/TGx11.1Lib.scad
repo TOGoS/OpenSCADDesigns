@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.21
+// TGx11.1Lib - v11.1.22
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -58,6 +58,8 @@
 //   erroneously indicated 'bottom_shape' as the problem
 // v11.1.21:
 // - Fix lip_height < 0 case to not shorten the top of the block
+// v11.1.22:
+// - tgx11_block now accepts 'top_foot_bevel' option
 
 module __tgx11lib_end_params() { }
 
@@ -365,7 +367,8 @@ function tgx11_block(
 	top_v6hc_style = "v6.1", // For tops, you might want the wider one, which is, uhh
 	top_shape = undef,
 	bottom_foot_bevel = 0,
-	top_segmentation = "atom"
+	top_segmentation = "atom",
+	top_foot_bevel = 0
 ) =
 let(block_size = togridlib3_decode_vector(block_size_ca))
 let(block_size_atoms = togridlib3_decode_vector(block_size_ca, [1, "atom"]))
@@ -397,7 +400,8 @@ let(top_shape_eff = is_undef(top_shape) ? bottom_shape : top_shape)
 			block_size_ca,
 			bottom_shape = top_shape_eff,
 			segmentation = top_segmentation,
-			v6hc_style = top_v6hc_style
+			v6hc_style = top_v6hc_style,
+			foot_bevel = top_foot_bevel
 		)]],
 	],
 	
