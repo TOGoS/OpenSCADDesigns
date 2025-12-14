@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.12
+// TOGPolyhedronLib1.13
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -46,6 +46,10 @@
 // - tphl1_make_rounded_cuboid can generate cuboids with beveled,
 //   instead of rounded, top/bottom edges, either by specifying corner_shape="cone2"
 //   or by passing in 1 for z_quarter_fn.
+// 1.13:
+// - tphl1_make_polyhedron_from_layer_function takes an optional 'layer_points_transform' argument,
+//   which can simplify some common transformations, like adding the first element of the key
+//   to the points' Z offset.
 
 // Winding order:
 // 
@@ -156,9 +160,42 @@ function tphl1_make_polyhedron_from_layers(layers, cap_bottom=true, cap_top=true
 	let(faces2  = tphl1__remap_face_vertexes(faces1, vertex_remap_result[2]))
 	["polyhedron-vf", points2, faces2];
 
-function tphl1_make_polyhedron_from_layer_function(layer_keys, layer_points_function, cap_bottom=true, cap_top=true) =
-	let(indexes = is_num(layer_keys) ? [0:1:layer_keys-1] : is_list(layer_keys) ? layer_keys : assert(false, "Layer list must be number or list"))
-	let(layers = [for(li=indexes) layer_points_function(li)])
+tphl1__layer_points__identity_transform = function(key, points) points;
+
+tphl1__layer_points__key0_to_z_transform = function(key, points)
+   let(z_offset=key[0]) [for(p=points) [p[0], p[1], (len(p) > 2 ? p[2] : 0) + z_offset]];
+
+function tphl1__layer_points__decode_rcompose(xf_spec, index=0) =
+	index >= len(xf_spec) ? tphl1__layer_points__identity_transform :
+	let( this_xf = tphl1__layer_points__decode_transform(xf_spec[index]) )
+	let( next_xf = tphl1__layer_points__decode_rcompose(xf_spec, index+1) )
+	function(key, points) let(this_xfed = this_xf(key, points)) next_xf(key, this_xfed);
+
+// returns function(layer_key, points)
+function tphl1__layer_points__decode_transform(xf_spec) =
+	is_function(xf_spec) ? xf_spec :
+   xf_spec == "key0-to-z" ? tphl1__layer_points__key0_to_z_transform :
+   xf_spec == "identity" ? tphl1__layer_points__identity_transform :
+	is_list(xf_spec) && len(xf_spec) > 0 && xf_spec[0] == "rcompose" ?
+		tphl1__layer_points__decode_rcompose(xf_spec, 1) :
+	assert(false, str("Unrecognized layer points transform: '", xf_spec, "'"));
+
+function tphl1_make_polyhedron_from_layer_function(
+	layer_keys,
+	layer_points_function,
+	cap_bottom=true,
+	cap_top=true,
+	// series of transformations to apply to result of layer_points_function;
+	// can be a function(key, points), "key0-to-z", "identity", or ["rcompose", ...transforms]
+	// WARNING: OpenSCAD 2021 has a bug when it comes to recursive second-order functions.
+	// If you get 'Recursion detected' errors, pass a simple function here.
+	// Or switch to OpenSCAD 2024, which seems to handle this more correctly.
+	layer_points_transform = "identity"
+) =
+	let( decoded_transform = tphl1__layer_points__decode_transform(layer_points_transform) )
+	let( transformed_layer_points_function = function(key) decoded_transform(key, layer_points_function(key)) )
+	let( indexes = is_num(layer_keys) ? [0:1:layer_keys-1] : is_list(layer_keys) ? layer_keys : assert(false, "Layer list must be number or list") )
+	let( layers = [for(li=indexes) transformed_layer_points_function(li)] )
 	tphl1_make_polyhedron_from_layers(layers, cap_bottom=cap_bottom, cap_top=cap_top);
 
 function tphl1__tovec3(vec, fromnum=[0,0,1]) =
