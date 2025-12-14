@@ -1,4 +1,4 @@
-// SimpleCap0.3
+// SimpleCap0.4
 // 
 // Library for making very simple caps for things
 // whose outline can be described by a rath.
@@ -9,6 +9,8 @@
 // v0.3:
 // - Allow bevel_size to be overridden.
 //   Useful in cases where the default makes an invalid shape.
+// v0.4
+// - Support floor_thickness=0 meaning 'hollow tube'
 
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -32,11 +34,17 @@ function simplecap0_make_cap(inner_shape, total_height=19.05, floor_thickness=3.
 	let( t0 = 0, t1 = wall_thickness )
 	let( y0 = 0, yt = total_height, yf = floor_thickness )
 	let( bb = eff_bevel_size )
+	let( closed = yf > 0 )
 	tphl1_make_polyhedron_from_layer_function([
 		[y0   , t1-bb],
 		[y0+abs(bb), t1   ],
 		[yt   , t1   ],
 		[yt   , t0   ],
 		[yf   , t0   ],
+		if( !closed ) [yf, t1-bb],
 	], function(zo) let(z = zo[0], wall_offset=zo[1])
-		togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(rath, wall_offset)), z));
+	   togpath1_rath_to_polypoints(togpath1_offset_rath(rath, wall_offset)),
+		layer_points_transform = "key0-to-z",
+		cap_top    = closed,
+		cap_bottom = closed
+	);
