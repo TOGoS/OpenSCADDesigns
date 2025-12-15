@@ -538,6 +538,11 @@ function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	})));
 }
 
+/**
+ * Generate a list of IDs of the form prefix + decimal-encoded integer
+ * for the given prefix and numbers between (inclusive) start and end
+ * e.g. partIdRange("p", 10, 13) = ["p10","p11","p12","p13"]
+ */
 function partIdRange(pfx:string, start:number, end:number) : string[] {
 	const partIds : string[] = [];
 	for( let i = start; i <= end; i++ ) partIds.push(pfx+i);
@@ -598,6 +603,19 @@ const p192xBuildRules = flattenObj(map(
 // Something like this.
 const builder = new Builder({
 	rules: {
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", [
+			...partIdRange("p",1711,1719),
+			...partIdRange("p",2260,2269),
+		], {
+			openScadCmd: OPENSCAD202101_CMD, // 2024 doesn't work due to parameters
+			// The p17xxs were made without the help of this makefile,
+			// so I have to guess where the camera was.
+			// Well, actually, I like the shading better if it's flipped:
+			cameraPosition: [ 100, 100, 150],
+			imageSize: [512,512],
+			paletteSize: 64
+		}),
+		"p226x": brAlias(partIdRange("p",2260,2269)),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p1889","p2142","p2143","p2145","p2146","p2148","p2159",
 			"p2190","p2191","p2192","p2199",

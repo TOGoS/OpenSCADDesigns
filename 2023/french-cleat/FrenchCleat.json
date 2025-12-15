@@ -294,7 +294,7 @@
 			"opposite_edge_style": "FFS-trimmed-B"
 		},
 		
-		"-- p171x series: wide slots for gridbeam bolts:": "",
+		"-- p171x and p226x series: wide slots for gridbeam bolts:": "",
 		"p1711": {
 			"$tgx11_offset": "-0.1",
 			"backside_texture": "flat",
@@ -380,6 +380,116 @@
 			"backside_texture": "flat",
 			"hole_style": "GB-counterbored",
 			"length_ca": "[9, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2260": {
+			"description": "15-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[10, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2261": {
+			"description": "16+1/2-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[11, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2262": {
+			"description": "18-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[12, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2263": {
+			"description": "19+1/2-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[13, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2264": {
+			"description": "21-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[14, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2265": {
+			"description": "22+1/2-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[15, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2266": {
+			"description": "24-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[16, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2267": {
+			"description": "25+1/2-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[17, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2268": {
+			"description": "27-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[18, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "6"
+		},
+		"p2269": {
+			"description": "28+1/2-inch French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"$tgx11_offset": "-0.1",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[19, \"chunk\"]",
 			"mating_edge_style": "S-trimmed",
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed",
