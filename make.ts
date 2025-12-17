@@ -482,6 +482,7 @@ function osdBuildRules(partId:string, opts:{
 			}
 		},
 		[partTefPath]: {
+			// And inConfigFile, but I don't want it to fail if that doesn't exist. :-/
 			prereqs: [simplifiedStlPath, simplifiedPngPath, "make.ts"],
 			async invoke(ctx:BuildContext) {
 				const [pngUrn, stlUrn] = await Promise.all([simplifiedPngPath, simplifiedStlPath].map(p => hashFile(p, BITPRINT_ALGORITHM)));
@@ -823,7 +824,10 @@ const builder = new Builder({
 			cameraPosition: [ 40, 40, 40],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/togridpile/TGx11.1.scad", ["p2053","p2058","p2104","p2105","p2106"], {
+		...multiOsdBuildRules("2023/togridpile/TGx11.1.scad", [
+			"p2053","p2058","p2104","p2105","p2106",
+			...partIdRange("p",2252,2254)
+		], {
 			cameraPosition: [-30,-40, 30],
 			imageSize: [256, 256],
 		}),

@@ -184,8 +184,56 @@
 			"offset": "-0.15",
 			"render_fn": "24",
 			"top_segmentation": "block"
+		},
+		"-- p225x series: simple Nx2x1 boxes": "",
+		"p2252": {
+			"description": "2x2x1-chunk TOGridPile cup with chatomic bottom, clarp-compatible lip, magnet holes",
+			"atom_hole_style": "straight-6.4mm-2.4mm",
+			"block_height_u": "24",
+			"block_size_chunks": "[2, 2]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "chatom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"top_segmentation": "block",
+			"cavity_type": "clarp2505-square",
+			"item": "block",
+			"lip_height": "1.5",
+			"mode": "normal",
+			"offset": "-0.15"
+		},
+		"p2253": {
+			"description": "3x2x1-chunk TOGridPile cup with chatomic bottom, clarp-compatible lip, magnet holes",
+			"atom_hole_style": "straight-6.4mm-2.4mm",
+			"block_height_u": "24",
+			"block_size_chunks": "[3, 2]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "chatom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"top_segmentation": "block",
+			"cavity_type": "clarp2505-square",
+			"item": "block",
+			"lip_height": "1.5",
+			"mode": "normal",
+			"offset": "-0.15"
+		},
+		"p2254": {
+			"description": "4x2x1-chunk TOGridPile cup with chatomic bottom, clarp-compatible lip, magnet holes",
+			"atom_hole_style": "straight-6.4mm-2.4mm",
+			"block_height_u": "24",
+			"block_size_chunks": "[4, 2]",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "chatom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"top_segmentation": "block",
+			"cavity_type": "clarp2505-square",
+			"item": "block",
+			"lip_height": "1.5",
+			"mode": "normal",
+			"offset": "-0.15"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }
