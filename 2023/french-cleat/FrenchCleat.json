@@ -777,6 +777,108 @@
 			"opposite_edge_style": "FFS-trimmed-B",
 			"$tgx11_offset": "-0.1"
 		},
+		
+		"-- p227x series: Same as p171x/p226x, but rotationally symmetric ('S') instead of 'FFS'": "",
+		"p2271": {
+			"description": "WSTYPE-4114-H1.5S-L1.5 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[1, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2272": {
+			"description": "WSTYPE-4114-H1.5S-L3.0 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[2, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2273": {
+			"description": "WSTYPE-4114-H1.5S-L4.5 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[3, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2274": {
+			"description": "WSTYPE-4114-H1.5S-L6.0 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[4, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2275": {
+			"description": "WSTYPE-4114-H1.5S-L7.5 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[5, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2276": {
+			"description": "WSTYPE-4114-H1.5S-L9.0 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[6, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2277": {
+			"description": "WSTYPE-4114-H1.5S-L10.5 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[7, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2278": {
+			"description": "WSTYPE-4114-H1.5S-L12.0 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[8, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2279": {
+			"description": "WSTYPE-4114-H1.5S-L13.5 French cleat with 6u-long slots, counterbored for 1/4\" furniture bolts",
+			"backside_texture": "flat",
+			"hole_style": "GB-counterbored",
+			"length_ca": "[9, \"chunk\"]",
+			"mating_edge_style": "S-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "S-trimmed",
+			"slot_height": "6",
+			"$tgx11_offset": "-0.1"
+		},
+		
 		"-- other stuff --": "",
 		"p1755": {
 			"description": "10-atom flat-backed FC",

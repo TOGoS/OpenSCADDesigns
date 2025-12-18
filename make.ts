@@ -607,6 +607,7 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", [
 			...partIdRange("p",1711,1719),
 			...partIdRange("p",2260,2269),
+			...partIdRange("p",2271,2279),
 		], {
 			openScadCmd: OPENSCAD202101_CMD, // 2024 doesn't work due to parameters
 			// The p17xxs were made without the help of this makefile,
@@ -617,6 +618,7 @@ const builder = new Builder({
 			paletteSize: 64
 		}),
 		"p226x": brAlias(partIdRange("p",2260,2269)),
+		"p227x": brAlias(partIdRange("p",2271,2279)),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p1889","p2142","p2143","p2145","p2146","p2148","p2159",
 			"p2190","p2191","p2192","p2199",
