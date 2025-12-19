@@ -1107,6 +1107,23 @@
 			"outer_threads": "none",
 			"thread_polyhedron_algorithm": "v3",
 			"total_height": "19.05"
+		},
+		"p2282": {
+			"$fn": "144",
+			"description": "1+1/2\"-tall octagonal cap for 1+1/4\"-7-UNC bolts",
+			"floor_thickness": "2",
+			"floor_threads": "none",
+			"handedness": "right",
+			"head_height": "38.1",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_radius_offset": "0.25",
+			"inner_thread_inset": "2",
+			"inner_threads": "1+1/4-7-UNC",
+			"outer_threads": "none",
+			"thread_polyhedron_algorithm": "v3",
+			"total_height": "38.1"
 		}
 	},
 	"fileFormatVersion": "1"

@@ -1054,10 +1054,18 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p2212", "p2220", "p2234",
-			"p2281",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [ 60, 120, 140],
+			imageSize: [512,512],
+			paletteSize: 192,
+		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2281", "p2282",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			// Need to get a bit higher on p2282 to show it's a cap
+			cameraPosition: [ 60, 120, 200],
 			imageSize: [512,512],
 			paletteSize: 192,
 		}),
