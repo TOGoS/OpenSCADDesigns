@@ -41,6 +41,22 @@
 			"hole_troff_width": "9/16inch",
 			"preview_fn": "32",
 			"render_fn": "144"
+		},
+		"p2286": {
+			"description": "New-fangled cigarette holder with stylisher hexagonal midriff and -0.2mm outer thread offset",
+			"cyl_height": "3.5inch",
+			"cyl_midriff_diameter": "1inch",
+			"cyl_midriff_side_count": "6",
+			"cyl_outer_thread_length": "1inch",
+			"cyl_outer_threads": "1+1/4-7-UNC",
+			"cyl_outer_thread_radius_offset": "-0.2mm",
+			"hole_count": "3",
+			"hole_diameter": "3/8inch",
+			"hole_pattern_r": "1/4inch",
+			"hole_troff_depth": "1/2inch",
+			"hole_troff_width": "9/16inch",
+			"preview_fn": "32",
+			"render_fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

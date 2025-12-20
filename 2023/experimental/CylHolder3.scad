@@ -1,4 +1,4 @@
-// CylHolder3.1
+// CylHolder3.2
 // 
 // Iteration on an idea; 3 is an estimate.
 // 
@@ -8,6 +8,8 @@
 // v3.1:
 // - Optional midriff, which appears when the threads
 //   from the top and bottom do not reach in the middle
+// v3.2:
+// - Add cyl_outer_thread_radius_offset option
 // 
 // TODO, maybe: a separate (from the troff) counterbore for each hole,
 // in case they held items need a little extra room.
@@ -20,6 +22,7 @@ cyl_height = "3inch";
 cyl_outer_threads = "1+1/2-6-UNC";
 // If less than half the cylinder height, midriff will be exposed
 cyl_outer_thread_length = "3inch";
+cyl_outer_thread_radius_offset = "-0.00mm";
 cyl_midriff_diameter = "1+1/2inch";
 cyl_midriff_side_count = 8;
 
@@ -51,8 +54,8 @@ hole_diameter_mm    = togunits1_to_mm(hole_diameter    );
 hole_troff_width_mm = togunits1_to_mm(hole_troff_width );
 hole_troff_depth_mm = togunits1_to_mm(hole_troff_depth );
 cyl_outer_thread_length_mm = togunits1_to_mm(cyl_outer_thread_length);
+cyl_outer_thread_radius_offset_mm = togunits1_to_mm(cyl_outer_thread_radius_offset);
 cyl_midriff_diameter_mm    = togunits1_to_mm(cyl_midriff_diameter   );
-
 
 function normalize_vec2d(v2d) =
 	let( len = sqrt(v2d[0]*v2d[0] + v2d[1]*v2d[1]) )
@@ -69,6 +72,8 @@ togmod1_domodule(
 		// Extension, uhh, halfway along the threads?
 		let( md_extension_dz  = cyl_outer_thread_length_mm/2 )
 		let( md_extension_dr  = md_extension_dz*2 ) // Eh, something like that
+		// HMM, maybe midriff should get a slight r_offset, also.
+		// Threads2 uses $tgx11_offset for this
 		let( md_r0 = cyl_midriff_diameter_mm/2 )
 		let( md_r1 = max(1, md_r0 - md_extension_dr) )
 		let( md_extension_dz2 = (md_r0-md_r1)/2 ) // Actual dz, taking actual dr into account
@@ -102,14 +107,16 @@ togmod1_domodule(
 			[-cyl_height_mm/2, -1],
 			[ cyl_height_mm/2, -1],
 		], taper_length=1, inset=3),
-		cyl_outer_threads
+		cyl_outer_threads,
+		r_offset = cyl_outer_thread_radius_offset_mm
 	) : ["union",
 		togthreads2_make_threads(
 			togthreads2_simple_zparams([
 				[-cyl_height_mm/2                             , -1],
 				[-cyl_height_mm/2 + cyl_outer_thread_length_mm,  0],
 			], taper_length=1, inset=3),
-			cyl_outer_threads
+			cyl_outer_threads,
+			r_offset = cyl_outer_thread_radius_offset_mm
 		),
 		midriff,
 		togthreads2_make_threads(
@@ -117,7 +124,8 @@ togmod1_domodule(
 				[ cyl_height_mm/2 - cyl_outer_thread_length_mm,  0],
 				[ cyl_height_mm/2                             , -1],
 			], taper_length=1, inset=3),
-			cyl_outer_threads
+			cyl_outer_threads,
+			r_offset = cyl_outer_thread_radius_offset_mm
 		)
 	] )
 	["difference",
