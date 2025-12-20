@@ -11,6 +11,36 @@
 			"hole_troff_depth": "1/2inch",
 			"hole_troff_width": "9/16inch",
 			"render_fn": "144"
+		},
+		"p2283": {
+			"description": "New-fangled cigarette holder with stylish hexagonal midriff",
+			"cyl_height": "3.5inch",
+			"cyl_midriff_diameter": "1+1/8inch",
+			"cyl_midriff_side_count": "6",
+			"cyl_outer_thread_length": "1inch",
+			"cyl_outer_threads": "1+1/4-7-UNC",
+			"hole_count": "3",
+			"hole_diameter": "3/8inch",
+			"hole_pattern_r": "1/4inch",
+			"hole_troff_depth": "1/2inch",
+			"hole_troff_width": "9/16inch",
+			"preview_fn": "32",
+			"render_fn": "144"
+		},
+		"p2284": {
+			"description": "New-fangled cigarette holder with stylisher hexagonal midriff",
+			"cyl_height": "3.5inch",
+			"cyl_midriff_diameter": "1inch",
+			"cyl_midriff_side_count": "6",
+			"cyl_outer_thread_length": "1inch",
+			"cyl_outer_threads": "1+1/4-7-UNC",
+			"hole_count": "3",
+			"hole_diameter": "3/8inch",
+			"hole_pattern_r": "1/4inch",
+			"hole_troff_depth": "1/2inch",
+			"hole_troff_width": "9/16inch",
+			"preview_fn": "32",
+			"render_fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

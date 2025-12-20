@@ -1155,7 +1155,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/experimental/CylHolder3.scad", [
-			"p2280",
+			"p2280", "p2283", "p2284",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-30, -30, 30],
