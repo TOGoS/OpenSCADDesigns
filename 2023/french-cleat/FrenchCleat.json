@@ -1010,6 +1010,26 @@
 			"opposite_edge_style": "FFS-trimmed",
 			"slot_height": "57.1",
 			"$tgx11_offset": "-0.1"
+		},
+		"p2288": {
+			"description": "1+1/2\"-long tester for 1+1/2\"x3/4\" gridrail",
+			"mode": "tester",
+			"height_ca": "[1.5, \"inch\"]",
+			"length_ca": "[1.5, \"inch\"]",
+			"mating_edge_style": "F",
+			"opposite_edge_style": "F",
+			"fc_surface_offset": "-0.1",
+			"$tgx11_offset": "-0.1"
+		},
+		"p2289": {
+			"description": "1+1/2\"-long tester for trapezoidally-beveled gridrail",
+			"mode": "tester",
+			"height_ca": "[1.5, \"inch\"]",
+			"length_ca": "[1.5, \"inch\"]",
+			"mating_edge_style": "FS",
+			"opposite_edge_style": "FT",
+			"fc_surface_offset": "-0.1",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"

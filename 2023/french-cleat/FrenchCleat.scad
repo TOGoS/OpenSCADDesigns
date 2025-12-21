@@ -1,4 +1,4 @@
-// FrenchCleat-v1.17
+// FrenchCleat-v1.18
 // 
 // v1.1:
 // - Allow selection of style for each edge
@@ -48,6 +48,8 @@
 // v1.17:
 // - top row threaded holes are only threaded halfway through
 //   to avoid generating invalid manifolds
+// v1.18:
+// - Add 'FT' edge profile
 
 description = "";
 
@@ -56,8 +58,8 @@ length_ca = [6, "inch"];
 //tip_bevel_size = 2;
 //corner_bevel_size = 1;
 
-mating_edge_style = "S-trimmed"; // ["F", "F-trimmed", "S", "S-trimmed", "S-trimmed-C", "FS", "FFS", "FFS-trimmed"]
-opposite_edge_style  = "FFS-trimmed"; // ["F", "F-trimmed", "S", "S-trimmed", "T", "T-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B"]
+mating_edge_style = "S-trimmed"; // ["F", "F-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B", "FT", "S", "S-trimmed", "T", "T-trimmed"]
+opposite_edge_style  = "FFS-trimmed"; // ["F", "F-trimmed", "FS", "FS-trimmed", "FFS-trimmed", "FFS-trimmed-B", "FT", "S", "S-trimmed", "T", "T-trimmed"]
 hole_style = "GB-counterbored"; // ["GB-counterbored", "coutnersnuk", "THL-1001", "THL-1002", "THL-1003", "THL-1004", "THL-1005", "THL-1005-5u", "#6-32-UNC", "1/4-20-UNC"]
 include_top_hole_row = false;
 slot_height = 0;
@@ -189,6 +191,7 @@ function profile_points_for_style(style) =
 	style == "F-trimmed" ? edge_profile_f_trimmed_points :
 	style == "S" ? edge_profile_s_points :
 	style == "T" ? invert_edge_points(edge_profile_s_points) :
+	style == "FT" ? invert_edge_points(edge_profile_fs_points) :
 	style == "S-trimmed" ? edge_profile_s_trimmed_points :
 	style == "T-trimmed" ? invert_edge_points(edge_profile_s_trimmed_points) :
 	style == "S-trimmed-C" ? edge_profile_s_trimmed_points_c :
