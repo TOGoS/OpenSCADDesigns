@@ -1162,6 +1162,11 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/tograck/WeMosPanel2.scad", ["p2287"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-40,-50,-80],
+			imageSize: [384, 384],
+		}),
 	},
 });
 

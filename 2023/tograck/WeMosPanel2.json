@@ -1,0 +1,18 @@
+{
+	"parameterSets": {
+		"p2287": {
+			"$fn": "24",
+			"description": "1.5\"x4.5\" panel with central Y-wise D1 mini cavity",
+			"mounting_hole_frequency": "1",
+			"mounting_hole_style": "THL-1001",
+			"outer_offset": "-0.1mm",
+			"panel_basic_offset": "-1u",
+			"panel_thickness": "2u",
+			"pincav_angle": "90",
+			"pincav_depth": "6u",
+			"pincav_length": "8/10inch",
+			"size": "[\"3atom\", \"9atom\"]"
+		}
+	},
+	"fileFormatVersion": "1"
+}

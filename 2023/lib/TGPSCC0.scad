@@ -1,4 +1,4 @@
-// TGPSCC0.4
+// TGPSCC0.5
 // 
 // 'TOGridPile Small Component Cavities'
 // 
@@ -10,6 +10,9 @@
 // - Slightly less rounding, to avoid CGAL errors
 // v0.4:
 // - Add tgpscc0_make_gx12_cutout
+// v0.5:
+// - Add a comment to tgpscc0_make_cavity_limit
+// - tgpscc0_make_wemos_cutout: floor_z now defaults to deck_z - 6u
 
 // Preliminary design:
 // Components cut a cavity slightly wider than what they need.
@@ -24,6 +27,7 @@ use <./TOGUnits1.scad>
 
 inch = 25.4;
 
+/** Create the maximum X-wise trough as used by WeMos D1 mini holder / GX12 holder. */
 function tgpscc0_make_cavity_limit(
 	block_size = togunits1_decode_vec(["1chunk", "1chunk", "10chunk"]),
 	cavity_width = togunits1_decode("1+1/8inch"),
@@ -50,7 +54,7 @@ function tgpscc0_make_cavity_limit(
 
 function tgpscc0_make_wemos_cutout(
 	usb_cutout_style="none",
-	floor_z = -inch*15/16,
+	floor_z = undef,
 	antenna_support_height = 0,
 	deck_z = -inch*9/16, // floor_z + 6*u
 	pincav_size = [
@@ -62,6 +66,7 @@ function tgpscc0_make_wemos_cutout(
 	clip_thickness = inch*1/16,
 	u = inch/16
 ) =
+	let( eff_floor_z = !is_undef(floor_z) ? floor_z : deck_z - inch*6/16 )
 	let( chunk = togunits1_decode([1,"chunk"]) )
 	let( notch_xms = antenna_support_height > 0 ? [-1] : [-1,+1] )
 	["union",
@@ -78,7 +83,7 @@ function tgpscc0_make_wemos_cutout(
 	
 	   // Pin cavity
 		["difference",
-		   togmod1_make_cuboid([pincav_size[0], pincav_size[1], -floor_z*2]),
+		   togmod1_make_cuboid([pincav_size[0], pincav_size[1], -eff_floor_z*2]),
 			
 			togmod1_linear_extrude_x([-100, 100], ["translate", [0,deck_z - grating_thickness - clip_height], togmod1_make_rounded_rect([4*u, (clip_height-clip_thickness)*2], r=u*1.5)]),
 		],
