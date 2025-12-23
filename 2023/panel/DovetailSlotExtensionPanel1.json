@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2290": {
+                	"description": "7+1/2\" x 3\" dovetail slot extension panel",
+			"panel_length": "7.5inch",
+			"panel_thickness": "3/4inch",
+			"panel_width": "3inch",
+			"render_fn": "72"
+		}
+	},
+	"fileFormatVersion": "1"
+}

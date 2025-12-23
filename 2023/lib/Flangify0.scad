@@ -1,4 +1,4 @@
-// Flangify0
+// Flangify0.2
 // 
 // Attempt at more convenient
 // representation of holes
@@ -8,6 +8,12 @@
 // 
 // pointdat = ["zdopses", ["zdops", [z, d], op, ...], ...], similar to a rath
 // op = ["round", radius], same as togpath1-rathnode's
+// 
+// v0.2:
+// - flangify0_extrude_z:
+//   - Add support for `togpath1-polyline` shapes
+//   - Allow 'zds' as an alternative to 'zrs'
+// - Some comments
 
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
@@ -15,16 +21,32 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGVecLib0.scad>
 
+// r0 = the reference radius (zrs[*][1]) at which no offset should happen
 function flangify0_extrude_rath(zrs, rath, r0=0) =
-	tphl1_make_polyhedron_from_layer_function(zrs, function(zr)
-		let( offset_rath = togpath1_offset_rath(rath, zr[1]-r0) )
-		togvec0_offset_points(togpath1_rath_to_polypoints(offset_rath), zr[0])
+	tphl1_make_polyhedron_from_layer_function(zrs,
+		function(zr)
+			let( offset_rath = togpath1_offset_rath(rath, zr[1]-r0) )
+			togpath1_rath_to_polypoints(offset_rath),
+		layer_points_transform = "key0-to-z"
 	);
 
-function flangify0_extrude_z(zrs, shape="point", r0=0) =
-	shape == "point" ? flangify0_extrude_rath(zrs, togpath1_make_circle_rath(1), r0+1) :
-	is_list(shape) && shape[0] == "togpath1-rath" ? flangify0_extrude_rath(zrs, shape, r0) :
-	// TODO: Support polylines?
+/**
+ * Extrude the given shape along zrs.
+ * You might want to use flangify0_spec_to_zrs to generate the zrs,
+ * since that's what adds the flanges.
+ *
+ * r0 = the reference zr[1] that should not be offset.
+ */
+function flangify0_extrude_z(zrs, shape="point", r0=0, zds=undef) =
+	assert( is_undef(zrs) ||  is_undef(zds), "Exactly one of zrs or zds should be specified")
+	let( _zrs =
+		!is_undef(zrs) ? zrs :
+		!is_undef(zds) ? [for(zd=zds) [zd[0],zd[1]/2]] :
+		assert(false, "Either zrs or zds must be specified")
+	)
+	shape == "point" ? flangify0_extrude_rath(_zrs, togpath1_make_circle_rath(1), r0+1) :
+	is_list(shape) && shape[0] == "togpath1-rath" ? flangify0_extrude_rath(_zrs, shape, r0) :
+	is_list(shape) && shape[0] == "togpath1-polyline" ? flangify0_extrude_rath(_zrs, togpath1_polyline_to_rath(shape, r=1, end_shape="round"), r0+1) :
 	assert(false, str("Unsupported shape: ", shape));
 
 function flangify0__spec_to_zrs1(zropses, idx=1, rfac=1) =
@@ -36,6 +58,14 @@ function flangify0__spec_to_zrs1(zropses, idx=1, rfac=1) =
 	])
 	togpath1_rath_to_polypoints(rath);
 
+/**
+ * Extend a zdopses or zdrses down by extra_depth and up by extra_height
+ * 
+ * flangify0_extend(ED, EH, [["zdops", [A,B]], ["zdops", [C,D]]])
+ * -> ["zdopses", ["zdops", [A-ED,B]], ["zdops", [A,B]], ["zdops", [C,D]], ["zdops", [C+EH,D]]]
+ * 
+ * Uh, does this work with zropses???
+ */
 function flangify0_extend(extra_depth, extra_height, spec) =
 let(last = len(spec)-1)
 let(rfac = spec[0] == "zdopses" ? 0.5 : 1)

@@ -1,4 +1,4 @@
-// TOGPath1.105
+// TOGPath1.106
 //
 // Functions for transforming 2D paths
 // 
@@ -25,6 +25,9 @@
 //   - togpath1_make_rounded_beveled_rect
 // v1.105:
 // - Don't 'fix leading offsets' when offset is the last op of a rathnode.
+// v1.106:
+// - Allow polylines to come in the form of ["togpath1-polyline", ...points]
+//   as an alternative to bare point list.
 
 use <./TOGComplexLib1.scad>
 
@@ -573,6 +576,17 @@ let( sqrt2 = sqrt(2) )
 	]
 ];
 
+/**
+ * Polylines can be like ["togpath1-polyline", p0, p1, p2, ...]
+ * or sometimes just [p0, p1, p2, ...].
+ *
+ * This takes either and just returns the points.
+ */
+function togpath1__polyline_to_points(polyline) =
+len(polyline) >= 1 && polyline[0] == "togpath1-polyline" ? [for(i=[1:1:len(polyline)-1]) polyline[i]] :
+assert(len(polyline) == 0 || is_list(polyline[0]) && is_num(polyline[0][0]), str("Hmm, this doesn't look like a polyline: ", polyline))
+polyline;
+
 // Make a rath by offsetting the given polyline to the right and left by r.
 // Optionally rounds ends.
 // 
@@ -585,15 +599,17 @@ let( sqrt2 = sqrt(2) )
 function togpath1_polyline_to_rath(polyline, r, end_shape="round") =
 assert( end_shape == "square" || end_shape == "round" )
 assert( r > 0, "Polyline cannot make zero-width things; try passing a small value for r, instead of zero" )
-len(polyline) == 1 ? (
-	end_shape == "round" ? togpath1_make_circle_rath(r=r, position=polyline[0]) :
-	end_shape == "square" ? togpath1_make_rectangle_rath([r*2,r*2], position=polyline[0]) :
+let( points = togpath1__polyline_to_points(polyline) )
+assert(len(points) > 0, "Polyline must have at least one point")
+len(points) == 1 ? (
+	end_shape == "round" ? togpath1_make_circle_rath(r=r, position=points[0]) :
+	end_shape == "square" ? togpath1_make_rectangle_rath([r*2,r*2], position=points[0]) :
 	assert(false, str("Unsupported end_shape for single-point polyline: '", end_shape, "'"))
 ) :
-assert( len(polyline) >= 2 )
+assert( len(points) >= 2 )
 let( end_ops = end_shape == "round" ? [["round", r*0.99, round($fn/4)]] : [] )
-let( polylen = len(polyline) )
-let( zath = togpath1_polyline_to_zath(polyline, end_shape="square") )
+let( polylen = len(points) )
+let( zath = togpath1_polyline_to_zath(points, end_shape="square") )
 ["togpath1-rath",
 	for( i=[1:1:len(zath)-1] ) let( p = zath[i] )
 		let( is_end_node = i == 1 || i == 1 + polylen-1 || i == 1 + polylen || i == len(zath)-1 )
