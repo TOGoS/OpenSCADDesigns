@@ -62,6 +62,22 @@ This has the disadvantage of being annoying to type and that
 OpenSCAD 2024 won't let you indicate those as design parameters,
 so has been replaced by the single-string format.
 
+** Standards
+
+I try to settle on a few core shapes that fit together with each other
+in order to maximize the chance that any given part will integrate
+nicely with another without them having to be specifically designed for each other.
+
+Some standards I try to follow are:
+- Sizes that are multiples of 1+1/2" 'chunks', or at least 1/2" 'atoms'
+  - 3/4", 1/4", and 1/8" being common thicknesses for panels
+- Gridbeam holes for bolting things together
+- TOGridPile (stacking cups based around a 1+1/2" or 1/2" grid)
+- French cleats
+- MiniRail (serves similar role to DIN rail)
+- Clarp2505 (a shape for snap-together conduit or other things)
+- UNC threads, esp. 1+1/4"-7 (see [[./2023/experimental/Threads2.scad][Threads2]])
+
 ** TOGridPile
 
 If you like Gridfinity but want something that fits on an inch-based grid
@@ -90,6 +106,17 @@ The 3D-prunt ones seem sturdy enough for most purposes.
 [[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:RXTRUOJCUNCNAZCNGALTNAKBF654LZPL.KDJVFNAWTL7T35WLDSHOCVMAGY2DORP2NNJTHVQ/p1715.png]]
 
 See [[./2023/french-cleat/FrenchCleat.scad][FrenchCleat]] (note that OpenSCAD 2021 doesn't like the mixed array parameters, so this only works in OpenSCAD 2021).
+
+** Clarp[2505]
+
+1+1/2-inch-wide snap-together conduit.
+
+[[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:3EPU42DRH5VG5S76TBKZ4WGKK4FZX546.ZOEUXGDJEMMUH4UN2INLIKBMN6RRPG6NBCRM2LI/p2048.png]]
+
+[[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:TLVMBCEKRYNMNUO4TVXFF5YEATO5KYX2.EL7YCLSM4HJYKASSPLJ6QKUC2HGLHCEMOH3536Q/p2028.png]]
+
+TOGridPile cups created with TGx11.1 and ~cavity_type = "clarp2505-square"~
+act as female clarps, in case you want to make a snap-in lid or something.
 
 ** Other stuff
 
