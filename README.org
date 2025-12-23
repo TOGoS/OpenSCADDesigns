@@ -77,6 +77,7 @@ Some standards I try to follow are:
 - MiniRail (serves similar role to DIN rail)
 - Clarp2505 (a shape for snap-together conduit or other things)
 - UNC threads, esp. 1+1/4"-7 (see [[./2023/experimental/Threads2.scad][Threads2]])
+- 1/2" 14-degree dovetail slots (i.e. [[https://www.microjig.com/collections/matchfit][MicroJig's Matchfit system]])
 
 ** TOGridPile
 
@@ -92,6 +93,8 @@ make your own cut-outs).
 ** MiniRail
 
 Kind of like DIN rail, but more trapezoidal.
+
+Invented [[https://www.nuke24.net/plog/46.html][for cable-management purposes]], but useful for other things, too.
 
 #+CAPTION: 12-inch Minirail with built-in chunk-backed panel
 [[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:P4MEHMJICT7VTYO7W2HHAKX5MVAVLFCS.YJLVUBAGWII3GRASKHYPDRU4X7Z2QSYJVQBQQZQ/p2243.png]]
