@@ -77,11 +77,17 @@ make your own cut-outs.
 
 Kind of like DIN rail, but more trapezoidal.
 
+#+CAPTION: 12-inch Minirail with built-in chunk-backed panel
+[[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:P4MEHMJICT7VTYO7W2HHAKX5MVAVLFCS.YJLVUBAGWII3GRASKHYPDRU4X7Z2QSYJVQBQQZQ/p2243.png]]
+
 See [[./2023/track/MiniRail0.scad][MiniRail0]] or [[./2023/track/MiniRail2.scad][MiniRail2]].
 
 ** French cleats
 
 The 3D-prunt ones seem sturdy enough for most purposes.
+
+#+CAPTION: 7+1/2-inch WSTYPE-4114-H1.5FFS French cleat with extended holes for furniture bolts
+[[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:RXTRUOJCUNCNAZCNGALTNAKBF654LZPL.KDJVFNAWTL7T35WLDSHOCVMAGY2DORP2NNJTHVQ/p1715.png]]
 
 See [[./2023/french-cleat/FrenchCleat.scad][FrenchCleat]] (note that OpenSCAD 2021 doesn't like the mixed array parameters, so this only works in OpenSCAD 2021).
 
