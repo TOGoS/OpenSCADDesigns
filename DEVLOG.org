@@ -1,5 +1,42 @@
 #+TITLE: OpenSCADDesigns Devlog
 
+** Testing / Automation
+
+As of [2023-07-09], ~test.bat~ will use ~find~ (location specified by ~%UNIX_FIND_EXE%~)
+to find all ~.scad~ files and attempt to evaluate them.
+
+A nicer system would cache results and pass in every defined preset for each OpenSCAD design.
+
+** Automated rendering
+
+A reminder to myself about OpenSCAD.com command-line arguments.
+
+STLs and renders can be generated from the command-line, like
+
+#+begin_src bat
+"C:\Program Files\OpenSCAD\openscad.com" -p 2023\togridpile\TGx9.4.json -P p1706 ^
+	--render 2023\togridpile\TGx9.4.scad ^
+	-o output/p1706.1536x1536.png ^
+	-o output/p1706.stl ^
+	--colorscheme "Tomorrow Night" ^
+	--imgsize 1536,1536
+#+end_src
+
+** [2023-07-09] Thoughts on improved testing system
+
+Idea would be to uniquely identify a ~.scad~ design based
+on the hash of the file and of all its dependencies,
+and results cached based on that hash.
+
+For a given version of the repository,
+generation of those hashes could be done
+in a pipeliney way:
+
+- List files (basically 'find')
+- Hash files, list out filename + hash ('ccouch3 id -show-inputs' may already do this!)
+- Parse files, list dependencies
+- Recursively generate hashes for each file based on hash + hash of dependencies
+
 ** [2025-01-15] - Pegboard Hooks Got Broken
 :PROPERTIES:
 :CUSTOM_ID: 2025-01-15-rath-debug

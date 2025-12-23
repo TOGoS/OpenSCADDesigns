@@ -6,6 +6,64 @@ Re-useable libraries are in [[./2023/lib/]].
 
 Everything else is shapes.
 
+** Build system
+
+There is a ~make.bat~ and ~make.ts~ in this repo
+that can build STLs from their 'part ID'
+(usually "p" + four digits).  This requires Deno 2.something.
+
+This exists mostly so that I can more easily reproduce
+renderings from specific viewing angles.
+
+You can use the OpenSCAD libraries within
+without having to know or care about ~make.ts~.
+
+** TOGMod1
+
+At some point I grew weary of the limitations of OpenSCAD's 'modules'
+and started writing everything in a functional style where the
+shape to be rendered is represented using lists (similar to S-expressions)
+which can then be interpreted to actually generate the shape in OpenSCAD.
+
+[[./2023/lib/TOGMod1.scad][TOGMod1]] provides an interpreter for these shape definitions,
+but of course the beautiful thing about this technique is that
+you can write alternative interpreters, or higher-level languages,
+that all operate on the same data structures.
+
+- [[https://www.reddit.com/r/openscad/comments/186b54r/interpreter_pattern_to_work_around_lack_of/][A reddit post about the technique]]
+
+** Units
+
+Newer designs allow dimensions to be specified in terms of whatever units
+you like, so long as there is a definition in the default unit table,
+as a string of the form number + unit name.
+The number can be a sum of rational numbers, where each component is a decimal number.
+
+e.g.
+
+#+begin_src scad
+// Customizable parameters
+
+box_width = "7+1/2inch";
+
+// ...
+
+// box width in millimeters:
+box_width_mm = togunits1_to_mm(box_width);
+
+// width in inches, rounded to the nearest inch:
+box_width_inches = togunits1_to_mm(box_width, unit="inch", xf="round");
+#+end_src
+
+See [[./2023/lib/TOGUnits1.scad][TOGUnits1]] for parsing functions.
+
+Somewhat older designs use 'complex amounts', which are an array of ~[number, unit name]~.
+This has the disadvantage of being annoying to type and that
+OpenSCAD 2024 won't let you indicate those as design parameters,
+so has been replaced by the single-string format.
+
+** TOGridPile
+
 If you like Gridfinity but want something that fits on an inch-based grid
 and is more rotationally symmetric, check out [[./2023/togridpile/TGx9.4.scad]]
 (for a Swiss Army Chainsaw type thing) or [[./2023/togridpile/TGx11.1.scad]]
@@ -15,39 +73,20 @@ make your own cut-outs.
 #+CAPTION: A TOGridPile cup
 [[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:G433XIL5VD42Y3JACRBLNYLAV6Z4EFNZ.6UIXGXTO5YFGMLKAY7QNU3BYUIR7YXPXLKU4QAA/p1515.png]]
 
-** Testing / Automation
+** MiniRail
 
-As of [2023-07-09], ~test.bat~ will use ~find~ (location specified by ~%UNIX_FIND_EXE%~)
-to find all ~.scad~ files and attempt to evaluate them.
+Kind of like DIN rail, but more trapezoidal.
 
-A nicer system would cache results and pass in every defined preset for each OpenSCAD design.
+See [[./2023/track/MiniRail0.scad][MiniRail0]] or [[./2023/track/MiniRail2.scad][MiniRail2]].
 
-** Automated rendering
+** French cleats
 
-A reminder to myself about OpenSCAD.com command-line arguments.
+The 3D-prunt ones seem sturdy enough for most purposes.
 
-STLs and renders can be generated from the command-line, like
+See [[./2023/french-cleat/FrenchCleat.scad][FrenchCleat]] (note that OpenSCAD 2021 doesn't like the mixed array parameters, so this only works in OpenSCAD 2021).
 
-#+begin_src bat
-"C:\Program Files\OpenSCAD\openscad.com" -p 2023\togridpile\TGx9.4.json -P p1706 ^
-	--render 2023\togridpile\TGx9.4.scad ^
-	-o output/p1706.1536x1536.png ^
-	-o output/p1706.stl ^
-	--colorscheme "Tomorrow Night" ^
-	--imgsize 1536,1536
-#+end_src
+** Other stuff
 
-** [2023-07-09] Thoughts on improved testing system
+Almost everything I print starts as a ~.scad~ in this repo.
 
-Idea would be to uniquely identify a ~.scad~ design based
-on the hash of the file and of all its dependencies,
-and results cached based on that hash.
-
-For a given version of the repository,
-generation of those hashes could be done
-in a pipeliney way:
-
-- List files (basically 'find')
-- Hash files, list out filename + hash ('ccouch3 id -show-inputs' may already do this!)
-- Parse files, list dependencies
-- Recursively generate hashes for each file based on hash + hash of dependencies
+Poke around in e.g. [[./2023/experimental/][experimental]] to get a feel for what else is in here.
