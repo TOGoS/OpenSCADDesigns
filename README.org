@@ -84,7 +84,7 @@ If you like Gridfinity but want something that fits on an inch-based grid
 and is more rotationally symmetric, check out [[./2023/togridpile/TGx9.4.scad]]
 (for a Swiss Army Chainsaw type thing) or [[./2023/togridpile/TGx11.1.scad]]
 (for a cleaner generation of the basic shape, from which you can
-make your own cut-outs.
+make your own cut-outs).
 
 #+CAPTION: A TOGridPile cup
 [[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:G433XIL5VD42Y3JACRBLNYLAV6Z4EFNZ.6UIXGXTO5YFGMLKAY7QNU3BYUIR7YXPXLKU4QAA/p1515.png]]
