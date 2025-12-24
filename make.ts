@@ -1177,6 +1177,12 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/misc/BroomHandleMender1.scad", ["p2293"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-120,-120, 220],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 	},
 });
 

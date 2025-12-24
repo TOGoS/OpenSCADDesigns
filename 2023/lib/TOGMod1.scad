@@ -1,12 +1,14 @@
-// TOGMod1.9
+// TOGMod1.10
 // OpenSCAD library for representing shapes
 // 
 // See also: Functional OpenSCAD (https://github.com/thehans/FunctionalOpenSCAD)
 // 
 // v1.8:
 // - Add `text-tsfhvsdls`
-// v1.9
+// v1.9:
 // - Add `offset-ds` (offset with _d_elta a _s_hape)
+// v1.10:
+// - ["intersection"] treated as infinity when child of intersection
 
 module togmod1_domodule(mod) {
 	assert(is_list(mod));
@@ -30,7 +32,14 @@ module togmod1_domodule(mod) {
 		assert(len(mod) == 3);
 		rotate(mod[1]) togmod1_domodule(mod[2]);
 	} else if( mod[0] == "intersection" ) {
-		intersection_for( i=[1:1:len(mod)-1] ) togmod1_domodule(mod[i]);
+		// Could do further simplification here,
+		// and similar things for union/difference.
+		// Might should be a separate simplification pass at the beginning.
+		non_infinite_children = [
+			for( i=[1:1:len(mod)-1] )
+			if( mod[i] != ["intersection"] ) mod[i]
+		];
+		intersection_for( c=non_infinite_children ) togmod1_domodule(c);
 	} else if( mod[0] == "difference" ) {
 		difference() {
 			togmod1_domodule(mod[1]);

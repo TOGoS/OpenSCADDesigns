@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2293": {
+			"$fn": "64",
+			"diameter": "20.5mm",
+			"hole_diameter": "4.5mm",
+			"inf": "65536",
+			"length": "6inch",
+			"slicey_mcthickness": "17mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
