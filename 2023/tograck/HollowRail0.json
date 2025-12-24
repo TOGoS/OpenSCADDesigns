@@ -1,15 +1,18 @@
 {
 	"fileFormatVersion": "1",
 	"parameterSets": {
-		"p2175": {
-			"$fn": "24",
-			"$tgx11_offset": "-0.1",
+		"p2294": {
+			"description": "9-inch x 3-inch x 7/16-inch mostly-hollow TOGRack rail with 4mm diamond holes",
 			"back_thickness": "3/32inch",
+			"back_y": "-1/4inch",
 			"bottom_thickness": "1/2inch",
 			"end_thickness": "1u",
+			"front_y": "3/16inch",
 			"height": "3inch",
 			"length": "18atom",
-			"top_thickness": "1/2inch"
+			"top_thickness": "1/2inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "24"
 		}
 	}
 }

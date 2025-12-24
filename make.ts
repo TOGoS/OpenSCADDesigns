@@ -1183,6 +1183,12 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/tograck/HollowRail0.scad", ["p2294"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-100, 100, 80],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 	},
 });
 
