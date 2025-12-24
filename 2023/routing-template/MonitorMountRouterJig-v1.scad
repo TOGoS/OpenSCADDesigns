@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.10
+// MonitorMountRouterJig-v1.11
 // 
 // Versions:
 // v1.0:
@@ -43,6 +43,8 @@
 // - Add alignment_hole_style
 // v1.10:
 // - GF-2582 = an 8x2-chunk 'fence'
+// v1.11:
+// - MMP-2317, just a shorter take on MMP-2312/2313
 // 
 // TODO: Option for pockets around rows of alignment holes in templates
 // TODO: Option for less rounded corners and bowtie connections in template edges
@@ -50,7 +52,7 @@
 //   not sure if that should be associated with the part or not
 
 // MMP-2310: original; MMP-2311: more alignment holes
-style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316","GF-2582"]
+style = "MMP-2310"; // ["MMP-2310", "MMP-2311","MMP-2312","MMP-2313","MMP-2314","MMP-2315","MMP-2316","MMP-2317","GF-2582"]
 mode = "front-template"; // ["front-template", "back-template", "panel", "panel-printable", "panel-front", "panel-back", "panel-cuts", "thl-1001"]
 
 /* [Panel] */
@@ -177,11 +179,12 @@ function get_panel_info(style) =
 		for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
 		//for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
 	]] :
-	style == "MMP-2312" ? make_2312ish([4.5*inch, 18*inch]) :
-	style == "MMP-2313" ? make_2312ish([4.5*inch, 12*inch]) :
-	style == "MMP-2314" ? make_2312ish([6.0*inch, 12*inch]) :
-	style == "MMP-2315" ? make_2315ish([6.0*inch,  6*inch], [1*inch,3*inch]) :
-	style == "MMP-2316" ? make_2312ish([7.5*inch, 7.5*inch]) :
+	style == "MMP-2312" ? make_2312ish([4.5*inch, 18  *inch]) :
+	style == "MMP-2313" ? make_2312ish([4.5*inch, 12  *inch]) :
+	style == "MMP-2314" ? make_2312ish([6.0*inch, 12  *inch]) :
+	style == "MMP-2315" ? make_2315ish([6.0*inch,  6  *inch], [1*inch,3*inch]) :
+	style == "MMP-2316" ? make_2312ish([7.5*inch,  7.5*inch]) :
+	style == "MMP-2317" ? make_2312ish([4.5*inch,  9  *inch]) :
 	style == "GF-2582" ? make_gf25xx([8,2]) :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
