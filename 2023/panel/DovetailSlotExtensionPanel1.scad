@@ -1,9 +1,16 @@
-// DovetailSlotExtensionPanel1.0
+// DovetailSlotExtensionPanel1.2
 // 
 // Do your dovetail slot nuts stick
 // out the top of the slots?
 // Need to add some extra depth?
 // This type of panel is for you.
+// 
+// v1.1:
+// - Fix that radius was being interpreted as diameter,
+//   making all the holes half the size they should be.
+// v1.2:
+// - Fix that radius was being interpreted as diameter,
+//   making the central slots half the size they should be.
 
 panel_width = "3inch";
 panel_length = "9inch";
@@ -42,20 +49,27 @@ togmod1_domodule(
 	let( panel_hull = tphl1_make_rounded_cuboid([panel_length_mm, panel_width_mm, panel_thickness_mm], r=[19.05, 19.05, 2], corner_shape="ovoid2") )
 	let( slot_width = 25.4*3/8 + 1 )
 	let( cb_width = 25.4*7/8 )
-
+	let( e = 1/256 ) // A small number
+	let( straight_hole_zdopses = ["zdopses",
+		["zdops", [-panel_thickness_mm/2-e, slot_width + 10]],
+		["zdops", [-panel_thickness_mm/2-e, slot_width     ], ["round", 2]],
+		["zdops", [ panel_thickness_mm/2+e, slot_width     ], ["round", 2]],
+		["zdops", [ panel_thickness_mm/2+e, slot_width + 10]],
+	])
+	let( cb_hole_zdopses = ["zdopses",
+		["zdops", [-panel_thickness_mm/2-e, slot_width + 10]],
+		["zdops", [-panel_thickness_mm/2-e, slot_width     ], ["round", 2  ]],
+		["zdops", [                  0    , slot_width     ], ["round", 2  ]],
+		["zdops", [                  0    ,   cb_width     ], ["round", 0.5]],
+		["zdops", [ panel_thickness_mm/2+e,   cb_width     ], ["round", 2  ]],
+		["zdops", [ panel_thickness_mm/2+e,   cb_width + 10]],
+	])
 	let( phole = 
 		let( slot_points = fix_slot_points([[-chunk/2 + slot_x0, 0], [chunk/2 - slot_x0, 0]]) )
 		let( e = 1/256 )
 		flangify0_extrude_z(
 			shape = ["togpath1-polyline", each slot_points],
-			zds = flangify0_spec_to_zrs(flangify0_extend(10, 10, ["zdopses",
-				["zdops", [-panel_thickness_mm/2-e, slot_width + 10]],
-				["zdops", [-panel_thickness_mm/2-e, slot_width     ], ["round", 2  ]],
-				["zdops", [                  0    , slot_width     ], ["round", 2  ]],
-				["zdops", [                  0    ,   cb_width     ], ["round", 0.5]],
-				["zdops", [ panel_thickness_mm/2+e,   cb_width     ], ["round", 2  ]],
-				["zdops", [ panel_thickness_mm/2+e,   cb_width + 10]],
-			]))
+			zrs = flangify0_spec_to_zrs(flangify0_extend(10, 10, straight_hole_zdopses))
 		)
 	)
 	
@@ -69,15 +83,9 @@ togmod1_domodule(
 		// let( xm1 = to_end == 2 ? xm0+2 : min(panel_length_chunks/2-0.5, xm0+1) ) // Make the last slot longer
 		let( xm1 = min(panel_length_chunks/2, xm0+slot_pitch) )
 		let( slot_points = fix_slot_points([[xm0*chunk + slot_x0, 0], [xm1*chunk - slot_x0, 0]]) )
-		let( e = 1/256 )
 		flangify0_extrude_z(
 			shape = ["togpath1-polyline", each slot_points],
-			zds = flangify0_spec_to_zrs(flangify0_extend(10, 10, ["zdopses",
-				["zdops", [-panel_thickness_mm/2-e, slot_width + 10]],
-				["zdops", [-panel_thickness_mm/2-e, slot_width     ], ["round", 2]],
-				["zdops", [ panel_thickness_mm/2+e, slot_width     ], ["round", 2]],
-				["zdops", [ panel_thickness_mm/2+e, slot_width + 10]],
-			]))
+			zrs = flangify0_spec_to_zrs(flangify0_extend(10, 10, straight_hole_zdopses))
 		),
 		
 		// Pooping butts
