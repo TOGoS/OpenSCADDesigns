@@ -1,4 +1,4 @@
-// MonitorMountRouterJig-v1.11
+// MonitorMountRouterJig-v1.12
 // 
 // Versions:
 // v1.0:
@@ -45,6 +45,9 @@
 // - GF-2582 = an 8x2-chunk 'fence'
 // v1.11:
 // - MMP-2317, just a shorter take on MMP-2312/2313
+// v1.12:
+// - s/1\.5\*inch/chunk/, as per a 'TODO' comment
+// - Localize some formerly unecessarily global definitions ('height', etc)
 // 
 // TODO: Option for pockets around rows of alignment holes in templates
 // TODO: Option for less rounded corners and bowtie connections in template edges
@@ -90,14 +93,10 @@ render_fn = 72;
 
 module __end_params() { }
 
-inch  = 25.4;
-chunk = 38.1;
+use <../lib/TOGUnits1.scad>
 
-height = 9*inch;
-
-top_y = height/2;
-top_gb_hole_y = top_y - 3/4*inch;
-top_monmount_hole_y = top_y - 9/4*inch;
+inch  = togunits1_to_mm("inch");
+chunk = togunits1_to_mm("chunk");
 
 // Difference in radius between actual and template counterbores due to bushing
 template_counterbore_r_offset = (template_counterbore_bushing_diameter - template_counterbore_bit_diameter) / 2;
@@ -108,8 +107,8 @@ template_counterbore_radius = counterbore_diameter/2 + template_counterbore_r_of
 template_slot_radius        = slot_diameter/2 + template_slot_r_offset;
 
 function get_alignment_hole_positions(style) =
-	style == "MMP-2310" ? [ for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) [xm*1.5*inch, ym*1.5*inch] ] :
-	style == "MMP-2311" ? [ for( xm=[-1 : 1 : 1] ) for( ym=[-2 : 1 : 2] ) [xm*1.5*inch, ym*1.5*inch] ] :
+	style == "MMP-2310" ? [ for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) [xm*chunk, ym*chunk] ] :
+	style == "MMP-2311" ? [ for( xm=[-1 : 1 : 1] ) for( ym=[-2 : 1 : 2] ) [xm*chunk, ym*chunk] ] :
 	assert(false, str("Unrecognized style: '", style, "'"));
 
 function make_2312ish(size) =
@@ -118,23 +117,22 @@ let(size_chunks = [round(size[0]/chunk), round(size[1]/chunk)])
 	// Slots
 	// Special case.
 	// TODO: No special case.  :/
-	// TODO: Avoid hardcoding chunk = 1.5*inch?
 	// TODO: Abstract this to a function, get_2312ish_for_hole_pattern(size_chunks[1])
 	if( size_chunks[1] == 5 )
 	for( ym=[-size_chunks[1]/2+1.33, size_chunks[1]/2-1.33] )
-		["back-counterbored-slot", [[0, (ym-0.67)*1.5*inch], [0, (ym+0.67)*1.5*inch]]],
+		["back-counterbored-slot", [[0, (ym-0.67)*chunk], [0, (ym+0.67)*chunk]]],
 	// Ye olde fashioned multiples of 2 chunks
 	if( size_chunks[1] != 5 )
 	for( ym=[-size_chunks[1]/2+2 : 2 : size_chunks[1]/2-2] )
-		["back-counterbored-slot", [[0, (ym-0.5)*1.5*inch], [0, (ym+0.5)*1.5*inch]]],
+		["back-counterbored-slot", [[0, (ym-0.5)*chunk], [0, (ym+0.5)*chunk]]],
 	
 	for( ym=[-size_chunks[1]/2+0.5 : 1 : size_chunks[1]/2] ) for( xm=[-size_chunks[0]/2+0.5, size_chunks[0]/2-0.5] )
-		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
+		["front-counterbored-slot", [[xm*chunk, ym*chunk]]],
 	for( ym=[-size_chunks[1]/2+0.5, size_chunks[1]/2-0.5] ) for( xm=[-size_chunks[0]/2+1.5, size_chunks[0]/2-1.5] )
-		["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
+		["front-counterbored-slot", [[xm*chunk, ym*chunk]]],
 	
 	for( xm=[-size_chunks[0]/2+1 : 0.5 : size_chunks[0]/2-1] ) for( ym=[-size_chunks[1]/2+1 : 1 : size_chunks[1]/2-1] )
-		if( xm != 0 ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
+		if( xm != 0 ) ["alignment-hole", [xm*chunk, ym*chunk]],
 ]];
 
 function make_gf25xx(size_chunks) =
@@ -171,14 +169,21 @@ function make_2315ish(size, pocket_size) = [size, [
 
 // style name -> [size, cuts]
 function get_panel_info(style) =
-	(style == "MMP-2310" || style == "MMP-2311") ? [[6*inch,9*inch], [
-		for( xm=[-1.5 : 1 : 1.5] ) for( ym=[2.5, -2.5] ) ["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
-		for( xm=[-1.5, 1.5] ) for( ym=[-1.5, 1.5] ) ["front-counterbored-slot", [[xm*1.5*inch, ym*1.5*inch]]],
-		["back-counterbored-slot", [[0, top_monmount_hole_y], [0, top_monmount_hole_y-1.5*inch]]],
-		["back-counterbored-slot", [[0, top_monmount_hole_y-3*inch], [0, top_monmount_hole_y-4.5*inch]]],
-		for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
-		//for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) ["alignment-hole", [xm*1.5*inch, ym*1.5*inch]],
-	]] :
+	(style == "MMP-2310" || style == "MMP-2311") ?
+		let( height = 9*inch )
+		let( top_y = height/2 )
+		let( top_gb_hole_y = top_y - 3/4*inch )
+		let( top_monmount_hole_y = top_y - 9/4*inch ) [
+			[6*inch, height],
+			[
+				for( xm=[-1.5 : 1 : 1.5] ) for( ym=[2.5, -2.5] ) ["front-counterbored-slot", [[xm*chunk, ym*chunk]]],
+				for( xm=[-1.5, 1.5] ) for( ym=[-1.5, 1.5] ) ["front-counterbored-slot", [[xm*chunk, ym*chunk]]],
+				["back-counterbored-slot", [[0, top_monmount_hole_y], [0, top_monmount_hole_y-chunk]]],
+				["back-counterbored-slot", [[0, top_monmount_hole_y-3*inch], [0, top_monmount_hole_y-4.5*inch]]],
+				for(pos = get_alignment_hole_positions(style)) ["alignment-hole", pos],
+				//for( xm=[-1, 1] ) for( ym=[-2, 0, 2] ) ["alignment-hole", [xm*chunk, ym*chunk]],
+			]
+		] :
 	style == "MMP-2312" ? make_2312ish([4.5*inch, 18  *inch]) :
 	style == "MMP-2313" ? make_2312ish([4.5*inch, 12  *inch]) :
 	style == "MMP-2314" ? make_2312ish([6.0*inch, 12  *inch]) :
