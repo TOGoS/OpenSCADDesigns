@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2296": {
+			"panel_length": "7.5inch",
+			"panel_thickness": "3/4inch",
+			"panel_width": "3inch",
+			"preview_fn": "24",
+			"render_fn": "72"
+		}
+	},
+	"fileFormatVersion": "1"
+}

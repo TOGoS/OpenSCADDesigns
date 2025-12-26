@@ -1189,6 +1189,12 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/panel/DovetailSlotExtensionPanel2.scad", ["p2296"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-120,-120, 160],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 	},
 });
 
