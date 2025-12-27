@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p2297": {
+			"description": "Cigarette booster seat (for use with p2286 et al)",
+			"base_thickness": "1/8inch",
+			"$fn": "144"
+		},
+		"p2298": {
+			"description": "Twister tool for 3-holed CylHolder3s (e.g. p2286)",
+			"base_thickness": "2inch",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
