@@ -1,4 +1,4 @@
-// CylBooster3.1
+// CylBooster3.2
 // 
 // Booster seats for cigarettes.
 // i.e. the boosters match the holes in a CylHolder3.
@@ -8,8 +8,11 @@
 // 
 // v3.1:
 // - Make booster_diameter configurable
+// v3.2:
+// - Make booster_height configurable
 
 base_thickness = "1/8inch";
+booster_height = "1/2inch";
 booster_diameter = "9mm";
 
 $fn = 144;
@@ -50,5 +53,6 @@ let( booster = tphl1_make_z_cylinder(zds=[
 
 togmod1_domodule(cylspacer3_make_spacer(
 	base_thickness   = togunits1_to_mm(base_thickness),
+	booster_height   = togunits1_to_mm(booster_height),
 	booster_diameter = togunits1_to_mm(booster_diameter)
 ));

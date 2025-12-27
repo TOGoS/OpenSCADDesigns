@@ -1195,7 +1195,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/CylBooster3.scad", ["p2297","p2298","p2301","p2302"], {
+		...multiOsdBuildRules("2023/experimental/CylBooster3.scad", ["p2297","p2298","p2299","p2301","p2302"], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-30, -30, 30],
 			imageSize: [384, 384],
