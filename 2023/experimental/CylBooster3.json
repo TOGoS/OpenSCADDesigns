@@ -9,6 +9,18 @@
 			"description": "Twister tool for 3-holed CylHolder3s (e.g. p2286)",
 			"base_thickness": "2inch",
 			"$fn": "144"
+		},
+		"p2301": {
+			"description": "Cigarette booster seat (for use with p2286 et al) with 7.5mm boostes",
+			"base_thickness": "1/8inch",
+			"booster_diameter": "7.5mm",
+			"$fn": "144"
+		},
+		"p2302": {
+			"description": "Twister tool for 3-holed CylHolder3s (e.g. p2286) with 7.5mm boostes",
+			"base_thickness": "2inch",
+			"booster_diameter": "7.5mm",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
