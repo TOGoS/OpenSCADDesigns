@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2306": {
+			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing",
+			"$fn": "144",
+			"$tgx11_offset": "-0.15"
+		}
+	},
+	"fileFormatVersion": "1"
+}
