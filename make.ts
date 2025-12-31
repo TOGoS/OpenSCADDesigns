@@ -1207,6 +1207,12 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/TubePortNut3.scad", ["p2307"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-30, -23, 60],
+			imageSize: [512, 512],
+			paletteSize: 128,
+		}),
 	},
 });
 

@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2307": {
+			"description": "1-inch tall x 1+1/2-inch wide 'nut' for clamping 1/2\" (ID) tubing onto barbs, e.g. p2306",
+			"inner_thread_radius_offset": "0.2",
+			"$tgx11_offset": "-0.15",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
