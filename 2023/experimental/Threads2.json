@@ -1135,6 +1135,22 @@
 			"inner_thread_inset": "2",
 			"inner_threads": "1+1/4-7-UNC",
 			"$fn": "144"
+		},
+		"p2303": {
+			"description": "1+1/2\" bolt with 7/8\" outer threads and 5/8\" inner threads and standard hex head",
+			"handedness": "right",
+			"head_height": "14.684375",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "33.3375",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "5/8-11-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "7/8-9-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "38.1",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
