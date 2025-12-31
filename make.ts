@@ -1075,7 +1075,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			// Maybe good camera settings for hex heads
-			"p2214","p2215","p2285","p2303"
+			"p2214","p2215","p2285","p2303","p2304","p2305",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-60, -60, 140],

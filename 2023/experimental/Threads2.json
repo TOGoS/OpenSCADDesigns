@@ -1151,6 +1151,38 @@
 			"outer_thread_inset": "2",
 			"total_height": "38.1",
 			"$fn": "144"
+		},
+		"p2304": {
+			"description": "1+1/4\" bolt with NON-STANDARD 7/8\"-10 outer threads and 5/8\" inner threads and 1+1/4\"x3/8\" octagonal head",
+			"handedness": "right",
+			"head_height": "9.525",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "31.75",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "5/8-11-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.15",
+			"outer_threads": "7/8-10-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "31.75",
+			"$fn": "144"
+		},
+		"p2305": {
+			"description": "3/8\"-thick x 1+1/4\" octagonal nut with NON-STANDARD 7/8\"-10 threads",
+			"handedness": "right",
+			"head_height": "9.525",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "31.75",
+			"inner_thread_radius_offset": "0.2",
+			"inner_threads": "7/8-10-UNC",
+			"inner_thread_inset": "2",
+			"outer_thread_radius_offset": "-0.15",
+			"outer_threads": "7/8-10-UNC",
+			"outer_thread_inset": "2",
+			"total_height": "9.525",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
