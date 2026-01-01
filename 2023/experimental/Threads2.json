@@ -1223,6 +1223,8 @@
 			"total_height": "25.4",
 			"slot_width": "1/4inch",
 			"floor_thickness": "6.35",
+			"floor_threads": "3/8-16-UNC",
+			"floor_thread_radius_offset": "0.3",
 			"handedness": "right",
 			"head_height": "6.35",
 			"head_shape": "octogridpile",
