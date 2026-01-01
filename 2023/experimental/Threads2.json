@@ -1217,6 +1217,39 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "1-8-UNC",
 			"$fn": "144"
+		},
+		"p2314": {
+			"description": "1+1/4\" (outer) 3/4\" (inner) bolt with 1/4\" slot, 1\" total height, 1+1/2\" octogridpile head",
+			"total_height": "25.4",
+			"slot_width": "1/4inch",
+			"floor_thickness": "6.35",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "octogridpile",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3/4-10-UNC",
+			"outer_thread_inset": "1",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1+1/4-7-UNC",
+			"$fn": "144"
+		},
+		"p2315": {
+			"description": "3/4\" (outer) mostly-solid bolt with 1/4\" slot, 3/4\" total height, 1\" octogridpile head",
+			"total_height": "19.05",
+			"slot_width": "1/4inch",
+			"handedness": "right",
+			"head_height": "6.35",
+			"head_shape": "octogridpile",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_threads": "none",
+			"outer_thread_inset": "1",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "3/4-10-UNC",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

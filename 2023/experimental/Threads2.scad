@@ -1,4 +1,4 @@
-// Threads2.36
+// Threads2.37
 // 
 // New screw threads proto-library
 // 
@@ -124,6 +124,11 @@
 // - To match TOGThreads2.35, which fixes a bug in zparams normalization
 // v2.36:
 // - Add 'octogridpile' head shape option
+// v2.37:
+// - Add slot_width option, for making more controlled (than cross_section=true) cutouts
+// - Use a smaller (256 instead of 65536) `xy_inf` value for the outer intersector,
+//   since OpenSCAD 2024/manifold made a mess when told to intersect everything by
+//   a 65536mm square.  Really it should be whatever the max size of the bolt is, plus a bit.
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -163,31 +168,35 @@ head_surface_offset = -0.1;
 head_mhole_diameter = 0; // 0.1
 head_mhole_spacing = 32; // 0.1
 
+/* [Cutouts] */
+
 // Truncate the piece in the Y dimension to this thickness, if non-blank
 slicey_mcthickness = "";
 
-thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
+// Cut a slot to the center
+slot_width = "0";
 
+// If true, cuts one quarter out
+cross_section = false;
+
+/* [Details] */
+
+thread_polyhedron_algorithm = "v3"; // ["v2", "v3"]
 // This is here so I can see if disabling vertex deduplication speeds things up at all.
 $tphl1_vertex_deduplication_enabled = false;
+
+// Set to something high like 144 for nice bolts
 $fn = 32;
-
-/* [Debugging/Testing] */
-
-cross_section = false;
 
 module __threads2_end_params() { }
 
+$togunits1_default_unit = "mm";
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 $tgx11_offset = head_surface_offset;
 $togthreads2_polyhedron_algorithm = thread_polyhedron_algorithm;
 
 u = togunits1_to_mm("u");
-inf = 65536; // 4294967296; // Nice round 'close enough to infinity' number
-
-slicey_mcthickness_mm = is_undef(slicey_mcthickness) || slicey_mcthickness == "" ? inf : togunits1_to_mm(slicey_mcthickness);
-
-slicey_mcintersector = togmod1_make_cuboid([inf, slicey_mcthickness_mm, inf]);
+slot_width_mm = is_undef(slot_width) || slot_width == "" ? 0 : togunits1_to_mm(slot_width);
 
 the_post =
 	let( spec = togthreads2__get_thread_spec(outer_threads) )
@@ -203,6 +212,7 @@ the_post =
 	);
 
 the_hole =
+	floor_thickness >= total_height ? ["union"] :
 	let( spec = togthreads2__get_thread_spec(inner_threads) )
 	let( taper_length = inner_thread_taper_length != -1 ? inner_thread_taper_length : togthreads2__get_default_taper_length(spec) )
 	togthreads2_make_threads(
@@ -311,8 +321,19 @@ the_head_mholes =
 		 ]
 	);
 
+
+xy_intersector_2d = ["difference",
+	let( xy_inf = 256 )
+	let( slicey_mcthickness_mm = is_undef(slicey_mcthickness) || slicey_mcthickness == "" ? xy_inf : togunits1_to_mm(slicey_mcthickness) )
+	togmod1_make_rect([xy_inf, slicey_mcthickness_mm]),
+	
+	if(slot_width_mm > 0) ["translate", [0,50], togmod1_make_rounded_rect([slot_width_mm,100+slot_width_mm], r=slot_width_mm/2)],
+	if(cross_section) ["translate", [50,50], togmod1_make_rect([100,100])],
+];
+
 togmod1_domodule(["intersection",
-	if( slicey_mcthickness_mm < inf ) slicey_mcintersector,
+	togmod1_linear_extrude_z([-20,total_height+20], xy_intersector_2d),
+	
 	["difference",
 		["union",
 			the_post,
@@ -321,7 +342,6 @@ togmod1_domodule(["intersection",
 		the_hole,
 		the_floor_hole,
 		the_headside_holes,
-		if(cross_section) ["translate", [50,50], tphl1_make_rounded_cuboid([100,100,200], r=0, $fn=1)],
 		the_head_mholes,
 	]
 ]);
