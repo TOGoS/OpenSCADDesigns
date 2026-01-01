@@ -1,4 +1,4 @@
-// Threads2.35
+// Threads2.36
 // 
 // New screw threads proto-library
 // 
@@ -122,6 +122,8 @@
 // - 'circle' is now an option for head_shape
 // v2.35:
 // - To match TOGThreads2.35, which fixes a bug in zparams normalization
+// v2.36:
+// - Add 'octogridpile' head shape option
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -152,7 +154,7 @@ total_height = 19.05;
 
 head_width   = 38.1;
 head_height  =  6.35;
-head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","circle","togridpile-chunk"]
+head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","circle","togridpile-chunk","octogridpile"]
 headside_threads = "none";
 headside_thread_radius_offset =  0.3;
 head_surface_offset = -0.1;
@@ -180,6 +182,7 @@ $togridlib3_unit_table = tgx11_get_default_unit_table();
 $tgx11_offset = head_surface_offset;
 $togthreads2_polyhedron_algorithm = thread_polyhedron_algorithm;
 
+u = togunits1_to_mm("u");
 inf = 65536; // 4294967296; // Nice round 'close enough to infinity' number
 
 slicey_mcthickness_mm = is_undef(slicey_mcthickness) || slicey_mcthickness == "" ? inf : togunits1_to_mm(slicey_mcthickness);
@@ -227,24 +230,46 @@ the_headside_holes =
 use <../lib/TOGVecLib0.scad>
 use <../lib/TOGPath1.scad>
 
-function make_rath_base(rath, height, r=0.6) =
+make_togridpile_rath_base = function(zrange, rath)
+	tphl1_make_polyhedron_from_layer_function([
+		[zrange[0]+0     , -u-0.5],
+		[zrange[0]+0.5   , -u],
+		[zrange[0]+u     , -u],
+		[zrange[0]+2*u   ,  0],
+	   each (zrange[1]-zrange[0] > 4*u) ? [
+			[zrange[1]-2*u   ,  0],
+			[zrange[1]-u     , -u],
+			[zrange[1]-0.5   , -u],
+			[zrange[1]-0     , -u-0.5],
+		] : [
+			// Assuming for now that there's room for this
+			[zrange[1]-0.5   ,  0],
+			[zrange[1]-0     , -0.5],
+		]
+	], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(rath, zo[1]+$tgx11_offset)), zo[0]));
+
+make_rounded_rath_base = function(zrange, rath, r=0.6)
 	let(quarterfn=ceil($fn/4))
 	let(r3=r+$tgx11_offset)
 	tphl1_make_polyhedron_from_layer_function([
-		for( a=[0:1:quarterfn] ) [     0 + r + r3 * sin(270 + a*90/quarterfn), -r + r3 * cos(270 + a*90/quarterfn)],
-		for( a=[0:1:quarterfn] ) [height - r + r3 * sin(  0 + a*90/quarterfn), -r + r3 * cos(  0 + a*90/quarterfn)],
+		for( a=[0:1:quarterfn] ) [zrange[0] + r + r3 * sin(270 + a*90/quarterfn), -r + r3 * cos(270 + a*90/quarterfn)],
+		for( a=[0:1:quarterfn] ) [zrange[1] - r + r3 * sin(  0 + a*90/quarterfn), -r + r3 * cos(  0 + a*90/quarterfn)],
 	], function(zo) togvec0_offset_points(togpath1_rath_to_polypoints(togpath1_offset_rath(rath, zo[1])), zo[0]));
 
 // r to chord = cos(angle/2) * r to point
 // so r to point = r to chord / cos(angle/2)
 
-function make_polygon_base(sidecount, width, height) =
+function make_polygon_base(sidecount, width, height, extratholation_func=undef ) =
 	let( r1 = min(3, width/10) )
 	let( r2 = min(0.6, r1/2) )
 	let( c_to_c_r = width/2 / cos(360/sidecount/2) )
-	make_rath_base(
-		togpath1_make_polygon_rath(r=c_to_c_r, $fn=sidecount, corner_ops=[["round", r1]], rotation=90+180/sidecount),
-		height, r=r2
+	let( eff_extratholation_func =
+		!is_undef(extratholation_func) ? extratholation_func :
+		function(zrange,rath) make_rounded_rath_base(zrange, rath, r=r2)
+	)
+	eff_extratholation_func(
+		[0, height],
+		togpath1_make_polygon_rath(r=c_to_c_r, $fn=sidecount, corner_ops=[["round", r1]], rotation=90+180/sidecount)
 	);
 
 function make_togridpile_chunk_bottom(width,height) =
@@ -269,6 +294,7 @@ function make_base(shape, width, height) =
 	shape == "hexagon"  ? make_polygon_base(  6, width, height ) :
 	shape == "septagon" ? make_polygon_base(  7, width, height ) :
 	shape == "octagon"  ? make_polygon_base(  8, width, height ) :
+	shape == "octogridpile"  ? make_polygon_base(  8, width, height, make_togridpile_rath_base ) :
 	shape == "nonagon"  ? make_polygon_base(  9, width, height ) :
 	shape == "decagon"  ? make_polygon_base( 10, width, height ) :
 	shape == "circle"   ? make_polygon_base( $fn, width, height ) :
