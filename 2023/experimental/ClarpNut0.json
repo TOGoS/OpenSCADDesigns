@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2313": {
+			"description": "3/16\" thick square nut with two extra roomy internal corners",
+			"block_size_chunks": "[1, 1]",
+			"thickness_u": "3",
+			"thread_r_offset": "0.2",
+			"render_fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}

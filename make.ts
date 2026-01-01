@@ -1218,6 +1218,11 @@ const builder = new Builder({
 			imageSize: [128, 128],
 			paletteSize: 16,
 		}),
+		...multiOsdBuildRules("2023/experimental/ClarpNut0.scad", ["p2313"], {
+			cameraPosition: [60, 60, 60],
+			imageSize: [384, 384],
+			paletteSize: 128,
+		}),
 	},
 });
 
