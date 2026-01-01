@@ -1213,6 +1213,11 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/TwoPartPortLid1.scad", ["p2309"], {
+			cameraPosition: [0, 0, 60],
+			imageSize: [128, 128],
+			paletteSize: 16,
+		}),
 	},
 });
 

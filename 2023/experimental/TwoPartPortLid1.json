@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2309": {
+			"outer_diameter": "1+3/32inch",
+			"slot_distance": "1/4inch",
+			"slot_width": "1/4inch",
+			"thickness": "1/16inch",
+			"$fn": "72"
+		}
+	},
+	"fileFormatVersion": "1"
+}
