@@ -1321,6 +1321,23 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "3/4-10-UNC",
 			"$fn": "144"
+		},
+		"p2320": {
+			"description": "4+1/2\"-long 1+1/4\" hexagon with 3/8\"-16 inner threads and 1/4\" slot",
+			"total_height": "114.3",
+			"slot_width": "1/4inch",
+			"handedness": "right",
+			"head_height": "114.3",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "31.75",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3/4-10-UNC",
+			"outer_thread_inset": "1",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "straight-20mm",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"

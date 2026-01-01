@@ -1059,6 +1059,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
 			"p2212", "p2220", "p2234", "p2311", "p2312", "p2314", "p2315", "p2318","p2319",
+			"p2320",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [ 60, 120, 140],
