@@ -1233,6 +1233,11 @@ const builder = new Builder({
 			imageSize: [256,256],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/SegmentedBox0.scad", ["p2324", "p2325"], {
+			cameraPosition: [-20, -40, 60],
+			imageSize: [384,384],
+			paletteSize: 128,
+		}),
 	},
 });
 

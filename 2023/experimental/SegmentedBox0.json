@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p2324": {
+			"$fn": "128",
+			"connector_surface_offset": "-0.15mm",
+			"outer_surface_offset": "-0.1mm",
+			"part": "section",
+			"section_size_atoms": "[6, 6, 1]"
+		},
+		"p2325": {
+			"$fn": "128",
+			"connector_surface_offset": "-0.15mm",
+			"outer_surface_offset": "-0.1mm",
+			"part": "glue",
+			"section_size_atoms": "[6, 6, 1]"
+		}
+	},
+	"fileFormatVersion": "1"
+}
