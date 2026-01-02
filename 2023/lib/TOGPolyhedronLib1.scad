@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.13
+// TOGPolyhedronLib1.14
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -46,10 +46,13 @@
 // - tphl1_make_rounded_cuboid can generate cuboids with beveled,
 //   instead of rounded, top/bottom edges, either by specifying corner_shape="cone2"
 //   or by passing in 1 for z_quarter_fn.
-// 1.13:
+// v1.13:
 // - tphl1_make_polyhedron_from_layer_function takes an optional 'layer_points_transform' argument,
 //   which can simplify some common transformations, like adding the first element of the key
 //   to the points' Z offset.
+// v1.14:
+// - 'key1-to-z' layer points transform, for those cases where you're extruding shapes
+//   along other shapes, and the points come in as [x,z] instead of [z,x]
 
 // Winding order:
 // 
@@ -162,8 +165,11 @@ function tphl1_make_polyhedron_from_layers(layers, cap_bottom=true, cap_top=true
 
 tphl1__layer_points__identity_transform = function(key, points) points;
 
-tphl1__layer_points__key0_to_z_transform = function(key, points)
-   let(z_offset=key[0]) [for(p=points) [p[0], p[1], (len(p) > 2 ? p[2] : 0) + z_offset]];
+function tphl1__layer_points__make_key_element_to_z_transform(index) = function(key, points)
+	let(z_offset=key[index]) [for(p=points) [p[0], p[1], (len(p) > 2 ? p[2] : 0) + z_offset]];
+
+tphl1__layer_points__key0_to_z_transform = tphl1__layer_points__make_key_element_to_z_transform(0);
+tphl1__layer_points__key1_to_z_transform = tphl1__layer_points__make_key_element_to_z_transform(1);
 
 function tphl1__layer_points__decode_rcompose(xf_spec, index=0) =
 	index >= len(xf_spec) ? tphl1__layer_points__identity_transform :
@@ -175,6 +181,7 @@ function tphl1__layer_points__decode_rcompose(xf_spec, index=0) =
 function tphl1__layer_points__decode_transform(xf_spec) =
 	is_function(xf_spec) ? xf_spec :
    xf_spec == "key0-to-z" ? tphl1__layer_points__key0_to_z_transform :
+   xf_spec == "key1-to-z" ? tphl1__layer_points__key1_to_z_transform :
    xf_spec == "identity" ? tphl1__layer_points__identity_transform :
 	is_list(xf_spec) && len(xf_spec) > 0 && xf_spec[0] == "rcompose" ?
 		tphl1__layer_points__decode_rcompose(xf_spec, 1) :
