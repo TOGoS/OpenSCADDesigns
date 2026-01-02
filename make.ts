@@ -1225,6 +1225,19 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/P2321Like.scad", ["p2321"], {
+			cameraPosition: [-60, -40, 60],
+			imageSize: [256,256],
+			paletteSize: 128,
+		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			// Match the perspective of p2321, which p2322 'goes with'
+			"p2322",
+		], {
+			cameraPosition: [-60, -40, 60],
+			imageSize: [256,256],
+			paletteSize: 128,
+		}),
 	},
 });
 

@@ -1338,6 +1338,21 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "straight-20mm",
 			"$fn": "144"
+		},
+		"p2322": {
+			"description": "1/2\"-tall round cap for 1+1/2\"-6-UNC bolts",
+			"total_height": "12.7",
+			"floor_thickness": "2",
+			"floor_threads": "none",
+			"handedness": "right",
+			"head_height": "12.7",
+			"head_shape": "circle",
+			"head_surface_offset": "-0.1",
+			"head_width": "44.45",
+			"inner_thread_radius_offset": "0.25",
+			"inner_thread_inset": "2",
+			"inner_threads": "1+1/2-6-UNC",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
