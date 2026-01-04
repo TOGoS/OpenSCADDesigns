@@ -1353,6 +1353,23 @@
 			"inner_thread_inset": "2",
 			"inner_threads": "1+1/2-6-UNC",
 			"$fn": "144"
+		},
+		"p2326": {
+			"description": "3\"-long 1\" hexagon with 3/8\"-16 inner threads and 1/4\" slot",
+			"total_height": "76.2",
+			"slot_width": "1/4inch",
+			"handedness": "right",
+			"head_height": "76.2",
+			"head_shape": "hexagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3/4-10-UNC",
+			"outer_thread_inset": "1",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "straight-20mm",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
