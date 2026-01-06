@@ -1022,7 +1022,7 @@ const builder = new Builder({
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],
 		}),
-		...multiOsdBuildRules("2023/track/MiniRail2.scad", ["p2184","p2185","p2186","p2187","p2188","p2243"], {
+		...multiOsdBuildRules("2023/track/MiniRail2.scad", ["p2184","p2185","p2186","p2187","p2188","p2243","p2327"], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Cuz faster
 			cameraPosition: [-40,-50, 50],
 			imageSize: [384, 384],

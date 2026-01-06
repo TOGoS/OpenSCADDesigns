@@ -84,6 +84,22 @@
 			"pinhole_height": "3.6mm",
 			"$tgx11_offset": "-0.15",
 			"$fn": "32"
+		},
+		"p2327": {
+			"description": "9-inch MiniRail2 with built-in back panel, bowtie cutouts on all edges, chunk back",
+			"bottom_membrane_thickness": "0.3mm",
+			"bottom_segmentation": "chunk",
+			"bowtie_offset": "-0.03mm",
+			"bowtie_style": "round",
+			"bowtie_x_placement": "chunk",
+			"bowtie_y_placement": "center",
+			"length": "6chunk",
+			"minirail_edge_x_offset": "-0.2mm",
+			"panel_thickness": "1/4inch",
+			"panel_width": "1chunk",
+			"pinhole_height": "3.6mm",
+			"$tgx11_offset": "-0.15",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
