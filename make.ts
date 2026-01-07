@@ -305,8 +305,8 @@ async function unlink(path:FilePath) {
 
 const readTextFile = Deno.readTextFile;
 
-async function fileExists(path:FilePath) {
-	return Deno.stat(path).then( stat => true, (err:Error) => {
+function fileExists(path:FilePath) : Promise<boolean> {
+	return Deno.stat(path).then( _stat => true, (err:Error) => {
 		if( err.name == "NotFound" ) {
 			return false;
 		} else {
@@ -322,7 +322,7 @@ async function fileExists(path:FilePath) {
 async function mkRoom(path:FilePath) {
 	const lastSlashIndex = path.lastIndexOf('/');
 	if( lastSlashIndex > 0 ) {
-		await mkdir(path.substr(0,lastSlashIndex));
+		await mkdir(path.substring(0,lastSlashIndex));
 	}
 	await unlink(path);
 }
