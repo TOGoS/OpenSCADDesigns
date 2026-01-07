@@ -315,6 +315,11 @@ function fileExists(path:FilePath) : Promise<boolean> {
 	});
 }
 
+function basename(path:FilePath) {
+	const lastSlashIndex = path.lastIndexOf('/');
+	return lastSlashIndex < 0 ? path : path.substring(lastSlashIndex+1);
+}
+
 /**
  * Make sure the parent directory exists
  * and that the named file does *not* already exist.
@@ -347,6 +352,7 @@ function osdBuildRules(partId:string, opts:{
 	featuresEnabled?: OpenSCADFeatureName[],
 	inScadFile: FilePath,
 	cameraPosition?: Vec3<number>,
+	cameraPositions?: {[cameraName:string]: Vec3<number>},
 	renderSize?: Vec2<number>,
 	imageRotation?: number,
 	imageSize?: Vec2<number>,
@@ -363,7 +369,6 @@ function osdBuildRules(partId:string, opts:{
 	const tempDir = `${outDir}/.temp`;
 	
 	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
-	const cameraPos = opts.cameraPosition ?? defaultCameraPosition;
 	const paletteSize = opts.paletteSize ?? 36;
 
 	const { openScadCmd, implicitFeatures } =
@@ -390,8 +395,10 @@ function osdBuildRules(partId:string, opts:{
 	
 	const outStlPath = `${tempDir}/${partId}-${stlBuilderVersion}${scadVariantSuffix}.stl`;
 	const simplifiedStlPath = `${outDir}/${partId}.stl`;
-	const renderedPngPath = `${tempDir}/${partId}-${renderPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
-	const simplifiedPngPath = `${outDir}/${partId}.png`;
+	
+	const cameraPositions : {[cameraName:string]: Vec3<number>} = {...opts.cameraPositions ?? {}};
+	if( opts.cameraPosition ) cameraPositions['default'] = opts.cameraPosition;
+
 	const partTefPath = `${outDir}/${partId}.tef`;
 
 	let inConfigFile : FilePath | undefined;
@@ -407,27 +414,68 @@ function osdBuildRules(partId:string, opts:{
 	
 	const crushSizes = [512, 384, 256, 128];
 	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
-	for( const _size of crushSizes ) {
-		const size = [_size, _size];
-		const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${size.join('x')}.png`;
-		crushedPngBuildRules[crushedPngPath] = {
-			prereqs: [renderedPngPath],
-			invoke: async (ctx:BuildContext) => {
-				// await mkdir(tempDir);
-				await mkRoom(ctx.targetName);
-				await run(magickCommand(renderedPngPath, rotation, _size, ctx.targetName, {
-					paletteSize: paletteSize
-				}));
-				await run({argv: ["x:Readonlify", ctx.targetName]});
-			}
-		};
-	}
+	
 	const imageSize = opts.imageSize ?? [256, 256];
-	const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${imageSize.join('x')}.png`;
+	
 
 	const prereqs = [];
 	prereqs.push(opts.inScadFile);
 	if( inConfigFile != undefined ) prereqs.push(inConfigFile);
+	
+	const renderedPngRules : {[k:string]: BuildRule}= {};
+	const simplifiedPngPaths : FilePath[] = [];
+	for( const cameraName in cameraPositions ) {
+		const cameraPos = cameraPositions[cameraName];
+		const preferredPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${imageSize.join('x')}.png`;
+		const renderedPngPath = `${tempDir}/${partId}-${renderPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}.${renderSize.join('x')}.png`;
+		const simplifiedPngPath = `${outDir}/${partId}${cameraName == 'default' ? '' : `-${cameraName}`}.png`;
+		
+		simplifiedPngPaths.push(simplifiedPngPath);
+
+		for( const _size of crushSizes ) {
+			const size = [_size, _size];
+			const crushedPngPath = `${tempDir}/${partId}-${crushPngBuilderVersion}${scadVariantSuffix}-cam${cameraPos.join('x')}${rotPart}${palSizePart}.${size.join('x')}.png`;
+			crushedPngBuildRules[crushedPngPath] = {
+				prereqs: [renderedPngPath],
+				invoke: async (ctx:BuildContext) => {
+					// await mkdir(tempDir);
+					await mkRoom(ctx.targetName);
+					await run(magickCommand(renderedPngPath, rotation, _size, ctx.targetName, {
+						paletteSize: paletteSize
+					}));
+					await run({argv: ["x:Readonlify", ctx.targetName]});
+				}
+			};
+		}
+		
+		renderedPngRules[renderedPngPath] = {
+			prereqs,
+			invoke: async (ctx:BuildContext) => {
+				const exists = await fileExists(ctx.targetName);
+				if( exists && skipScadReruns ) return;
+				
+				await mkRoom(ctx.targetName);
+				await run(openscadCommand({
+					openScadCmd,
+					featuresEnabled,
+					inScadPath: opts.inScadFile,
+					inConfigPath: inConfigFile,
+					presetName: opts.presetName,
+					outPngPath: ctx.targetName,
+					cameraPosition: cameraPos,
+					renderSize: renderSize
+				}));
+			},
+		};
+		
+		renderedPngRules[simplifiedPngPath] = {
+			prereqs: [preferredPngPath, "make.ts"],
+			async invoke(ctx:BuildContext) {
+				await mkRoom(ctx.targetName);
+				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
+			}
+		};
+	}
 	
 	return {
 		[outStlPath]: {
@@ -447,25 +495,7 @@ function osdBuildRules(partId:string, opts:{
 				}));
 			},
 		},
-		[renderedPngPath]: {
-			prereqs,
-			invoke: async (ctx:BuildContext) => {
-				const exists = await fileExists(ctx.targetName);
-				if( exists && skipScadReruns ) return;
-				
-				await mkRoom(ctx.targetName);
-				await run(openscadCommand({
-					openScadCmd,
-					featuresEnabled,
-					inScadPath: opts.inScadFile,
-					inConfigPath: inConfigFile,
-					presetName: opts.presetName,
-					outPngPath: ctx.targetName,
-					cameraPosition: cameraPos,
-					renderSize: renderSize
-				}));
-			},
-		},
+		...renderedPngRules,
 		...crushedPngBuildRules,
 		[simplifiedStlPath]: {
 			prereqs: [outStlPath],
@@ -474,18 +504,12 @@ function osdBuildRules(partId:string, opts:{
 				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
 			}
 		},
-		[simplifiedPngPath]: {
-			prereqs: [preferredPngPath, "make.ts"],
-			async invoke(ctx:BuildContext) {
-				await mkRoom(ctx.targetName);
-				await run({argv:["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
-			}
-		},
 		[partTefPath]: {
 			// And inConfigFile, but I don't want it to fail if that doesn't exist. :-/
-			prereqs: [simplifiedStlPath, simplifiedPngPath, "make.ts"],
+			prereqs: [simplifiedStlPath, ...simplifiedPngPaths, "make.ts"],
 			async invoke(ctx:BuildContext) {
-				const [pngUrn, stlUrn] = await Promise.all([simplifiedPngPath, simplifiedStlPath].map(p => hashFile(p, BITPRINT_ALGORITHM)));
+				const [stlUrn, ...pngUrns] = await Promise.all([simplifiedStlPath, ...simplifiedPngPaths].map(p => hashFile(p, BITPRINT_ALGORITHM)));
+				// TODO: Fix so that the openscad-rendering-refs get askmldlaksmdklj
 				let descriptionFromConfig:string|undefined = undefined;
 				let commentsFromConfig:string[] = [];
 				if( inConfigFile != undefined ) {
@@ -510,15 +534,21 @@ function osdBuildRules(partId:string, opts:{
 				const textEncoder = new TextEncoder;
 				writeStream.write(textEncoder.encode(
 					`=part ${partId}\n`+
-					`short-description: ${description}\n`+ // Hmm: I could read the part.json and extract descriptions!
-					`stl-file: ${partId}.stl\t${stlUrn}\n`+
-					`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${partId}.png\n`+
-					"\n" +
-					bodyText
+					`short-description: ${description}\n`+
+					`stl-file: ${partId}.stl\t${stlUrn}\n`
 				));
+				for( let i=0; i<simplifiedPngPaths.length; ++i ) {
+					const pngPath = simplifiedPngPaths[i];
+					const pngBasename = basename(pngPath);
+					const pngUrn = pngUrns[i];
+					writeStream.write(textEncoder.encode(
+						`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${pngBasename}\n`
+					));
+				}
+				writeStream.write(textEncoder.encode("\n" + bodyText));
 			}
 		},
-		[partId]: brAlias([simplifiedStlPath, simplifiedPngPath, partTefPath]),
+		[partId]: brAlias([simplifiedStlPath, ...simplifiedPngPaths, partTefPath]),
 	};
 }
 
@@ -527,6 +557,7 @@ function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	openScadCmd?: OpenSCADCmd,
 	featuresEnabled?: OpenSCADFeatureName[],
 	cameraPosition?: Vec3<number>,
+	cameraPositions?: {[cameraName:string]: Vec3<number>},
 	renderSize?: Vec2<number>,
 	imageRotation?: number,
 	imageSize?: Vec2<number>,
@@ -830,7 +861,10 @@ const builder = new Builder({
 			"p2053","p2058","p2104","p2105","p2106",
 			...partIdRange("p",2252,2254)
 		], {
-			cameraPosition: [-30,-40, 30],
+			cameraPositions: {
+				top: [-30,-40, 30],
+				bottom: [-30,-40, -30],
+			},
 			imageSize: [256, 256],
 		}),
 		...multiOsdBuildRules("2023/togridpile/P2054Like.scad", [
