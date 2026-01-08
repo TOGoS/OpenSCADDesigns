@@ -859,7 +859,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/togridpile/TGx11.1.scad", [
 			"p2053","p2058","p2104","p2105","p2106",
-			...partIdRange("p",2252,2254)
+			...partIdRange("p",2252,2256)
 		], {
 			cameraPositions: {
 				top: [-30,-40, 30],
