@@ -1272,6 +1272,11 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/RectDonut0.scad", ["p2328"], {
+			cameraPosition: [-20, -40, 60],
+			imageSize: [384,384],
+			paletteSize: 128,
+		}),
 	},
 });
 

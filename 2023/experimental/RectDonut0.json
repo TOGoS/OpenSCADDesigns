@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2328": {
+			"$fn": "24",
+			"atom_hole_style": "THL-1005",
+			"size": "4+1/2inch 4+1/2inch 1+1/2inch",
+			"wall_thickness": "1/4inch"
+		}
+	},
+	"fileFormatVersion": "1"
+}
