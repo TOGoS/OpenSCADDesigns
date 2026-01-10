@@ -505,10 +505,35 @@
 			"top_cord_slot_diameter": "19.05",
 			"top_segmentation": "none"
 		},
-		"p2338": {
+		"p2331": {
 			"description": "5x2x6-inch brick holder",
 			"comments": [
 				"To hold a Sabrent Tool-Free SATA Drive Enclosure (https://www.amazon.com/dp/B08J5SLTJX)"
+			],
+			"$tgx11_offset": "-0.1",
+			"back_mounting_hole_style": "THL-1003",
+			"back_segmentation": "hatom",
+			"block_size_atoms": "[10, 4, 12]",
+			"bottom_hole_style": "standard",
+			"bottom_segmentation": "atom",
+			"can_diameter": "0",
+			"debug_front_slot_enabled": "false",
+			"debug_holes_enabled": "false",
+			"front_segmentation": "hatom",
+			"front_slot_style": "standard",
+			"inner_offset": "-0.2",
+			"preview_fn": "24",
+			"render_fn": "24",
+			"side_segmentation": "hatom",
+			"top_cord_slot_depth": "25.4",
+			"top_cord_slot_diameter": "19.05",
+			"top_segmentation": "block"
+		},
+		"p2338": {
+			"description": "5x2x6-inch brick holder with 1mm inner margin",
+			"comments": [
+				"To hold a Sabrent Tool-Free SATA Drive Enclosure (https://www.amazon.com/dp/B08J5SLTJX).",
+				"1mm extra margin, in case you need to hold slightly oversized things."
 			],
 			"$tgx11_offset": "-0.1",
 			"back_mounting_hole_style": "THL-1003",
