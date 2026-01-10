@@ -1009,7 +1009,9 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/misc/BarCap0.scad", ["p2147","p2249","p2250"], {
+		...multiOsdBuildRules("2023/misc/BarCap0.scad", [
+			"p2147","p2249","p2250","p2329","p2330",
+		], {
 			cameraPosition: [10,-20,20],
 			imageSize: [256,256],
 		}),

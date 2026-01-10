@@ -21,6 +21,25 @@
 			"outer_diameter": "37.9",
 			"total_height": "38.1",
 			"$fn": "96"
+		},
+		"p2329": {
+			"description": "Cap for Liquid Death (and possibly other) cans; 3\" OD, 66mm ID, 1.5\" total height",
+			"floor_thickness": "3.17",
+			"inner_diameter": "66",
+			"outer_diameter": "76",
+			"total_height": "38.1",
+			"$fn": "112"
+		},
+		"p2330": {
+			"description": "Cap for Liquid Death (and possibly other) cans; 70mm OD, 66mm ID, 1\" total height",
+			"comments": [
+				"i.e. a less bulky version of p2229"
+			],
+			"floor_thickness": "2",
+			"inner_diameter": "66",
+			"outer_diameter": "70",
+			"total_height": "25.4",
+			"$fn": "112"
 		}
 	},
 	"fileFormatVersion": "1"
