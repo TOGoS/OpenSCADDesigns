@@ -1050,6 +1050,19 @@
 			"mode": "X",
 			"opposite_edge_style": "FFS-trimmed"
 		},
+		"p2333": {
+			"description": "5-inch hatom-backed with THL-1005-5u holes",
+			"backside_texture": "atom-rows-f",
+			"fc_surface_offset": "0",
+			"height_ca": "[1.5, \"inch\"]",
+			"hole_style": "THL-1005-5u",
+			"include_top_hole_row": "false",
+			"length_ca": "[10, \"atom\"]",
+			"mating_edge_style": "S-trimmed-C",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed-B",
+			"slot_height": "0"
+		},
 		"p1943": {
 			"description": "6-inch hatom-backed with THL-1005-5u holes",
 			"backside_texture": "atom-rows-f",
