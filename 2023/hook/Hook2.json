@@ -34,8 +34,18 @@
 			"thickness_u": "2",
 			"total_height_u": "48",
 			"width_u": "40"
+		},
+		"p2334": {
+			"description": "3-inch deep x 1+1/2-inch wide x 4+1/2-inch tall square headphone hook",
+			"back_curve_inner_radius_u": "0",
+			"back_curve_radius_u": "4",
+			"front_curve_radius_u": "4",
+			"front_height_u": "12",
+			"outer_depth_u": "32",
+			"thickness_u": "3",
+			"total_height_u": "48",
+			"width_u": "16"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }

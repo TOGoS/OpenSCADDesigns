@@ -796,7 +796,9 @@ const builder = new Builder({
 		}),
 		"p234x": brAlias(partIdRange("p",2340,2349)),
 
-		...multiOsdBuildRules("2023/hook/Hook2.scad", ["p1969"], {
+		...multiOsdBuildRules("2023/hook/Hook2.scad", [
+			"p1969","p2334"
+		], {
 			cameraPosition: [-20,-20, 30],
 			imageSize: [384, 384],
 		}),
