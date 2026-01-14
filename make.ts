@@ -1288,6 +1288,11 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/gridbeam/FCHelper1.scad", ["p2336"], {
+			cameraPosition: [-20, -40, 60],
+			imageSize: [384,384],
+			paletteSize: 128,
+		}),
 	},
 });
 

@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2336": {
+			"floor_thickness": "3/16inch",
+			"wall_thickness": "3/16inch",
+			"$fn": "64"
+		}
+	},
+	"fileFormatVersion": "1"
+}
