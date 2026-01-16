@@ -1293,6 +1293,11 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/NotebookDisc0.scad", ["p2339"], {
+			cameraPosition: [-20, -40, 40],
+			imageSize: [384,384],
+			paletteSize: 128,
+		}),
 	},
 });
 

@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2339": {
+			"description": "3/4\" half-disc with 5mm-diameter ridge",
+			"cap_diameter": "5mm",
+			"center_hole_diameter": "7mm",
+			"disc_diameter": "3/4inch",
+			"stem_thickness": "1mm",
+			"$fn": "48"
+		}
+	},
+	"fileFormatVersion": "1"
+}
