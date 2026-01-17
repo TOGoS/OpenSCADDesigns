@@ -1,9 +1,13 @@
-// NotebookDisc0.1
+// NotebookDisc0.2
 // 
 // Can I print half-discs for discbound notebooks
 // that are later glued together into full discs?
+// 
+// v0.2:
+// - Add `cap_x_scale` option
 
 cap_diameter = "5mm";
+cap_x_scale = 1.00; // 0.01
 stem_thickness = "1mm";
 disc_diameter = "3/4inch";
 center_hole_diameter = "7mm";
@@ -27,8 +31,8 @@ togmod1_domodule(
 		let( quarterfn = max(1,ceil($fn/4)) )
 		[
 			[0                  , center_hole_diameter_mm/2],
-			for(i=[0:1:quarterfn]) let(a=i*90/quarterfn) [0 + sin(a) * cap_diameter_mm / 2, disc_diameter_mm/2 + (cos(a) - 1) * cap_diameter_mm/2],
-			[stem_thickness_mm/2, disc_diameter_mm/2 - cap_diameter_mm/2],
+			for(i=[0:1:quarterfn]) let(a=i*90/quarterfn) [0 + sin(a) * cap_diameter_mm / 2, disc_diameter_mm/2 + (cos(a) - 1) * cap_diameter_mm/2 * cap_x_scale],
+			[stem_thickness_mm/2, disc_diameter_mm/2 - cap_diameter_mm/2 * cap_x_scale],
 			[stem_thickness_mm/2, center_hole_diameter_mm/2],
 			[0                  , center_hole_diameter_mm/2],
 		],

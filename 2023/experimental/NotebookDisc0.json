@@ -7,6 +7,14 @@
 			"disc_diameter": "3/4inch",
 			"stem_thickness": "1mm",
 			"$fn": "48"
+		},
+		"p2380": {
+			"cap_diameter": "5.5mm",
+			"cap_x_scale": "0.8",
+			"center_hole_diameter": "7mm",
+			"disc_diameter": "1+1/2inch",
+			"stem_thickness": "0.8mm",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"
