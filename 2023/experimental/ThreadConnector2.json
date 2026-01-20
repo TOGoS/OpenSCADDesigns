@@ -137,6 +137,28 @@
 			"upper_outer_thread_inset": "2",
 			"upper_outer_thread_radius_offset": "-0.1",
 			"upper_outer_threads": "2-4+1/2-UNC"
+		},
+		"p2383": {
+			"description": "2\"-long 2-4+1/2-UNC M-M coupler with straight 1+1/2\" interior",
+			"comments": [
+				"Similar to p2338 except only 2\" instead of 3\", and with the octagonal ring centered.",
+				"Two of these stacked together may fit inside a WSTYPE-4018 (Sterilite latching bowl)!"
+			],
+			"inner_thread_radius_offset": "0.1",
+			"inner_threads": "straight-1+1/2inch",
+			"lower_outer_thread_height": "19.05",
+			"lower_outer_thread_inset": "2",
+			"lower_outer_thread_radius_offset": "-0.1",
+			"lower_outer_threads": "2-4+1/2-UNC",
+			"preview_fn": "24",
+			"render_fn": "144",
+			"ring_height": "12.7",
+			"ring_side_count": "8",
+			"ring_width": "50.8",
+			"upper_outer_thread_height": "19.05",
+			"upper_outer_thread_inset": "2",
+			"upper_outer_thread_radius_offset": "-0.1",
+			"upper_outer_threads": "2-4+1/2-UNC"
 		}
 	},
 	"fileFormatVersion": "1"
