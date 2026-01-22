@@ -1,6 +1,11 @@
-// Hinge1.1
+// Hinge1.2
 // 
 // An entirely printable-in-place hinge
+// 
+// v1.2:
+// - Fix cone slope to be more reasonable 2/1 instead of 4/1
+// 
+// TODO: Round cone ends?
 
 $fn = 32;
 
@@ -20,8 +25,8 @@ function hinge1_make_hinge_atom(
 	offset = -0.1,
 	top_cone_mode = 1
 ) =
-	let( cone_d0 = cone_diameter + cone_length/4 )
-	let( cone_d1 = cone_diameter - cone_length/4 )
+	let( cone_d0 = cone_diameter + cone_length/2 )
+	let( cone_d1 = cone_diameter - cone_length/2 )
 	let( cone_db = cone_d0 - (cone_d1 - cone_d0) )
 	let( actual_size = [width+offset*2, height+offset*2] )
 	["difference",
