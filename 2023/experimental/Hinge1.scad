@@ -1,11 +1,16 @@
-// Hinge1.2
+// Hinge1.3
 // 
 // An entirely printable-in-place hinge
 // 
 // v1.2:
 // - Fix cone slope to be more reasonable 2/1 instead of 4/1
+// v1.3:
+// - hinge_offset and outer_offset parameters; mostly only hinge_offset is used
 // 
 // TODO: Round cone ends?
+
+hinge_offset = -0.1;
+outer_offset = -0.1;
 
 $fn = 32;
 
@@ -47,14 +52,14 @@ togmod1_domodule(
 	let( hinge_atom_height = 6.35 )
 	let( hinge_outer_diameter = 6.35 )
 	let( hinge_atom_width = 12.7 )
-	let( offset = -0.1 )
 	let( cone_length = 2 )
 	let( hinge_atom = hinge1_make_hinge_atom(
 		height = hinge_atom_height,
 		diameter = hinge_outer_diameter,
 		width = hinge_atom_width,
 		cone_length = cone_length,
-		cone_diameter = hinge_outer_diameter / 2
+		cone_diameter = hinge_outer_diameter / 2,
+		offset = hinge_offset
 	))
 	let( top_hinge_atom = hinge1_make_hinge_atom(
 		height = hinge_atom_height,
@@ -62,13 +67,14 @@ togmod1_domodule(
 		width = hinge_atom_width,
 		cone_length = cone_length,
 		cone_diameter = hinge_outer_diameter / 2,
-		top_cone_mode = -1
+		top_cone_mode = -1,
+		offset = hinge_offset
 	))
 	let( slab_width = 19.05 )
-	let( slab_actual_thickness = hinge_outer_diameter+offset*2 - 1/256 )
+	let( slab_actual_thickness = hinge_outer_diameter+hinge_offset*2 - 1/256 ) // offset has to match that of hinge atoms' thickness
 	let( slab = togmod1_linear_extrude_z(
-		[-2.5*hinge_atom_height - offset + 1/256, 2.5*hinge_atom_height + offset - 1/256],
-		togmod1_make_rounded_rect([slab_width + offset*2, slab_actual_thickness], r=slab_actual_thickness/2)
+		[-2.5*hinge_atom_height - hinge_offset + 1/256, 2.5*hinge_atom_height + hinge_offset - 1/256],
+		togmod1_make_rounded_rect([slab_width + outer_offset*2, slab_actual_thickness], r=slab_actual_thickness/2)
 	))
 
 	["union",

@@ -2,6 +2,16 @@
 	"parameterSets": {
 		"p2386": {
 			"$fn": "32"
+		},
+		"p2387": {
+			"$fn": "32",
+			"hinge_offset": "-0.2",
+			"outer_offset": "-0.1"
+		},
+		"p2388": {
+			"$fn": "32",
+			"hinge_offset": "-0.3",
+			"outer_offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"

@@ -1298,7 +1298,7 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/experimental/Hinge1.scad", ["p2386"], {
+		...multiOsdBuildRules("2023/experimental/Hinge1.scad", ["p2386","p2387","p2388"], {
 			cameraPosition: [ 20, -40, 20],
 			imageSize: [384,384],
 			paletteSize: 128,
