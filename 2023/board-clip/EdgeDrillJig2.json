@@ -53,6 +53,24 @@
 			"y_length": "1inch",
 			"edge_notch_depth": "1/8inch",
 			"$fn": "32"
+		},
+		"p2391": {
+			"description": "1/2\"-13 holes on 3/4\" grid centers",
+			"edge_notch_depth": "1/8inch",
+			"edge_notch_spacing": "1+1/2inch",
+			"thickness": "3/8inch",
+			"width": "4chunk",
+			"x_hole_position": "auto",
+			"x_hole_r_offset": "0.2mm",
+			"x_hole_spacing": "1chunk",
+			"x_hole_style": "1-8-UNC",
+			"x_length": "1+1/2inch",
+			"y_hole_position": "auto",
+			"y_hole_r_offset": "0.3mm",
+			"y_hole_spacing": "3/4inch",
+			"y_hole_style": "1/2-13-UNC",
+			"y_length": "3/4inch",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"

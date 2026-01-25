@@ -1,4 +1,4 @@
-// EdgeDrillJig2.1
+// EdgeDrillJig2.2
 // 
 // Has threaded holes, making for a simpler design
 // than EdgeDrillJig1.0.
@@ -10,6 +10,8 @@
 // - x/y_hole_position are configurable, in case you want them to be
 //   somewhere other than half way along their respective leg
 // - Option for edge notches, to help you align stuff
+// v2.2:
+// - x/y_hole_spacing is now configurable
 
 width = "2chunk";
 thickness = "3/8inch";
@@ -19,11 +21,13 @@ edge_notch_depth   = "0";
 
 x_length = "1+1/2inch";
 x_hole_position = "auto";
+x_hole_spacing = "1chunk";
 x_hole_style = "1-8-UNC";
 x_hole_r_offset = "0.2mm";
 
 y_length = "1+1/2inch";
 y_hole_position = "auto";
+y_hole_spacing = "1chunk";
 y_hole_style = "3/4-10-UNC";
 y_hole_r_offset = "0.2mm";
 
@@ -60,6 +64,8 @@ togmod1_domodule(
 	let( x1 = x_length_mm, y1 = y_length_mm )
 	let( x_hole = togthreads2_make_threads(togthreads2_simple_zparams([[-t/2, 1], [t/2, 1]], 1.6, 3.175), x_hole_style, r_offset=x_hole_r_offset_mm) )
 	let( y_hole = togthreads2_make_threads(togthreads2_simple_zparams([[-t/2, 1], [t/2, 1]], 1.6, 3.175), y_hole_style, r_offset=y_hole_r_offset_mm) )
+	let( x_hole_z_spacing_unit = togunits1_to_mm(x_hole_spacing) )
+	let( y_hole_z_spacing_unit = togunits1_to_mm(y_hole_spacing) )
 	["difference",
 		let( acops = [["round", t/2]] )
 		let( bcops = [["round", t/3]] )
@@ -87,11 +93,10 @@ togmod1_domodule(
 			z
 		)),
 		
-		for( zm=[-width_chunks/2+0.5 : 1 : width_chunks/2-0.5] )
-		for( pr = [
-			[[x_hole_position_mm, -t/2, zm*chunk], [90,0,0], x_hole],
-			[[-t/2, y_hole_position_mm, zm*chunk], [0,90,0], y_hole],
-		] )
-		["translate", pr[0], ["rotate", pr[1], pr[2]]],
+		for( z=[-width_mm/2 + x_hole_z_spacing_unit/2 : x_hole_z_spacing_unit : width_mm/2] )
+		["translate", [x_hole_position_mm, -t/2, z], ["rotate", [90,0,0], x_hole]],
+		
+		for( z=[-width_mm/2 + y_hole_z_spacing_unit/2 : y_hole_z_spacing_unit : width_mm/2] )
+		["translate", [-t/2, y_hole_position_mm, z], ["rotate", [0,90,0], y_hole]],
 	]
 );
