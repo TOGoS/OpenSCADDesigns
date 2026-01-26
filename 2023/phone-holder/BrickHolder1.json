@@ -45,6 +45,7 @@
 			"top_segmentation": "none"
 		},
 		"p1304": {
+			"description": "ThinkPad dock station holder with flat sides",
 			"$tgx11_offset": "-0.1",
 			"back_segmentation": "none",
 			"bottom_hole_size": "[159, 31]",
@@ -58,7 +59,8 @@
 			"top_cord_slot_diameter": "0",
 			"top_segmentation": "none"
 		},
-		"p1337 - ThinkPad dock station holder with atomic back": {
+		"p1337": {
+			"description": "ThinkPad dock station holder with atomic back",
 			"$tgx11_offset": "-0.1",
 			"back_segmentation": "atom",
 			"bottom_hole_size": "[159, 31]",
@@ -73,7 +75,8 @@
 			"top_cord_slot_diameter": "0",
 			"top_segmentation": "none"
 		},
-		"p1338 - chunky ThinkPad dock station holder": {
+		"p1338": {
+			"description": "ThinkPad dock station holder with atomic back and sides",
 			"$tgx11_offset": "-0.1",
 			"back_segmentation": "atom",
 			"bottom_hole_size": "[159, 31]",
