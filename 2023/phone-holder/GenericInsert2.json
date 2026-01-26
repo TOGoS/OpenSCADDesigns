@@ -1,10 +1,19 @@
 {
 	"parameterSets": {
 		"p2392": {
-			"description": "insert for Netgear PoE switch inside ThinkPad dock holder",
+			"description": "insert for Netgear PoE switch inside ThinkPad dock holder (fat-fingered too-large cavity)",
 			"size": "[172, 36, 19]",
-			"bottom_hole_size": "[159, 23]",
 			"cavity_size": "[169, 27]",
+			"bottom_hole_size": "[159, 23]",
+			"floor_thickness": "3.2",
+			"front_slot_width": "102",
+			"$fn": "64"
+		},
+		"p2393": {
+			"description": "insert for Netgear PoE switch inside ThinkPad dock holder (take 2)",
+			"size": "[172, 36, 19]",
+			"cavity_size": "[159, 27]",
+			"bottom_hole_size": "[151, 23]",
 			"floor_thickness": "3.2",
 			"front_slot_width": "102",
 			"$fn": "64"
