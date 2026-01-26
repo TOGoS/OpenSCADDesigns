@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p2392": {
+			"description": "insert for Netgear PoE switch inside ThinkPad dock holder",
+			"size": "[172, 36, 19]",
+			"bottom_hole_size": "[159, 23]",
+			"cavity_size": "[169, 27]",
+			"floor_thickness": "3.2",
+			"front_slot_width": "102",
+			"$fn": "64"
+		}
+	},
+	"fileFormatVersion": "1"
+}

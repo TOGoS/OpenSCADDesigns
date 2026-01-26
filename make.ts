@@ -1312,6 +1312,12 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/phone-holder/GenericInsert2.scad", ["p2392"], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [40,-40,40],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
