@@ -1,4 +1,4 @@
-// TOGPath1.106
+// TOGPath1.106.1
 //
 // Functions for transforming 2D paths
 // 
@@ -28,6 +28,8 @@
 // v1.106:
 // - Allow polylines to come in the form of ["togpath1-polyline", ...points]
 //   as an alternative to bare point list.
+// v1.106.1
+// - togpath1_polyline_to_rath: Validate that passed-in _r_adius is a number.
 
 use <./TOGComplexLib1.scad>
 
@@ -597,6 +599,7 @@ polyline;
 // end_shape = "round"|"square", matching behavior of SVG's `stroke-linecap`
 // (may add 'butt' later)
 function togpath1_polyline_to_rath(polyline, r, end_shape="round") =
+assert( is_num(r), "Radius must be specified and be a number" )
 assert( end_shape == "square" || end_shape == "round" )
 assert( r > 0, "Polyline cannot make zero-width things; try passing a small value for r, instead of zero" )
 let( points = togpath1__polyline_to_points(polyline) )
