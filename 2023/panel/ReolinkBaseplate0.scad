@@ -1,6 +1,10 @@
-// ReolinkBaseplate0.1
+// ReolinkBaseplate0.2
 // 
 // Panel for mounting Reolink bullet cameras
+// 
+// v0.2:
+// - Different panel hole style when overlapping troughs
+// - Deepen the bevel around the center hole
 
 $fn = 96;
 $tgx11_offset = -0.15;
@@ -35,8 +39,8 @@ togmod1_domodule(
 	//let( center_hole = tphl1_make_z_cylinder(d=32, zrange=[-panel_size_mm[2], panel_size_mm[2]]) )
 	let( center_hole =
 		let( zb = -panel_size_mm[2]/2 )
-		let( zm =  0                  )
 		let( zt =  panel_size_mm[2]/2 )
+		let( zm = min(zt-6.35, zb + 12.7) )
 		tphl1_make_z_cylinder(zds=[
 			[zm - 32, 32+64],
 			[zm     , 32   ],
@@ -50,6 +54,7 @@ togmod1_domodule(
 		["rotate", [180,0,0], tog_holelib2_hole("THL-1005", inset=panel_size_mm[2]/2, depth=panel_size_mm[2]*2)],
 	]] )
 	let( panel_mounting_hole = ["render", tog_holelib2_hole("THL-1005", inset=panel_size_mm[2]/2, depth=panel_size_mm[2]*2)] )
+	let( panel_inverted_mounting_hole = ["render", ["rotate", [180,0,0], tog_holelib2_hole("THL-1005", inset=max(groove_size_mm[1]+1, panel_size_mm[2]/2), depth=panel_size_mm[2]*2)]] )
 
 	["difference",
 		panel_hull,
@@ -66,6 +71,10 @@ togmod1_domodule(
 		
 		for( ya=[-panel_size_atoms[1]/2 + 0.5 : 1 : panel_size_atoms[1]/2] )
 		for( xa=[-panel_size_atoms[0]/2 + 0.5 : 1 : panel_size_atoms[0]/2] )
-		if( (sqrt(xa*xa+ya*ya)-0.5)*atom > cam_mounting_hole_dist_mm ) ["translate", [xa*atom, ya*atom, panel_size_mm[2]/2], panel_mounting_hole],
+		(sqrt(xa*xa+ya*ya)-0.5)*atom <= cam_mounting_hole_dist_mm ? ["union"] :
+		let( x = xa*atom, y = ya*atom )
+		abs(x) < groove_size_mm[0]/2 + 4 || abs(y) < groove_size_mm[0]/2 + 4 ?
+		["translate", [x, y, -panel_size_mm[2]/2], panel_inverted_mounting_hole] :
+		["translate", [x, y,  panel_size_mm[2]/2], panel_mounting_hole],
 	]
 );

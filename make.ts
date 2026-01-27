@@ -1303,7 +1303,7 @@ const builder = new Builder({
 			imageSize: [384,384],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/panel/ReolinkBaseplate0.scad", ["p2390"], {
+		...multiOsdBuildRules("2023/panel/ReolinkBaseplate0.scad", ["p2394"], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {
 				top   : [-40,-30, 30],
