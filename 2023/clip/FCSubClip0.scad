@@ -1,10 +1,13 @@
-// FCSubClip0.3
+// FCSubClip0.4
 // 
 // v0.2:
 // - Different shape
 // v0.3:
 // - Another different shape
+// v0.4:
+// - Shape is configurable
 
+shape = "fcsubclip0.3"; // ["fcsubclip0.2","fcsubclip0.2","fcsubclip0.3"]
 thickness = "1/12inch";
 width = "1inch";
 end_bevel = "0.5mm";
@@ -39,18 +42,41 @@ mkmap = function(xf) function(list) [for(item=list) xf(item)];
 
 compose = function(a,b) function(x) a(b(x));
 
-outer_rath = ["togpath1-rath",
+function mirrorrath(bottom_nodes) = ["togpath1-rath",
 	for( transform=[
 		identity,
 		compose(reverse_list, mkmap(togpath1_make_rathnode_position_transform( function(p) [p[0], -p[1]])))
-	])
-	each transform([
-		["togpath1-rathnode", [-3*2u,-5*2u]],
-		["togpath1-rathnode", [ 0*2u,-6*2u], ["round", 2.5*u]],
-		["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 2.5*u]],
-		["togpath1-rathnode", [-1*2u,-2*2u], ["round", 2.5*u]],
-	])
+	]) each transform(bottom_nodes)
 ];
+
+outer_rath_v1 = mirrorrath([
+	["togpath1-rathnode", [-3*2u,-6*2u], ["round", 3*u]],
+	["togpath1-rathnode", [ 3*2u,-6*2u], ["round", 3*u]],
+	["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 3*u]],
+	["togpath1-rathnode", [-1*2u,-2*2u], ["round", 3*u]],
+]);
+
+outer_rath_v2 = mirrorrath([
+	["togpath1-rathnode", [-3*2u,-4*2u]],
+	["togpath1-rathnode", [-1*2u,-6*2u], ["round", 2.5*u]],
+	["togpath1-rathnode", [ 1*2u,-6*2u], ["round", 2.5*u]],
+	["togpath1-rathnode", [ 3*2u,-4*2u], ["round", 2.5*u]],
+	["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 2.5*u]],
+	["togpath1-rathnode", [-1*2u,-2*2u], ["round", 2.5*u]],
+]);
+
+outer_rath_v3 = mirrorrath([
+	["togpath1-rathnode", [-3*2u,-5*2u]],
+	["togpath1-rathnode", [ 0*2u,-6*2u], ["round", 2.5*u]],
+	["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 2.5*u]],
+	["togpath1-rathnode", [-1*2u,-2*2u], ["round", 2.5*u]],
+]);
+
+outer_rath =
+	shape == "fcsubclip0.1" ? outer_rath_v1 :
+	shape == "fcsubclip0.2" ? outer_rath_v2 :
+	shape == "fcsubclip0.3" ? outer_rath_v3 :
+	assert(false, str("Unrecognized shape version: '", shape, "'"));
 
 polyline_rath = togpath1_offset_rath(outer_rath, -thickness_mm/2);
 polyline_points = togpath1_rath_to_polypoints(polyline_rath);

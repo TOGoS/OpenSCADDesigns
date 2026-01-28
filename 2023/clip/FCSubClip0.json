@@ -1,11 +1,44 @@
 {
 	"parameterSets": {
-		"p2398": {
-			"$fn": "48",
-			"$tgx11_offset": "-0.15",
-			"end_bevel": "0.5mm",
+		"p2395": {
+			"shape": "fcsubclip0.1",
 			"thickness": "1/12inch",
-			"width": "1inch"
+			"end_bevel": "0.5mm",
+			"width": "1inch",
+			"$tgx11_offset": "-0.15",
+			"$fn": "48"
+		},
+		"p2396": {
+			"shape": "fcsubclip0.1",
+			"thickness": "1/12inch",
+			"end_bevel": "0.5mm",
+			"width": "3inch",
+			"$tgx11_offset": "-0.15",
+			"$fn": "48"
+		},
+		"p2397": {
+			"shape": "fcsubclip0.2",
+			"thickness": "1/12inch",
+			"end_bevel": "0.5mm",
+			"width": "1inch",
+			"$tgx11_offset": "-0.15",
+			"$fn": "48"
+		},
+		"p2398": {
+			"shape": "fcsubclip0.3",
+			"thickness": "1/12inch",
+			"end_bevel": "0.5mm",
+			"width": "1inch",
+			"$tgx11_offset": "-0.15",
+			"$fn": "48"
+		},
+		"p2399": {
+			"shape": "fcsubclip0.3",
+			"thickness": "1/12inch",
+			"end_bevel": "0.5mm",
+			"width": "3inch",
+			"$tgx11_offset": "-0.15",
+			"$fn": "48"
 		}
 	},
 	"fileFormatVersion": "1"
