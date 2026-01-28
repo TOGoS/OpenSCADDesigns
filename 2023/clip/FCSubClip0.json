@@ -6,6 +6,13 @@
 			"end_bevel": "0.5mm",
 			"thickness": "1/12inch",
 			"width": "1inch"
+		},
+		"p2396": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"end_bevel": "0.5mm",
+			"thickness": "1/12inch",
+			"width": "3inch"
 		}
 	},
 	"fileFormatVersion": "1"
