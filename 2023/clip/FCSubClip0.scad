@@ -1,7 +1,9 @@
-// FCSubClip0.2
+// FCSubClip0.3
 // 
 // v0.2:
 // - Different shape
+// v0.3:
+// - Another different shape
 
 thickness = "1/12inch";
 width = "1inch";
@@ -43,10 +45,8 @@ outer_rath = ["togpath1-rath",
 		compose(reverse_list, mkmap(togpath1_make_rathnode_position_transform( function(p) [p[0], -p[1]])))
 	])
 	each transform([
-		["togpath1-rathnode", [-3*2u,-4*2u]],
-		["togpath1-rathnode", [-1*2u,-6*2u], ["round", 2.5*u]],
-		["togpath1-rathnode", [ 1*2u,-6*2u], ["round", 2.5*u]],
-		["togpath1-rathnode", [ 3*2u,-4*2u], ["round", 2.5*u]],
+		["togpath1-rathnode", [-3*2u,-5*2u]],
+		["togpath1-rathnode", [ 0*2u,-6*2u], ["round", 2.5*u]],
 		["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 2.5*u]],
 		["togpath1-rathnode", [-1*2u,-2*2u], ["round", 2.5*u]],
 	])
