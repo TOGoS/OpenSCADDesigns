@@ -1,4 +1,7 @@
-// FCSubClip0.1
+// FCSubClip0.2
+// 
+// v0.2:
+// - Different shape
 
 thickness = "1/12inch";
 width = "1inch";
@@ -41,10 +44,11 @@ outer_rath = ["togpath1-rath",
 	])
 	each transform([
 		["togpath1-rathnode", [-3*2u,-4*2u]],
-		["togpath1-rathnode", [-3*2u,-6*2u], ["round", 3*u]],
-		["togpath1-rathnode", [ 3*2u,-6*2u], ["round", 3*u]],
-		["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 3*u]],
-		["togpath1-rathnode", [-1*2u,-2*2u], ["round", 3*u]],
+		["togpath1-rathnode", [-1*2u,-6*2u], ["round", 2.5*u]],
+		["togpath1-rathnode", [ 1*2u,-6*2u], ["round", 2.5*u]],
+		["togpath1-rathnode", [ 3*2u,-4*2u], ["round", 2.5*u]],
+		["togpath1-rathnode", [ 3*2u,-2*2u], ["round", 2.5*u]],
+		["togpath1-rathnode", [-1*2u,-2*2u], ["round", 2.5*u]],
 	])
 ];
 

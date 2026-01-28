@@ -1318,7 +1318,7 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/clip/FCSubClip0.scad", ["p2395","p2396"], {
+		...multiOsdBuildRules("2023/clip/FCSubClip0.scad", ["p2397"], {
 			cameraPosition: [-40,-40,40],
 			imageSize: [512,512],
 			paletteSize: 128,
