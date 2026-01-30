@@ -1,4 +1,4 @@
-// Hinge1.4
+// Hinge1.4.1
 // 
 // An entirely printable-in-place hinge
 // 
@@ -8,6 +8,8 @@
 // - hinge_offset and outer_offset parameters; mostly only hinge_offset is used
 // v1.4:
 // - hinge1_make_hinge_atom: top_gender and bottom_gender may each be "f", "m", or "none"
+// v1.4.1:
+// - Rename functions to have `toghinge1` prefix
 // 
 // TODO: Round cone ends?
 
@@ -24,7 +26,7 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 // Generate a cone where Z=0 is the base, Z=length is the top.
-function hinge1_make_cone(
+function toghinge1_make_cone(
 	length,
 	diameter,
 	r_offset = 0,
@@ -36,7 +38,7 @@ function hinge1_make_cone(
 	let( cone_d1 = diameter - cone_dd_dz * length/2 )
 	tphl1_make_z_cylinder(zds=[[-length/2 + z_offset, cone_db + r_offset*2], [length + z_offset, cone_d1 + r_offset*2]]);
 
-function hinge1_make_hinge_atom(
+function toghinge1_make_hinge_atom(
 	height = 6.35,
 	diameter = 6.35,
    width = 12.7,
@@ -50,8 +52,8 @@ function hinge1_make_hinge_atom(
 	let( cone_d1 = cone_diameter - cone_length/2 )
 	let( cone_db = cone_d0 - (cone_d1 - cone_d0) )
 	let( actual_size = [width+offset*2, height+offset*2] )
-	let( m_cone = hinge1_make_cone( length=cone_length, diameter=cone_diameter, r_offset= offset, z_offset= offset ) )
-	let( f_cone = hinge1_make_cone( length=cone_length, diameter=cone_diameter, r_offset=-offset, z_offset=-offset ) )
+	let( m_cone = toghinge1_make_cone( length=cone_length, diameter=cone_diameter, r_offset= offset, z_offset= offset ) )
+	let( f_cone = toghinge1_make_cone( length=cone_length, diameter=cone_diameter, r_offset=-offset, z_offset=-offset ) )
 	["difference",
 		["union",
 			togmod1_linear_extrude_z(
@@ -67,13 +69,12 @@ function hinge1_make_hinge_atom(
 		if(    top_gender == "f" ) ["translate", [0,0, height/2], ["rotate", [180,0,0], f_cone]],
 	];
 
-
 togmod1_domodule(
 	let( hinge_atom_height = 6.35 )
 	let( hinge_outer_diameter = 6.35 )
 	let( hinge_atom_width = 12.7 )
 	let( cone_length = 2 )
-	let( hinge_atom = hinge1_make_hinge_atom(
+	let( hinge_atom = toghinge1_make_hinge_atom(
 		height = hinge_atom_height,
 		diameter = hinge_outer_diameter,
 		width = hinge_atom_width,
@@ -81,7 +82,7 @@ togmod1_domodule(
 		cone_diameter = hinge_outer_diameter / 2,
 		offset = hinge_offset
 	))
-	let( top_hinge_atom = hinge1_make_hinge_atom(
+	let( top_hinge_atom = toghinge1_make_hinge_atom(
 		height = hinge_atom_height,
 		diameter = hinge_outer_diameter,
 		width = hinge_atom_width,
