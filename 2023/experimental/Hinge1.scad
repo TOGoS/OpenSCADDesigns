@@ -1,4 +1,4 @@
-// Hinge1.3
+// Hinge1.4
 // 
 // An entirely printable-in-place hinge
 // 
@@ -6,6 +6,8 @@
 // - Fix cone slope to be more reasonable 2/1 instead of 4/1
 // v1.3:
 // - hinge_offset and outer_offset parameters; mostly only hinge_offset is used
+// v1.4:
+// - hinge1_make_hinge_atom: top_gender and bottom_gender may each be "f", "m", or "none"
 // 
 // TODO: Round cone ends?
 
@@ -21,6 +23,19 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
+// Generate a cone where Z=0 is the base, Z=length is the top.
+function hinge1_make_cone(
+	length,
+	diameter,
+	r_offset = 0,
+	z_offset = 0
+) =
+	let( cone_dd_dz = 1 )
+	let( cone_db = diameter + cone_dd_dz * length   ) // Base: extends 50% of length below Z=0
+	let( cone_d0 = diameter - cone_dd_dz * length/2 )
+	let( cone_d1 = diameter - cone_dd_dz * length/2 )
+	tphl1_make_z_cylinder(zds=[[-length/2 + z_offset, cone_db + r_offset*2], [length + z_offset, cone_d1 + r_offset*2]]);
+
 function hinge1_make_hinge_atom(
 	height = 6.35,
 	diameter = 6.35,
@@ -28,23 +43,28 @@ function hinge1_make_hinge_atom(
 	cone_length = 2,
 	cone_diameter = 3.175,
 	offset = -0.1,
-	top_cone_mode = 1
+	bottom_gender = "f",
+	top_gender = "m"
 ) =
 	let( cone_d0 = cone_diameter + cone_length/2 )
 	let( cone_d1 = cone_diameter - cone_length/2 )
 	let( cone_db = cone_d0 - (cone_d1 - cone_d0) )
 	let( actual_size = [width+offset*2, height+offset*2] )
+	let( m_cone = hinge1_make_cone( length=cone_length, diameter=cone_diameter, r_offset= offset, z_offset= offset ) )
+	let( f_cone = hinge1_make_cone( length=cone_length, diameter=cone_diameter, r_offset=-offset, z_offset=-offset ) )
 	["difference",
 		["union",
 			togmod1_linear_extrude_z(
 				[-height/2-offset, height/2+offset],
 				["translate", [(width-height)/2, 0, 0], togmod1_make_rounded_rect(actual_size, r=min(actual_size[0],actual_size[1])/2)]
 			),
-			if( top_cone_mode == 1 ) tphl1_make_z_cylinder(zds=[[height/2+offset - cone_length, cone_db + offset*2], [height/2+offset + cone_length, cone_d1 + offset*2]]),
+			if( bottom_gender == "m" ) ["translate", [0,0,-height/2], ["rotate", [180,0,0], m_cone]],
+			if(    top_gender == "m" ) ["translate", [0,0, height/2], ["rotate", [  0,0,0],m_cone]],
+			// if(    top_gender == "m" ) tphl1_make_z_cylinder(zds=[[height/2+offset - cone_length, cone_db + offset*2], [height/2+offset + cone_length, cone_d1 + offset*2]]),
 		],
 		
-		tphl1_make_z_cylinder(zds=[[-height/2-offset - cone_length, cone_db - offset*2], [-height/2-offset + cone_length, cone_d1 - offset*2]]),
-		if( top_cone_mode == -1 ) tphl1_make_z_cylinder(zds=[[height/2+offset - cone_length, cone_d1 - offset*2], [height/2+offset + cone_length, cone_db - offset*2]]),
+		if( bottom_gender == "f" ) ["translate", [0,0,-height/2], ["rotate", [  0,0,0], f_cone]],
+		if(    top_gender == "f" ) ["translate", [0,0, height/2], ["rotate", [180,0,0], f_cone]],
 	];
 
 
@@ -67,7 +87,7 @@ togmod1_domodule(
 		width = hinge_atom_width,
 		cone_length = cone_length,
 		cone_diameter = hinge_outer_diameter / 2,
-		top_cone_mode = -1,
+		top_gender = "f",
 		offset = hinge_offset
 	))
 	let( slab_width = 19.05 )
