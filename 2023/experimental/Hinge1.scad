@@ -1,4 +1,4 @@
-// Hinge1.4.2
+// Hinge1.5
 // 
 // An entirely printable-in-place hinge
 // 
@@ -16,11 +16,14 @@
 //   - body size/shape, width, and cone_length/diameter may be undef[ined],
 //     in which case reasonable defaults will be used
 // - Add `hinge_thickness` and `atom_width` parameters
+// v1.5:
+// - `end_atom_width` may be specified separately from [regular] `atom_width`
 // 
 // TODO: Round cone ends?
 
 hinge_thickness = "1/4inch";
 atom_width      = "1/4inch";
+end_atom_width  = "";
 bottom_gender   = "f"; // ["none","f","m"]
 top_gender      = "f"; // ["none","f","m"]
 
@@ -37,8 +40,11 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 
+function is_blank(x) = is_undef(x) || x == "";
+
 hinge_thickness_mm = togunits1_to_mm(hinge_thickness);
 atom_width_mm      = togunits1_to_mm(atom_width     );
+end_atom_width_mm  = !is_blank(end_atom_width) ? togunits1_to_mm(end_atom_width) : atom_width_mm;
 
 // Generate a cone where Z=0 is the base, Z=length is the top.
 function toghinge1_make_cone(
@@ -113,11 +119,8 @@ function toghinge1_make_hinge_atom(
 	];
 
 togmod1_domodule(
-	// let( atom_width = atom_width_mm )
-	// let( hinge_outer_diameter = 6.35 )
-	// let( atom_width_mm = 12.7 )
 	let( bottom_hinge_atom = toghinge1_make_hinge_atom(
-		width = atom_width_mm,
+		width = end_atom_width_mm,
 		thickness = hinge_thickness_mm,
 		body_x1 = hinge_thickness_mm*3/2,
 		bottom_gender = bottom_gender,
@@ -130,26 +133,29 @@ togmod1_domodule(
 		offset = hinge_offset
 	))
 	let( top_hinge_atom = toghinge1_make_hinge_atom(
-		width = atom_width_mm,
+		width = end_atom_width_mm,
 		thickness = hinge_thickness_mm,
 		body_x1 = hinge_thickness_mm*3/2,
 		top_gender = top_gender,
 		offset = hinge_offset
 	))
-	let( slab_width = 19.05 )
-	let( slab_actual_thickness = hinge_thickness_mm+hinge_offset*2 - 1/256 ) // offset has to match that of hinge atoms' thickness
+	let( hinge_length = hinge_thickness_mm * 7 )
+	let( slab_length = (hinge_length - hinge_thickness_mm)/2 )
+	let( slab_width = atom_width_mm*3 + end_atom_width_mm*2 )
+	// slab's surface offset should [approximately] match that of hinge atoms' thickness:
+	let( slab_actual_thickness = hinge_thickness_mm+hinge_offset*2 - 1/256 )
 	let( slab = togmod1_linear_extrude_z(
-		[-2.5*atom_width_mm - hinge_offset + 1/256, 2.5*atom_width_mm + hinge_offset - 1/256],
-		togmod1_make_rounded_rect([slab_width + outer_offset*2, slab_actual_thickness], r=slab_actual_thickness/2)
+		[-slab_width/2 - hinge_offset + 1/256, slab_width/2 + hinge_offset - 1/256],
+		togmod1_make_rounded_rect([slab_length + outer_offset*2, slab_actual_thickness], r=slab_actual_thickness/2)
 	))
-
+	
 	["union",
-		["translate", [0,0,-2*atom_width_mm], bottom_hinge_atom],
+		["translate", [0,0,-1.5*atom_width_mm - end_atom_width_mm/2], bottom_hinge_atom],
 		for( zm = [0] ) ["translate", [0,0,zm*atom_width_mm], mid_hinge_atom],
 		for( zm = [-1,1] ) ["translate", [0,0,zm*atom_width_mm], ["rotate", [0,0,180], mid_hinge_atom]],
-		["translate", [0,0,2*atom_width_mm], top_hinge_atom],
+		["translate", [0,0,1.5*atom_width_mm + end_atom_width_mm/2], top_hinge_atom],
 		
-		["translate", [ (slab_width + hinge_thickness_mm)/2, 0, 0], slab],
-		["translate", [-(slab_width + hinge_thickness_mm)/2, 0, 0], slab],
+		["translate", [ (slab_length + hinge_thickness_mm)/2, 0, 0], slab],
+		["translate", [-(slab_length + hinge_thickness_mm)/2, 0, 0], slab],
 	]
 );

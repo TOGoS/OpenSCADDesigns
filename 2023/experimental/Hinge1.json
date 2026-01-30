@@ -14,6 +14,16 @@
 			"hinge_offset": "-0.3",
 			"outer_offset": "-0.1",
 			"$fn": "32"
+		},
+		"p2401": {
+			"hinge_thickness": "1/4inch",
+			"atom_width": "1/4inch",
+			"end_atom_width": "1/8inch",
+			"bottom_gender": "none",
+			"top_gender": "none",
+			"hinge_offset": "-0.2",
+			"outer_offset": "-0.2",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
