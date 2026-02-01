@@ -1,0 +1,18 @@
+{
+	"parameterSets": {
+		"p2404": {
+			"description": "2.5x1.5-inch oval nut with 1+1/4-7 inner threads with 0.5mm inset",
+			"width": "2.5inch",
+			"height": "1.5inch",
+			"inner_threads": "1+1/4-7-UNC",
+			"inner_hole_nominal_diameter": "1+1/4inch",
+			"inner_thread_radius_offset": "0.3mm",
+			"edge_rounding_radius": "1/4inch",
+			"thickness": "1/4inch",
+			"tape_groove_width": "14mm",
+			"spike_height": "1/8inch",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}

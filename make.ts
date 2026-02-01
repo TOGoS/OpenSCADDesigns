@@ -1339,6 +1339,14 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/OvalNut0.scad", [
+			"p2404"
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [ 20,-40, 40],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
