@@ -1354,6 +1354,14 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/DrywallWasher1.scad", [
+			"p2406","p2407",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Because faster
+			cameraPosition: [ 20, 40, 40],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 

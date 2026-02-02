@@ -1,0 +1,26 @@
+{
+	"parameterSets": {
+		"p2406": {
+			"description": "combined drywall washer/port with 1\" inner threads",
+			"inner_thread_radius_offset": "0.3mm",
+			"inner_threads": "1-8-UNC",
+			"outer_thread_radius_offset": "-0.2mm",
+			"outer_threads": "1+1/4-7-UNC",
+			"tunnel_diameter": "7/8inch",
+			"tunnel_front_diameter": "1+1/2inch",
+			"$fn": "144"
+		},
+		"p2407": {
+			"description": "combined drywall washer/port with 1\" inner threads, corner cutout version",
+			"inner_thread_radius_offset": "0.3mm",
+			"inner_threads": "1-8-UNC",
+			"outer_thread_radius_offset": "-0.2mm",
+			"outer_threads": "1+1/4-7-UNC",
+			"tunnel_diameter": "7/8inch",
+			"tunnel_front_diameter": "1+1/2inch",
+			"cutout": "corner",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
