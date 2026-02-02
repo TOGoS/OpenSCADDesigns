@@ -1429,6 +1429,24 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "1-8-UNC",
 			"$fn": "144"
+		},
+		"p2410": {
+			"description": "1\" (outer) 3/4\" (inner) bolt with deep inset, no taper, 2\" total height, 1+1/2\" togridpile head",
+			"total_height": "50.8",
+			"cross_section": "true",
+			"handedness": "right",
+			"head_height": "12.7",
+			"head_shape": "togridpile-chunk",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_threads": "3/4-10-UNC",
+			"outer_thread_inset": "6.35",
+			"outer_thread_taper_length": "0",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_threads": "1-8-UNC",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
