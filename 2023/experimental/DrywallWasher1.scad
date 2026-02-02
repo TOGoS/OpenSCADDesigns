@@ -1,4 +1,4 @@
-// DrywallWasher1.2
+// DrywallWasher1.3
 // 
 // Combined DrywallWasher0[.1] + port
 // 
@@ -6,6 +6,8 @@
 // - Based on DrywallWasher0.1
 // v1.2
 // - Add holes for spanner wrench
+// v1.3:
+// - Fix inner threads to taper *outwards* at the top instead of inwards.
 
 description = "combined drywall washer/port with 1\" inner threads, corner cutout version";
 outer_threads = "1+1/4-7-UNC";
@@ -81,7 +83,7 @@ togmod1_domodule(
 		
 		["union",
 			togthreads2_make_threads(
-				togthreads2_simple_zparams([[0,0], [total_height_mm,-1]], taper_length=1, extend=1, inset=1.5),
+				togthreads2_simple_zparams([[0,0], [total_height_mm,1]], taper_length=1, extend=1, inset=1.5),
 			   inner_threads,
 				r_offset = inner_thread_radius_offset_mm
 			),

@@ -1356,17 +1356,9 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/experimental/DrywallWasher1.scad", [
-			"p2406","p2407",
+			"p2411",
 		], {
-			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Because faster
-			cameraPosition: [ 20, 40, 40],
-			imageSize: [512,512],
-			paletteSize: 128,
-		}),
-		...multiOsdBuildRules("2023/experimental/DrywallWasher1.scad", [
-			"p2409",
-		], {
-			openScadCmd: OPENSCAD202101_CMD, // Slower, but OpenSCAD 2024 fucks up on this one
+			openScadCmd: OPENSCAD202101_CMD, // Slower, but OpenSCAD 2024 fucks up when the spanner holes are added (p2409, p2411)
 			cameraPosition: [ 20, 40, 40],
 			imageSize: [512,512],
 			paletteSize: 128,
