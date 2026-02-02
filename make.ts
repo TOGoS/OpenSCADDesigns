@@ -1347,6 +1347,13 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/DrywallWasher0.scad", [
+			"p2405"
+		], {
+			cameraPosition: [ 20,-40, 40],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 

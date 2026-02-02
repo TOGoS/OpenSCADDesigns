@@ -1,0 +1,9 @@
+{
+	"parameterSets": {
+		"p2405": {
+			"description": "1+1/2\" OD, 1+1/4\" ID 'washer' with 1/8\" flanged front, for use with OvalNut0 or similar",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
