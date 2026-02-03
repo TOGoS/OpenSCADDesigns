@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2412": {
+			"hole_spacing": "1+3/8inch",
+			"hole_style": "diamond-4.5mm",
+			"handle_length": "3inch",
+			"width": "3/4inch",
+			"thickness": "1/4inch",
+			"$fn": "48"
+		}
+	},
+	"fileFormatVersion": "1"
+}

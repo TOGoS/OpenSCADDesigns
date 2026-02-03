@@ -1363,6 +1363,13 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/wrench/SpannerWrench0.scad", [
+			"p2412",
+		], {
+			cameraPosition: [-20,-40, 40],
+			imageSize: [256,256],
+			paletteSize: 128,
+		}),
 	},
 });
 
