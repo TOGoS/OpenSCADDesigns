@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2413": {
+			"height": "2inch",
+			"floor_thickness": "1/2inch",
+			"inner_surface_offset": "-0.3mm",
+			"outer_thread_radius_offset": "-0.2mm",
+			"$tgx11_offset": "-0.1",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
