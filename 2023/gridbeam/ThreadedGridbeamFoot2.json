@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2414": {
+			"height": "3inch",
+			"width": "3inch",
+			"inner_thread_radius_offset": "0.2mm",
+			"$tgx11_offset": "-0.1",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}
