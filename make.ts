@@ -44,7 +44,7 @@ type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for mor
 // which is where this naming convention (minus the version) is copied from.
 const OPENSCAD202101_COM   = Deno.env.get("OPENSCAD_202101_CLI_EXE"  ) ?? "x:UnconfiguredCommand:OPENSCAD_202101_CLI_EXE"  ;
 const OPENSCAD20240727_COM = Deno.env.get("OPENSCAD_20240727_CLI_EXE") ?? "x:UnconfiguredCommand:OPENSCAD_20240727_CLI_EXE";
-const MAGICK_EXE = "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
+const MAGICK_EXE = Deno.env.get("MAGICK_EXE") ?? "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
 type FilePath = string;
