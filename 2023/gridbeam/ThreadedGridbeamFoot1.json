@@ -7,6 +7,14 @@
 			"outer_thread_radius_offset": "-0.2mm",
 			"$tgx11_offset": "-0.1",
 			"$fn": "144"
+		},
+		"p2415": {
+			"height": "2+1/4inch",
+			"floor_thickness": "3/4inch",
+			"inner_surface_offset": "-0.3mm",
+			"outer_thread_radius_offset": "-0.2mm",
+			"$tgx11_offset": "-0.1",
+			"$fn": "144"
 		}
 	},
 	"fileFormatVersion": "1"
