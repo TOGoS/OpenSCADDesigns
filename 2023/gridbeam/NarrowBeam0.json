@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p2416": {
+			"x0": "-2.25inch",
+			"x1": "2.25inch",
+			"y0": "-1/4inch",
+			"y1": "3/4inch",
+			"z0": "-3/4inch",
+			"z1": "3/4inch",
+			"x_hole_style": "none",
+			"y_hole_style": "THL-1006",
+			"z_hole_style": "THL-1006",
+			"xy_corner_radius": "3/16inch",
+			"z_corner_radius": "1/8inch",
+			"$fn": "48"
+		}
+	},
+	"fileFormatVersion": "1"
+}
