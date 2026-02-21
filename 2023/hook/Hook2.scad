@@ -1,4 +1,4 @@
-// Hook2.4
+// Hook2.5
 //
 // Changes:
 // v2.1
@@ -14,6 +14,8 @@
 // v2.4:
 // - Option for back_curve_inner_radius_u separate from outer radius
 // - Fix front lip height to avoid invalid shapes
+// v2.5:
+// - Option for holes at multiple Y positions.
 
 total_height_u = 48;
 front_height_u = 16;
@@ -25,8 +27,20 @@ back_curve_radius_u  = 999; // 0.01
 // Will be clamped as necessary based on outer radius and hook depth; 0 to follow outer
 back_curve_inner_radius_u = 0; // 0.01
 width_u        = 24;
+// e.g. "3/4inch"; if non-blank, will make multiple holes at different Y position
+hole_y_spacing = "";
 
 module __asdmlkaslkd__end_params() { }
+
+use <../lib/TOGMod1.scad>
+use <../lib/TOGPath1.scad>
+use <../lib/TOGPolyhedronLib1.scad>
+use <../lib/TOGVecLib0.scad>
+use <../lib/TOGUnits1.scad>
+
+$fn = $preview ? 24 : 64;
+
+hole_y_spacing_mm = hole_y_spacing == "" ? -1 : togunits1_to_mm(hole_y_spacing);
 
 hole_spacing = 19.05;
 hole_diameter = 7.9375;
@@ -65,12 +79,7 @@ function make_hook_rath(y2, y3) = ["togpath1-rath",
 
 z_corner_radius = min(hole_spacing, width/2-0.5);
 
-use <../lib/TOGMod1.scad>
-use <../lib/TOGPath1.scad>
-use <../lib/TOGPolyhedronLib1.scad>
-use <../lib/TOGVecLib0.scad>
 
-$fn = $preview ? 24 : 64;
 
 body = tphl1_make_polyhedron_from_layer_function([
 	for(am=[0 : 1 : ceil($fn/4)]) let(ang=180 - 90*am/ceil($fn/4)) [    0 + z_corner_radius + z_corner_radius*cos(ang), sin(ang)-1],
@@ -91,12 +100,17 @@ body = tphl1_make_polyhedron_from_layer_function([
 
 hole = ["rotate", [0,90,0], tphl1_make_z_cylinder(zrange=[-thickness, +thickness], d=hole_diameter)];
 
+first_hole_y_position = y3 - min(width/2, hole_spacing);
+hole_y_positions =
+	hole_y_spacing_mm <= 0 ? [first_hole_y_position] :
+	[for( y=[first_hole_y_position : -hole_y_spacing_mm : r_bo] ) y];
+
 // Old logic; gives 'wrong' result when width is small:
-//z_hole_positions_hs = [round(-width/2/hole_spacing)+1 : 1 : width/2/hole_spacing-0.4];
-z_hole_positions_hs = [round(-width/hole_spacing)/2+0.5 : 1 : width/hole_spacing/2-0.4];
-z_hole_positions = [for(zm=z_hole_positions_hs) hole_spacing*zm];
-holes = ["union", for(z=z_hole_positions)
-	["translate", [-thickness/2, y3-min(width/2, hole_spacing), width/2 + z], hole]];
+//hole_z_positions_hs = [round(-width/2/hole_spacing)+1 : 1 : width/2/hole_spacing-0.4];
+hole_z_positions_hs = [round(-width/hole_spacing)/2+0.5 : 1 : width/hole_spacing/2-0.4];
+hole_z_positions = [for(zm=hole_z_positions_hs) hole_spacing*zm];
+holes = ["union", for(z=hole_z_positions) for(y=hole_y_positions)
+	["translate", [-thickness/2, y, width/2 + z], hole]];
 
 thing = ["difference", body, ["x-debug", holes]];
 

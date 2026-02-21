@@ -56,6 +56,17 @@
 			"thickness_u": "3",
 			"total_height_u": "48",
 			"width_u": "16"
+		},
+		"p2418": {
+			"back_curve_inner_radius_u": "0",
+			"back_curve_radius_u": "4",
+			"front_curve_radius_u": "4",
+			"front_height_u": "12",
+			"hole_y_spacing": "3/4inch",
+			"outer_depth_u": "48",
+			"thickness_u": "4",
+			"total_height_u": "48",
+			"width_u": "16"
 		}
 	},
 	"fileFormatVersion": "1"
