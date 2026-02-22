@@ -29,6 +29,22 @@
 			"xy_corner_radius": "3/16inch",
 			"z_corner_radius": "1/8inch",
 			"$fn": "48"
+		},
+		"p2419": {
+			"description": "15\" x 1+1/2\" x 3/4\" gridbeam",
+			"x0": "-7.5inch",
+			"x1": "7.5inch",
+			"y0": "-3/4inch",
+			"y1": "3/4inch",
+			"z0": "-3/8inch",
+			"z1": "3/8inch",
+			"x_hole_style": "none",
+			"y_hole_style": "straight-9mm",
+			"z_hole_style": "straight-9mm",
+			"z_hole_x_spacing": "1/2chunk",
+			"xy_corner_radius": "3/16inch",
+			"z_corner_radius": "1/8inch",
+			"$fn": "48"
 		}
 	},
 	"fileFormatVersion": "1"

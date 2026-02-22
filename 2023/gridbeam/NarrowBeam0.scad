@@ -1,8 +1,11 @@
-// NarrowBeam0.1
+// NarrowBeam0.2
 // 
 // Gridbeam, but narrow in some direction or another,
 // which might be useful for making corner connector blocks
 // for boxes or something.
+// 
+// v0.2:
+// - Allow Z hole spacing along X to be customized
 
 x0 = "-3/4inch";
 x1 = "3/4inch";
@@ -15,6 +18,7 @@ z_corner_radius = "1/16inch";
 x_hole_style = "none";
 y_hole_style = "none";
 z_hole_style = "none";
+z_hole_x_spacing = "1chunk";
 
 $fn = 48;
 
@@ -33,6 +37,7 @@ z0_mm = togunits1_to_mm(z0);
 z1_mm = togunits1_to_mm(z1);
 xy_corner_radius_mm = togunits1_to_mm(xy_corner_radius);
 z_corner_radius_mm  = togunits1_to_mm(z_corner_radius);
+z_hole_x_spacing_chunks = togunits1_decode(z_hole_x_spacing, unit="chunk");
 
 size = [x1_mm-x0_mm, y1_mm-y0_mm, z1_mm-z0_mm];
 x_hole = ["rotate-xyz", [  0,90, 0], tog_holelib2_hole(x_hole_style, depth=size[0]+10)];
@@ -51,16 +56,16 @@ togmod1_domodule(
 			)
 		],
 		
-		for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2] )
-		for( zm=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2] )
+		for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2 - 0.5] )
+		for( zm=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2 - 0.5] )
 		["translate", [x1_mm, ym*chunk, zm*chunk], x_hole],
 		
-		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2] )
-		for( zm=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2] )
+		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2 - 0.5] )
+		for( zm=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2 - 0.5] )
 		["translate", [xm*chunk, y1_mm, zm*chunk], y_hole],
-
-		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2] )
-		for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2] )
+		
+		for( xm=[-size_chunks[0]/2 + 0.5 : z_hole_x_spacing_chunks : size_chunks[0]/2 - 0.5] )
+		for( ym=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2 - 0.5] )
 		["translate", [xm*chunk, ym*chunk, z1_mm], z_hole],
 	]
 );
