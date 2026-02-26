@@ -1382,6 +1382,14 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/gridbeam/ThreadedGridbeamFoot1.scad", [
+			"p2421",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-30,-20, 60],
+			imageSize: [512, 512],
+			paletteSize: 128,
+		}),
 		...multiOsdBuildRules("2023/gridbeam/ThreadedGridbeamFoot2.scad", [
 			"p2414", "p2420",
 		], {
