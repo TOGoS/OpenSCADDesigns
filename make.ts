@@ -1383,7 +1383,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/gridbeam/ThreadedGridbeamFoot2.scad", [
-			"p2414",
+			"p2414", "p2420",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-30,-40, 30],

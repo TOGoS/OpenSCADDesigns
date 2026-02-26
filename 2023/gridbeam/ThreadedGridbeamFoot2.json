@@ -1,7 +1,16 @@
 {
 	"parameterSets": {
 		"p2414": {
+			"description": "3\"-tall threaded gridbeam foot base",
 			"height": "3inch",
+			"width": "3inch",
+			"inner_thread_radius_offset": "0.2mm",
+			"$tgx11_offset": "-0.1",
+			"$fn": "144"
+		},
+		"p2420": {
+			"description": "3/4\"-tall threaded gridbeam foot base",
+			"height": "3/4inch",
 			"width": "3inch",
 			"inner_thread_radius_offset": "0.2mm",
 			"$tgx11_offset": "-0.1",
