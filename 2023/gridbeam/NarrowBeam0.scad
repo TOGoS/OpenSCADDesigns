@@ -1,4 +1,4 @@
-// NarrowBeam0.2
+// NarrowBeam0.3
 // 
 // Gridbeam, but narrow in some direction or another,
 // which might be useful for making corner connector blocks
@@ -6,6 +6,9 @@
 // 
 // v0.2:
 // - Allow Z hole spacing along X to be customized
+// v0.3:
+// - Allow Y hole spacing along X to be customized
+// - Start some code for 'fixing' counterbored holes.
 
 x0 = "-3/4inch";
 x1 = "3/4inch";
@@ -18,6 +21,7 @@ z_corner_radius = "1/16inch";
 x_hole_style = "none";
 y_hole_style = "none";
 z_hole_style = "none";
+y_hole_x_spacing = "1chunk";
 z_hole_x_spacing = "1chunk";
 
 $fn = 48;
@@ -37,12 +41,26 @@ z0_mm = togunits1_to_mm(z0);
 z1_mm = togunits1_to_mm(z1);
 xy_corner_radius_mm = togunits1_to_mm(xy_corner_radius);
 z_corner_radius_mm  = togunits1_to_mm(z_corner_radius);
+y_hole_x_spacing_chunks = togunits1_decode(y_hole_x_spacing, unit="chunk");
 z_hole_x_spacing_chunks = togunits1_decode(z_hole_x_spacing, unit="chunk");
 
 size = [x1_mm-x0_mm, y1_mm-y0_mm, z1_mm-z0_mm];
-x_hole = ["rotate-xyz", [  0,90, 0], tog_holelib2_hole(x_hole_style, depth=size[0]+10)];
-y_hole = ["rotate-xyz", [-90, 0, 0], tog_holelib2_hole(y_hole_style, depth=size[1]+10)];
-z_hole = ["rotate-xyz", [  0, 0, 0], tog_holelib2_hole(z_hole_style, depth=size[2]+10)];
+
+// Idea I started here is that counterbores would be automatically merged.
+// Proper solution is to have an option to round all convex corners lmao,
+// which would require rewriting everything as SDFs or something.
+y_hole_mode = "normal";
+z_hole_mode = "normal";
+// y_hole_mode = y_hole_style == "THL-1006" && y_hole_x_spacing_chunks < 1 ? "monopocket" : "normal";
+// z_hole_mode = z_hole_style == "THL-1006" && z_hole_x_spacing_chunks < 1 ? "monopocket" : "normal";
+
+eff_x_hole_style = x_hole_style;
+eff_y_hole_style = y_hole_mode == "normal" ? y_hole_style : "straight-5/16inch";
+eff_z_hole_style = z_hole_mode == "normal" ? z_hole_style : "straight-5/16inch";
+
+x_hole = ["rotate-xyz", [  0,90, 0], tog_holelib2_hole(eff_x_hole_style, depth=size[0]+10)];
+y_hole = ["rotate-xyz", [-90, 0, 0], tog_holelib2_hole(eff_y_hole_style, depth=size[1]+10)];
+z_hole = ["rotate-xyz", [  0, 0, 0], tog_holelib2_hole(eff_z_hole_style, depth=size[2]+10)];
 
 togmod1_domodule(
 	let(chunk = togunits1_decode("chunk"))
@@ -60,7 +78,7 @@ togmod1_domodule(
 		for( zm=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2 - 0.5] )
 		["translate", [x1_mm, ym*chunk, zm*chunk], x_hole],
 		
-		for( xm=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2 - 0.5] )
+		for( xm=[-size_chunks[0]/2 + 0.5 : y_hole_x_spacing_chunks : size_chunks[0]/2 - 0.5] )
 		for( zm=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2 - 0.5] )
 		["translate", [xm*chunk, y1_mm, zm*chunk], y_hole],
 		
