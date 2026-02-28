@@ -1,10 +1,12 @@
-// ThreadedGridbeamFoot1.1
+// ThreadedGridbeamFoot1.2
 // 
 // It's just a 2+1/2-4-UNC bolt
 // with square pocket in the top for a gridbeam.
 // 
 // v1.1:
-// - cavity_shape customizable
+// - cavity_shape customizable, supporting `rect:<x>,<y>`
+// v1.2:
+// - `circle:<diameter>` cavity style
 
 height = "2inch";
 floor_thickness = "1/2inch";
@@ -40,10 +42,22 @@ main_cavity_spec =
 		len(size_mm) == 2 ? ["rect", size_mm] :
 		assert(false, str("Wrong number of rect dimensions; expected two, but got: ", rect_dim_strs))
 	) :
+	tokens[0] == "circle" ? (
+		assert(len(tokens) == 2, str("Expected 'circle' to have ona argument, for diameter; got tokens=", tokens))
+		let(d_mm = togunits1_to_mm(tokens[1]))
+		["circle", d_mm]
+	) :
 	assert(false, str("Unrecognized cavity shape: '", cavity_shape, "'"));
 
 main_cavity =
-	main_cavity_spec[0] == "rect" ? tphl1_make_polyhedron_from_layer_function(
+	let( cavity_basic_rath =
+		main_cavity_spec[0] == "rect" ? togpath1_make_rectangle_rath(main_cavity_spec[1], corner_ops = [
+				["round", -inner_surface_offset_mm],
+		]) :
+		main_cavity_spec[0] == "circle" ? togpath1_make_circle_rath(main_cavity_spec[1]/2) :
+		assert(false, str("Unrecognized main cavity spec: ", main_cavity_spec))
+	)
+	tphl1_make_polyhedron_from_layer_function(
 		let( bev=3.175 )
 		[
 			[floor_thickness_mm, -inner_surface_offset_mm],
@@ -51,14 +65,10 @@ main_cavity =
 			[height_mm + bev   , -inner_surface_offset_mm + bev*2],
 		],
 		function(zo) togpath1_rath_to_polypoints(
-			togpath1_make_rectangle_rath(main_cavity_spec[1], corner_ops = [
-				["round", -inner_surface_offset_mm],
-				["offset", zo[1]]
-			])
+			togpath1_offset_rath(cavity_basic_rath, zo[1])
 		),
 		layer_points_transform="key0-to-z"
-	) :
-	assert(false, str("Unrecognized main cavity spec: ", main_cavity_spec));
+	);
 
 togmod1_domodule(
 	let( drainage_hole_positions = [[0,0]] ) // [for(xm=[-1,1]) for(ym=[-1,1]) [xm*38.1/4, ym*38.1/4]] )

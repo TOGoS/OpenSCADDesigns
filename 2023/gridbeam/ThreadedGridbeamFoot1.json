@@ -24,6 +24,16 @@
 			"outer_thread_radius_offset": "-0.2mm",
 			"$tgx11_offset": "-0.1",
 			"$fn": "144"
+		},
+		"p2423": {
+			"description": "3/4\" threaded cylinder with basically a THL-1006 hole",
+			"height": "3/4inch",
+			"cavity_shape": "circle:7/8inch",
+			"floor_thickness": "1/2inch",
+			"inner_surface_offset": "-0.3mm",
+			"outer_thread_radius_offset": "-0.3mm",
+			"$tgx11_offset": "-0.1",
+			"$fn": "48"
 		}
 	},
 	"fileFormatVersion": "1"
