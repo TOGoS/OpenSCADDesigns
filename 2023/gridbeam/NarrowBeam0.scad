@@ -1,4 +1,4 @@
-// NarrowBeam0.3
+// NarrowBeam0.4
 // 
 // Gridbeam, but narrow in some direction or another,
 // which might be useful for making corner connector blocks
@@ -9,6 +9,9 @@
 // v0.3:
 // - Allow Y hole spacing along X to be customized
 // - Start some code for 'fixing' counterbored holes.
+// v0.4:
+// - Option for bottom_membrane_thickness; when > 0,
+//   z holes will not go through the bottom.
 
 x0 = "-3/4inch";
 x1 = "3/4inch";
@@ -23,6 +26,7 @@ y_hole_style = "none";
 z_hole_style = "none";
 y_hole_x_spacing = "1chunk";
 z_hole_x_spacing = "1chunk";
+bottom_membrane_thickness = "0mm";
 
 $fn = 48;
 
@@ -43,6 +47,7 @@ xy_corner_radius_mm = togunits1_to_mm(xy_corner_radius);
 z_corner_radius_mm  = togunits1_to_mm(z_corner_radius);
 y_hole_x_spacing_chunks = togunits1_decode(y_hole_x_spacing, unit="chunk");
 z_hole_x_spacing_chunks = togunits1_decode(z_hole_x_spacing, unit="chunk");
+bottom_membrane_thickness_mm = togunits1_to_mm(bottom_membrane_thickness);
 
 size = [x1_mm-x0_mm, y1_mm-y0_mm, z1_mm-z0_mm];
 
@@ -60,7 +65,9 @@ eff_z_hole_style = z_hole_mode == "normal" ? z_hole_style : "straight-5/16inch";
 
 x_hole = ["rotate-xyz", [  0,90, 0], tog_holelib2_hole(eff_x_hole_style, depth=size[0]+10)];
 y_hole = ["rotate-xyz", [-90, 0, 0], tog_holelib2_hole(eff_y_hole_style, depth=size[1]+10)];
-z_hole = ["rotate-xyz", [  0, 0, 0], tog_holelib2_hole(eff_z_hole_style, depth=size[2]+10)];
+z_hole = ["rotate-xyz", [  0, 0, 0], tog_holelib2_hole(eff_z_hole_style,
+	depth=bottom_membrane_thickness_mm > 0 ? size[2]-bottom_membrane_thickness_mm : size[2]+10
+)];
 
 togmod1_domodule(
 	let(chunk = togunits1_decode("chunk"))

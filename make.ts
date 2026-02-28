@@ -1407,7 +1407,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/gridbeam/NarrowBeam0.scad", [
-			"p2416", "p2417", "p2419", "p2422",
+			"p2416", "p2417", "p2419", "p2422", "p2424",
 		], {
 			cameraPosition: [-40, 40, 30],
 			imageSize: [512, 512],

@@ -61,6 +61,23 @@
 			"xy_corner_radius": "3/16inch",
 			"z_corner_radius": "1mm",
 			"$fn": "48"
+		},
+		"p2424": {
+			"description": "15\" x 1\" x 1+1/2\" gridbeam",
+			"x0": "-7.5inch",
+			"x1": "7.5inch",
+			"y0": "-3/4inch",
+			"y1": "3/4inch",
+			"z0": "-1/4inch",
+			"z1": "3/4inch",
+			"x_hole_style": "none",
+			"y_hole_style": "straight-8mm",
+			"z_hole_style": "THL-1006",
+			"y_hole_x_spacing": "1/2chunk",
+			"xy_corner_radius": "3/16inch",
+			"z_corner_radius": "1mm",
+			"bottom_membrane_thickness": "0.3mm",
+			"$fn": "48"
 		}
 	},
 	"fileFormatVersion": "1"
