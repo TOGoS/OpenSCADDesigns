@@ -132,6 +132,43 @@
 			"hole2_spacing_u": "24",
 			"hole_diameter": "4.5",
 			"hole_spacing_u": "8"
+		},
+		"p2426": {
+			"description": "6-inch long Clurp2505-compatible male2 conduit with -0.3mm overhang offset",
+			"comments": [
+				"p2044, but with -0.3 overhang offset"
+			],
+			"part": "Clarp2508-male3",
+			"length_u": "96",
+			"ms_pos_u": "[2.5, -2.5]",
+			"ms_width_u": "1",
+			"outer_depth_u": "4",
+			"outer_width_u": "24",
+			"thickness_u": "1.5",
+			"overhang_offset": "-0.3",
+			"hole2_diameter": "9",
+			"hole2_spacing_u": "24",
+			"hole_diameter": "4.5",
+			"hole_spacing_u": "8"
+		},
+		"p2427": {
+			"description": "6-inch long Clurp2505-compatible female conduit with -0.3mm overhang offset",
+			"comments": [
+				"Female counterpart to p2426.",
+				"Compare to p2018."
+			],
+			"part": "Clarp2508-female",
+			"length_u": "96",
+			"ms_pos_u": "[2.5, -2.5]",
+			"ms_width_u": "1",
+			"outer_depth_u": "8",
+			"outer_width_u": "24",
+			"thickness_u": "1.5",
+			"overhang_offset": "-0.3",
+			"hole2_diameter": "9",
+			"hole2_spacing_u": "24",
+			"hole_diameter": "4.5",
+			"hole_spacing_u": "8"
 		}
 	},
 	"fileFormatVersion": "1"
