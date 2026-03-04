@@ -1419,6 +1419,13 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/misc/RSAKeyHolder0.scad", [
+			"p2428",
+		], {
+			cameraPosition: [ 40,-40, 40],
+			imageSize: [256, 256],
+			paletteSize: 63,
+		}),
 	},
 });
 

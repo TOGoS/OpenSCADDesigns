@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2428": {
+			"angle": "30",
+			"groove_depth": "9.5mm",
+			"groove_width": "20.1mm",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
