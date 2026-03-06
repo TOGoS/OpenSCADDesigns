@@ -834,7 +834,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/conduit/Clarp2508.scad", [
 			"p2034","p2036","p2038","p2044","p2046","p2048",
-			"p2426",
+			"p2426","p2429",
 		], {
 			cameraPosition: [-20,-20, 40],
 			imageRotation: 225,

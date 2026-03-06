@@ -134,7 +134,7 @@
 			"hole_spacing_u": "8"
 		},
 		"p2426": {
-			"description": "6-inch long Clurp2505-compatible male2 conduit with -0.3mm overhang offset",
+			"description": "6-inch long Clurp2505-compatible male3 conduit with -0.3mm overhang offset",
 			"comments": [
 				"p2044, but with -0.3 overhang offset"
 			],
@@ -165,6 +165,21 @@
 			"outer_width_u": "24",
 			"thickness_u": "1.5",
 			"overhang_offset": "-0.3",
+			"hole2_diameter": "9",
+			"hole2_spacing_u": "24",
+			"hole_diameter": "4.5",
+			"hole_spacing_u": "8"
+		},
+		"p2429": {
+			"description": "15-inch long Clurp2505-compatible male3 conduit",
+			"part": "Clarp2508-male3",
+			"length_u": "240",
+			"ms_pos_u": "[2.5, -2.5]",
+			"ms_width_u": "1",
+			"outer_depth_u": "4",
+			"outer_width_u": "24",
+			"thickness_u": "1.5",
+			"overhang_offset": "-0.1",
 			"hole2_diameter": "9",
 			"hole2_spacing_u": "24",
 			"hole_diameter": "4.5",
