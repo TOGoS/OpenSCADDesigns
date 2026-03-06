@@ -1426,6 +1426,13 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63,
 		}),
+		...multiOsdBuildRules("2023/gridbeam/WireShelfPostAdapter0.scad", [
+			"p2430",
+		], {
+			cameraPosition: [ 40,-40, 40],
+			imageSize: [256, 256],
+			paletteSize: 63,
+		}),
 	},
 });
 
