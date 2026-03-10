@@ -635,6 +635,13 @@ const p192xBuildRules = flattenObj(map(
 // Something like this.
 const builder = new Builder({
 	rules: {
+		...osdBuildRules("p1346", {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // Only because OpenSCAD 2021 takes forever!
+			inScadFile: "2023/square/Square1.scad",
+			cameraPosition: [ 100,-100, 150],
+			imageSize: [512,512],
+			paletteSize: 64
+		}),
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", [
 			...partIdRange("p",1711,1719),
 			...partIdRange("p",2260,2269),
