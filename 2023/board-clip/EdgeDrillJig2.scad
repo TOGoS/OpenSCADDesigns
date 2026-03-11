@@ -1,4 +1,4 @@
-// EdgeDrillJig2.2
+// EdgeDrillJig2.3
 // 
 // Has threaded holes, making for a simpler design
 // than EdgeDrillJig1.0.
@@ -12,6 +12,16 @@
 // - Option for edge notches, to help you align stuff
 // v2.2:
 // - x/y_hole_spacing is now configurable
+// v2.3:
+// - x/y_hole_position = "auto" will give one hole per chunk if arm is longer than one chunk
+// - x_hole_x_frequency, y_hole_y_frequency, x_hole_z_frequency, and y_hole_z_frequency
+//   can all be set to e.g. 2 to put holes between the other holes
+//   without changing the position of the first and last.
+// - It is apparent now that 'position' and 'spacing' without indicating axis
+//   were bad names for variables.  I think NarrowBeam0's naming,
+//   with explicit 'x/y_spacing' would be the way to go for EdgeDrillJig3,
+//   but keeping 'frequency' separate from 'spacing' to allow for
+//   doubling without missing chunk centers.
 
 width = "2chunk";
 thickness = "3/8inch";
@@ -19,15 +29,27 @@ thickness = "3/8inch";
 edge_notch_spacing = "1/2inch";
 edge_notch_depth   = "0";
 
+// Length of X arm
 x_length = "1+1/2inch";
+// Position of X-arm holes along X axis; 'auto' for centered or per chunk, depending on length
 x_hole_position = "auto";
+// Frequency of holes in between first and last
+x_hole_x_frequency = 1;
+// Spacing of X-arm holes along Z axis
 x_hole_spacing = "1chunk";
+x_hole_z_frequency = 1;
 x_hole_style = "1-8-UNC";
 x_hole_r_offset = "0.2mm";
 
+// Length of Y arm
 y_length = "1+1/2inch";
+// Position of Y-arm holes along Y axis; 'auto' for centered or per chunk, depending on length
 y_hole_position = "auto";
+// Frequency of holes in between first and last
+y_hole_y_frequency = 1;
+// Spacing of Y-arm holes along Z axis
 y_hole_spacing = "1chunk";
+y_hole_z_frequency = 1;
 y_hole_style = "3/4-10-UNC";
 y_hole_r_offset = "0.2mm";
 
@@ -44,16 +66,21 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TOGVecLib0.scad>
 
+function along_arm_positions(arm_length, chunk, freq) =
+	arm_length <= chunk ? [arm_length/2] :
+	let(arm_length_chunks = arm_length/chunk)
+	[for(x=[0.5 : 1/freq : arm_length_chunks-0.4]) x*chunk];
+
+chunk        = togunits1_to_mm("chunk");
 width_mm     = togunits1_to_mm(width);
 width_chunks = togunits1_decode(width, unit="chunk");
-chunk        = togunits1_to_mm("chunk");
 thickness_mm = togunits1_to_mm(thickness);
 x_length_mm  = togunits1_to_mm(x_length);
 y_length_mm  = togunits1_to_mm(y_length);
 x_hole_r_offset_mm = togunits1_to_mm(x_hole_r_offset);
 y_hole_r_offset_mm = togunits1_to_mm(y_hole_r_offset);
-x_hole_position_mm = x_hole_position == "auto" ? x_length_mm/2 : togunits1_to_mm(x_hole_position);
-y_hole_position_mm = y_hole_position == "auto" ? y_length_mm/2 : togunits1_to_mm(y_hole_position);
+x_hole_positions_mm = x_hole_position == "auto" ? along_arm_positions(x_length_mm, chunk, x_hole_x_frequency) : [togunits1_to_mm(x_hole_position)];
+y_hole_positions_mm = y_hole_position == "auto" ? along_arm_positions(y_length_mm, chunk, y_hole_y_frequency) : togunits1_to_mm(y_hole_position);
 
 enat = togunits1_to_mm(edge_notch_spacing);
 width_enats = round(width_mm/enat);
@@ -93,10 +120,12 @@ togmod1_domodule(
 			z
 		)),
 		
-		for( z=[-width_mm/2 + x_hole_z_spacing_unit/2 : x_hole_z_spacing_unit : width_mm/2] )
-		["translate", [x_hole_position_mm, -t/2, z], ["rotate", [90,0,0], x_hole]],
+		for( z=[-width_mm/2 + x_hole_z_spacing_unit/2 : x_hole_z_spacing_unit/x_hole_z_frequency : width_mm/2-0.1] )
+		for( x=x_hole_positions_mm )
+		["translate", [x, -t/2, z], ["rotate", [90,0,0], x_hole]],
 		
-		for( z=[-width_mm/2 + y_hole_z_spacing_unit/2 : y_hole_z_spacing_unit : width_mm/2] )
-		["translate", [-t/2, y_hole_position_mm, z], ["rotate", [0,90,0], y_hole]],
+		for( z=[-width_mm/2 + y_hole_z_spacing_unit/2 : y_hole_z_spacing_unit/y_hole_z_frequency : width_mm/2-0.1] )
+		for( y=y_hole_positions_mm )
+		["translate", [-t/2, y, z], ["rotate", [0,90,0], y_hole]],
 	]
 );
