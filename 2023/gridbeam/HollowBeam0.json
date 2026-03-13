@@ -1,5 +1,23 @@
 {
 	"parameterSets": {
+		"p2433": {
+			"length": "1chunk",
+			"east_hole_frequency": "2",
+			"east_hole_spacing": "1chunk",
+			"east_hole_style": "straight-9mm",
+			"north_hole_frequency": "2",
+			"north_hole_spacing": "1chunk",
+			"north_hole_style": "straight-5mm",
+			"south_hole_frequency": "2",
+			"south_hole_spacing": "1chunk",
+			"south_hole_style": "straight-12.7mm",
+			"west_hole_frequency": "2",
+			"west_hole_spacing": "1chunk",
+			"west_hole_style": "straight-9mm",
+			"wall_thickness": "3/16inch",
+			"z_inner_thread_style": "1+1/4-7-UNC",
+			"$fn": "128"
+		},
 		"p2441": {
 			"length": "1chunk",
 			"east_hole_frequency": "2",

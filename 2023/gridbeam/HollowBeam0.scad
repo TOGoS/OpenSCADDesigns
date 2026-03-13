@@ -1,4 +1,4 @@
-// HollowBeam0.1
+// HollowBeam0.2
 // 
 // Hollow square tubing.
 // Each side can have differently-sized holes.
@@ -6,6 +6,9 @@
 // Possibly useful as a sort of coupler when you need to attach stuff to the ceiling?
 // 
 // See also: Schonk3, Schonk4
+// 
+// v0.2:
+// - Add option for Z-wise inner threads
 
 length = "1chunk";
 wall_thickness = "3/16inch";
@@ -21,6 +24,9 @@ south_hole_frequency = 2;
 west_hole_style = "straight-9mm";
 west_hole_spacing = "1chunk";
 west_hole_frequency = 2;
+z_inner_thread_style = "none";
+z_inner_thread_radius_offset = 0.2;
+z_inner_thread_inset = "2mm";
 
 $fn = 32;
 
@@ -28,6 +34,7 @@ use <../lib/TOGMod1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGUnits1.scad>
+use <../lib/TOGThreads2.scad>
 
 size_mm = togunits1_vec_to_mms(["chunk","chunk"]);
 length_mm = togunits1_to_mm(length);
@@ -51,6 +58,11 @@ togmod1_domodule(
 				size_mm[1]-wall_thickness_mm*2,
 			], r=1),
 		]),
+		
+		togthreads2_make_threads(
+			togthreads2_simple_zparams([[-length_mm/2, 1], [length_mm/2, 1]], taper_length=1, inset=togunits1_to_mm(z_inner_thread_inset)),
+			z_inner_thread_style
+		),
 		
 		for( zm=[-length_mm/north_hole_spacing_mm/2 + 0.5 : 1/north_hole_frequency : length_mm/north_hole_spacing_mm/2-0.4] )
 		["translate", [0,  size_mm[1]/2, zm*north_hole_spacing_mm], ["rotate", [-90,0,0], north_hole]],

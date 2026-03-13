@@ -1444,6 +1444,7 @@ const builder = new Builder({
 			paletteSize: 63,
 		}),
 		...multiOsdBuildRules("2023/gridbeam/HollowBeam0.scad", [
+			"p2433",
 			"p2441",
 		], {
 			cameraPosition: [ 20,-40, 40],
