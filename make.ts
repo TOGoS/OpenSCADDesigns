@@ -1443,6 +1443,13 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63,
 		}),
+		...multiOsdBuildRules("2023/gridbeam/HollowBeam0.scad", [
+			"p2441",
+		], {
+			cameraPosition: [ 20,-40, 40],
+			imageSize: [256, 256],
+			paletteSize: 63,
+		}),
 	},
 });
 
