@@ -810,7 +810,7 @@ const builder = new Builder({
 			imageSize: [384, 384],
 		}),
 		
-		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2068","p2069"], {
+		...multiOsdBuildRules("2023/hook/Hook3.scad", ["p2068","p2069","p2434"], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [20,-20, 30],
 			imageSize: [384, 384],
