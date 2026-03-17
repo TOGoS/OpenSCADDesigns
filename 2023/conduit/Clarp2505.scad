@@ -1,4 +1,4 @@
-// Clarp2505.1.4
+// Clarp2505.1.5
 // 
 // Prototype clippy thing
 // 
@@ -16,6 +16,8 @@
 // - More specific part names
 // v1.4:
 // - end_offset option
+// v1.5:
+// - overhang_offset option
 
 width_u = 24;
 length_u = 2;
@@ -27,6 +29,9 @@ hole_spacing_u = 24;
 slot_length_u = 4;
 // How far to extend the ends?
 end_offset = -0.1; // 0.1
+// Offset to apply to overhangy bit of mating surface (mm); you probably want a small negative value
+overhang_offset = 0.0; // [-1:0.1:1]
+// Offset to apply to 'foot' surfaces
 $tgx11_offset = -0.1;
 $fn = 24;
 
@@ -56,11 +61,11 @@ function mirror_points(points, offset=[0,0]) = [
 	for(p=reverse_list(points)) extend_point_dat(p, offset, [-1,1]),
 ];
 
-clarp_face_point_data = [
+function clarp_face_point_data(foo, moo) = [
 	[ 2,  0],
-	[ 3, -1],
-	[ 3, -2],
-	[ 2, -3],
+	[ 3 + foo, -1 - foo],
+	[ 3 + foo, -2 + foo],
+	[ 2 - moo, -3 - moo],
 ];
 
 fpd = mirror_points([
@@ -75,7 +80,7 @@ fpd = mirror_points([
 	[ 0,  2],
 	[ 1,  1],
 	[ 1,  0],
-	each clarp_face_point_data,
+	each clarp_face_point_data(overhang_offset, 0),
 	[ 2, -5],
 	[ 3, -6],
 ], [-width_u/2, 0]);
@@ -90,9 +95,9 @@ mpd = mirror_points([
 
 	[ 0,  6],
 	[ 0,  2],
-	each clarp_face_point_data,
-	[ 2, -4],
-	[ 3, -5],
+	each clarp_face_point_data(0, overhang_offset),
+	[ 2 - overhang_offset, -4],
+	[ 3 - overhang_offset, -5],
 	[ 4, -5],
 	[ 5, -4],
 	[ 5,  0],
