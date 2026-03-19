@@ -49,6 +49,30 @@
 			"xy_corner_radius": "100",
 			"z_corner_radius": "3.2",
 			"$fn": "96"
+		},
+		"p2437": {
+			"description": "12-inch x 3/4-inch x 1/4-inch gridrail with 3/4-inch-spaced 4.5mm diamond holes",
+			"chunk_pitch": "19.05",
+			"corner_shape": "cone2",
+			"hole_style": "diamond-4.5mm",
+			"length_chunks": "16",
+			"thickness": "6.35",
+			"width_chunks": "1",
+			"xy_corner_radius": "5",
+			"z_corner_radius": "1.6",
+			"$fn": "32"
+		},
+		"p2438": {
+			"description": "12-inch x 1/2-inch x 1/4-inch gridrail with 3/4-inch-spaced 4.5mm diamond holes",
+			"chunk_pitch": "19.05",
+			"corner_shape": "cone2",
+			"hole_style": "diamond-4.5mm",
+			"length_chunks": "16",
+			"thickness": "6.35",
+			"width_chunks": "2",
+			"xy_corner_radius": "5",
+			"z_corner_radius": "1.6",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"

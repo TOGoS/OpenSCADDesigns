@@ -769,7 +769,10 @@ const builder = new Builder({
 			cameraPosition: [ 20, 20, 20],
 			imageSize: [256,256],
 		}),
-		...multiOsdBuildRules("2023/gridbeam/Gridrail2.scad", ["p1957","p1958","p2244","p2245","p2247"], {
+		...multiOsdBuildRules("2023/gridbeam/Gridrail2.scad", [
+			"p1957","p1958","p2244","p2245","p2247",
+			"p2437","p2438",
+		], {
 			cameraPosition: [-20,-20, 20],
 			imageSize: [512,512],
 			paletteSize: 128
