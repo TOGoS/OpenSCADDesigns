@@ -1,5 +1,12 @@
 {
 	"parameterSets": {
+		"p1325": {
+			"head_height": "25.4",
+			"hole_diameter": "7.9375",
+			"hook_depth": "25.4",
+			"thickness": "3.175",
+			"width": "25.4"
+		},
 		"p1347": {
 			"hole_diameter": "5",
 			"hook_depth": "38.1",
