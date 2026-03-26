@@ -1464,6 +1464,14 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63,
 		}),
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat2.scad", [
+			"p2435",
+		], {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-30, 20,-15],
+			imageSize: [512,512],
+			paletteSize: 64
+		}),
 	},
 });
 
