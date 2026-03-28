@@ -100,6 +100,22 @@
 			"pinhole_height": "3.6mm",
 			"$tgx11_offset": "-0.15",
 			"$fn": "32"
+		},
+		"p2462": {
+			"description": "2x6-chunk MiniRail2 panel with bowtie cutouts on all edges, solid back",
+			"bottom_membrane_thickness": "0.3mm",
+			"bottom_segmentation": "none",
+			"bowtie_offset": "-0.03mm",
+			"bowtie_style": "round",
+			"bowtie_x_placement": "chunk",
+			"bowtie_y_placement": "chunk",
+			"length": "2chunk",
+			"minirail_edge_x_offset": "-0.2mm",
+			"panel_thickness": "1/4inch",
+			"panel_width": "6chunk",
+			"pinhole_height": "3.6mm",
+			"$tgx11_offset": "-0.15",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
