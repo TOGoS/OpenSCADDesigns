@@ -801,7 +801,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", [
 			"p1971", "p1972", "p1973", "p1974", "p1975", "p1976", "p1977", "p1978", "p1979",
-			"p2210",
+			"p2210", "p2471",
 			// [2026-01-11] note: none of p234x render properly, either using OpenSCAD 2021
 			// or OpenSCAD 2024.  See 3DPrintingLog.org#2026-01-11-p234x-stl-troubles and/or
 			// the experimental/p234x-take3 branch (x-git-object:2005a5baed69761c2b5f3c06821a5a8a074f5727).

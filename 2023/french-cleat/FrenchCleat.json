@@ -1173,6 +1173,20 @@
 			"opposite_edge_style": "FT",
 			"fc_surface_offset": "-0.1",
 			"$tgx11_offset": "-0.1"
+		},
+		"p2471": {
+			"backside_texture": "flat",
+			"description": "3\"-tall x 1+1/2\"-wide funky stopper (THL-1006 version, for 1+1/2\" gridbeam)",
+			"fc_surface_offset": "0",
+			"height": "3inch",
+			"hole_style": "GB-counterbored",
+			"include_top_hole_row": "false",
+			"length": "1chunk",
+			"mating_edge_style": "F-trimmed",
+			"mode": "X",
+			"opposite_edge_style": "FFS-trimmed",
+			"slot_height": "57.1",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"
