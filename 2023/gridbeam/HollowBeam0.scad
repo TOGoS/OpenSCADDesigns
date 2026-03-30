@@ -1,4 +1,4 @@
-// HollowBeam0.3
+// HollowBeam0.4
 // 
 // Hollow square tubing.
 // Each side can have differently-sized holes.
@@ -11,8 +11,13 @@
 // - Add option for Z-wise inner threads
 // v0.3:
 // - Add $tgx11_offset option
+// v0.4:
+// - Add width_x, width_y options
 
 length = "1chunk";
+width_x = "1chunk";
+width_y = "1chunk";
+// Nominal wall thickness, before offsetting
 wall_thickness = "3/16inch";
 north_hole_style = "straight-5mm";
 north_hole_spacing = "1chunk";
@@ -40,7 +45,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TOGThreads2.scad>
 
-size_mm = togunits1_vec_to_mms(["chunk","chunk"]);
+size_mm = togunits1_vec_to_mms([width_x, width_y]);
 length_mm = togunits1_to_mm(length);
 wall_thickness_mm = togunits1_to_mm(wall_thickness);
 
