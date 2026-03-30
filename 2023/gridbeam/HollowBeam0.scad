@@ -1,4 +1,4 @@
-// HollowBeam0.2
+// HollowBeam0.3
 // 
 // Hollow square tubing.
 // Each side can have differently-sized holes.
@@ -9,6 +9,8 @@
 // 
 // v0.2:
 // - Add option for Z-wise inner threads
+// v0.3:
+// - Add $tgx11_offset option
 
 length = "1chunk";
 wall_thickness = "3/16inch";
@@ -28,6 +30,8 @@ z_inner_thread_style = "none";
 z_inner_thread_radius_offset = 0.2;
 z_inner_thread_inset = "2mm";
 
+// Outward offset to be applied to outer/inner/end surfaces; usually -0.1 or so is sufficient.
+$tgx11_offset = 0; // 0.01
 $fn = 32;
 
 use <../lib/TOGMod1.scad>
@@ -51,12 +55,12 @@ west_hole_spacing_mm = togunits1_to_mm(west_hole_spacing);
 
 togmod1_domodule(
 	["difference",
-		togmod1_linear_extrude_z([-length_mm/2, length_mm/2], ["difference",
-			togmod1_make_rounded_rect(size_mm, r=wall_thickness_mm),
+		togmod1_linear_extrude_z([-length_mm/2 - $tgx11_offset, length_mm/2 + $tgx11_offset], ["difference",
+			togmod1_make_rounded_rect(size_mm, r=max(1, wall_thickness_mm + $tgx11_offset)),
 			togmod1_make_rounded_rect([
-				size_mm[0]-wall_thickness_mm*2,
-				size_mm[1]-wall_thickness_mm*2,
-			], r=1),
+				size_mm[0]-wall_thickness_mm*2 - $tgx11_offset*2,
+				size_mm[1]-wall_thickness_mm*2 - $tgx11_offset*2,
+			], r=max(0.5, 1-$tgx11_offset)),
 		]),
 		
 		togthreads2_make_threads(
