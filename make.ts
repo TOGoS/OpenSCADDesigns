@@ -636,7 +636,7 @@ const p192xBuildRules = flattenObj(map(
 const builder = new Builder({
 	rules: {
 		...multiOsdBuildRules("2023/hook/SimpleJHook1.scad", [
-			"p1325", "p1347", "p1349", "p1761",
+			"p1325", "p1347", "p1349", "p1761", "p2472",
 		], {
 			cameraPosition: [-80, 80, 120],
 			imageSize: [256,256],

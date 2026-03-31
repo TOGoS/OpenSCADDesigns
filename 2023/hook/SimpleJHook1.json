@@ -26,8 +26,15 @@
 			"hook_depth": "76.2",
 			"thickness": "5",
 			"width": "38.1"
+		},
+		"p2472": {
+			"description": "8mm-thick 1+1/2-inch-wide/deep J-hook for holding backpacks or something",
+			"head_height": "25.4",
+			"hole_diameter": "7.9375",
+			"hook_depth": "38.1",
+			"thickness": "8",
+			"width": "38.1"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }
