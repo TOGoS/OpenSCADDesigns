@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.10
+// GridbeamPanelRouterTemplate-v2.11
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -33,8 +33,11 @@
 // v2.10:
 // - Refactor hole placement so that either a bushing or small hole
 //   is placed at each half grid position, and never both
+// v2.11:
+// - Option for 'round' bowties
+// - Fix chopping-off of corners when bowtie_position_offset = 0.5
 
-// Length of bowties (mm); 3/4" = 19.05mm
+// Length of bowties (mm); 3/4" = 19.05mm; for round bowties, this corresponds to diamond_r*3
 bowtie_length    = 19.05;
 // Thickness of panel (mm); 1/8" = 3.175mm
 thickness = 3.175;
@@ -59,7 +62,7 @@ bowtie_position_offset = 1.0; // 0.5
 bowtie_spacing = 1.0; // 0.5
 bowtie_edges = [true, true, false, false];
 
-bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-maximal"]
+bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-maximal","round"]
 
 // Style of in-between holes; THL-1001 is for #6 flatheads, THL-1002 is for 1/4" flatheads
 hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002", "THL-1010", "countersquare:5mm,12mm"]
@@ -124,18 +127,34 @@ let( panel_size_chunks = [for(d=panel_size) round(d/grid_unit_size)] )
 	]
 ];
 
+use <../lib/RoundBowtie0.scad>
+
+bowtie_2d_togmod =
+	bowtie_cutout_shape == "round" ? ["render", roundbowtie0_make_bowtie_2d(bowtie_length/3, offset=margin, $fn=max(24,$fn))] : ["union"];
+
+module bowtie_of_style_2(style, length, r_offset) {
+	if( style == "round" ) {
+		togmod1_domodule(bowtie_2d_togmod);
+	} else {
+		bowtie_of_style(style, length, r_offset);
+	}
+}
+
+
 translate([0,0,0]) {
 	difference() {
 		linear_extrude(thickness) difference() {
 			rounded_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
+			
 			for( pos=bowtie_positions(panel_size, [bowtie_length*bowtie_spacing, bowtie_length*bowtie_spacing], bowtie_position_offset*bowtie_length, edges=bowtie_edges ) ) {
-				translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style(bowtie_cutout_shape, bowtie_length, margin);
+				translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style_2(bowtie_cutout_shape, bowtie_length, margin);
 			}
 			if( bowtie_position_offset == 0.5 ) {
+				echo("Chopping corners!");
+				for( x=[-panel_size[0]/2, panel_size[0]/2] )
+				for( y=[-panel_size[1]/2, panel_size[1]/2] )
 				// Chop off corners
-				for( r=[0:90:270] ) rotate([0,0,r]) {
-					translate([bowtie_length*2, bowtie_length*2]) square([bowtie_length, bowtie_length], center=true);
-				}
+				translate([x,y]) square([bowtie_length, bowtie_length], center=true);
 			}
 		}
 		
