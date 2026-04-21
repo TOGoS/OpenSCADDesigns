@@ -121,6 +121,24 @@
 			"preview_fn": "12",
 			"render_fn": "48",
 			"thickness": "3.175"
+		},
+		"p2473": {
+			"panel_size_gc": "[8, 3]",
+			"thickness": "3.175",
+			"beveled_grooves_enabled": "true",
+			"bowtie_cutout_shape": "semi-maximal",
+			"bowtie_edges": "[\"true\", \"true\", \"true\", \"true\"]",
+			"bowtie_length": "19.05",
+			"bowtie_position_offset": "1",
+			"bowtie_spacing": "1",
+			"corner_radius": "4.7625",
+			"grid_unit_size": "38.1",
+			"hole2_type_name": "countersquare:5mm,12mm",
+			"hole_diameter": "12.5",
+			"margin": "0",
+			"pocket_floor_thickness": "99",
+			"preview_fn": "12",
+			"render_fn": "48"
 		}
 	},
 	"fileFormatVersion": "1"

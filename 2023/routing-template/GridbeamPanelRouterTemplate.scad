@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.8
+// GridbeamPanelRouterTemplate-v2.9
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -26,6 +26,10 @@
 // - Add option for 'bowtie' cutouts along the edges
 // v2.8:
 // - Allow beveled_grooves_enabled=false
+// v2.9:
+// - More options for small hole style,
+//   including 5mm straight hole with 12mm square counterbore
+// - Make hole_diameter adjustable in 0.1mm increments
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -41,7 +45,7 @@ panel_size_gc = [4, 4];
 margin    = 0.00;  // 0.01
 
 // Size of holes; 12.2 printed with my regular Slic3r settings on my Kobra Max was found to fit 7/16" router bushings
-hole_diameter = 12;
+hole_diameter = 12; // 0.1
 
 // Cut grooves to help guide the bushing into the holes; may be useful when hole_diameter is barely large enough for the bushing
 beveled_grooves_enabled = true;
@@ -55,7 +59,7 @@ bowtie_edges = [true, true, false, false];
 bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-maximal"]
 
 // Style of in-between holes; THL-1001 is for #6 flatheads, THL-1002 is for 1/4" flatheads
-hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002"]
+hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002", "THL-1010", "countersquare:5mm,12mm"]
 
 // 6.35mm = 1/4", 4.7625mm = 3/16"; 3.125mm = 1/8"
 corner_radius = 4.7625;
@@ -78,12 +82,23 @@ module __end_parameter_list() { }
 hole2_surface_diameter = 12; // Eh
 
 include <../lib/BowtieLib-v0.scad>
-include <../lib/TOGHoleLib-v1.scad>
+include <../lib/TOGHoleLib2.scad>
+include <../lib/TOGMod1.scad>
+include <../lib/TOGMod1Constructors.scad>
 
 // Panel
 
 inch = 25.4;
 panel_size = [panel_size_gc[0] * grid_unit_size, panel_size_gc[1] * grid_unit_size];
+small_hole =
+	let( counterbore_inset = min(thickness-1, 3.175) )
+	["render",
+		hole2_type_name == "countersquare:5mm,12mm" ? ["union",
+			togmod1_linear_extrude_z( [-thickness-1, 1], togmod1_make_circle(d=5) ),
+			togmod1_linear_extrude_z( [-counterbore_inset, 2], togmod1_make_rounded_rect([12, 12], r=3.175) )
+		] :
+		tog_holelib2_hole(hole2_type_name, thickness*2, counterbore_inset=counterbore_inset)
+	];
 
 translate([0,0,0]) {
 	difference() {
@@ -102,12 +117,15 @@ translate([0,0,0]) {
 				translate( pos ) circle(d=hole_diameter, $fn=max($fn,48));
 			}
 		}
-		small_hole_positions = fencepost_positions_ofe_2d(panel_size, [grid_unit_size/2, grid_unit_size/2], grid_unit_size/2);
+		small_hole_positions = [for(hp=fencepost_positions_ofe_2d(panel_size, [grid_unit_size/2, grid_unit_size/2], grid_unit_size/2))
+			// TODO: Skip positions that are also large holes.
+			// This might be easier to do if you work with integers and multiply at the end,
+			// like I do for most newer designs
+			hp
+		];
 		if( hole2_type_name != "none" ) translate([0,0,thickness]) {
 			for( pos=small_hole_positions ) {
-				translate(pos) {
-					tog_holelib_hole(hole2_type_name, thickness*2);
-				}
+				togmod1_domodule(["translate", pos, small_hole]);
 			}
 		}
 		if(beveled_grooves_enabled) for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size, grid_unit_size/2) ) {
