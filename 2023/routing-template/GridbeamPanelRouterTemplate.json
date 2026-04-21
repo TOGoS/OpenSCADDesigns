@@ -135,7 +135,7 @@
 			"grid_unit_size": "38.1",
 			"hole2_type_name": "countersquare:5mm,12mm",
 			"hole_diameter": "12.5",
-			"margin": "0",
+			"margin": "0.1",
 			"pocket_floor_thickness": "99",
 			"preview_fn": "12",
 			"render_fn": "48"

@@ -412,7 +412,7 @@ function osdBuildRules(partId:string, opts:{
 	const rotPart = rotation != 0 ? `-rot${opts.imageRotation}` : '';
 	const palSizePart = paletteSize == 36 ? '' : `-${paletteSize}color`;
 	
-	const crushSizes = [512, 384, 256, 128];
+	const crushSizes = [1024, 512, 384, 256, 128];
 	const crushedPngBuildRules : {[targetName:string]: BuildRule}= {};
 	
 	const imageSize = opts.imageSize ?? [256, 256];
@@ -1474,6 +1474,14 @@ const builder = new Builder({
 			openScadCmd: OPENSCAD202101_CMD,
 			cameraPosition: [-30, 20,-15],
 			imageSize: [512,512],
+			paletteSize: 64
+		}),
+		...multiOsdBuildRules("2023/routing-template/GridbeamPanelRouterTemplate.scad", [
+			"p2473",
+		], {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-20, -40, 120],
+			imageSize: [1024, 1024],
 			paletteSize: 64
 		}),
 	},
