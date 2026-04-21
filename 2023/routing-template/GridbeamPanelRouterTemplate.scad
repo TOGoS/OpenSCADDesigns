@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.9
+// GridbeamPanelRouterTemplate-v2.10
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -30,6 +30,9 @@
 // - More options for small hole style,
 //   including 5mm straight hole with 12mm square counterbore
 // - Make hole_diameter adjustable in 0.1mm increments
+// v2.10:
+// - Refactor hole placement so that either a bushing or small hole
+//   is placed at each half grid position, and never both
 
 // Length of bowties (mm); 3/4" = 19.05mm
 bowtie_length    = 19.05;
@@ -86,10 +89,13 @@ include <../lib/TOGHoleLib2.scad>
 include <../lib/TOGMod1.scad>
 include <../lib/TOGMod1Constructors.scad>
 
+function snoc(list, item) = [for(i=list) i, item];
+
 // Panel
 
 inch = 25.4;
 panel_size = [panel_size_gc[0] * grid_unit_size, panel_size_gc[1] * grid_unit_size];
+
 small_hole =
 	let( counterbore_inset = min(thickness-1, 3.175) )
 	["render",
@@ -99,6 +105,24 @@ small_hole =
 		] :
 		tog_holelib2_hole(hole2_type_name, thickness*2, counterbore_inset=counterbore_inset)
 	];
+
+bushing_hole = hole_diameter <= 0 ? ["union"] :
+	["render",
+		togmod1_linear_extrude_z( [-thickness-1, 1], togmod1_make_circle(d=hole_diameter) )
+	];
+	
+
+holes =
+let( panel_size_chunks = [for(d=panel_size) round(d/grid_unit_size)] )
+["union",
+	for( hpm = fencepost_positions_ofe_2d(panel_size_chunks, [1/2, 1/2], 1/2) )
+	let( xm_from_left  = hpm[0] - panel_size_chunks[0]/2 )
+	let( ym_from_front = hpm[1] - panel_size_chunks[1]/2 )
+	let( hole = (xm_from_left % 1 == 0 || ym_from_front % 1 == 0) ? small_hole : bushing_hole )
+	each hole == ["union"] ? [] : [
+		["translate", snoc(hpm * grid_unit_size, thickness), hole]
+	]
+];
 
 translate([0,0,0]) {
 	difference() {
@@ -113,21 +137,9 @@ translate([0,0,0]) {
 					translate([bowtie_length*2, bowtie_length*2]) square([bowtie_length, bowtie_length], center=true);
 				}
 			}
-			if( hole_diameter > 0 ) for( pos=grid_cell_center_positions(panel_size, [grid_unit_size, grid_unit_size]) ) {
-				translate( pos ) circle(d=hole_diameter, $fn=max($fn,48));
-			}
 		}
-		small_hole_positions = [for(hp=fencepost_positions_ofe_2d(panel_size, [grid_unit_size/2, grid_unit_size/2], grid_unit_size/2))
-			// TODO: Skip positions that are also large holes.
-			// This might be easier to do if you work with integers and multiply at the end,
-			// like I do for most newer designs
-			hp
-		];
-		if( hole2_type_name != "none" ) translate([0,0,thickness]) {
-			for( pos=small_hole_positions ) {
-				togmod1_domodule(["translate", pos, small_hole]);
-			}
-		}
+		
+		togmod1_domodule(holes);
 		if(beveled_grooves_enabled) for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size, grid_unit_size/2) ) {
 			translate([0,y,thickness]) rotate([0,0,90]) rotate([90,0,0]) linear_extrude(grid_unit_size*(panel_size_gc[0]-1), center=true) {
 				polygon([
