@@ -1484,6 +1484,14 @@ const builder = new Builder({
 			imageSize: [1024, 1024],
 			paletteSize: 64
 		}),
+		...multiOsdBuildRules("2023/spacer/FlatheadRouterTemplateAdapter1.scad", [
+			"p2474", "p2475",
+		], {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-60, -60, 60],
+			imageSize: [128, 128],
+			paletteSize: 63
+		}),
 	},
 });
 

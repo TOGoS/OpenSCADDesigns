@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p2474": {
+			"bolt_diameter": "1/4inch",
+			"bolt_head_diameter": "1/2inch",
+			"bolt_head_height": "3/16inch",
+			"bushing_hole_diameter": "12.5",
+			"bottom_outer_inset": "0.0mm"
+		},
+		"p2475": {
+			"bolt_diameter": "1/4inch",
+			"bolt_head_diameter": "1/2inch",
+			"bolt_head_height": "3/16inch",
+			"bushing_hole_diameter": "12.5",
+			"bottom_outer_inset": "0.5mm"
+		}
+	},
+	"fileFormatVersion": "1"
+}
