@@ -1,9 +1,13 @@
-// PanelCornerBracket1.0
+// PanelCornerBracket1.1
 // 
 // Build 'gridbeam' structures with only panels;
 // no actual gridbeam required!
 // Use these inside corners.
 // May require bolts or nuts with small heads.
+// 
+// v1.1:
+// - Round coners using tphl1_make_rounded_cuboid.
+//   This is one way to get that done, but maybe not the best way.
 
 thickness = "3/8inch";
 $fn = 32;
@@ -23,7 +27,7 @@ togmod1_domodule(
 	let( chunk = 38.1 )
 	// TODO: Chop off more of corners
 	// TODO: Round corners nicely?
-	let( unit_cube = togmod1_make_cuboid([chunk, chunk, chunk]) )
+	let( unit_cube = tphl1_make_rounded_cuboid([chunk, chunk, chunk], r=min(3.175, thickness_mm/2), corner_shape="cone2") )
 	let( z_hole = tphl1_make_z_cylinder(zrange=[-thickness_mm/2-1, thickness_mm/2+1], d=9) )
 	let( x_hole = ["rotate", [0,90,0], z_hole] )
 	let( y_hole = ["rotate", [90,0,0], z_hole] )
