@@ -191,6 +191,25 @@
 			"wall_thickness": "3/16inch",
 			"$tgx11_offset": "-0.10",
 			"$fn": "32"
+		},
+		"p2476": {
+			"description": "6-inch x 1+1/2-inch hollow beam with 8.5mm holes",
+			"length": "4chunk",
+			"east_hole_frequency": "2",
+			"east_hole_spacing": "1chunk",
+			"east_hole_style": "straight-8.5mm",
+			"north_hole_frequency": "2",
+			"north_hole_spacing": "1chunk",
+			"north_hole_style": "straight-8.5mm",
+			"south_hole_frequency": "2",
+			"south_hole_spacing": "1chunk",
+			"south_hole_style": "straight-8.5mm",
+			"west_hole_frequency": "2",
+			"west_hole_spacing": "1chunk",
+			"west_hole_style": "straight-8.5mm",
+			"wall_thickness": "3/16inch",
+			"$tgx11_offset": "-0.10",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
