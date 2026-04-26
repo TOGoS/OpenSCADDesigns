@@ -1,4 +1,4 @@
-// PanelCornerBracket1.1
+// PanelCornerBracket1.2
 // 
 // Build 'gridbeam' structures with only panels;
 // no actual gridbeam required!
@@ -8,6 +8,8 @@
 // v1.1:
 // - Round coners using tphl1_make_rounded_cuboid.
 //   This is one way to get that done, but maybe not the best way.
+// v1.2:
+// - More holes.
 
 thickness = "3/8inch";
 $fn = 32;
@@ -40,11 +42,20 @@ togmod1_domodule(
 		],
 		
 		["translate", [thickness_mm + 100, thickness_mm + 100, thickness_mm + 100], togmod1_make_cuboid([200,200,200])],
-		for( xm=[0.5 : 0.5 : size_chunks[0]-0.5] ) ["translate", [xm*chunk, thickness_mm/2, 0.5*chunk], y_hole],
-		for( xm=[0.5 : 0.5 : size_chunks[0]-0.5] ) ["translate", [xm*chunk, 0.5*chunk, thickness_mm/2], z_hole],
-		for( ym=[0.5 : 0.5 : size_chunks[1]-0.5] ) ["translate", [thickness_mm/2, ym*chunk, 0.5*chunk], x_hole],
-		for( ym=[0.5 : 0.5 : size_chunks[1]-0.5] ) ["translate", [0.5*chunk, ym*chunk, thickness_mm/2], z_hole],
-		for( zm=[0.5 : 0.5 : size_chunks[2]-0.5] ) ["translate", [thickness_mm/2, 0.5*chunk, zm*chunk], x_hole],
-		for( zm=[0.5 : 0.5 : size_chunks[2]-0.5] ) ["translate", [0.5*chunk, thickness_mm/2, zm*chunk], y_hole],
+		
+		for( zm=[0.5 : 0.5 : size_chunks[2]-0.5] )
+		for( xm=[0.5 : 0.5 : size_chunks[0]-0.5] )
+		if( (xm % 1 == 0.5 && zm % 1 == 0.5) || xm == 0.5 || zm == 0.5 )
+		["translate", [xm*chunk, thickness_mm/2, zm*chunk], y_hole],
+		
+		for( xm=[0.5 : 0.5 : size_chunks[0]-0.5] )
+		for( ym=[0.5 : 0.5 : size_chunks[1]-0.5] )
+		if( (xm % 1 == 0.5 && ym % 1 == 0.5) || xm == 0.5 || ym == 0.5 )
+		["translate", [xm*chunk, ym*chunk, thickness_mm/2], z_hole],
+		
+		for( ym=[0.5 : 0.5 : size_chunks[1]-0.5] )
+		for( zm=[0.5 : 0.5 : size_chunks[2]-0.5] )
+		if( (ym % 1 == 0.5 && zm % 1 == 0.5) || ym == 0.5 || zm == 0.5 )
+		["translate", [thickness_mm/2, ym*chunk, zm*chunk], x_hole],
 	]
 );
