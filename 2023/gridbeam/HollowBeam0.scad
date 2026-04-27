@@ -61,8 +61,9 @@ west_hole_spacing_mm = togunits1_to_mm(west_hole_spacing);
 togmod1_domodule(
 	["difference",
 		togmod1_linear_extrude_z([-length_mm/2 - $tgx11_offset, length_mm/2 + $tgx11_offset], ["difference",
-			togmod1_make_rounded_rect(size_mm, r=max(1, wall_thickness_mm + $tgx11_offset)),
-			togmod1_make_rounded_rect([
+			togmod1_make_rounded_rect(size_mm, r=min(size_mm[0]/3, size_mm[1]/3, max(1, wall_thickness_mm + $tgx11_offset))),
+			
+			if( wall_thickness_mm * 2 < min(size_mm[0],size_mm[1]) ) togmod1_make_rounded_rect([
 				size_mm[0]-wall_thickness_mm*2 - $tgx11_offset*2,
 				size_mm[1]-wall_thickness_mm*2 - $tgx11_offset*2,
 			], r=max(0.5, 1-$tgx11_offset)),
