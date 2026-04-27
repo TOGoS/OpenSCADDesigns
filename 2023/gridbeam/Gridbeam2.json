@@ -1,0 +1,19 @@
+{
+	"parameterSets": {
+		"p2477": {
+			"description": "6-inch-long x 1+1/8-inch narrow gridbeam",
+			"chunk_pitch": "1.5inch",
+			"hole_diameter": "8mm",
+			"hole_frequency": "2",
+			"length": "4chunk",
+			"width_x": "1+1/8inch",
+			"width_y": "1+1/8inch",
+			"xy_corner_bevel": "3/16inch",
+			"xy_corner_round": "1mm",
+			"z_corner_bevel": "1/8inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}

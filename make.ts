@@ -1492,6 +1492,13 @@ const builder = new Builder({
 			imageSize: [128, 128],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/gridbeam/Gridbeam2.scad", [
+			"p2477",
+		], {
+			cameraPosition: [-40, -60, 60],
+			imageSize: [256, 256],
+			paletteSize: 63
+		}),
 	},
 });
 
