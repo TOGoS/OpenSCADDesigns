@@ -2,6 +2,7 @@
 	"fileFormatVersion": "1",
 	"parameterSets": {
 		"p1563": {
+			"description": "3\"x3\"x6\" standard brick holder with atomic sides and 0.2mm inner margin",
 			"$tgx11_offset": "-0.1",
 			"back_segmentation": "atom",
 			"block_size_atoms": "[6, 6, 12]",
@@ -64,7 +65,7 @@
 			"top_segmentation": "block"
 		},
 		"p1567": {
-			"description": "3\"x3\"x6\" dunker with thumb slots, atomic sides, and 0.2mm inner margin",
+			"description": "3\"x3\"x6\" almost-dunker with thumb slots, atomic sides, HOLES IN THE BACK, and 0.2mm inner margin (ERRONEOUS)",
 			"bottom_hole_style": "none",
 			"front_slot_style": "none",
 			"$tgx11_offset": "-0.1",
@@ -516,6 +517,7 @@
 			"inner_rounding_radius": "2",
 			"side_segmentation": "hatom",
 			"top_segmentation": "block"
-		}
+		},
+		"-- don't forget to add new parts to part category p2370!": ""
 	}
 }
