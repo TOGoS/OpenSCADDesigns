@@ -1499,6 +1499,16 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/clip/RBClip0.scad", [
+			"p2478", "p2479",
+		], {
+			// OpenSCAD 2021.01 in GUI mode seems to handle this just fine,
+			// but in batch mode, CGAL fails on `target(s1).vertex()==target(s2).vertex()`.
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-40, -60, 60],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 

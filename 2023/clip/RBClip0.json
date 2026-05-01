@@ -1,0 +1,23 @@
+{
+	"parameterSets": {
+		"p2478": {
+			"description": "1-chunk-wide x 2-chunk-long clip",
+			"length": "2chunk",
+			"width": "1chunk",
+			"thickness": "3/8inch",
+			"slot_frequency": "2",
+			"slot_width": "8mm",
+			"$fn": "32"
+		},
+		"p2479": {
+			"description": "6-inch-wide x 2-chunk-long clip",
+			"length": "2chunk",
+			"width": "4chunk",
+			"thickness": "3/8inch",
+			"slot_frequency": "2",
+			"slot_width": "8mm",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
