@@ -1518,7 +1518,7 @@ const builder = new Builder({
 			paletteSize: 63
 		}),
 		...multiOsdBuildRules("2023/clip/CarriageBoltGridbeamClip0.scad", [
-			"p2481", "p2482",
+			"p2481", "p2482", "p2484",
 		], {
 			cameraPosition: [-40, -60, 60],
 			imageSize: [384, 384],
