@@ -1,4 +1,4 @@
-// TOGHoleLib2.29
+// TOGHoleLib2.30
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -84,6 +84,8 @@
 //   now supports 'straight-' + diameter, e.g. 'straight-4.5mm'
 // v2.29:
 // - Support "diamond-" + corner-to-corner width hole style
+// v2.30:
+// - Support "square-" + side-to-side width hole style
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -334,6 +336,11 @@ function tog_holelib2_hole(
 	tokens[0] == "diamond" ? (
 		let( diam_mm = togunits1_decode(tokens[1]) )
 		tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=diam_mm, $fn=4)
+	) :
+	tokens[0] == "square" ? (
+		let( side_to_side_mm = togunits1_decode(tokens[1]) )
+		let( corner_to_corner_mm = side_to_side_mm/cos(45) )
+		["rotate", [0,0,45], tphl1_make_z_cylinder(zrange=[-depth, overhead_bore_height], d=corner_to_corner_mm, $fn=4)]
 	) :
 	assert(false, str("Unknown hole type: '", type_name, "'"));
 

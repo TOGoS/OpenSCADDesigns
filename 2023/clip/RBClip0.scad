@@ -1,7 +1,13 @@
-// RBClip0.1
+// RBClip0.2
 // 
 // Clip for attaching gridbeam (or whatever) to the lip of the plastic
 // raised plant planter that I have in the backyard.
+// 
+// v0.2:
+// - Updates to match those done for CarriageBoltGridbeamClip0, which is based on this
+// - Attempt to rectify bade polyhedrons due to offsetting adjacent rounded corners
+// - Adjust edge bevels to be min(2, thickness_mm/4)
+// - Round when calculating width_chunks
 
 width = "1chunk";
 length = "2chunk";
@@ -20,7 +26,7 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGMod1.scad>
 
 width_mm      = togunits1_to_mm(width     );
-width_chunks  = togunits1_decode(width, unit="chunk");
+width_chunks  = togunits1_decode(width, unit="chunk", xf="round");
 length_mm     = togunits1_to_mm(length    );
 thickness_mm  = togunits1_to_mm(thickness );
 slot_width_mm = togunits1_to_mm(slot_width);
@@ -29,8 +35,8 @@ chunk         = togunits1_to_mm("chunk");
 togmod1_domodule(
 	let( l = length_mm )
 	let( t = thickness_mm )
-	let( bev = 2 )
-	let( r = t*127/256 )
+	let( bev = min(2, thickness_mm/4) )
+	let( r = t*($fn/2-1)/$fn ) // Try to avoid errors between rounded corners
 	let( slot_length_mm = length_mm - t*2 - bev*2 - 3 )
 	let( slot = tphl1_make_polyhedron_from_layer_function(
 			[

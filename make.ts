@@ -1504,7 +1504,22 @@ const builder = new Builder({
 		], {
 			// OpenSCAD 2021.01 in GUI mode seems to handle this just fine,
 			// but in batch mode, CGAL fails on `target(s1).vertex()==target(s2).vertex()`.
+			// This may have been due to over-insetting near rounded corners, which is addressed by RBClip0.2.
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-40, -60, 60],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
+		...multiOsdBuildRules("2023/spacer/Spacer.scad", [
+			"p1306", "p1610", "p2483",
+		], {
+			cameraPosition: [-40, -60, 60],
+			imageSize: [256, 256],
+			paletteSize: 63
+		}),
+		...multiOsdBuildRules("2023/clip/CarriageBoltGridbeamClip0.scad", [
+			"p2481",
+		], {
 			cameraPosition: [-40, -60, 60],
 			imageSize: [384, 384],
 			paletteSize: 63
