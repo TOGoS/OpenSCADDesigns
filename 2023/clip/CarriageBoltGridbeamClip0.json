@@ -9,6 +9,16 @@
 			"thickness": "3/16inch",
 			"$tgx11_offset": "-0.1",
 			"$fn": "32"
+		},
+		"p2482": {
+			"arm_length": "3/8inch",
+			"hole_frequency": "2",
+			"hole_style": "square-0.3inch",
+			"inner_width": "1chunk",
+			"length": "1inch",
+			"thickness": "3/16inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
