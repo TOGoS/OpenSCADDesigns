@@ -28,6 +28,15 @@
 			"port_hole_diameter": "7mm",
 			"slicey_mcthickness": "3/4inch"
 		},
+		"p2485": {
+			"$fn": "48",
+			"$tgx11_offset": "-0.15",
+			"bolt_thread_length": "1+1/2inch",
+			"part_name": "Bolt2",
+			"port_hole_count": "2",
+			"port_hole_diameter": "7mm",
+			"slicey_mcthickness": "3/4inch"
+		},
 		"p2163": {
 			"$fn": "48",
 			"$tgx11_offset": "-0.15",
