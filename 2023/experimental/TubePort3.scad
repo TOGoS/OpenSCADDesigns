@@ -1,12 +1,18 @@
-// Tubeport3.0
+// Tubeport3.1
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
 //   based on (and thread-compatible with) these ones I bought:
 //   http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:P24W2T2COKIS2FWD3MZHX2ECAEAV25H6.LVHJ4FYFKLPDT66H2UHM2V3BD35M2MR3PT43BDA/20251103_164301.jpg
+// 
+// v3.1
+// - Option to use TubePort4 library instead of own `make_qport_hole`;
+//   result should be pretty much identical.
 
 $tgx11_offset = -0.15;
 $fn = 48;
+
+use_tubeport4 = true;
 
 module __tubeport3__end_params() { }
 
@@ -18,6 +24,7 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGUnits1.scad>
+use <../lib/TubePort4.scad>
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 $togunits1_default_unit = "mm";
@@ -53,7 +60,7 @@ let( donut_bevel_mm = 6.35 )
 			[port_depth + donut_bevel_mm, qtube_diameter                   ],
 		]),
 	],
-	tphl1_make_z_cylinder(zrange=[-2,999], d=qtube_diameter),
+	tphl1_make_z_cylinder(zrange=[-2,total_depth], d=qtube_diameter),
 ];
 
 togmod1_domodule(
@@ -96,6 +103,9 @@ togmod1_domodule(
 			]),
 		],
 		
-		make_qport_hole(qport_depth_mm, 999),
+		use_tubeport4 ? ["rotate", [180,0,0], ["union",
+			tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset),
+			tphl1_make_z_cylinder(zrange=[-999,2], d=qtube_diameter),
+		]] : make_qport_hole(qport_depth_mm, 999)
 	]
 );

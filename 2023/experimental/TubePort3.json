@@ -3,7 +3,14 @@
 		"p2306": {
 			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing",
 			"$fn": "144",
-			"$tgx11_offset": "-0.15"
+			"$tgx11_offset": "-0.15",
+			"use_tubeport4": "false"
+		},
+		"p2306-tubeport4": {
+			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing, using TubePort4 library",
+			"$fn": "144",
+			"$tgx11_offset": "-0.15",
+			"use_tubeport4": "true"
 		}
 	},
 	"fileFormatVersion": "1"
