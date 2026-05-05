@@ -1532,6 +1532,14 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/terrarium/QManifold0.scad", [
+			"p2486",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-40, -60, 60],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 

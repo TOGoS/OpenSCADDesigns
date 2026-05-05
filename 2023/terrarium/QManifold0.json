@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2486": {
+			"cav_diam_mm": "9",
+			"height": "1chunk",
+			"width": "3chunk",
+			"$fn": "64"
+		}
+	},
+	"fileFormatVersion": "1"
+}
