@@ -361,7 +361,7 @@ function osdBuildRules(partId:string, opts:{
 }) : {[targetName:string]: BuildRule} {
 	let m : RegExpMatchArray | null;
 	let outDir : FilePath;
-	if( (m = /^p(\d\d)(\d\d)$/.exec(partId)) != null ) {
+	if( (m = /^p(\d\d)(\d\d)(?:[\\.-].*)?$/.exec(partId)) != null ) {
 		outDir = `2023/print-archive/p${m[1]}xx`;
 	} else {
 		outDir = `2023/print-archive/misc`;
