@@ -104,7 +104,7 @@ togmod1_domodule(
 		],
 		
 		use_tubeport4 ? ["rotate", [180,0,0], ["union",
-			tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset),
+			tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset, outer_diameter=19.55),
 			tphl1_make_z_cylinder(zrange=[-999,2], d=qtube_diameter),
 		]] : make_qport_hole(qport_depth_mm, 999)
 	]
