@@ -5,6 +5,13 @@
 			"height": "1chunk",
 			"width": "3chunk",
 			"$fn": "64"
+		},
+		"p2487": {
+			"cav_diam_mm": "9",
+			"height": "1chunk",
+			"width": "3chunk",
+			"qport_thread_r_offset": "0.3mm",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"

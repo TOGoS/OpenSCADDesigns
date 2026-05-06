@@ -1,9 +1,13 @@
-// QManifold0.1
+// QManifold0.2
 // 
 // Splitter for 1/4" irrigation tubing with 'Q ports'.
+// 
+// v0.2:
+// - Make qport_thread_r_offset customizable
 
 width  = "3chunk";
 height = "1chunk";
+qport_thread_r_offset = "0.2mm";
 $fn = 32;
 
 module qmanifold__end_params() { }
@@ -19,11 +23,12 @@ width_chunks = togunits1_decode(width, unit="chunk", xf="round");
 width_mm     = togunits1_decode(width, unit="mm");
 height_mm    = togunits1_decode(height, unit="mm");
 depth_mm     = chunk_mm;
+qport_thread_r_offset_mm = togunits1_decode(qport_thread_r_offset, unit="mm");
 
 cav_diam_mm = 9;
 
 togmod1_domodule(
-	let( qport = ["render", tubeport4_make_qport()] )
+	let( qport = ["render", tubeport4_make_qport(thread_r_offset=qport_thread_r_offset_mm)] )
 	let( qportp = ["union", qport, tphl1_make_z_cylinder(zrange=[-height_mm+cav_diam_mm/2+3,2], d=6.35+0.5)] )
 	let( mounting_hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(zds=[
 		[-depth_mm/2-2, 5+8],

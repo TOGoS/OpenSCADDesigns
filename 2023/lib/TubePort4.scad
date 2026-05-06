@@ -1,15 +1,17 @@
-// TubePort[Lib]4.1
+// TubePort[Lib]4.2
 // 
 // Functions for making 'standard' ports for tubing
 // 
 // v4.1:
 // - Replace qtube_diameter and donut_bevel_mm with outer_diameter
+// v4.2:
+// - Name the r_offset argument to togthreads2_make_threads
 
 use <../lib/TOGThreads2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 
 /**
- * Make the threaded/beveled part of a 'qport',
+ * Make the threaded/beveled part of a WSTYPE-4149 'qport',
  * i.e. a female compression-fitting port for 1/4" irrigation tubing,
  * in which a male plug threads in to squish a rubber gasket
  * against three surfaces to make a pretty good seal.
@@ -26,7 +28,7 @@ function tubeport4_make_qport(
 		togthreads2_make_threads(
 			togthreads2_simple_zparams([[-depth - outer_diameter/2, 0], [0, 1]], taper_length=2, inset=1),
 			thread_style,
-			thread_r_offset
+			r_offset = thread_r_offset
 		),
 		
 		tphl1_make_z_cylinder(zds=[
