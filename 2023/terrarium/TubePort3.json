@@ -3,14 +3,20 @@
 		"p2306": {
 			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing",
 			"$fn": "144",
-			"$tgx11_offset": "-0.15",
-			"use_tubeport4": "false"
+			"$tgx11_offset": "-0.15"
 		},
 		"p2306-tubeport4": {
 			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing, using TubePort4 library",
 			"$fn": "144",
-			"$tgx11_offset": "-0.15",
-			"use_tubeport4": "true"
+			"$tgx11_offset": "-0.15"
+		},
+		"p2488": {
+			"description": "through-hole Q-port-to-Q-port connector",
+			"top_port": "q-port",
+			"head_height": "1/2inch",
+			"shaft_length": "1+1/2inch",
+			"$fn": "144",
+			"$tgx11_offset": "-0.15"
 		}
 	},
 	"fileFormatVersion": "1"

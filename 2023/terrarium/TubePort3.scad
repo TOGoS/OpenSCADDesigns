@@ -1,4 +1,4 @@
-// Tubeport3.1.1
+// Tubeport3.2
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -12,6 +12,13 @@
 // - Refactoring:
 //   - Always use tubeport4_make_qport to make the Q-port
 //   - Separate the all-the-way-through hole from the Q-port
+// v3.2:
+// - top_port can be 'h-barb' (barb for half-inch ID tubing) or 'q-port'
+// - shaft_length is now customizable
+
+top_port = "h-barb"; // ["h-barb", "q-port"]
+head_height = "1/4inch";
+shaft_length = "3/4inch";
 
 $tgx11_offset = -0.15;
 $fn = 48;
@@ -46,8 +53,8 @@ let( size_ca = [[round(size[0]/chunk),"chunk"], [round(size[1]/chunk),"chunk"], 
 togmod1_domodule(
 	let( qport_depth_mm = togunits1_to_mm("4/8inch") )
 	let( u = 254/160 )
-	let( head_height = 6.35 )
-	let( shaft_length = 19.05 )
+	let( head_height = togunits1_decode(head_height, unit="mm") )
+	let( shaft_length = togunits1_decode(shaft_length, unit="mm") )
 	let( hport_threads_length = 254/16 )
 	let( qport = ["render",
 		tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset, outer_diameter=19.55),
@@ -69,25 +76,32 @@ togmod1_domodule(
 				"1+1/4-7-UNC",
 				r_offset = -0.1
 			),
-			togthreads2_make_threads(
-				togthreads2_simple_zparams([[head_height+shaft_length-1, 0], [head_height+shaft_length+hport_threads_length, -1]], 3, inset=1),
-				"7/8-10-UNC",
-				r_offset = -0.1
-			),
-			let(z3 = head_height+shaft_length+hport_threads_length)
-			let(z4 = z3 + 254/16 )
-			tphl1_make_z_cylinder(zds=[
-				[z3     , 12],
-				[z3 + 10, 12],
-				[z3 + 11, 9*u],
-				[z4     , 11],
-				[z4     ,  9],
-				[z4 - 2 ,  5],
-			]),
+			
+			each top_port == "h-barb" ? [
+				togthreads2_make_threads(
+					togthreads2_simple_zparams([[head_height+shaft_length-1, 0], [head_height+shaft_length+hport_threads_length, -1]], 3, inset=1),
+					"7/8-10-UNC",
+					r_offset = -0.1
+				),
+				let(z3 = head_height+shaft_length+hport_threads_length)
+				let(z4 = z3 + 254/16 )
+				tphl1_make_z_cylinder(zds=[
+					[z3     , 12],
+					[z3 + 10, 12],
+					[z3 + 11, 9*u],
+					[z4     , 11],
+					[z4     ,  9],
+					[z4 - 2 ,  5],
+				]),
+			] : []
 		],
 		
 		tphl1_make_z_cylinder(zrange=[-2,200], d=qtube_diameter),
 		
 		["rotate", [180,0,0], qport],
+		
+		each top_port == "q-port" ? [
+			["translate", [0,0,head_height + shaft_length], qport],
+		] : [],
 	]
 );
