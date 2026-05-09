@@ -1,4 +1,4 @@
-// Tubeport3.1
+// Tubeport3.1.1
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -8,11 +8,13 @@
 // v3.1
 // - Option to use TubePort4 library instead of own `make_qport_hole`;
 //   result should be pretty much identical.
+// v3.1.1:
+// - Refactoring:
+//   - Always use tubeport4_make_qport to make the Q-port
+//   - Separate the all-the-way-through hole from the Q-port
 
 $tgx11_offset = -0.15;
 $fn = 48;
-
-use_tubeport4 = true;
 
 module __tubeport3__end_params() { }
 
@@ -41,34 +43,15 @@ let( size_ca = [[round(size[0]/chunk),"chunk"], [round(size[1]/chunk),"chunk"], 
 	top_segmentation = "none"
 )];
 
-function make_qport_hole(
-	port_depth,
-	total_depth
-) =
-let( donut_bevel_mm = 6.35 )
-["union",
-	["intersection",
-		togthreads2_make_threads(
-			togthreads2_simple_zparams([[0, 1], [port_depth + donut_bevel_mm, 0]], taper_length=2, inset=1),
-			qport_thread_style,
-			qport_thread_r_offset
-		),
-		
-		tphl1_make_z_cylinder(zds=[
-			[-1                         , qtube_diameter + donut_bevel_mm*2],
-			[port_depth                 , qtube_diameter + donut_bevel_mm*2],
-			[port_depth + donut_bevel_mm, qtube_diameter                   ],
-		]),
-	],
-	tphl1_make_z_cylinder(zrange=[-2,total_depth], d=qtube_diameter),
-];
-
 togmod1_domodule(
 	let( qport_depth_mm = togunits1_to_mm("4/8inch") )
 	let( u = 254/160 )
 	let( head_height = 6.35 )
 	let( shaft_length = 19.05 )
 	let( hport_threads_length = 254/16 )
+	let( qport = ["render",
+		tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset, outer_diameter=19.55),
+	])
 	["difference",
 		["union",
 			tphl1_make_polyhedron_from_layer_function([
@@ -103,9 +86,8 @@ togmod1_domodule(
 			]),
 		],
 		
-		use_tubeport4 ? ["rotate", [180,0,0], ["union",
-			tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset, outer_diameter=19.55),
-			tphl1_make_z_cylinder(zrange=[-999,2], d=qtube_diameter),
-		]] : make_qport_hole(qport_depth_mm, 999)
+		tphl1_make_z_cylinder(zrange=[-2,200], d=qtube_diameter),
+		
+		["rotate", [180,0,0], qport],
 	]
 );
