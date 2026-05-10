@@ -1,4 +1,4 @@
-// PanelUConnector1.1
+// PanelUConnector1.2
 // 
 // U-shaped connector for attaching
 // one gridbeam panel (that fits inside the "U")
@@ -7,6 +7,8 @@
 // v1.1:
 // - Add bottom atom holes
 // - Add optional bottom membrane
+// v1.2:
+// - Add beveled wing slot counterbores
 
 base_thickness = "1/2inch";
 wing_thickness = "1/2inch";
@@ -16,7 +18,10 @@ length = "1chunk";
 base_slot_diameter = "5/16inch";
 base_slot_length = "0mm";
 base_slot_frequency = 2;
+
 wing_slot_diameter = "5/16inch";
+wing_slot_counterbore_diameter = "7/8inch";
+wing_slot_counterbore_depth = "1/8inch";
 wing_slot_frequency = 2;
 
 bottom_atom_hole_style = "diamond-4.5mm";
@@ -33,6 +38,7 @@ module __paneluconnector__end_params() { }
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
+use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 
@@ -50,33 +56,57 @@ base_slot_diameter_mm = togunits1_to_mm(base_slot_diameter);
 base_slot_length_mm   = togunits1_to_mm(base_slot_length);
 wing_thickness_mm     = togunits1_to_mm(wing_thickness);
 wing_slot_diameter_mm = togunits1_to_mm(wing_slot_diameter);
+wing_slot_counterbore_diameter_mm = togunits1_to_mm(wing_slot_counterbore_diameter);
+wing_slot_counterbore_depth_mm    = togunits1_to_mm(wing_slot_counterbore_depth);
 
 bottom_membrane_thickness_mm = togunits1_to_mm(bottom_membrane_thickness);
 
 togmod1_domodule(
+	let( block_bevel = 3.175 )
 	let( base_slot = tphl1_make_rounded_cuboid(
 		[base_slot_length_mm+base_slot_diameter_mm, base_slot_diameter_mm, base_thickness_mm*3],
 		r = let(r=base_slot_diameter_mm*127/256) [r,r,0]
 	))
 	let( wing_slot_z0 = base_thickness_mm + wing_slot_diameter_mm * 3/2 )
 	let( wing_slot_z1 = size_mm[2]   - wing_slot_diameter_mm * 3/2 )
-	let( wing_slot = ["rotate", [90,0,0], ["translate", [0,(wing_slot_z0+wing_slot_z1)/2,0], tphl1_make_rounded_cuboid(
+	let( wing_slot_straight_part = ["rotate", [90,0,0], ["translate", [0,(wing_slot_z0+wing_slot_z1)/2,0], tphl1_make_rounded_cuboid(
 		[wing_slot_diameter_mm, wing_slot_z1-wing_slot_z0+wing_slot_diameter_mm, size_mm[1]*2 + 2],
 		r = let(r=wing_slot_diameter_mm*127/256) [r,r,0]
 	)]])
+	let( cb_rad = wing_slot_counterbore_diameter_mm/2 )
+	let( cb_bev = wing_slot_counterbore_depth_mm )
+	// If top of counterbore would be into the bevel, then just extend it out the top
+	let( cb_top = cb_rad + wing_slot_z1 > size_mm[2] - block_bevel ? size_mm[2]+cb_rad*2 : wing_slot_z1 + cb_rad )
+	let( wing_counterbore = (cb_rad <= 0 || cb_bev <= 0) ? ["union"] : tphl1_make_polyhedron_from_layer_function(
+		[
+			[-cb_bev  , 0       ],
+			[ cb_bev  , cb_bev*2],
+		],
+		function(zo) togpath1_rath_to_polypoints(["togpath1-rath",
+			["togpath1-rathnode", [ cb_rad, wing_slot_z0-cb_rad], ["round", cb_rad*($fn-1)/$fn], ["offset", zo[1]]],
+			["togpath1-rathnode", [ cb_rad, cb_top             ], ["round", cb_rad*($fn-1)/$fn], ["offset", zo[1]]],
+			["togpath1-rathnode", [-cb_rad, cb_top             ], ["round", cb_rad*($fn-1)/$fn], ["offset", zo[1]]],
+			["togpath1-rathnode", [-cb_rad, wing_slot_z0-cb_rad], ["round", cb_rad*($fn-1)/$fn], ["offset", zo[1]]],
+		], $fn=max($fn,min($fn*2,144))),
+		layer_points_transform="key0-to-z"
+	))
+	let( wing_slot = ["union",
+		wing_slot_straight_part,
+	   ["translate", [0,-size_mm[1]/2,0], ["rotate", [90,0,0], wing_counterbore]],
+	])
 	let( bottom_atom_hole = ["rotate", [180,0,0], tog_holelib2_hole(bottom_atom_hole_style, depth=wing_slot_z0)] )
-	// TODO: Beveled counterbores for wing slots, 1/8" deep or so
 	["difference",
 		["translate", [0,0,size_mm[2]/2],
 			tphl1_make_rounded_cuboid(
 				[size_mm[0], size_mm[1], size_mm[2]],
-				r=[5,5,3.175], corner_shape="cone2"
+				r=[block_bevel*3/2,block_bevel*3/2,block_bevel], corner_shape="cone2"
 			)],
 		
 		["difference",
 			["union",
 				// Cut out center.
 				// Hmm: it'd be nice to round the edges somewhat.
+				// But that would be...tricky to do well.
 				["translate", [0,0,size_mm[2]],
 					togmod1_make_cuboid(
 						[size_mm[0]+2, size_mm[1]-wing_thickness_mm*2, (size_mm[2]-base_thickness_mm)*2])],
