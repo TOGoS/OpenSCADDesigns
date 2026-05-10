@@ -1540,6 +1540,16 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/gridbeam/ThneedBlock1.scad", [
+			"p2490",
+		], {
+			cameraPositions: {
+				front: [-40, -60, 60],
+				back : [-40,  60, 60],
+			},
+			imageSize: [512, 512],
+			paletteSize: 63
+		}),
 	},
 });
 

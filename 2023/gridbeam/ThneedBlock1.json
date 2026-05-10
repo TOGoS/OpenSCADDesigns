@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2490": {
+			"width": "2chunk",
+			"depth": "2chunk",
+			"height": "2chunk",
+			"back_slot_depth": "1/8inch",
+			"back_slot_width": "1+21/32inch",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
