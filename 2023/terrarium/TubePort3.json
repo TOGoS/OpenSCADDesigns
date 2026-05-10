@@ -17,6 +17,19 @@
 			"shaft_length": "1+1/2inch",
 			"$fn": "144",
 			"$tgx11_offset": "-0.15"
+		},
+		"p2489": {
+			"description": "through-hole Q-port-to-Q-port connector",
+			"comments": [
+				"p2488, but with 0.1mm larger radial margins."
+			],
+			"top_port": "q-port",
+			"head_height": "1/2inch",
+			"shaft_length": "1+1/2inch",
+			"shaft_thread_radius_offset": "-0.2mm",
+			"qport_thread_radius_offset": "0.3mm",
+			"$fn": "144",
+			"$tgx11_offset": "-0.15"
 		}
 	},
 	"fileFormatVersion": "1"

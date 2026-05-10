@@ -1,4 +1,4 @@
-// Tubeport3.2
+// Tubeport3.3
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -15,10 +15,16 @@
 // v3.2:
 // - top_port can be 'h-barb' (barb for half-inch ID tubing) or 'q-port'
 // - shaft_length is now customizable
+// v3.3:
+// - qport_thread_radius_offset, shaft_thread_radius_offset, and
+//   hbarb_thread_radius_offset are now all customizable
 
 top_port = "h-barb"; // ["h-barb", "q-port"]
 head_height = "1/4inch";
 shaft_length = "3/4inch";
+qport_thread_radius_offset = "0.2mm";
+shaft_thread_radius_offset = "-0.1mm";
+hbarb_thread_radius_offset = "-0.1mm";
 
 $tgx11_offset = -0.15;
 $fn = 48;
@@ -39,7 +45,9 @@ $togridlib3_unit_table = tgx11_get_default_unit_table();
 $togunits1_default_unit = "mm";
 
 qport_thread_style = "3/4-10-UNC";
-qport_thread_r_offset =  0.2;
+qport_thread_r_offset_mm = togunits1_to_mm(qport_thread_radius_offset);
+shaft_thread_r_offset_mm = togunits1_to_mm(shaft_thread_radius_offset);
+hbarb_thread_r_offset_mm = togunits1_to_mm(hbarb_thread_radius_offset);
 qtube_diameter = 6.35 + 0.5;
 
 function tubeport3_make_block(size) =
@@ -57,7 +65,7 @@ togmod1_domodule(
 	let( shaft_length = togunits1_decode(shaft_length, unit="mm") )
 	let( hport_threads_length = 254/16 )
 	let( qport = ["render",
-		tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset, outer_diameter=19.55),
+		tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset_mm, outer_diameter=19.55),
 	])
 	["difference",
 		["union",
@@ -74,14 +82,14 @@ togmod1_domodule(
 			togthreads2_make_threads(
 				togthreads2_simple_zparams([[4, 0], [head_height+shaft_length, -1]], 3, inset=1),
 				"1+1/4-7-UNC",
-				r_offset = -0.1
+				r_offset = shaft_thread_r_offset_mm
 			),
 			
 			each top_port == "h-barb" ? [
 				togthreads2_make_threads(
 					togthreads2_simple_zparams([[head_height+shaft_length-1, 0], [head_height+shaft_length+hport_threads_length, -1]], 3, inset=1),
 					"7/8-10-UNC",
-					r_offset = -0.1
+					r_offset = hbarb_thread_r_offset_mm
 				),
 				let(z3 = head_height+shaft_length+hport_threads_length)
 				let(z4 = z3 + 254/16 )
