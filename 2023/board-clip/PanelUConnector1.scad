@@ -1,4 +1,4 @@
-// PanelUConnector1.2
+// PanelUConnector1.3
 // 
 // U-shaped connector for attaching
 // one gridbeam panel (that fits inside the "U")
@@ -9,11 +9,14 @@
 // - Add optional bottom membrane
 // v1.2:
 // - Add beveled wing slot counterbores
+// v1.3:
+// - Bevel X ends of center slot
+// - Rename `total_height` to just `height`
 
 base_thickness = "1/2inch";
 wing_thickness = "1/2inch";
 width = "1chunk";
-total_height = "2inch";
+height = "2+1/2inch";
 length = "1chunk";
 base_slot_diameter = "5/16inch";
 base_slot_length = "0mm";
@@ -33,7 +36,7 @@ $fn = 24;
 module __paneluconnector__end_params() { }
 
 // Not parameters:
-// wing_slot_length = "0mm"; // Implied by total_height, yaddah yaddah
+// wing_slot_length = "0mm"; // Implied by height, yaddah yaddah
 
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
@@ -42,7 +45,7 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 
-size = [length, width, total_height];
+size = [length, width, height];
 
 atom_mm               = togunits1_to_mm("atom");
 chunk_mm              = togunits1_to_mm("chunk");
@@ -104,13 +107,23 @@ togmod1_domodule(
 		
 		["difference",
 			["union",
-				// Cut out center.
-				// Hmm: it'd be nice to round the edges somewhat.
-				// But that would be...tricky to do well.
-				["translate", [0,0,size_mm[2]],
-					togmod1_make_cuboid(
-						[size_mm[0]+2, size_mm[1]-wing_thickness_mm*2, (size_mm[2]-base_thickness_mm)*2])],
-				
+				let( slot_width = size_mm[1]-wing_thickness_mm*2 )
+				let( slot_bev = 1.6 )
+				// Hmm: This doesn't quite bevel the top as nicely as I'd like, but I suppose good enough for starters.
+				togmod1_linear_extrude_z(
+					[base_thickness_mm, size_mm[2]+11],
+					togpath1_rath_to_polygon(["togpath1-rath",
+						["togpath1-rathnode", [ size_mm[0]/2 + slot_bev,  slot_width/2 + slot_bev*2]],
+						["togpath1-rathnode", [ size_mm[0]/2 - slot_bev,  slot_width/2             ]],
+						["togpath1-rathnode", [-size_mm[0]/2 + slot_bev,  slot_width/2             ]],
+						["togpath1-rathnode", [-size_mm[0]/2 - slot_bev,  slot_width/2 + slot_bev*2]],
+						["togpath1-rathnode", [-size_mm[0]/2 - slot_bev, -slot_width/2 - slot_bev*2]],
+						["togpath1-rathnode", [-size_mm[0]/2 + slot_bev, -slot_width/2             ]],
+						["togpath1-rathnode", [ size_mm[0]/2 - slot_bev, -slot_width/2             ]],
+						["togpath1-rathnode", [ size_mm[0]/2 + slot_bev, -slot_width/2 - slot_bev*2]],
+					])
+				),
+								
 				for( xm=[-size_chunks[0]/2 + 0.5 : 1/base_slot_frequency : size_chunks[0]/2-0.5] )
 				["translate", [xm*chunk_mm,0,0], base_slot],
 				
