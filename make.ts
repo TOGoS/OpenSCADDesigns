@@ -1544,8 +1544,9 @@ const builder = new Builder({
 			"p2490", "p2491",
 		], {
 			cameraPositions: {
-				front: [-40, -60, 60],
-				back : [-40,  60, 60],
+				front : [-40, -60,  60],
+				back  : [-40,  60,  60],
+				bottom: [-40, -60, -20],
 			},
 			imageSize: [512, 512],
 			paletteSize: 63

@@ -1,6 +1,7 @@
 {
 	"parameterSets": {
 		"p2490": {
+			"description": "3-inch cube with holes in",
 			"width": "2chunk",
 			"depth": "2chunk",
 			"height": "2chunk",
@@ -9,6 +10,7 @@
 			"$fn": "32"
 		},
 		"p2491": {
+			"description": "3-inch triangular prism with holes in",
 			"hull_shape": "triangular-prism",
 			"width": "2chunk",
 			"depth": "2chunk",
