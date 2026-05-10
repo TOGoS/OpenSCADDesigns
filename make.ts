@@ -1541,7 +1541,7 @@ const builder = new Builder({
 			paletteSize: 63
 		}),
 		...multiOsdBuildRules("2023/gridbeam/ThneedBlock1.scad", [
-			"p2490",
+			"p2490", "p2491",
 		], {
 			cameraPositions: {
 				front: [-40, -60, 60],
