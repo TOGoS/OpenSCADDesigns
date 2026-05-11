@@ -1552,7 +1552,7 @@ const builder = new Builder({
 			paletteSize: 63
 		}),
 		...multiOsdBuildRules("2023/board-clip/PanelUConnector1.scad", [
-			"p2493",
+			"p2493", "p2494", "p2495",
 		], {
 			cameraPosition: [-40, -60, 40],
 			imageSize: [384, 384],

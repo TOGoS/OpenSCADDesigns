@@ -1,24 +1,44 @@
 {
 	"parameterSets": {
-		"p2493": {
+		"p2494": {
 			"description": "1+1/2-inch-long x 1+1/2-inch-wide x 2+1/2-inch tall U-connector for 1/2-inch panels",
 			"comments": [
-				"This is what p2492 was supposed to be."
+				"This is what p2492 and p2493 were supposed to be."
 			],
-			"width" : "1chunk",
 			"length": "1chunk",
 			"height": "2+1/2inch",
 			"base_thickness": "1/2inch",
 			"base_slot_diameter": "5/16inch",
 			"base_slot_frequency": "2",
 			"base_slot_length": "0mm",
-			"wing_thickness": "1/2inch",
 			"wing_slot_counterbore_depth": "1/8inch",
 			"wing_slot_counterbore_diameter": "7/8inch",
 			"wing_slot_diameter": "5/16inch",
 			"wing_slot_frequency": "2",
 			"bottom_atom_hole_style": "diamond-4.5mm",
 			"bottom_membrane_thickness": "0.3mm",
+			"$fn": "32"
+		},
+		"p2495": {
+			"description": "1+1/2-inch-long x 1-inch-wide x 2+1/2-inch tall L-connector for 1/2-inch panels",
+			"length": "1chunk",
+			"height": "2+1/2inch",
+			"front_outer_y": "-3/4inch",
+			"front_inner_y": "-1/4inch",
+			 "back_inner_y":  "3/4inch",
+			 "back_outer_y":  "1/4inch",
+			"base_slot_diameter": "5/16inch",
+			"base_slot_frequency": "2",
+			"base_slot_length": "0mm",
+			"base_thickness": "1/2inch",
+			"wing_slot_counterbore_depth": "1/8inch",
+			"wing_slot_counterbore_diameter": "7/8inch",
+			"wing_slot_diameter": "5/16inch",
+			"wing_slot_frequency": "2",
+			"block_xy_round": "3/16inch",
+			"block_z_bevel": "1mm",
+			"bottom_atom_hole_style": "diamond-4.5mm",
+			"bottom_membrane_thickness": "0.0mm",
 			"$fn": "32"
 		}
 	},
