@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.9
+// TOGMod1Constructors-v1.10
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -31,6 +31,10 @@
 // - Add togmod1_text
 // v1.9:
 // - togmod1_circle_points uses 3 as minimum circle point count instead of 6
+// v1.10:
+// - Fix togmod1_linear_extrude_y so that range corresponds to Y start/end and
+//   polygon X,Y correspond to X,Z.  Previously it was rotated wrongly,
+//   which would have gone unnoticed for symmetrical shapes centered at 0,0.
 
 use <./TOGArrayLib1.scad>
 
@@ -135,7 +139,7 @@ function togmod1_linear_extrude_x(range, shape) =
 	["rotate", [90, 0, 90], togmod1_linear_extrude_z(range, shape)];
 function togmod1_linear_extrude_y(range, shape) =
 	assert(togmod1__is_range1d(range))
-	["rotate", [90, 0, 180], togmod1_linear_extrude_z(range, shape)];
+	["rotate", [90, 0,  0], togmod1_linear_extrude_z([-range[1], -range[0]], shape)];
 
 function togmod1_text(text, size, font, halign, valign, spacing, direction, language, script) =
 	["text-tsfhvsdls", text, size, font, halign, valign, spacing, direction, language, script];
