@@ -1,4 +1,4 @@
-// PanelCornerBracket1.3
+// PanelCornerBracket1.4
 // 
 // Build 'gridbeam' structures with only panels;
 // no actual gridbeam required!
@@ -12,6 +12,8 @@
 // - More holes.
 // v1.3:
 // - Bevel / round corners more nicely.
+// v1.4:
+// - Higher $fn for large-radius curves.
 // 
 // TODO: Cutout in inner corner in one direction for weld nut.
 // 
@@ -66,7 +68,7 @@ togmod1_domodule(
 		["togpath1-rathnode", [ size[0]     ,  chunk_mm*2/3], ["round", chunk_mm/2]],
 		["togpath1-rathnode", [ chunk_mm*2/3,  size[1]     ], ["round", chunk_mm/2]],
 		["togpath1-rathnode", [-10          ,  size[1]     ]],
-	]))
+	], $fn=max($fn, min($fn*2, 64))) )
 	let( the_hull = ["intersection",
 		the_cube,
 		togmod1_linear_extrude_x([x0,size_mm[0]+1], make_xc_polygon([size_mm[1], size_mm[2]])),

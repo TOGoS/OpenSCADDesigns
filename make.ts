@@ -1558,6 +1558,13 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/gridbeam/PanelCornerBracket1.scad", [
+			"p2496",
+		], {
+			cameraPosition: [ 40, 40, 40],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 

@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2496": {
+			"size_x": "3chunk",
+			"size_y": "3chunk",
+			"size_z": "3chunk",
+			"thickness": "3/8inch",
+			"edge_bevel": "1u",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
