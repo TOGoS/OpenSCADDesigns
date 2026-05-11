@@ -1,4 +1,4 @@
-// PanelUConnector1.3
+// PanelUConnector1.4
 // 
 // U-shaped connector for attaching
 // one gridbeam panel (that fits inside the "U")
@@ -12,6 +12,8 @@
 // v1.3:
 // - Bevel X ends of center slot
 // - Rename `total_height` to just `height`
+// v1.4:
+// - Bevel slot on both sides!
 
 base_thickness = "1/2inch";
 wing_thickness = "1/2inch";
@@ -95,7 +97,8 @@ togmod1_domodule(
 	))
 	let( wing_slot = ["union",
 		wing_slot_straight_part,
-	   ["translate", [0,-size_mm[1]/2,0], ["rotate", [90,0,0], wing_counterbore]],
+	   ["translate", [0,-size_mm[1]/2,0], ["rotate-xyz", [90,0,  0], wing_counterbore]],
+	   ["translate", [0, size_mm[1]/2,0], ["rotate-xyz", [90,0,180], wing_counterbore]],
 	])
 	let( bottom_atom_hole = ["rotate", [180,0,0], tog_holelib2_hole(bottom_atom_hole_style, depth=wing_slot_z0)] )
 	["difference",

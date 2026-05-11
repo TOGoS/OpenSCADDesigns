@@ -1,6 +1,10 @@
 {
 	"parameterSets": {
-		"p2492": {
+		"p2493": {
+			"description": "1+1/2-inch-long x 1+1/2-inch-wide x 2+1/2-inch tall U-connector for 1/2-inch panels",
+			"comments": [
+				"This is what p2492 was supposed to be."
+			],
 			"width" : "1chunk",
 			"length": "1chunk",
 			"height": "2+1/2inch",
@@ -13,8 +17,8 @@
 			"wing_slot_counterbore_diameter": "7/8inch",
 			"wing_slot_diameter": "5/16inch",
 			"wing_slot_frequency": "2",
-			"bottom_atom_hole_style": "none",
-			"bottom_membrane_thickness": "0.0mm",
+			"bottom_atom_hole_style": "diamond-4.5mm",
+			"bottom_membrane_thickness": "0.3mm",
 			"$fn": "32"
 		}
 	},
