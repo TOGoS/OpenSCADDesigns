@@ -1,0 +1,14 @@
+{
+	"fileFormatVersion": "1",
+	"parameterSets": {
+		"p2497": {
+			"chin_hole_style": "THL-1006",
+			"lip_height": "1/2inch",
+			"lip_thickness": "3/8inch",
+			"neck_height": "1inch",
+			"neck_length": "1/8inch",
+			"width": "2chunk",
+			"$fn": "32"
+		}
+	}
+}

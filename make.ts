@@ -1565,6 +1565,14 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/hook/LitterBucketHook0.scad", [
+			"p2497",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [ 40, -40, 20],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 
