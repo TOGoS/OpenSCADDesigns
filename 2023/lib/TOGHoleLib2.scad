@@ -1,4 +1,4 @@
-// TOGHoleLib2.30
+// TOGHoleLib2.31
 //
 // Library of hole shapes!
 // Mostly to accommodate counterbored/countersunk screws.
@@ -86,6 +86,8 @@
 // - Support "diamond-" + corner-to-corner width hole style
 // v2.30:
 // - Support "square-" + side-to-side width hole style
+// v2.31:
+// - Adjust calculation of effective flange radius for THL-1006-like holes
 
 use <./TOGMod1Constructors.scad>
 use <./TOGPolyHedronLib1.scad>
@@ -219,7 +221,7 @@ function tog_holelib2___mkhole1006ish(
 	bore_diam, counterbore_diam, default_counterbore_depth
 ) = function(depth, overhead_bore_height=1, inset=undef, flange_radius=undef)
 	let(_inset  = max(0, is_undef(inset) ? default_counterbore_depth : inset))
-	let(_flange = max(0, min(_inset - 1, is_undef(flange_radius) ? 0 : flange_radius)))
+	let(_flange = max(0, min(_inset - 0.2, is_undef(flange_radius) ? 0 : flange_radius)))
 	let(_flangefn = max(1,round(min(_flange,$fn/4)))) // At most one segment per mm
 	let(zds=[
 		[-depth, bore_diam],
