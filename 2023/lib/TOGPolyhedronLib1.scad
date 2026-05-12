@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.14
+// TOGPolyhedronLib1.15
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -53,6 +53,10 @@
 // v1.14:
 // - 'key1-to-z' layer points transform, for those cases where you're extruding shapes
 //   along other shapes, and the points come in as [x,z] instead of [z,x]
+// v1.15:
+// - Add 'xyz-to-yzx' layer points transform
+// - Fix 'rcompose' to compose right-to-left, add 'lcompose' to go the other way.
+//   Don't forget to only use these with OpenSCAD version >= 2024!
 
 // Winding order:
 // 
@@ -171,11 +175,23 @@ function tphl1__layer_points__make_key_element_to_z_transform(index) = function(
 tphl1__layer_points__key0_to_z_transform = tphl1__layer_points__make_key_element_to_z_transform(0);
 tphl1__layer_points__key1_to_z_transform = tphl1__layer_points__make_key_element_to_z_transform(1);
 
-function tphl1__layer_points__decode_rcompose(xf_spec, index=0) =
+function tphl1__layer_points__decode_compose(xf_spec, order, index=0) =
+	assert(is_string(order))
+	assert(is_num(index))
+	assert(index >= 0)
+	assert(index <= len(xf_spec))
 	index >= len(xf_spec) ? tphl1__layer_points__identity_transform :
 	let( this_xf = tphl1__layer_points__decode_transform(xf_spec[index]) )
-	let( next_xf = tphl1__layer_points__decode_rcompose(xf_spec, index+1) )
-	function(key, points) let(this_xfed = this_xf(key, points)) next_xf(key, this_xfed);
+	let( next_xf = tphl1__layer_points__decode_compose(xf_spec, order, index+1) )
+	let( xfs =
+		order == "right" ? [next_xf, this_xf] :
+		order == "left"  ? [this_xf, next_xf] :
+		assert(false, str("Bad order for compose: '", order, "'"))
+	)
+	function(key, points) let(xf0ed = xfs[0](key, points)) xfs[1](key, xf0ed);
+
+function tphl1__layer_points__make_coord_swap_transform(from_indexes) = function(key, points)
+	[for(p=points) [p[from_indexes[0]], p[from_indexes[1]], p[from_indexes[2]]]];
 
 // returns function(layer_key, points)
 function tphl1__layer_points__decode_transform(xf_spec) =
@@ -183,8 +199,11 @@ function tphl1__layer_points__decode_transform(xf_spec) =
    xf_spec == "key0-to-z" ? tphl1__layer_points__key0_to_z_transform :
    xf_spec == "key1-to-z" ? tphl1__layer_points__key1_to_z_transform :
    xf_spec == "identity" ? tphl1__layer_points__identity_transform :
+	xf_spec == "xyz-to-yzx" ? tphl1__layer_points__make_coord_swap_transform([2,0,1]) :
 	is_list(xf_spec) && len(xf_spec) > 0 && xf_spec[0] == "rcompose" ?
-		tphl1__layer_points__decode_rcompose(xf_spec, 1) :
+		tphl1__layer_points__decode_compose(xf_spec, "right", 1) :
+	is_list(xf_spec) && len(xf_spec) > 0 && xf_spec[0] == "lcompose" ?
+		tphl1__layer_points__decode_compose(xf_spec, "left", 1) :
 	assert(false, str("Unrecognized layer points transform: '", xf_spec, "'"));
 
 function tphl1_make_polyhedron_from_layer_function(
