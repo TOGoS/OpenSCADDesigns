@@ -1,4 +1,4 @@
-// TGx11.1.22
+// TGx11.1.23
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -21,6 +21,9 @@
 //   that 'basic' should be something else (like whatever it was originally)
 // v11.1.22:
 // - Allow offset to be adjusted in 1/40mm increments
+// v11.1.23:
+// - Allow cavity wall thickness--nominal and minimum actual--to be customized
+// - 3/4-xs mode, for when you want to inspect wall thicknesses or whatever
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -36,7 +39,7 @@ bottom_v6hc_style = "v6.1"; // ["v6.1", "none"]
 lip_height = 2.54;
 
 // 'shell-xs' makes a cross section of the 'shell' between the ideal shape and the offset one
-mode = "normal"; // ["normal", "shell-xs"]
+mode = "normal"; // ["normal", "shell-xs", "3/4-xs"]
 shell_xs_angle = 0;
 shell_xs_offset = 10;
 
@@ -45,6 +48,10 @@ offset = -0.1; // 0.025
 /* [Cavity] */
 
 cavity_type = "none"; // ["none", "basic","clarp2505-square"]
+// Nominal thickness of cavity wall; i.e. inset from ideal block boundary
+cavity_wall_thickness = 1.6; // 0.1
+// Don't let the actual wall thickness be less than this
+cavity_wall_min_actual_thickness = 1.5; // 0.1
 
 /* [Preview Options] */
 
@@ -137,14 +144,17 @@ module tgmain() {
 	
 	function basic_cavity() =
 		let(block_size = togridlib3_decode_vector(block_size_ca))
-		let(wall_thickness = u)
+		let(wall_offset = min(
+			0 - cavity_wall_thickness,
+			$tgx11_offset - cavity_wall_min_actual_thickness
+		))
 		let(bev = max(193/64*u, togridlib3_decode([1, "tgp-standard-bevel"])))
 		tphl1_make_polyhedron_from_layer_function(
 			[
-				[                4*u, -wall_thickness - 1*u],
-				[                5*u, -wall_thickness],
+				[                4*u, wall_offset - 1*u],
+				[                5*u, wall_offset],
 				// TODO: Adjust sublip curve based on block height, maybe use a cosine
-				[block_size[2] - 7*u, -wall_thickness],
+				[block_size[2] - 7*u, wall_offset],
 				[block_size[2] - 3*u, -2*u],
 				[block_size[2] - 2*u, -3*u],
 				[block_size[2] + 2*u, -3*u],
@@ -194,6 +204,10 @@ module tgmain() {
 	subject =
 		mode == "normal" ? hand :
 		mode == "shell-xs" ? shell_xs :
+		mode == "3/4-xs" ? ["difference", hand,
+			["translate",
+				[block_size[0]/2, block_size[1]/2, block_size[2]/2],
+				togmod1_make_cuboid([block_size[0], block_size[1], block_size[2]*2])]] :
 		assert(false, str("Unrecognized mode '", mode, "'"));
 	
 	togmod1_domodule(subject);
