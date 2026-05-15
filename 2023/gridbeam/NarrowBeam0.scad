@@ -1,4 +1,4 @@
-// NarrowBeam0.4
+// NarrowBeam0.5
 // 
 // Gridbeam, but narrow in some direction or another,
 // which might be useful for making corner connector blocks
@@ -12,6 +12,9 @@
 // v0.4:
 // - Option for bottom_membrane_thickness; when > 0,
 //   z holes will not go through the bottom.
+// v0.5:
+// - Chunk dimensions for hole-placement purposes are always at least 1.
+//   You can always indicate 'none' to not get holes!
 
 x0 = "-3/4inch";
 x1 = "3/4inch";
@@ -71,7 +74,7 @@ z_hole = ["rotate-xyz", [  0, 0, 0], tog_holelib2_hole(eff_z_hole_style,
 
 togmod1_domodule(
 	let(chunk = togunits1_decode("chunk"))
-	let(size_chunks = [for(d=[x1_mm-x0_mm, y1_mm-y0_mm, z1_mm-z0_mm]) round(d/chunk)] )
+	let(size_chunks = [for(d=[x1_mm-x0_mm, y1_mm-y0_mm, z1_mm-z0_mm]) max(1,round(d/chunk))] )
 	["difference",
 		["translate", [(x0_mm+x1_mm)/2, (y0_mm+y1_mm)/2, (z0_mm+z1_mm)/2],
 			tphl1_make_rounded_cuboid(
