@@ -797,6 +797,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/phone-holder/BrickHolder2.scad", [
 			"p2067","p2076","p2077","p2323","p2331","p2338","p2379",
+			"p2507",
 		], {
 			cameraPosition: [-15,-20, 20],
 			imageSize: [384,384],
