@@ -1575,6 +1575,13 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/phone-holder/JetKVMHolder.scad", [
+			"p2503",
+		], {
+			cameraPosition: [ 40, -40, 20],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 

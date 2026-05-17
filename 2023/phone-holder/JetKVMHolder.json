@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2503": {
+			"size_chunks": "[2, 1, 2]",
+			"$tgx11_offset": "-0.5",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
