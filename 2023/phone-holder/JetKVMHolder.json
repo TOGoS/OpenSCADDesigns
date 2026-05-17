@@ -16,7 +16,27 @@
 			"$tgx11_offset": "-0.5",
 			"$fn": "32"
 		},
-		"p2506": {
+		"p2506-v0.7": {
+			"comments": [
+				"Generatable with OpenSCAD 2021, thanks to manifold_remedy_offset"
+			],
+			"size_chunks": "[2, 1, 2]",
+			"inner_depth_mm": "24",
+			"inner_width_mm": "45",
+			"back_thickness": "3/16inch",
+			"front_lip_z": "0inch",
+			"front_slot_width": "3/4inch",
+			"top_lip_protrusion": "1/8inch",
+			"v6hc_style": "v6.1",
+			"manifold_remedy_offset": "1/1024mm",
+			"$tgx11_offset": "-0.5",
+			"$fn": "32"
+		},
+		"p2506-scad2024": {
+			"comments": [
+				"The canonical 'p2506'.",
+				"Generate with OpenSCAD 2021."
+			],
 			"size_chunks": "[2, 1, 2]",
 			"inner_depth_mm": "24",
 			"inner_width_mm": "45",
