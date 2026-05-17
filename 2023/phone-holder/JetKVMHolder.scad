@@ -1,4 +1,4 @@
-// JetKVMHolder0.3
+// JetKVMHolder0.4
 // 
 // v0.1:
 // - Full of hacks!
@@ -8,10 +8,8 @@
 // - Fix the 'mouth' at the top
 // v0.3
 // - Optional lip at top
-// 
-// TODO: X-wise flanging-out doesn't need to correspond to front_lip_z.
-// Maybe X and Y shapes of the cavity should be intersected, since they
-// are entirely orthogonal!
+// v0.4:
+// - Simplify cavity generation
 
 back_thickness = "1/4inch";
 front_slot_width = "0inch";
@@ -21,13 +19,13 @@ top_lip_protrusion = "0inch";
 $tgx11_offset = -0.5;
 $fn = 32;
 
+use <../lib/TGx11.1Lib.scad>
+use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
-use <../lib/TOGPolyhedronLib1.scad>
-use <../lib/TGx11.1Lib.scad>
+use <../lib/TOGPath1.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TOGridLib3.scad>
-use <../lib/TOGHoleLib2.scad>
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
@@ -61,8 +59,12 @@ function make_togridpilish_block(size_chunks) =
 		["translate", [ 0,  0, -size_chunks[2]/2*chunk_mm], ["rotate", [  0,   0, 0], foot([size_chunks[0],size_chunks[1],size_chunks[2]])]],
 	];
 
-the_hull = ["union",
-	["render", make_togridpilish_block([2,1,2])]
+function mirror_rathnodes(nodes) = [
+	for( n=nodes ) n,
+	
+	for( i=[len(nodes)-1 : -1 : 0] )
+	let( n=nodes[i] )
+	[n[0], [-n[1][0], n[1][1]], for(j=[2 : 1 : len(n)-1]) n[j]],
 ];
 
 togmod1_domodule(
@@ -89,56 +91,47 @@ togmod1_domodule(
 	let( front_thickness_mm = yfi-yfo )
 	// Z positions
 	let( zlip = togunits1_to_mm(front_lip_z) )
-
-	let( the_cavity_0 =
-		let( xi0 = -inner_width_mm/2 )
-		let( xi1 =  inner_width_mm/2 )
+	let( the_hull = ["union",
+		["render", make_togridpilish_block([2,1,2])]
+	])
+	let( the_cavity =
+		let( xi1   = inner_width_mm/2 )
 		let( ximax = size_mm[0]/2 -  6.35 )
 		let( xitop = size_mm[0]/2 - 12.7  )
-		tphl1_make_polyhedron_from_layer_function(
-			[
-				[-size_chunks[2]/2*chunk_mm - 50, [xi1, 0]],
-				for(a=[0 : 10 : 90]) [zlip + 6.35*(sin(a)-1), [
-					min(ximax, a == 90 ?  50 : xi1 + 6.35*(1-cos(a))),
-					a == 90 ? -50 : 0-6.35*(1-cos(a))
-				]],
-				[ size_chunks[2]/2*chunk_mm -  9 - (ximax - xitop), [ximax     , -50]],
-				[ size_chunks[2]/2*chunk_mm -  9                  , [xitop     , -50]],
-				[ size_chunks[2]/2*chunk_mm -  2                  , [xitop     , -50]],
-				[ size_chunks[2]/2*chunk_mm -  2 + 10             , [xitop + 10, -50]],
-			],
-			function(zp) [
-				[ zp[1][0], yfi + zp[1][1]],
-				[ zp[1][0], ybi           ],
-				[-zp[1][0], ybi           ],
-				[-zp[1][0], yfi + zp[1][1]],
-			],
-			layer_points_transform = "key0-to-z"
-		)
-	)
-	let( the_cavity_1 =
-		let( tlipp = top_lip_protrusion_mm )
-		let( ypi = ybi - tlipp )
-		["difference",
-			the_cavity_0,
+		["intersection",
+			let( tlipp = top_lip_protrusion_mm )
+			let( ypi = ybi - tlipp )
+			togmod1_linear_extrude_x([-size_mm[0], size_mm[0]], togpath1_rath_to_polygon(["togpath1-rath",
+				["togpath1-rathnode", [ybi     , -size_mm[2]/2-10]],
+				each tlipp > 0 ? [
+					["togpath1-rathnode", [ybi, size_mm[2]/2-3-tlipp]],
+					["togpath1-rathnode", [ypi, size_mm[2]/2-3      ]],
+				] : [],
+				["togpath1-rathnode", [ypi     ,  size_mm[2]/2+10]],
+				["togpath1-rathnode", [yfo - 10,  size_mm[2]/2+10]],
+				["togpath1-rathnode", [yfo - 10,  zlip           ]],
+				["togpath1-rathnode", [yfi     ,  zlip           ], ["round", 6.35]],
+				["togpath1-rathnode", [yfi     , -size_mm[2]/2-10]],
+			])),
 			
-			if( tlipp > 0 )
-			togmod1_linear_extrude_x([-size_mm[0], size_mm[0]],
-				togmod1_make_polygon([
-					[size_mm[1]        , size_mm[2]/2 - 3 - tlipp],
-					[       ybi        , size_mm[2]/2 - 3 - tlipp],
-					[       ybi - tlipp, size_mm[2]/2 - 3        ],
-					[       ybi - tlipp, size_mm[2]/2 + 10       ],
-					[size_mm[1]        , size_mm[2]/2 + 10       ],
+			togmod1_linear_extrude_y([-size_mm[1], size_mm[1]], togpath1_rath_to_polygon(["togpath1-rath",
+				each mirror_rathnodes([
+					["togpath1-rathnode", [xi1  , -size_mm[2]/2-20]],
+					["togpath1-rathnode", [xi1  ,  zlip - 3.175   ]],
+					["togpath1-rathnode", [ximax,  zlip - 3.175 + (ximax - xi1)]],
+					["togpath1-rathnode", [ximax,  zlip - 3.175 + (ximax - xi1)]],
+					["togpath1-rathnode", [ximax     ,  size_mm[2]/2 - 9 - (ximax - xitop)  ]],
+					["togpath1-rathnode", [xitop     ,  size_mm[2]/2 - 9                    ]],
+					["togpath1-rathnode", [xitop     ,  size_mm[2]/2 - 2       ]],
+					["togpath1-rathnode", [xitop + 20,  size_mm[2]/2 - 2 + 20  ]],
 				])
-			)
+			]))
 		]
 	)
-
 	["difference",
 		the_hull,
 		
-		the_cavity_1,
+		the_cavity,
 		
 		for( xz=screw_hole_xz_positions )
 		["translate", [xz[0], min(ybi,size_mm[1]/2-7), xz[1]], xz[1] == 6.35 ? scraw_hole : screw_hole],

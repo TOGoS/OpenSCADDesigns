@@ -1,5 +1,8 @@
 #!/usr/bin/env deno -A
 
+// TODO: Error on SCAD reruns by default, with option to allow SCAD reruns.
+// I grow weary of accidentally overwriting outputs.
+
 import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
@@ -1576,7 +1579,7 @@ const builder = new Builder({
 			paletteSize: 63
 		}),
 		...multiOsdBuildRules("2023/phone-holder/JetKVMHolder.scad", [
-			"p2503-v0.2", "p2504-v0.3",
+			"p2503-v0.2", "p2504",
 		], {
 			cameraPosition: [ 40, -40, 20],
 			imageSize: [384, 384],
