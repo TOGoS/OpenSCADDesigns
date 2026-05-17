@@ -1,4 +1,4 @@
-// JetKVMHolder0.4
+// JetKVMHolder0.5
 // 
 // v0.1:
 // - Full of hacks!
@@ -10,6 +10,9 @@
 // - Optional lip at top
 // v0.4:
 // - Simplify cavity generation
+// v0.5:
+// - Clean up screw hole definitions _somewhat_
+// - More screw holes behind lip
 
 back_thickness = "1/4inch";
 front_slot_width = "0inch";
@@ -68,21 +71,6 @@ function mirror_rathnodes(nodes) = [
 ];
 
 togmod1_domodule(
-	let( screw_hole = ["rotate", [90,0,0], tog_holelib2_hole("THL-1005", depth=50, overhead_bore_height=size_mm[1])] )
-	let( scraw_hole = ["rotate", [90,0,0], tog_holelib2_hole("THL-1005", depth=50, overhead_bore_height=12.7)] )
-	let( screw_hole_xz_positions = [
-		for( xm=[-2.5 : 1 : 2.5] )
-		for( zm=[ 2.5 : 1 : 2.5] )
-		[xm*atom_mm, zm*atom_mm],
-		
-		for( xm=[-1.5 : 1 : 1.5] )
-		for( zm=[ 0.5 : 1 : 1.5] )
-		[xm*atom_mm, zm*atom_mm],
-		
-		for( xm=[-2.5,  2.5] )
-		for( zm=[-2.5 : 1 : -0.5] )
-		[xm*atom_mm, zm*atom_mm],		
-	])
 	// Y {back|front} {outer|inner}
 	let( ybo = size_mm[1]/2 )
 	let( ybi = ybo - back_thickness_mm )
@@ -91,6 +79,27 @@ togmod1_domodule(
 	let( front_thickness_mm = yfi-yfo )
 	// Z positions
 	let( zlip = togunits1_to_mm(front_lip_z) )
+	let( edge_screw_hole = ["translate", [0,        0              ,0], ["rotate", [90,0,0], tog_holelib2_hole("THL-1005", depth=50, overhead_bore_height=size_mm[1])]] )
+	let( back_screw_hole = ["translate", [0,min(ybi,size_mm[1]/2-7),0], ["rotate", [90,0,0], tog_holelib2_hole("THL-1005", depth=50, overhead_bore_height=6.35      )]] )
+	let( screw_hole_xz_positions = [
+		// These are hard-coded assuming block size is 2x1x2
+		for( xm=[-2.5 : 1 :  2.5] )
+		for( zm=[ 2.5 : 1 :  2.5] )
+		[xm*atom_mm, zm*atom_mm],
+		
+		for( xm=[-1.5 : 1 :  1.5] )
+		for( zm=[ 0.5 : 1 :  1.5] )
+		[xm*atom_mm, zm*atom_mm],
+		
+		// Behind lip
+		for( xm=[-1.5 : 1 :  1.5] )
+		for( zm=[-2.5 : 1 : -0.5] )
+		[xm*atom_mm, zm*atom_mm],
+		
+		for( xm=[-2.5,  2.5] )
+		for( zm=[-2.5 : 1 : -0.5] )
+		[xm*atom_mm, zm*atom_mm],		
+	])
 	let( the_hull = ["union",
 		["render", make_togridpilish_block([2,1,2])]
 	])
@@ -134,7 +143,9 @@ togmod1_domodule(
 		the_cavity,
 		
 		for( xz=screw_hole_xz_positions )
-		["translate", [xz[0], min(ybi,size_mm[1]/2-7), xz[1]], xz[1] == 6.35 ? scraw_hole : screw_hole],
+		["translate", [xz[0], 0, xz[1]],
+			// If behind the lip, use 'scraw hole', with less overhead bore height
+			(abs(xz[0]) < inner_width_mm/2+6) ? back_screw_hole : edge_screw_hole],
 		
 		if( front_slot_width_mm > 0 )
 		["translate", [0, (yfo + yfi)/2, 0],
