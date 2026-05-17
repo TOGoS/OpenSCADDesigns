@@ -1,4 +1,4 @@
-// JetKVMHolder0.5
+// JetKVMHolder0.6
 // 
 // v0.1:
 // - Full of hacks!
@@ -13,11 +13,14 @@
 // v0.5:
 // - Clean up screw hole definitions _somewhat_
 // - More screw holes behind lip
+// v0.6:
+// - Add v6hcs to all sides
 
 back_thickness = "1/4inch";
 front_slot_width = "0inch";
 front_lip_z = "1/4inch";
 top_lip_protrusion = "0inch";
+v6hc_style = "none"; // ["none","v6.1"]
 
 $tgx11_offset = -0.5;
 $fn = 32;
@@ -45,21 +48,24 @@ size_chunks = [2,1,2];
 size_mm = size_chunks * chunk_mm;
 
 function make_togridpilish_block(size_chunks) =
-	let( foot = function(size)
+	let( foot = function(size, segmentation="chunk", v6hc_style=v6hc_style)
 		tgx11_block_bottom(
 			[[size[0],"chunk"],[size[1],"chunk"],[size[2],"chunk"]],
 			bottom_shape="beveled",
-			segmentation="chunk",
-			v6hc_style="none"
+			segmentation=segmentation,
+			v6hc_style=v6hc_style
 		)
 	)
+	let( x_foot = ["render", foot([size_chunks[2],size_chunks[1],size_chunks[0]])] )
+	let( y_foot = ["render", foot([size_chunks[0],size_chunks[2],size_chunks[1]])] )
+	let( z_foot = ["render", foot([size_chunks[0],size_chunks[1],size_chunks[2]])] )
 	["intersection",
-		["translate", [-size_chunks[0]/2*chunk_mm,  0,  0], ["rotate", [  0,  90, 0], foot([size_chunks[2],size_chunks[1],size_chunks[0]])]],
-		["translate", [ size_chunks[0]/2*chunk_mm,  0,  0], ["rotate", [  0, -90, 0], foot([size_chunks[2],size_chunks[1],size_chunks[0]])]],
-		["translate", [ 0, -size_chunks[1]/2*chunk_mm,  0], ["rotate", [-90,   0, 0], foot([size_chunks[0],size_chunks[2],size_chunks[1]])]],
-		["translate", [ 0,  size_chunks[1]/2*chunk_mm,  0], ["rotate", [ 90,   0, 0], foot([size_chunks[0],size_chunks[2],size_chunks[1]])]],
-		["translate", [ 0,  0,  size_chunks[2]/2*chunk_mm], ["rotate", [180,   0, 0], foot([size_chunks[0],size_chunks[1],size_chunks[2]])]],
-		["translate", [ 0,  0, -size_chunks[2]/2*chunk_mm], ["rotate", [  0,   0, 0], foot([size_chunks[0],size_chunks[1],size_chunks[2]])]],
+		["translate", [-size_chunks[0]/2*chunk_mm,  0,  0], ["rotate", [  0,  90, 0], x_foot]],
+		["translate", [ size_chunks[0]/2*chunk_mm,  0,  0], ["rotate", [  0, -90, 0], x_foot]],
+		["translate", [ 0, -size_chunks[1]/2*chunk_mm,  0], ["rotate", [-90,   0, 0], y_foot]],
+		["translate", [ 0,  size_chunks[1]/2*chunk_mm,  0], ["rotate", [ 90,   0, 0], y_foot]],
+		["translate", [ 0,  0,  size_chunks[2]/2*chunk_mm], ["rotate", [180,   0, 0], z_foot]],
+		["translate", [ 0,  0, -size_chunks[2]/2*chunk_mm], ["rotate", [  0,   0, 0], z_foot]],
 	];
 
 function mirror_rathnodes(nodes) = [
