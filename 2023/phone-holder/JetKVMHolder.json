@@ -1,6 +1,6 @@
 {
 	"parameterSets": {
-		"p2503": {
+		"p2503-v0.2": {
 			"size_chunks": "[2, 1, 2]",
 			"$tgx11_offset": "-0.5",
 			"$fn": "32"
