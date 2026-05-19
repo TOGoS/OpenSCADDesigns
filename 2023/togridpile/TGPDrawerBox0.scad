@@ -1,4 +1,7 @@
-// TGPDrawerBox0.1
+// TGPDrawerBox0.2
+// 
+// v0.2:
+// - Atom-segment the sides
 
 $tgx11_offset = -0.1;
 $fn = 32;
@@ -18,7 +21,8 @@ height_atoms = cavity_height_atoms + 1;
 
 atom_mm = 12.7;
 
-size_mm = [width_atoms*atom_mm, depth_atoms*atom_mm, height_atoms*atom_mm];
+size_atoms = [width_atoms, depth_atoms, height_atoms];
+size_mm = size_atoms*atom_mm;
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
@@ -51,16 +55,44 @@ togmod1_domodule(
 		]
 	)
 	["difference",
-		tgx11_block(
+		let( side = ["render",tgx11_block_bottom(
 			[
-				[width_atoms, "atom"],
-				[depth_atoms, "atom"],
 				[height_atoms, "atom"],
+				[depth_atoms, "atom"],
+				[width_atoms + 1, "atom"]
 			],
-			bottom_shape = "beveled",
-			top_segmentation = "block",
-			lip_height = -1
-		),
+			bottom_shape = "beveled"
+		)])
+		["intersection",
+			["render", tgx11_block(
+				[
+					[width_atoms, "atom"],
+					[depth_atoms, "atom"],
+					[height_atoms, "atom"],
+				],
+				bottom_shape = "beveled",
+				top_segmentation = "block",
+				lip_height = -1
+			)],
+			["translate", [ size_mm[0]/2-1/1024, 0, size_mm[2]/2], ["rotate", [0,-90,0], side]],
+			["translate", [-size_mm[0]/2+1/1024, 0, size_mm[2]/2], ["rotate", [0, 90,0], side]],
+			togmod1_linear_extrude_x([-size_mm[0], size_mm[0]],
+				["offset-ds", $tgx11_offset,
+					togmod1_make_polygon([
+						[ size_mm[1]/2+1,           -1],
+						[ size_mm[1]/2+1, size_mm[2]+1],
+						for( y=[size_atoms[1]/2 - 1 : -1 : -size_atoms[1]/2 + 1] ) each [
+							[atom_mm*y+3*u_mm, size_mm[2]+2*u_mm],
+							[atom_mm*y+1*u_mm, size_mm[2]-1*u_mm],
+							[atom_mm*y-1*u_mm, size_mm[2]-1*u_mm],
+							[atom_mm*y-3*u_mm, size_mm[2]+2*u_mm],
+						],
+						[-size_mm[1]/2-1, size_mm[2]+1],
+						[-size_mm[1]/2-1,           -1],
+					])
+				]
+			)
+		],
 		//["translate", [0,0,height_atoms*atom_mm/2],
 		//	togmod1_make_cuboid([width_atoms*atom_mm, depth_atoms*atom_mm, height_atoms*atom_mm]),
 		//],
