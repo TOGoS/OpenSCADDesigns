@@ -1,16 +1,15 @@
-// TGPDrawerBox0.3
+// TGPDrawerBox0.4
 // 
 // v0.2:
 // - Atom-segment the sides
 // v0.3:
 // - Width, depth, height are now customizable
 // - Options for tooth_style and tooth_inset
+// v0.4:
+// - Optional back, with holes and optional 'hatom' segmentation
+// - Back lip height can be customized
 // 
 // TODO: Thumb slots
-// 
-// TODO: Back (with screw holes!)
-// 
-// TODO: Make that lip in the back optional
 // 
 // Hmm: adjustable shelves via slots in the sides every 1/4"?
 
@@ -19,6 +18,9 @@ depth = "3inch";
 height = "2inch";
 tooth_inset = "1/8inch";
 tooth_style = "triangular-prism"; // ["none","triangular-prism","THL-1008"]
+back_thickness = "0inch";
+back_segmentation = "none"; // ["none","hatom"]
+back_lip_height = "1u";
 
 $tgx11_offset = -0.1;
 $fn = 32;
@@ -33,6 +35,10 @@ use <../lib/TGx11.1Lib.scad>
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
+u_mm     = togunits1_to_mm("u");
+atom_mm  = togunits1_to_mm("atom");
+chunk_mm = togunits1_to_mm("chunk");
+
 tooth_inset_mm = togunits1_to_mm(tooth_inset);
 nominal_shelf_thickness_mm = togunits1_to_mm("1/2atom");
 
@@ -40,11 +46,11 @@ size_mm = togunits1_vec_to_mms([width, depth, height]);
 size_atoms = togunits1_decode_vec([width, depth, height], unit="atom", xf="round");
 
 cavity_size_atoms = [for(d=size_atoms) d-1];
+cavity_size_mm    = [for(d=cavity_size_atoms) d*atom_mm];
 cavity_width_chunks = round(cavity_size_atoms[0]/3);
-
-u_mm     = togunits1_to_mm("u");
-atom_mm  = togunits1_to_mm("atom");
-chunk_mm = togunits1_to_mm("chunk");
+back_thickness_mm  = togunits1_to_mm(back_thickness);
+back_lip_height_mm = togunits1_to_mm(back_lip_height);
+back_lip_width_mm  = togunits1_to_mm("1/2tgp-standard-bevel");
 
 function drawer_cavity_xz(size, lip_height=2.54) =
 	["offset-ds", -$tgx11_offset,
@@ -56,6 +62,25 @@ function drawer_cavity_xz(size, lip_height=2.54) =
 		])
 	];
 
+function hatom_bottom(size) =
+	let( ridge_count = size[1]/atom_mm )
+	togmod1_linear_extrude_x([-size_mm[0], size_mm[0]],
+		["offset-ds", $tgx11_offset,
+			togmod1_make_polygon([
+				[-size[1]/2-1, size[2]+1],
+				[-size[1]/2-1, -1],
+				for( y=[ridge_count/2 - 1 : -1 : -ridge_count/2 + 1] ) each [
+					[atom_mm*y-2*u_mm, -1*u_mm],
+					[atom_mm*y-1*u_mm,  1*u_mm],
+					[atom_mm*y+1*u_mm,  1*u_mm],
+					[atom_mm*y+2*u_mm, -1*u_mm],
+				],
+				[ size[1]/2+1, -1],
+				[ size[1]/2+1, size[2]+1],
+			])
+		]
+	);
+
 togmod1_domodule(
 	let( tooth_positions = [
 		for( xm = [-cavity_width_chunks/2 + 0.5 : 1 : cavity_width_chunks - 0.5] )
@@ -63,10 +88,16 @@ togmod1_domodule(
 		let( z = cavity_size_atoms[2] * atom_mm )
 		[xm*chunk_mm, y, z]
 	] )
+	let( back_hole = tog_holelib2_hole("THL-1005",
+		depth=back_thickness_mm+1, overhead_bore_height = 2, inset=1.6) )
 	let( drawer_cavity =
 		["difference",
 			["union",
-				togmod1_linear_extrude_y([-size_mm[1]-1, size_mm[1]+1],
+				togmod1_linear_extrude_y(
+					[
+						-size_mm[1]/2-1,
+						back_thickness_mm > 0 ? size_mm[1]/2 - back_thickness_mm : size_mm[1]/2+1
+					],
 					drawer_cavity_xz([cavity_size_atoms[0]*atom_mm, cavity_size_atoms[2]*atom_mm])
 				),
 				
@@ -85,11 +116,12 @@ togmod1_domodule(
 				],
 			] : [],
 			
-			["translate", [0, size_mm[1]/2, 0],
+			if( back_lip_height_mm > 0 )
+			["translate", [0, size_mm[1]/2 - back_thickness_mm, 0],
 				togmod1_make_cuboid([
-					cavity_size_atoms[0]*atom_mm+2,
-					u_mm*2+$tgx11_offset*2,
-					u_mm*2+$tgx11_offset*2
+					cavity_size_mm[0]+2,
+					back_lip_width_mm*2,
+					back_lip_height_mm*2,
 				]),
 			],
 		]
@@ -104,6 +136,7 @@ togmod1_domodule(
 			bottom_shape = "beveled"
 		)])
 		["intersection",
+			// Bottom
 			["render", tgx11_block(
 				[
 					[size_atoms[0], "atom"],
@@ -114,29 +147,33 @@ togmod1_domodule(
 				top_segmentation = "block",
 				lip_height = -1
 			)],
+			// Right
 			["translate", [ size_mm[0]/2-1/1024, 0, size_mm[2]/2], ["rotate", [0,-90,0], side]],
+			// Left
 			["translate", [-size_mm[0]/2+1/1024, 0, size_mm[2]/2], ["rotate", [0, 90,0], side]],
-			togmod1_linear_extrude_x([-size_mm[0], size_mm[0]],
-				["offset-ds", $tgx11_offset,
-					togmod1_make_polygon([
-						[ size_mm[1]/2+1,           -1],
-						[ size_mm[1]/2+1, size_mm[2]+1],
-						for( y=[size_atoms[1]/2 - 1 : -1 : -size_atoms[1]/2 + 1] ) each [
-							[atom_mm*y+3*u_mm, size_mm[2]+2*u_mm],
-							[atom_mm*y+1*u_mm, size_mm[2]-1*u_mm],
-							[atom_mm*y-1*u_mm, size_mm[2]-1*u_mm],
-							[atom_mm*y-3*u_mm, size_mm[2]+2*u_mm],
-						],
-						[-size_mm[1]/2-1, size_mm[2]+1],
-						[-size_mm[1]/2-1,           -1],
-					])
-				]
-			)
+			// Top
+			["translate", [ 0, 0, size_mm[2]], ["rotate", [0,180,0],
+				hatom_bottom(size_mm, $tgx11_offset=$tgx11_offset-1/2048)]],
+			// Back
+			each
+				back_segmentation == "hatom" ? [
+					["translate", [ 0, size_mm[1]/2, size_mm[2]/2], ["rotate", [90,0,0],
+						hatom_bottom([size_mm[0],size_mm[2],size_mm[1]],
+							$tgx11_offset=$tgx11_offset-1/2048)]]
+				] :
+				back_segmentation == "none" ? [] :
+				assert(false, str("Unrecognized 'back_segmentation': '", back_segmentation, "'")),
 		],
 		//["translate", [0,0,size_mm[2]/2],
 		//	togmod1_make_cuboid([width_atoms*atom_mm, depth_atoms*atom_mm, size_mm[2]]),
 		//],
 		
 		["translate", [0,0,atom_mm/2], drawer_cavity],
+		
+		if( back_thickness_mm > 0 )
+		for( xm=[-size_atoms[0]/2+1.5 : 1 : size_atoms[0]/2-1.5] )
+		for( zm=[1.5 : 1 : size_atoms[2]-1.5] )
+		["translate", [xm*atom_mm, size_mm[1]/2 - back_thickness_mm, zm*atom_mm],
+			["rotate", [90,0,0], back_hole]],
 	]
 );
