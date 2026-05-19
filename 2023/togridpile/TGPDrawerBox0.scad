@@ -1,4 +1,4 @@
-// TGPDrawerBox0.4
+// TGPDrawerBox0.5
 // 
 // v0.2:
 // - Atom-segment the sides
@@ -8,10 +8,10 @@
 // v0.4:
 // - Optional back, with holes and optional 'hatom' segmentation
 // - Back lip height can be customized
+// v0.5:
+// - Slots for shelves every 1/4"
 // 
 // TODO: Thumb slots
-// 
-// Hmm: adjustable shelves via slots in the sides every 1/4"?
 
 width = "2inch";
 depth = "3inch";
@@ -21,6 +21,7 @@ tooth_style = "triangular-prism"; // ["none","triangular-prism","THL-1008"]
 back_thickness = "0inch";
 back_segmentation = "none"; // ["none","hatom"]
 back_lip_height = "1u";
+shelf_slot_depth = "0u";
 
 $tgx11_offset = -0.1;
 $fn = 32;
@@ -51,15 +52,26 @@ cavity_width_chunks = round(cavity_size_atoms[0]/3);
 back_thickness_mm  = togunits1_to_mm(back_thickness);
 back_lip_height_mm = togunits1_to_mm(back_lip_height);
 back_lip_width_mm  = togunits1_to_mm("1/2tgp-standard-bevel");
+shelf_slot_depth_mm = togunits1_to_mm(shelf_slot_depth);
 
 function drawer_cavity_xz(size, lip_height=2.54) =
+	let( height_atoms = round(size[1] / atom_mm) )
+	let( mirrar_points = function(points) [
+		each points,
+		for( i=[len(points)-1 : -1 : 0] ) let( p = points[i] )
+		[-p[0], p[1]],
+	])
 	["offset-ds", -$tgx11_offset,
-		togmod1_make_polygon([
-			[ size[0]/2, 0],
-			[ size[0]/2, size[1] + lip_height],
-			[-size[0]/2, size[1] + lip_height],
-			[-size[0]/2, 0],
-		])
+		togmod1_make_polygon(mirrar_points([
+			for( ym=[0 : 1/2 : height_atoms-0.1] ) each [
+				[ size[0]/2                      , (ym+0/4)*atom_mm],
+				[ size[0]/2                      , (ym+1/4)*atom_mm],
+				[ size[0]/2 + shelf_slot_depth_mm, (ym+1/4)*atom_mm],
+				[ size[0]/2 + shelf_slot_depth_mm, (ym+2/4)*atom_mm],
+			],
+			[size[0]/2, size[1]             ],
+			[size[0]/2, size[1] + lip_height],
+		]))
 	];
 
 function hatom_bottom(size) =
