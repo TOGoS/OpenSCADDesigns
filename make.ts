@@ -1594,6 +1594,13 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/togridpile/TGPDrawerBox0.scad", [
+			"p2508",
+		], {
+			cameraPosition: [ 15, -40, 15],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 
