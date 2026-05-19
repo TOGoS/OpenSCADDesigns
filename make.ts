@@ -1601,6 +1601,14 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/togridpile/TGPDrawerBox0.scad", [
+			"p2550", "p2551",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // 2021 works but takes forever
+			cameraPosition: [ 15, -40, 7.5],
+			imageSize: [384, 384],
+			paletteSize: 63
+		}),
 	},
 });
 

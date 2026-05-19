@@ -12,6 +12,8 @@
 // - Slots for shelves every 1/4"
 // 
 // TODO: Thumb slots
+// 
+// Hmm: nooks within the rail slots, so that rails can 'clip in'?
 
 width = "2inch";
 depth = "3inch";
