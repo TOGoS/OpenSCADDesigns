@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p2553": {
+			"length": "3chunk",
+			"width": "1chunk",
+			"depth": "3/4inch",
+			"front_thickness": "1/4inch",
+			"wall_thickness": "1/8inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}

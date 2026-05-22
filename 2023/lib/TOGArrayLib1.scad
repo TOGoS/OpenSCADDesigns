@@ -1,4 +1,4 @@
-// TOGArrayLib1.4
+// TOGArrayLib1.5
 // 
 // Functions for working with arrays.
 // 
@@ -15,6 +15,9 @@
 // v1.4:
 // - tal1_assert_for_each, for when you want to assert something
 //   about each of a list of items and get nice failure messages
+// v1.5:
+// - Add tal1_duplicate_reversed function, which may be
+//   handy when generating symmetrical polygons and stuff.
 
 /**
  * Make a list with the contents of list `a`,
@@ -168,3 +171,10 @@ function tal1_assert_for_each(list, item_checker) =
 assert([1,2,3] == tal1_assert_for_each([1,2,3], function(v,i) is_num(v)));
 // ...or a [boolean, string]
 assert([1,2,3] == tal1_assert_for_each([1,2,3], function(v,i) [is_num(v), "element be a num"]));
+
+// [a, b, c] -> [a, b, c, rxf(c), rxf(b), rxf(a)]
+function tal1_duplicate_reversed(list, rxf=function(item) item) =
+	[
+		each list,
+		for( i=[len(list)-1 : -1 : 0] ) rxf(list[i]),
+	];

@@ -1609,6 +1609,13 @@ const builder = new Builder({
 			imageSize: [384, 384],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/misc/ButtonBlock0.scad", [
+			"p2553",
+		], {
+			cameraPosition: [ 15, -40, 80],
+			imageSize: [512, 512],
+			paletteSize: 63
+		}),
 	},
 });
 
