@@ -4,8 +4,32 @@
 			"length": "3chunk",
 			"width": "1chunk",
 			"depth": "3/4inch",
-			"front_thickness": "1/4inch",
+			"bottom_thickness": "1/4inch",
 			"wall_thickness": "1/8inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32"
+		},
+		"p2554": {
+			"length": "4chunk",
+			"width": "1chunk",
+			"depth": "3/4inch",
+			"bottom_thickness": "3/16inch",
+			"wall_thickness": "1/8inch",
+			"ccb_feat": "wire-slot",
+			"ccf_feat": "barrel-inlet",
+			"cef_feat": "button",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32"
+		},
+		"p2555": {
+			"length": "5chunk",
+			"width": "1chunk",
+			"depth": "3/4inch",
+			"bottom_thickness": "3/16inch",
+			"wall_thickness": "1/8inch",
+			"ccb_feat": "wire-slot",
+			"ccf_feat": "barrel-inlet",
+			"cef_feat": "button",
 			"$tgx11_offset": "-0.1",
 			"$fn": "32"
 		}

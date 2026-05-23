@@ -1610,7 +1610,7 @@ const builder = new Builder({
 			paletteSize: 63
 		}),
 		...multiOsdBuildRules("2023/misc/ButtonBlock0.scad", [
-			"p2553",
+			"p2553", "p2554", "p2555",
 		], {
 			cameraPosition: [ 15, -40, 80],
 			imageSize: [512, 512],
