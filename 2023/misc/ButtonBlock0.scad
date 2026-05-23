@@ -1,4 +1,4 @@
-// ButtonBlock0.2
+// ButtonBlock0.3
 // 
 // Gridbeam-compatible block to hold those 1/2" toggle buttons
 // with WSTYPE-4136-compatible holes for #6 screws.
@@ -15,6 +15,8 @@
 // v0.2:
 // - Rename 'front_thickness' to 'bottom_thickness'
 // - Options for front and back chunk center, and front chunk boundary features
+// v0.3:
+// - Option for 'wire-slot-2', which go all the way through the back
 
 length = "4chunk";
 width  = "1chunk";
@@ -22,11 +24,11 @@ depth  = "3/4inch";
 bottom_thickness = "3/16inch";
 wall_thickness = "1/8inch";
 // Chunk center front feature
-ccf_feat = "wire-slot"; // ["none","barrel-inlet","button","wire-slot"]
+ccf_feat = "wire-slot"; // ["none","barrel-inlet","button","wire-slot","wire-slot-2"]
 // Chunk center back feature
-ccb_feat = "wire-slot"; // ["none","barrel-inlet","button","wire-slot"]
+ccb_feat = "wire-slot"; // ["none","barrel-inlet","button","wire-slot","wire-slot-2"]
 // Chunk boundary front feature
-cef_feat = "button"; // ["none","barrel-inlet","button","wire-slot"]
+cef_feat = "button"; // ["none","barrel-inlet","button","wire-slot","wire-slot-2"]
 
 $tgx11_offset = -0.1;
 $fn = 32;
@@ -88,7 +90,7 @@ button_zig = ["difference",
 
 screw_hole = tphl1_make_z_cylinder(d=5, zrange=[-size_mm[1], size_mm[1]]);
 
-wire_slot_zig = ["difference",
+wire_slot_1_zig = ["difference",
 	["union"],
 	togmod1_linear_extrude_z([-1, size_mm[1]/2+1], togpath1_rath_to_polygon(["togpath1-rath",
 		each tal1_duplicate_reversed([
@@ -97,6 +99,22 @@ wire_slot_zig = ["difference",
 			["togpath1-rathnode", [3.175 + 8, size_mm[2]/2 + 4]],
 		], rxf=function(rn) [rn[0], [-rn[1][0], rn[1][1]], for(i=[2:1:len(rn)-1]) rn[i]])
 	]))
+];
+wire_slot_2_zig = ["difference",
+	["union"],
+	let( width = 6.35, y_depth = max(6.35, wall_thickness_mm+width/2+1/128) )
+	["union",
+		togmod1_linear_extrude_z([-1, y_depth - width/2], togpath1_rath_to_polygon(["togpath1-rath",
+			each tal1_duplicate_reversed([
+				["togpath1-rathnode", [width/2    , -size_mm[2]      ]                 ],
+				["togpath1-rathnode", [width/2    ,  size_mm[2]/2 - 4], ["round", 6.35]],
+				["togpath1-rathnode", [width/2 + 8,  size_mm[2]/2 + 4]                 ],
+			], rxf=function(rn) [rn[0], [-rn[1][0], rn[1][1]], for(i=[2:1:len(rn)-1]) rn[i]])
+		])),
+		togmod1_linear_extrude_y([-size_mm[2]/2-1, -size_mm[2]/2 + bottom_thickness_mm+1],
+			togmod1_make_circle(r=width/2+1/128, pos=[0, y_depth - width/2])
+		),
+	]
 ];
 barrel_inlet_zig = ["difference",
 	// Sheath for this is kind of arbitrary
@@ -112,7 +130,8 @@ corner_cavity_subtraction = togmod1_linear_extrude_z([-size_mm[2], size_mm[2]],
 corner_hole = ["render", ["translate", [0,0,-size_mm[2]/2], ["rotate", [180,0,0], tog_holelib2_hole("THL-1005", depth=size_mm[2]+2)]]];
 
 function feat_to_zig(feat) =
-	feat == "wire-slot" ? wire_slot_zig :
+	feat == "wire-slot" ? wire_slot_1_zig :
+	feat == "wire-slot-2" ? wire_slot_2_zig :
 	feat == "barrel-inlet" ? barrel_inlet_zig :
 	feat == "button" ? button_zig :
 	feat == "none" ? ["difference", ["union"], ["union"]] :

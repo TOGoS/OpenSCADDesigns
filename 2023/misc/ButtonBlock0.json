@@ -32,6 +32,19 @@
 			"cef_feat": "button",
 			"$tgx11_offset": "-0.1",
 			"$fn": "32"
+		},
+		"p2556": {
+			"description": "5-chunk ButtonBlock0.3 with barrel jacks in front and wire-slot-2s in back",
+			"length": "5chunk",
+			"width": "1chunk",
+			"depth": "3/4inch",
+			"bottom_thickness": "3/16inch",
+			"wall_thickness": "1/8inch",
+			"ccb_feat": "wire-slot-2",
+			"ccf_feat": "barrel-inlet",
+			"cef_feat": "button",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
