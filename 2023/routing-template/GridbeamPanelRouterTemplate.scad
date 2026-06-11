@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.11
+// GridbeamPanelRouterTemplate-v2.12
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -36,6 +36,8 @@
 // v2.11:
 // - Option for 'round' bowties
 // - Fix chopping-off of corners when bowtie_position_offset = 0.5
+// v2.12:
+// - Define small_hole_positions so that presets that use pockets work again
 
 // Length of bowties (mm); 3/4" = 19.05mm; for round bowties, this corresponds to diamond_r*3
 bowtie_length    = 19.05;
@@ -115,16 +117,36 @@ bushing_hole = hole_diameter <= 0 ? ["union"] :
 	];
 	
 
-holes =
+all_holes_abstract =
 let( panel_size_chunks = [for(d=panel_size) round(d/grid_unit_size)] )
-["union",
+[
 	for( hpm = fencepost_positions_ofe_2d(panel_size_chunks, [1/2, 1/2], 1/2) )
 	let( xm_from_left  = hpm[0] - panel_size_chunks[0]/2 )
 	let( ym_from_front = hpm[1] - panel_size_chunks[1]/2 )
-	let( hole = (xm_from_left % 1 == 0 || ym_from_front % 1 == 0) ? small_hole : bushing_hole )
-	each hole == ["union"] ? [] : [
-		["translate", snoc(hpm * grid_unit_size, thickness), hole]
+	let( hole_type = (xm_from_left % 1 == 0 || ym_from_front % 1 == 0) ? "small-hole" : "bushing-hole" )
+	["translate", snoc(hpm * grid_unit_size, thickness), hole_type]
+];
+
+holes = ["union",
+	for( p = all_holes_abstract )
+	each
+	assert( p[0] == "translate" )
+	let( hole =
+		p[2] == "small-hole" ? small_hole :
+		p[2] == "bushing-hole" ? bushing_hole :
+		assert(false, str("Unrecognized hole role: '", p[2], "'"))
+	)
+   hole == ["union"] ? [] : [
+		["translate", p[1], hole]
 	]
+];
+
+small_hole_positions = [
+	for( p = all_holes_abstract )
+	each
+	assert( p[0] == "translate" )
+	assert( p[0] == "translate" )
+	p[2] == "small-hole" ? [p[1]] : []
 ];
 
 use <../lib/RoundBowtie0.scad>
@@ -186,7 +208,7 @@ translate([0,0,0]) {
 				}
 			}
 			for( pos=small_hole_positions ) {
-				translate(pos) circle(d=hole2_surface_diameter+pocket_wall_thickness*2);
+				translate([pos[0], pos[1]]) circle(d=hole2_surface_diameter+pocket_wall_thickness*2);
 			}
 			rotate([0,0,pocket_interior_angle]) {
 				for( i=[-panel_size[0]-panel_size[1] : pocket_interior_wall_spacing : panel_size[0]+panel_size[1]] ) {
