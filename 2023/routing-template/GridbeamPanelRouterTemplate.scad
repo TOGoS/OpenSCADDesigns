@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.12
+// GridbeamPanelRouterTemplate-v2.13
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -38,6 +38,9 @@
 // - Fix chopping-off of corners when bowtie_position_offset = 0.5
 // v2.12:
 // - Define small_hole_positions so that presets that use pockets work again
+// v2.13:
+// - Style of small holes in troff (hole3) can now be different
+//   than that of small holes on ridges (hole2)
 
 // Length of bowties (mm); 3/4" = 19.05mm; for round bowties, this corresponds to diamond_r*3
 bowtie_length    = 19.05;
@@ -69,6 +72,9 @@ bowtie_cutout_shape = "semi-maximal"; // ["angular","quarter-bit-cutout","semi-m
 // Style of in-between holes; THL-1001 is for #6 flatheads, THL-1002 is for 1/4" flatheads
 hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002", "THL-1010", "countersquare:5mm,12mm"]
 
+// Style of in-between holes at bottom of troff; 'hole2' makes them the same as whatever thee ridge holes are
+hole3_type_name = "hole2";
+
 // 6.35mm = 1/4", 4.7625mm = 3/16"; 3.125mm = 1/8"
 corner_radius = 4.7625;
 
@@ -88,6 +94,7 @@ $fn = $preview ? preview_fn : render_fn;
 module __end_parameter_list() { }
 
 hole2_surface_diameter = 12; // Eh
+hole3_surface_diameter = hole2_surface_diameter; // Eh
 
 include <../lib/BowtieLib-v0.scad>
 include <../lib/TOGHoleLib2.scad>
@@ -101,15 +108,19 @@ function snoc(list, item) = [for(i=list) i, item];
 inch = 25.4;
 panel_size = [panel_size_gc[0] * grid_unit_size, panel_size_gc[1] * grid_unit_size];
 
-small_hole =
+function gprt_hole(type_name, hole2) =
+	type_name == "hole2" && !is_undef(hole2) ? hole2 :
 	let( counterbore_inset = min(thickness-1, 3.175) )
 	["render",
-		hole2_type_name == "countersquare:5mm,12mm" ? ["union",
+		type_name == "countersquare:5mm,12mm" ? ["union",
 			togmod1_linear_extrude_z( [-thickness-1, 1], togmod1_make_circle(d=5) ),
 			togmod1_linear_extrude_z( [-counterbore_inset, 2], togmod1_make_rounded_rect([12, 12], r=3.175) )
 		] :
-		tog_holelib2_hole(hole2_type_name, thickness*2, counterbore_inset=counterbore_inset)
+		tog_holelib2_hole(type_name, thickness*2, counterbore_inset=counterbore_inset)
 	];
+
+hole2 = gprt_hole(hole2_type_name);
+hole3 = gprt_hole(hole3_type_name, hole2);
 
 bushing_hole = hole_diameter <= 0 ? ["union"] :
 	["render",
@@ -123,7 +134,11 @@ let( panel_size_chunks = [for(d=panel_size) round(d/grid_unit_size)] )
 	for( hpm = fencepost_positions_ofe_2d(panel_size_chunks, [1/2, 1/2], 1/2) )
 	let( xm_from_left  = hpm[0] - panel_size_chunks[0]/2 )
 	let( ym_from_front = hpm[1] - panel_size_chunks[1]/2 )
-	let( hole_type = (xm_from_left % 1 == 0 || ym_from_front % 1 == 0) ? "small-hole" : "bushing-hole" )
+	let( hole_type =
+		(ym_from_front % 1 == 0) ? "hole2" :
+		(xm_from_left  % 1 == 0) ? "hole3" :
+		"bushing-hole"
+	)
 	["translate", snoc(hpm * grid_unit_size, thickness), hole_type]
 ];
 
@@ -132,7 +147,8 @@ holes = ["union",
 	each
 	assert( p[0] == "translate" )
 	let( hole =
-		p[2] == "small-hole" ? small_hole :
+		p[2] == "hole2" ? hole2 :
+		p[2] == "hole3" ? hole3 :
 		p[2] == "bushing-hole" ? bushing_hole :
 		assert(false, str("Unrecognized hole role: '", p[2], "'"))
 	)
@@ -141,13 +157,16 @@ holes = ["union",
 	]
 ];
 
-small_hole_positions = [
+function hole_positions_of_type(type_name, all_holes_abstract) = [
 	for( p = all_holes_abstract )
 	each
 	assert( p[0] == "translate" )
 	assert( p[0] == "translate" )
-	p[2] == "small-hole" ? [p[1]] : []
+	p[2] == type_name ? [p[1]] : []
 ];
+
+hole2_positions = hole_positions_of_type("hole2", all_holes_abstract);
+hole3_positions = hole_positions_of_type("hole3", all_holes_abstract);
 
 use <../lib/RoundBowtie0.scad>
 
@@ -207,8 +226,11 @@ translate([0,0,0]) {
 					
 				}
 			}
-			for( pos=small_hole_positions ) {
+			for( pos=hole2_positions ) {
 				translate([pos[0], pos[1]]) circle(d=hole2_surface_diameter+pocket_wall_thickness*2);
+			}
+			for( pos=hole3_positions ) {
+				translate([pos[0], pos[1]]) circle(d=hole3_surface_diameter+pocket_wall_thickness*2);
 			}
 			rotate([0,0,pocket_interior_angle]) {
 				for( i=[-panel_size[0]-panel_size[1] : pocket_interior_wall_spacing : panel_size[0]+panel_size[1]] ) {
