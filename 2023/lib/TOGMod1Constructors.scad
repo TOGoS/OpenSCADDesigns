@@ -1,4 +1,4 @@
-// TOGMod1Constructors-v1.10
+// TOGMod1Constructors-v1.11
 // 
 // Functions to construct objects understood by TOGMod1
 // 
@@ -35,6 +35,8 @@
 // - Fix togmod1_linear_extrude_y so that range corresponds to Y start/end and
 //   polygon X,Y correspond to X,Z.  Previously it was rotated wrongly,
 //   which would have gone unnoticed for symmetrical shapes centered at 0,0.
+// v1.11:
+// - Remove an 'echo'
 
 use <./TOGArrayLib1.scad>
 
@@ -46,7 +48,6 @@ function togmod1__make_nd_vector_adder(origin=[0,0]) =
 	];
 
 assert([1,2,3] == togmod1__make_nd_vector_adder()([1,2,3]));
-echo(togmod1__make_nd_vector_adder([0,0,3])([1,2]));
 assert([1,2,3] == togmod1__make_nd_vector_adder([0,0,3])([1,2]));
 
 
