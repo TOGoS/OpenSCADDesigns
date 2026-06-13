@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.13
+// GridbeamPanelRouterTemplate-v2.14
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -41,6 +41,8 @@
 // v2.13:
 // - Style of small holes in troff (hole3) can now be different
 //   than that of small holes on ridges (hole2)
+// v2.14
+// - outer_corner_radius, outer_edge_offset
 
 // Length of bowties (mm); 3/4" = 19.05mm; for round bowties, this corresponds to diamond_r*3
 bowtie_length    = 19.05;
@@ -51,9 +53,6 @@ thickness = 3.175;
 grid_unit_size = 38.1;
 // Outer dimensions of panel, in grid units
 panel_size_gc = [4, 4];
-
-// Distance (mm) to offset outer edges inwards for wiggle room or to account for fat extrusion.  It may be better to leave this 0 and use your slicer's X/Y compensation parameter, instead.
-margin    = 0.00;  // 0.01
 
 // Size of holes; 12.2 printed with my regular Slic3r settings on my Kobra Max was found to fit 7/16" router bushings
 hole_diameter = 12; // 0.1
@@ -75,8 +74,10 @@ hole2_type_name = "THL-1001"; // ["none", "THL-1001", "THL-1002", "THL-1010", "c
 // Style of in-between holes at bottom of troff; 'hole2' makes them the same as whatever thee ridge holes are
 hole3_type_name = "hole2";
 
-// 6.35mm = 1/4", 4.7625mm = 3/16"; 3.125mm = 1/8"
-corner_radius = 4.7625;
+// Radius of corners adjacent to bowtie edges, applied before offset/margin; 6.35mm = 1/4", 4.7625mm = 3/16"; 3.125mm = 1/8"
+corner_radius = 4.7625; // 0.001
+// Radius of non-bowtie corners, applied before offset/margin; actual radius of outer corners = max(outer_rorner_radius, corner_radius
+outer_corner_radius = 0; // 0.001
 
 pocket_wall_thickness = 3.175;
 // Thickness of floor under silly pockets; set to >= thickness to disable the silly pockets
@@ -86,6 +87,11 @@ pocket_interior_wall_thickness = 1.5;
 pocket_interior_wall_spacing = 5;
 pocket_interior_angle = 60;
 
+// Offset of non-bowtie edges; actual offset of outer edges = outer_edge_offset - margin
+outer_edge_offset = 0; // 0.001
+// Distance (mm) to offset outer edges inwards for wiggle room or to account for fat extrusion.  It may be better to leave this 0 and use your slicer's X/Y compensation parameter, instead.
+margin    = 0.00;  // 0.01
+
 preview_fn = 12;
 render_fn = 48;
 
@@ -93,13 +99,25 @@ $fn = $preview ? preview_fn : render_fn;
 
 module __end_parameter_list() { }
 
+eff_bowtie_edges = [
+	for(e=bowtie_edges)
+	is_bool(e) ? e :
+	e == "false" ? false :
+	e == "true" ? true :
+	e == 0 ? false :
+	e == 1 ? true :
+	assert(false, str("Invalid boolean representation: ", e))
+];
+
 hole2_surface_diameter = 12; // Eh
 hole3_surface_diameter = hole2_surface_diameter; // Eh
 
-include <../lib/BowtieLib-v0.scad>
-include <../lib/TOGHoleLib2.scad>
-include <../lib/TOGMod1.scad>
-include <../lib/TOGMod1Constructors.scad>
+use <../lib/BowtieLib-v0.scad>
+use <../lib/TOGHoleLib2.scad>
+use <../lib/TOGMod1.scad>
+use <../lib/TOGMod1Constructors.scad>
+use <../lib/RoundBowtie0.scad>
+use <../lib/TOGPath1.scad>
 
 function snoc(list, item) = [for(i=list) i, item];
 
@@ -168,8 +186,6 @@ function hole_positions_of_type(type_name, all_holes_abstract) = [
 hole2_positions = hole_positions_of_type("hole2", all_holes_abstract);
 hole3_positions = hole_positions_of_type("hole3", all_holes_abstract);
 
-use <../lib/RoundBowtie0.scad>
-
 bowtie_2d_togmod =
 	bowtie_cutout_shape == "round" ? ["render", roundbowtie0_make_bowtie_2d(bowtie_length/3, offset=margin, $fn=max(24,$fn))] : ["union"];
 
@@ -185,9 +201,37 @@ module bowtie_of_style_2(style, length, r_offset) {
 translate([0,0,0]) {
 	difference() {
 		linear_extrude(thickness) difference() {
-			rounded_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
+			togmod1_domodule(
+				let( eff_outer_offset = outer_edge_offset - margin )
+				let( eff_inner_offset =                 0 - margin )
+				let(
+					x0 = -panel_size[0]/2 - (eff_bowtie_edges[3] ? eff_inner_offset : eff_outer_offset),
+					x1 =  panel_size[0]/2 + (eff_bowtie_edges[1] ? eff_inner_offset : eff_outer_offset),
+					y0 = -panel_size[1]/2 - (eff_bowtie_edges[2] ? eff_inner_offset : eff_outer_offset),
+					y1 =  panel_size[1]/2 + (eff_bowtie_edges[0] ? eff_inner_offset : eff_outer_offset)
+				)
+				let( bowtie_corners = /* SE, NE, NW, SW -- different order than edges specified! */ [
+					eff_bowtie_edges[1] || eff_bowtie_edges[2],
+					eff_bowtie_edges[0] || eff_bowtie_edges[1],
+					eff_bowtie_edges[0] || eff_bowtie_edges[3],
+					eff_bowtie_edges[2] || eff_bowtie_edges[3]
+				])
+				// Since these are applied *after* inset
+				let( inner_cops = [["round", max(0,     corner_radius                       + eff_inner_offset)]] )
+				let( outer_cops = [["round", max(0, max(corner_radius, outer_corner_radius) + eff_outer_offset)]] )
+				let( copses = [for(i=[0:1:3])
+					bowtie_corners[i] ? inner_cops : outer_cops
+				])
+				togpath1_rath_to_polygon(["togpath1-rath",
+					["togpath1-rathnode", [x1, y0], each copses[0]],
+					["togpath1-rathnode", [x1, y1], each copses[1]],
+					["togpath1-rathnode", [x0, y1], each copses[2]],
+					["togpath1-rathnode", [x0, y0], each copses[3]],
+				])
+			);
+			// rounded_square([panel_size[0]-margin*2, panel_size[1]-margin*2], corner_radius);
 			
-			for( pos=bowtie_positions(panel_size, [bowtie_length*bowtie_spacing, bowtie_length*bowtie_spacing], bowtie_position_offset*bowtie_length, edges=bowtie_edges ) ) {
+			for( pos=bowtie_positions(panel_size, [bowtie_length*bowtie_spacing, bowtie_length*bowtie_spacing], bowtie_position_offset*bowtie_length, edges=eff_bowtie_edges ) ) {
 				translate([pos[0],pos[1]]) rotate([0,0,pos[2]]) bowtie_of_style_2(bowtie_cutout_shape, bowtie_length, margin);
 			}
 			if( bowtie_position_offset == 0.5 ) {
