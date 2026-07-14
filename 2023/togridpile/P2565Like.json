@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2565": {
+			"length": "4inch",
+			"width": "1chunk",
+			"height": "1chunk",
+			"lip_height": "1.5",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32",
+		}
+	},
+	"fileFormatVersion": "1"
+}

@@ -1617,6 +1617,17 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/togridpile/P2565Like.scad", [
+			"p2565",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD, // For speed
+			cameraPositions: {
+				top: [-30,-40, 30],
+				bottom: [-30,-40, -30],
+			},
+			imageSize: [512, 512],
+			paletteSize: 63
+		}),
 	},
 });
 
