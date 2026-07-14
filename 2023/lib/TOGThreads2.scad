@@ -1,4 +1,4 @@
-// TOGThreads2.35
+// TOGThreads2.35.1
 // 
 // Versions:
 // v2.25:
@@ -26,6 +26,8 @@
 // v2.35:
 // - Fix that togthreads2__normalize_zparams was checking and
 //   returning the passed-in list instead of the normalized one
+// v2.35.1:
+// - Add some assertions
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -420,6 +422,11 @@ function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", 
  * - inset = distance from tapered ends to beginning of taper
  */
 function togthreads2_simple_zparams(end_zts, taper_length, extend=1, inset=0) =
+	assert( is_list(end_zts) && len(end_zts) == 2 )
+	assert( is_num(end_zts[0][0]) && is_num(end_zts[0][1]) && is_num(end_zts[1][0]) && is_num(end_zts[0][1]) )
+	assert( is_num(taper_length) )
+	assert( is_num(extend) )
+	assert( is_num(inset) )
 	let( tbot = end_zts[0][1], ttop = end_zts[1][1] )
 	let( zb3 = end_zts[0][0], zt3 = end_zts[1][0] ) // Nominal endpoints
 	// Extended ends:
