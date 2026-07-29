@@ -1,4 +1,4 @@
-// GridbeamPanelRouterTemplate-v2.14
+// GridbeamPanelRouterTemplate-v2.15
 // (Formerly RouterGuideGridPanel)
 //
 // -- Change history --
@@ -43,6 +43,8 @@
 //   than that of small holes on ridges (hole2)
 // v2.14
 // - outer_corner_radius, outer_edge_offset
+// v2.15:
+// - Options to put router bushing holes every half chunk
 
 // Length of bowties (mm); 3/4" = 19.05mm; for round bowties, this corresponds to diamond_r*3
 bowtie_length    = 19.05;
@@ -56,6 +58,8 @@ panel_size_gc = [4, 4];
 
 // Size of holes; 12.2 printed with my regular Slic3r settings on my Kobra Max was found to fit 7/16" router bushings
 hole_diameter = 12; // 0.1
+routing_row_frequency = 1; // [1,2]
+routing_column_frequency = 1; // [1,2]
 
 // Cut grooves to help guide the bushing into the holes; may be useful when hole_diameter is barely large enough for the bushing
 beveled_grooves_enabled = true;
@@ -153,8 +157,8 @@ let( panel_size_chunks = [for(d=panel_size) round(d/grid_unit_size)] )
 	let( xm_from_left  = hpm[0] - panel_size_chunks[0]/2 )
 	let( ym_from_front = hpm[1] - panel_size_chunks[1]/2 )
 	let( hole_type =
-		(ym_from_front % 1 == 0) ? "hole2" :
-		(xm_from_left  % 1 == 0) ? "hole3" :
+		(routing_row_frequency == 1 && ym_from_front % 1 == 0) ? "hole2" :
+		(routing_column_frequency == 1 && xm_from_left  % 1 == 0) ? "hole3" :
 		"bushing-hole"
 	)
 	["translate", snoc(hpm * grid_unit_size, thickness), hole_type]
@@ -244,7 +248,7 @@ translate([0,0,0]) {
 		}
 		
 		togmod1_domodule(holes);
-		if(beveled_grooves_enabled) for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size, grid_unit_size/2) ) {
+		if(beveled_grooves_enabled) for( y=fencepost_positions_ofe(panel_size[1], grid_unit_size / routing_row_frequency, grid_unit_size/2) ) {
 			translate([0,y,thickness]) rotate([0,0,90]) rotate([90,0,0]) linear_extrude(grid_unit_size*(panel_size_gc[0]-1), center=true) {
 				polygon([
 					[+hole_diameter/2 + thickness/2,  thickness/2],

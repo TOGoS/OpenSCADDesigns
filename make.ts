@@ -1492,7 +1492,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/routing-template/GridbeamPanelRouterTemplate.scad", [
 			"p2473", "p2500", "p2557", "p2558", "p2559", "p2560", "p2561", "p2562",
-			"p2563", "p2564",
+			"p2563", "p2564", "p2566",
 		], {
 			openScadCmd: OPENSCAD202101_CMD,
 			cameraPosition: [-20, -40, 120],
