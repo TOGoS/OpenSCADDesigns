@@ -1628,6 +1628,13 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/stencil/LetterStencil1.scad", [
+			"p2569", ...partIdRange("p", 2570, 2579),
+		], {
+			cameraPosition: [0,0,20],
+			imageSize: [128, 128],
+			paletteSize: 63
+		}),
 	},
 });
 
