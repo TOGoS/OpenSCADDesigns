@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2567": {
+			"size_chunks": "[3, 1]",
+			"thickness": "1/8inch",
+			"hole_size_mm": "[9, 4.5]",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}

@@ -1646,6 +1646,13 @@ const builder = new Builder({
 			imageSize: [128, 128],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/spacer/P2567Like0.scad", [
+			"p2567",
+		], {
+			cameraPosition: [-30,-20,60],
+			imageSize: [256, 256],
+			paletteSize: 63
+		}),
 	},
 });
 
