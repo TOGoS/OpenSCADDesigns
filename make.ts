@@ -638,6 +638,13 @@ const p192xBuildRules = flattenObj(map(
 // Something like this.
 const builder = new Builder({
 	rules: {
+		...multiOsdBuildRules("2023/board-clip/OuterAngleJig-v2.scad", [
+			"p1162", "p1164", "p1165", "p1210", "p1211",
+		], {
+			cameraPosition: [112.5, -400, 225],
+			imageSize: [384, 384],
+			paletteSize: 63,
+		}),
 		...multiOsdBuildRules("2023/hook/SimpleJHook1.scad", [
 			"p1325", "p1347", "p1349", "p1761", "p2472",
 		], {

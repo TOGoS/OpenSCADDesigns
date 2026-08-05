@@ -1,25 +1,29 @@
 {
 	"parameterSets": {
 		"p1162": {
+			"description": "3.5-inch x 3.5-inch x 1/2-inch outer angle jig with 4mm holes",
 			"arm_length_atoms": "6",
 			"atom_pitch": "12.7",
 			"divot_diameter": "0",
 			"hole_diameter": "4"
 		},
 		"p1164": {
+			"description": "3.5-inch x 3.5-inch x 1/2-inch outer angle jig with 4.2mm holes",
 			"arm_length_atoms": "6",
 			"atom_pitch": "12.7",
 			"divot_diameter": "0",
 			"hole_diameter": "4.2"
 		},
 		"p1165": {
+			"description": "6-inch x 6-inch x 3/4-inch outer angle jig",
 			"arm_length_atoms": "7",
 			"atom_pitch": "19.05",
 			"divot_diameter": "2",
 			"divot_positions": "[[9.525, 19.05]]",
 			"hole_diameter": "4.2"
 		},
-		"p1210 - thicc boi": {
+		"p1210": {
+			"description": "thicc boi",
 			"arm_length_atoms": "7",
 			"atom_pitch": "12.7",
 			"divot_diameter": "2",
@@ -27,7 +31,8 @@
 			"hole_diameter": "4",
 			"thickness_atoms": "6"
 		},
-		"p1211 - mini thicc boi": {
+		"p1211": {
+			"description": "mini thicc boi",
 			"arm_length_atoms": "3",
 			"atom_pitch": "12.7",
 			"divot_diameter": "2",
@@ -36,6 +41,5 @@
 			"thickness_atoms": "3"
 		}
 	},
-	"parameterSets": "",
 	"fileFormatVersion": "1"
 }
