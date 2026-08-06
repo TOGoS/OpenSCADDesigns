@@ -1660,6 +1660,13 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/phone-holder/PhoneHolderInsert-v2.scad", [
+			"p2601",
+		], {
+			cameraPosition: [40,-60,60],
+			imageSize: [256, 256],
+			paletteSize: 63
+		}),
 	},
 });
 

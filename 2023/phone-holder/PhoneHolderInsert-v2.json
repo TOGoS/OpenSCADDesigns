@@ -31,6 +31,12 @@
 			"render_fn": "48",
 			"style": "PHI-1007-IV",
 			"sub_margin": "0.3"
+		},
+		"p2601": {
+			"outer_margin": "0.3",
+			"render_fn": "48",
+			"style": "PHI-1007-IV;slot-width=3/4inch;center-hole-width=0mm",
+			"sub_margin": "0.3"
 		}
 	},
 	"parameterSets": "",

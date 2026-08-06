@@ -1,4 +1,4 @@
-// PhoneHolderInsert-v2.13
+// PhoneHolderInsert-v2.14
 // 
 // Inserts for PhoneHolder-v2
 // 
@@ -46,6 +46,9 @@
 // - Add 'PHI-1008-sub' and 'underhook'
 // v2.13:
 // - Add 'PHI-1007-IV', like '-IU' but holes go downwards
+// v2.14:
+// - Allow, via rather hacky means, PHI-1007 and variants, to take
+//   `;slot-width=QUANTITY;center-hole-width=QUANTITY` parameters.
 
 use <../lib/TOGArrayLib1.scad>
 use <../lib/TOGMod1.scad>
@@ -53,6 +56,8 @@ use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
+use <../lib/TOGStringLib1.scad>
+use <../lib/TOGUnits1.scad>
 
 // IU=integrated underblock
 style = "PHI-1001"; // ["PHI-1001","PHI-1002","PHI-1003","PHI-1004","PHI-1005","PHI-1005-IU","PHI-1005-sub","PHI-1005+sub","PHI-1006","PHI-1006-IU","PHI-1007","PHI-1007-IU","PHI-1007-IV","PHI-1008","PHI-1008-sub","underhook","block"]
@@ -164,13 +169,34 @@ make_phi_1005_cut = function()
 	if( !$integrated_underblock ) for( xm=[-1, +1] ) ["translate", [xm*1.5*inch, 0, 1/8*inch], tog_holelib2_hole("THL-1001", inset=1)],
 ];
 
+function decode_or(qty, default) =
+	let( _qty = is_undef(qty) ? default : qty )
+	is_num(_qty) ? _qty :
+	togunits1_to_mm(_qty);
+
 // Smaller center hole, no inset, for easier integrated underblock printing
-make_phi_1007_cut = function()
+make_phi_1007_cut = function( center_hole_width=undef, slot_width=undef )
+let( eff_center_hole_width = decode_or(center_hole_width, 40) )
+let( eff_slot_width = decode_or(slot_width, 1/2*inch) )
 ["union",
-	["translate", [0, 0, range_mid($vcut_zrange)], tphl1_make_rounded_cuboid([40, 13, range_length($vcut_zrange)], r=[6, 6, 0])],
-	make_slot_cut(($hull_size[1]-13)/2),
+	if( eff_center_hole_width > 0 ) ["translate", [0, 0, range_mid($vcut_zrange)], tphl1_make_rounded_cuboid([eff_center_hole_width, 13, range_length($vcut_zrange)], r=[6, 6, 0])],
+	if( eff_center_hole_width > eff_slot_width ) make_slot_cut(($hull_size[1]-13)/2, eff_slot_width),
+	// This one's a bit hacky; it lacks the nice rounded corners of the regular slot.
+	// Should rewrite to use TOGPath1
+	if( eff_center_hole_width <= eff_slot_width ) ["translate", [0, -$hull_size[1]/2, range_mid($vcut_zrange)], tphl1_make_rounded_cuboid([eff_slot_width, 50, range_length($vcut_zrange)], r=[6, 6, 0])],
 	if( !$integrated_underblock ) for( xm=[-1, +1] ) ["translate", [xm*1.5*inch, 0, 1/4*inch], tog_holelib2_hole("THL-1001", inset=2)],
 ];
+
+function param_value(key, params, default=undef, i=0) =
+	i == len(params) ? default :
+	params[i][0] == key ? params[i][1] :
+	param_value(key, params, default, i+1);
+
+make_phi_1007_cut_with_params = function(params)
+	make_phi_1007_cut(
+		center_hole_width = param_value("center-hole-width", params),
+		slot_width = param_value("slot-width", params)
+	);
 
 // For Dell 180W power brick;
 // Brick is 76mm wide, fills the whole depth, and has an 18mm flange
@@ -187,21 +213,27 @@ let( floor_thickness = 6.35 )
 	if( !$integrated_underblock ) for( xm=[-1.5, -1, +1, +1.5] ) ["translate", [xm*inch, 0, floor_thickness], tog_holelib2_hole("THL-1001", inset=2.5, overhead_bore_height=100)],
 ];
 
+function parse_style(style) =
+	let( tokens = togstr1_tokenize(style, ";") )
+	[tokens[0], [
+		for(i=[1:1:len(tokens)-1])
+		togstr1_tokenize(tokens[i], "=", 2)
+	]];
 
 // TODO: Refactor so that 2D and 3D cuts are specified separately
-function get_shape_info(style) =
+function get_shape_info(style, params) =
 	style == "PHI-1001" ? [1/4 * inch, make_phi_1001_cut] :
 	style == "PHI-1002" ? [3/4 * inch, make_phi_1002_cut] :
 	style == "PHI-1003" ? [2   * inch, make_phi_1003_cut] :
 	style == "PHI-1004" ? [2   * inch, make_phi_1004_cut] :
 	style == "PHI-1005" ? [1/4 * inch, make_phi_1005_cut] :
 	style == "PHI-1006" ? [2   * inch, make_phi_1006_cut] :
-	style == "PHI-1007" ? [1/8 * inch, make_phi_1007_cut] :
+	style == "PHI-1007" ? [1/8 * inch, function() make_phi_1007_cut_with_params(params)] :
 	style == "PHI-1008" ? [1.5 * inch, make_phi_1008_cut] :
 	[1/4 * inch, function() ["union"]];
 
-function make_phi(style) =
-	let(shape_info = is_list(style) ? style : get_shape_info(style))
+function make_phi(style, params) =
+	let(shape_info = is_list(style) ? style : get_shape_info(style, params))
 	let($integrated_underblock = is_undef($integrated_underblock) ? false : $integrated_underblock)
 	let($block_size = [4*inch, 1.25*inch, shape_info[0]])
 	let($vcut_zrange = [-1, $block_size[2]+1])
@@ -264,7 +296,7 @@ function make_underblock_hull(
 	bottom_bevel_size = 1,
 ) = ["difference",
 	make_underblock_convex_hull(height=height, bottom_bevel_size=bottom_bevel_size),
-	["linear-extrude-zs", [-1, height+1], ["union", each make_underblock_2d_subtractions(include_center_hole=include_center_hole, center_hole_size=center_hole_size)]],
+	// ["linear-extrude-zs", [-1, height+1], ["union", each make_underblock_2d_subtractions(include_center_hole=include_center_hole, center_hole_size=center_hole_size)]],
 ];
 //let( hull2d = make_underblock_hull_2d(include_center_hole=include_center_hole, center_hole_size=center_hole_size) )
 //["hull",
@@ -295,8 +327,8 @@ function make_underblock(
 	each make_underblock_subtractions(connector_hole=connector_hole),
 ];
 
-function make_phi_with_underblock(style, connector_hole_style="THL-1005-up") =
-	let(shape_info = is_list(style) ? style : get_shape_info(style))
+function make_phi_with_underblock(style, params, connector_hole_style="THL-1005-up") =
+	let(shape_info = is_list(style) ? style : get_shape_info(style, params))
 	let($block_size = [4*inch, 1.25*inch, shape_info[0]])
 	let($hull_size = [$block_size[0]-outer_margin*2, $block_size[1]-outer_margin*2, $block_size[2]])
 	let($integrated_underblock = true)
@@ -334,21 +366,23 @@ let( polypoints =	togpath1_rath_to_polypoints(rath) )
 	["translate", [dtop/2,-2*r,w/2], ["rotate", [90,0,0], tog_holelib2_hole("THL-1001", inset=r*2/3, overhead_bore_height=h)]],
 ];
 
-// PHI-1001 = A very basic phone holder insert
+// HMM: Maybe connector_hole_style should be in params?
 
 function make_thing(name, integrated_underblock=false) =
-	name == "PHI-1005+sub" ? ["union",
+	let( parsed = parse_style(name) )
+	let( style = parsed[0], params = parsed[1] )
+	style == "PHI-1005+sub" ? ["union",
 		["translate", [0,  38.1, 0], make_thing("PHI-1005")],
 		["translate", [0, -38.1, 0], make_thing("PHI-1005-sub")],
 	] :
-	name == "PHI-1005-sub" ? make_underblock() :
-	name == "PHI-1005-IU" ? make_phi_with_underblock("PHI-1005", connector_hole_style="THL-1005-up"  ) :
-	name == "PHI-1006-IU" ? make_phi_with_underblock("PHI-1006", connector_hole_style="none"         ) :
-	name == "PHI-1007-IU" ? make_phi_with_underblock("PHI-1007", connector_hole_style="THL-1005-up"  ) :
-	name == "PHI-1007-IV" ? make_phi_with_underblock("PHI-1007", connector_hole_style="THL-1005-down") :
-	name == "PHI-1008-sub" ? make_underblock(connector_hole=underblock_straight_hole) :
-	name == "underhook" ? make_underhook() :
-	integrated_underblock ? make_phi_with_underblock(name) : make_phi(name);
+	style == "PHI-1005-sub" ? make_underblock() :
+	style == "PHI-1005-IU" ? make_phi_with_underblock("PHI-1005", params, connector_hole_style="THL-1005-up"  ) :
+	style == "PHI-1006-IU" ? make_phi_with_underblock("PHI-1006", params, connector_hole_style="none"         ) :
+	style == "PHI-1007-IU" ? make_phi_with_underblock("PHI-1007", params, connector_hole_style="THL-1005-up"  ) :
+	style == "PHI-1007-IV" ? make_phi_with_underblock("PHI-1007", params, connector_hole_style="THL-1005-down") :
+	style == "PHI-1008-sub" ? make_underblock(connector_hole=underblock_straight_hole) :
+	style == "underhook" ? make_underhook() :
+	integrated_underblock ? make_phi_with_underblock(style, params) : make_phi(style, params);
 
 thing = make_thing(style);
 
