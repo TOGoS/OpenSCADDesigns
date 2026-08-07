@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2602": {
+			"width": "1chunk",
+			"open_counterbore_top": "false",
+			"$fn": "48"
+		}
+	},
+	"fileFormatVersion": "1"
+}

@@ -1667,6 +1667,13 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/board-clip/P2602Like0.scad", [
+			"p2602",
+		], {
+			cameraPosition: [-20,-40,10],
+			imageSize: [256, 256],
+			paletteSize: 63
+		}),
 	},
 });
 
