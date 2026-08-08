@@ -2,6 +2,10 @@
 // 
 // Simple stencils, based on a font.
 // User indicates hull size.
+// 
+// TODO: Have a pocket to mark the top left corner or something
+// so it's more obvious which way is right-side-up when the font has
+// e.g. "0"s that are just slightly asymmetrical.
 
 text = "WSITEM-";
 font_name = "Prototype";

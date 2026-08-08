@@ -1,6 +1,14 @@
 // WireSpoolHolder0.1
+// 
+// TODO: Apply $tgx11_offset to cavity,
+// or provide a separate parameter for it,
+// so that this can also be a comfy brick holder-like box!
+// 
+// TODO: Option for TOGridPile 'foot columns';
+// whatever axis has those can also get magnet holes.
 
 size_chunks = [2,2,2];
+// Nominal wall thickness, before subtractions
 wall_thickness = "1/4inch";
 
 $tgx11_offset = -0.1;
