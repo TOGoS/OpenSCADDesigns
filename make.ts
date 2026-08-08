@@ -1674,6 +1674,13 @@ const builder = new Builder({
 			imageSize: [256, 256],
 			paletteSize: 63
 		}),
+		...multiOsdBuildRules("2023/togridpile/WireSpoolHolder0.scad", [
+			"p2604"
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-30,-40, 30],
+			imageSize: [512, 512],
+		}),
 	},
 });
 

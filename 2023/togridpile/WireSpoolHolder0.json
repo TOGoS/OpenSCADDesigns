@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2604": {
+			"size_chunks": "[2, 2, 2]",
+			"wall_thickness": "1/4inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "48"
+		}
+	},
+	"fileFormatVersion": "1"
+}
