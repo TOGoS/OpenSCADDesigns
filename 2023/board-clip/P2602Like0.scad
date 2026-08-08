@@ -1,12 +1,16 @@
-// P2602Like0.1
+// P2602Like0.2
 // 
 // A bracket for holding shelves
 // where there is a wide gap (e.g. 1") between
 // the inside of the box and the shelf
 // (e.g. a 24" shelf inside a 26" space, i.e. 1 27" box with 1/2" walls)
+// 
+// v0.2:
+// - Make lip_z adjustable so that p2603 can fix it at 0 instead of +1/4inch
 
 width = "1chunk";
 open_counterbore_top = false;
+lip_z = "1/4inch";
 
 $fn = 48;
 
@@ -20,6 +24,7 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGUnits1.scad>
 
 width_mm = togunits1_to_mm(width);
+lip_z_mm = togunits1_to_mm(lip_z);
 
 togmod1_domodule(
 	let( inch = togunits1_decode("inch") )
@@ -46,8 +51,8 @@ togmod1_domodule(
 				["togpath1-rathnode", [-3/4*inch, -3/4*inch], ["bevel", 3.175], ["round", 3.5]],
 				["togpath1-rathnode", [ 1/4*inch, -3/4*inch], ["round", 3.175]],
 				["togpath1-rathnode", [ 3/4*inch, -1/4*inch], ["round", 3.175]],
-				["togpath1-rathnode", [ 3/4*inch,  1/4*inch], ["round", 3.175]],
-				["togpath1-rathnode", [ 1/4*inch,  1/4*inch]                  ],
+				["togpath1-rathnode", [ 3/4*inch,  lip_z_mm], ["round", 3.175]],
+				["togpath1-rathnode", [ 1/4*inch,  lip_z_mm]                  ],
 				["togpath1-rathnode", [ 1/4*inch,  3/4*inch], ["round", 3.175]],
 				["togpath1-rathnode", [-3/4*inch,  3/4*inch], ["bevel", 3.175], ["round", 3.5]],
 			], zo[1])),

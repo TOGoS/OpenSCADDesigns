@@ -2,6 +2,13 @@
 	"parameterSets": {
 		"p2602": {
 			"width": "1chunk",
+			"lip_z": "1/4inch",
+			"open_counterbore_top": "false",
+			"$fn": "48"
+		},
+		"p2603": {
+			"width": "1chunk",
+			"lip_z": "0inch",
 			"open_counterbore_top": "false",
 			"$fn": "48"
 		}
