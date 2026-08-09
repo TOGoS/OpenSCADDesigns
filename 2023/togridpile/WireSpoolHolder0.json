@@ -3,6 +3,17 @@
 		"p2604": {
 			"size_chunks": "[2, 2, 2]",
 			"wall_thickness": "1/4inch",
+			"cavity_surface_offset": "0",
+			"$tgx11_offset": "-0.1",
+			"$fn": "48"
+		},
+		"p2605": {
+			"description": "3-inch x 2+1/2-inch TOGridPile-compatible cube holder for wire spool with positive top lip",
+			"size_chunks": "[2, 2, 2]",
+			"wall_thickness": "1/4inch",
+			"top_lip_z_offset": "-1/2inch",
+			"top_lip_segmentation": "chunk",
+			"top_lip_height": "1.6mm",
 			"$tgx11_offset": "-0.1",
 			"$fn": "48"
 		}

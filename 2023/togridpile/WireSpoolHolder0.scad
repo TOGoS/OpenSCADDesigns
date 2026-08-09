@@ -1,8 +1,10 @@
-// WireSpoolHolder0.1
+// WireSpoolHolder0.2
 // 
-// TODO: Apply $tgx11_offset to cavity,
-// or provide a separate parameter for it,
-// so that this can also be a comfy brick holder-like box!
+// v0.2:
+// - Fix that `wall_thickness` was not taken into account in all directions
+// - By `cavity_surface_offset` (defaults to $tgx11_offset) to cavity surfaces
+// - Option for `top_lip_z_offset`, which, when negative,
+//   cuts a female TOGridPile foot into the top
 // 
 // TODO: Option for TOGridPile 'foot columns';
 // whatever axis has those can also get magnet holes.
@@ -10,6 +12,13 @@
 size_chunks = [2,2,2];
 // Nominal wall thickness, before subtractions
 wall_thickness = "1/4inch";
+
+// Set to a negative value to cut a positive TOGridPile lip that far below the nominal top of the block.
+top_lip_z_offset = "0inch";
+top_lip_segmentation = "chunk";
+top_lip_height = "1.6mm";
+// Set to a small negative value to slightly enlarge cavity; if blank, will be the same as $tgx11_offset
+cavity_surface_offset = "";
 
 $tgx11_offset = -0.1;
 $fn = 48;
@@ -59,18 +68,38 @@ function make_metachunk( size_chunks, chunk_size, chunk ) =
 
 //// End chunk construction functions
 
+function is_blank(v) = is_undef(v) || v == "";
+
+$togunits1_default_unit = "mm";
+
 chunk_size_mm = togunits1_to_mm("chunk");
 atom_size_mm  = togunits1_to_mm("atom");
 
-wall_thickness_mm = togunits1_to_mm(wall_thickness);
+top_lip_z_offset_mm = togunits1_to_mm(top_lip_z_offset);
+top_lip_height_mm   = togunits1_to_mm(top_lip_height);
+wall_thickness_mm   = togunits1_to_mm(wall_thickness);
+cavity_surface_offset_mm = is_blank(cavity_surface_offset) ? $tgx11_offset : togunits1_to_mm(cavity_surface_offset);
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
+
+assert( top_lip_height_mm >= 0, "Negative top lip height not currently supported" );
+// There's no reason it couldn't be, though I might want to
+// use some sentinal string instead of magical -1 to mean
+// 'make the top male'.
 
 togmod1_domodule(
 	let( size_mm = size_chunks * chunk_size_mm )
 	let( chunk = ["render", make_chunk(chunk_size_mm, $fn=24)] )
 	let( metachunk = make_metachunk( size_chunks, [chunk_size_mm, chunk_size_mm, chunk_size_mm], chunk, $fn=24 ) )
-	let( cavity = ["translate", [0,0,size_mm[2]/2], tphl1_make_rounded_cuboid([size_mm[0]-12.7, size_mm[1]-wall_thickness_mm*2, size_mm[2]*2-wall_thickness_mm*2], r=[1,1,1], $fn=12)] )
+	let( cavity = ["translate", [0,0,size_mm[2]/2],
+		tphl1_make_rounded_cuboid(
+			[
+				size_mm[0] - wall_thickness_mm*2 - cavity_surface_offset_mm*2,
+				size_mm[1] - wall_thickness_mm*2 - cavity_surface_offset_mm*2,
+				size_mm[2]*2-wall_thickness_mm*2 - cavity_surface_offset_mm*2
+			], r=[1,1,1], $fn=12)
+	] )
+	let( eff_top_z = size_mm[2]/2 + top_lip_z_offset_mm )
 	// Counterbored hole along X axis
 	let( spool_axis_hole = ["rotate", [0,90,0], tphl1_make_z_cylinder(zds=[
 		[-size_mm[0]      , 22],
@@ -86,7 +115,7 @@ togmod1_domodule(
 		for( zc=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2 - 0.5] )
 		for( ap=[[-1, 0], [0, 1], [1, 0], [0, -1]] )
 		let( p = [xc * chunk_size_mm + ap[0]*atom_size_mm, 0, zc*chunk_size_mm + ap[1]*atom_size_mm] )
-		if( abs(p[0]) < size_mm[0]/2 - 7 && p[2] > -size_mm[2]/2 + 7 )
+		if( abs(p[0]) < size_mm[0]/2 - 7 && p[2] > -size_mm[2]/2 + 7 && p[2] + 3 < eff_top_z )
 		p
 	])
 	let( floor_hole = tog_holelib2_hole("THL-1006", depth=wall_thickness_mm+5, inset=2) )
@@ -137,5 +166,20 @@ togmod1_domodule(
 		// But for now, none of them, because they cut into the edges of the beveled cubes.
 		// Add 'foot columns' and it may work.
 		// for( pos = magnet_y_pocket_positions ) ["translate", pos, magnet_y_pocket],
+		
+		if( top_lip_z_offset_mm < 0 )
+		["translate", [0, 0, size_mm[2]/2+top_lip_z_offset_mm],
+			["union",
+				if( top_lip_height_mm > 0 ) tgx11_block_bottom(
+					[for(d=size_chunks) [d,"chunk"]],
+					bottom_shape = "footed",
+					segmentation = top_lip_segmentation,
+					$tgx11_gender = "female",
+					$tgx11_offset = -$tgx11_offset
+				),
+				
+				["translate", [0,0,top_lip_height_mm+size_mm[2]/2], togmod1_make_cuboid([size_mm[0]+20, size_mm[1]+20, size_mm[2]])],
+			]
+		]
 	]
 );

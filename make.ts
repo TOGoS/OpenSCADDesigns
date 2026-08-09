@@ -1675,7 +1675,7 @@ const builder = new Builder({
 			paletteSize: 63
 		}),
 		...multiOsdBuildRules("2023/togridpile/WireSpoolHolder0.scad", [
-			"p2604"
+			"p2604", "p2605",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-30,-40, 30],
