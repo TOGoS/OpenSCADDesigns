@@ -1,13 +1,14 @@
-// WireSpoolHolder0.2
+// WireSpoolHolder0.3
 // 
 // v0.2:
 // - Fix that `wall_thickness` was not taken into account in all directions
 // - By `cavity_surface_offset` (defaults to $tgx11_offset) to cavity surfaces
 // - Option for `top_lip_z_offset`, which, when negative,
 //   cuts a female TOGridPile foot into the top
-// 
-// TODO: Option for TOGridPile 'foot columns';
-// whatever axis has those can also get magnet holes.
+// v0.3:
+// - Option for foot_style = 'circle'
+// - Option for magnet pockets in bottom
+// - Bevel edges around X axis hole counterbores
 
 size_chunks = [2,2,2];
 // Nominal wall thickness, before subtractions
@@ -17,6 +18,10 @@ wall_thickness = "1/4inch";
 top_lip_z_offset = "0inch";
 top_lip_segmentation = "chunk";
 top_lip_height = "1.6mm";
+
+foot_style = "none"; // ["none","circle"]
+bottom_atom_hole_style = "none"; // ["none","magnet-pocket"]
+
 // Set to a small negative value to slightly enlarge cavity; if blank, will be the same as $tgx11_offset
 cavity_surface_offset = "";
 
@@ -89,8 +94,25 @@ assert( top_lip_height_mm >= 0, "Negative top lip height not currently supported
 
 togmod1_domodule(
 	let( size_mm = size_chunks * chunk_size_mm )
+	let( size_atoms = size_chunks * 3 )
 	let( chunk = ["render", make_chunk(chunk_size_mm, $fn=24)] )
 	let( metachunk = make_metachunk( size_chunks, [chunk_size_mm, chunk_size_mm, chunk_size_mm], chunk, $fn=24 ) )
+	let( foot_d = atom_size_mm*sqrt(2)/2 )
+	let( foot = tphl1_make_z_cylinder(zds=[
+		[0   - $tgx11_offset + 1/256, foot_d-0.8],
+		[0.4 - $tgx11_offset + 1/256, foot_d    ],
+		[atom_size_mm               , foot_d    ]
+	]))
+	let( block_hull = ["union",
+		metachunk,
+		
+		if( foot_style != "none" )
+		for( ym=[-size_atoms[1]/2 + 0.5 : 1 : size_atoms[1]/2 - 0.5] )
+		for( xm=[-size_atoms[0]/2 + 0.5 : 1 : size_atoms[0]/2 - 0.5] )
+		["translate", [xm*atom_size_mm, ym*atom_size_mm, -size_mm[2]/2],
+			foot
+		]
+	])
 	let( cavity = ["translate", [0,0,size_mm[2]/2],
 		tphl1_make_rounded_cuboid(
 			[
@@ -102,12 +124,14 @@ togmod1_domodule(
 	let( eff_top_z = size_mm[2]/2 + top_lip_z_offset_mm )
 	// Counterbored hole along X axis
 	let( spool_axis_hole = ["rotate", [0,90,0], tphl1_make_z_cylinder(zds=[
-		[-size_mm[0]      , 22],
+		[-size_mm[0]/2 - 2, 30],
+		[-size_mm[0]/2 + 2, 22],
 		[-size_mm[0]/2 + 3, 22],
 		[-size_mm[0]/2 + 3,  9],
 		[ size_mm[0]/2 - 3,  9],
 		[ size_mm[0]/2 - 3, 22],
-		[ size_mm[0]      , 22],
+		[ size_mm[0]/2 - 2, 22],
+		[ size_mm[0]/2 + 2, 30],
 	])])
 	let( wire_y_hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(zrange=[-size_mm[1], size_mm[1]], d=3)] )
 	let( wire_y_hole_positions = [
@@ -135,16 +159,22 @@ togmod1_domodule(
 	let( connector_y_hole = ["rotate", [90,0,0], tphl1_make_z_cylinder(zrange=[-size_mm[1], size_mm[1]], d=5)] )
 	let( connector_x_hole = ["rotate", [0,90,0], tphl1_make_z_cylinder(zrange=[-size_mm[0], size_mm[0]], d=5)] )
 	let( magnet_z_pocket = tphl1_make_z_cylinder(d=6.2, zrange=[-2.4,2.4]) )
+	let( bottom_edge_atom_positions = [
+		for( xc=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2 - 0.5] )
+		for( yc=[-size_chunks[1]/2 + 0.5 : 1 : size_chunks[1]/2 - 0.5] )
+		for( ap=[[-1, -1], [0,-1], [1, -1], [1,0], [1, 1], [0,1], [-1, 1], [-1,0]] )
+		[xc * chunk_size_mm + ap[0]*atom_size_mm, yc*chunk_size_mm + ap[1]*atom_size_mm, -size_mm[2]/2]
+	])
 	let( magnet_y_pocket = ["rotate", [90,0,0], magnet_z_pocket] )
 	let( magnet_y_pocket_positions = [
 		for( xc=[-size_chunks[0]/2 + 0.5 : 1 : size_chunks[0]/2 - 0.5] )
 		for( zc=[-size_chunks[2]/2 + 0.5 : 1 : size_chunks[2]/2 - 0.5] )
 		for( ap=[[-1, -1], [1, -1], [1, 1], [-1, 1]] )
 		for( y = [-size_mm[1]/2, size_mm[1]/2] )
-	   [xc * chunk_size_mm + ap[0]*atom_size_mm, y, zc*chunk_size_mm + ap[1]*atom_size_mm]
+		[xc * chunk_size_mm + ap[0]*atom_size_mm, y, zc*chunk_size_mm + ap[1]*atom_size_mm]
 	])
 	["difference",
-		["render", metachunk],
+		["render", block_hull],
 		
 		cavity,
 		
@@ -166,6 +196,8 @@ togmod1_domodule(
 		// But for now, none of them, because they cut into the edges of the beveled cubes.
 		// Add 'foot columns' and it may work.
 		// for( pos = magnet_y_pocket_positions ) ["translate", pos, magnet_y_pocket],
+		if( bottom_atom_hole_style == "magnet-pocket" )
+		for( pos = bottom_edge_atom_positions ) ["translate", pos, magnet_z_pocket],
 		
 		if( top_lip_z_offset_mm < 0 )
 		["translate", [0, 0, size_mm[2]/2+top_lip_z_offset_mm],
