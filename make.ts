@@ -1648,7 +1648,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/stencil/LetterStencil1.scad", [
 			"p2569", ...partIdRange("p", 2570, 2579),
-			"p2607", "p2608", "p2609",
+			"p2607", "p2608", "p2609", "p2610", "p2611", "p2612",
 		], {
 			cameraPosition: [0,0,20],
 			imageSize: [128, 128],

@@ -142,6 +142,39 @@
 			"font_size": "1.5inch",
 			"central_bar_width": "0mm",
 			"$fn": "32"
+		},
+		"p2610": {
+			"description": "1/8-inch spacer",
+			"width": "1/8inch",
+			"height": "2inch",
+			"thickness": "1/8inch",
+			"text": "",
+			"font_name": "Prototype",
+			"font_size": "1.5inch",
+			"central_bar_width": "0mm",
+			"$fn": "32"
+		},
+		"p2611": {
+			"description": "3/4-inch spacer",
+			"width": "3/4inch",
+			"height": "2inch",
+			"thickness": "1/8inch",
+			"text": "",
+			"font_name": "Prototype",
+			"font_size": "1.5inch",
+			"central_bar_width": "0mm",
+			"$fn": "32"
+		},
+		"p2612": {
+			"description": "1+1/2-inch spacer",
+			"width": "1.5inch",
+			"height": "2inch",
+			"thickness": "1/8inch",
+			"text": "",
+			"font_name": "Prototype",
+			"font_size": "1.5inch",
+			"central_bar_width": "0mm",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
