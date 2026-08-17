@@ -121,6 +121,27 @@
 			"font_size": "1.5inch",
 			"central_bar_width": "0mm",
 			"$fn": "32"
+		},
+		"p2608": {
+			"width": "3/4inch",
+			"height": "2inch",
+			"thickness": "1/8inch",
+			"text": "-",
+			"font_name": "Prototype",
+			"font_size": "1.5inch",
+			"central_bar_width": "0mm",
+			"dot_position": "top-left",
+			"$fn": "32"
+		},
+		"p2609": {
+			"width": "7.5inch",
+			"height": "2inch",
+			"thickness": "1/8inch",
+			"text": "WSITEM",
+			"font_name": "Prototype",
+			"font_size": "1.5inch",
+			"central_bar_width": "0mm",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"

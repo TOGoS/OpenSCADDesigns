@@ -1,11 +1,10 @@
-// LetterStencil1.0
+// LetterStencil1.1
 // 
 // Simple stencils, based on a font.
 // User indicates hull size.
 // 
-// TODO: Have a pocket to mark the top left corner or something
-// so it's more obvious which way is right-side-up when the font has
-// e.g. "0"s that are just slightly asymmetrical.
+// v1.1:
+// - Option for pocket in top left corner
 
 text = "WSITEM-";
 font_name = "Prototype";
@@ -15,6 +14,7 @@ width = "12.5inch";
 thickness = "1/8inch";
 central_bar_width = "0mm";
 central_bar_position = "full"; // ["full","top","bottom"]
+dot_position = ""; // ["", "top-left"]
 $fn = 32;
 
 use <../lib/TOGMod1.scad>
@@ -35,12 +35,17 @@ central_bar_2d =
 		togmod1_make_rect([central_bar_width_mm, height_mm+2])
 	];
 
-togmod1_domodule(
+togmod1_domodule(["difference",
 	togmod1_linear_extrude_z([0, thickness_mm], ["difference",
 		togmod1_make_rounded_rect([width_mm, height_mm], r=1.6),
+		
 		["difference",
 			togmod1_text(text, size=font_size_mm, font=font_name, halign="center", valign="center"),
 			central_bar_2d,
 		]
-	])
-);
+	]),
+	
+	if( dot_position == "top-left" ) ["translate", [-width_mm/2, height_mm/2],
+		togmod1_linear_extrude_z([thickness_mm/2, thickness_mm+1],
+			togmod1_make_rounded_rect([6.35,6.35], r=1))]
+]);
