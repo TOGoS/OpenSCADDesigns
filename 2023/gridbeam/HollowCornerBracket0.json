@@ -1,0 +1,13 @@
+{
+	"parameterSets": {
+		"p2613": {
+			"width": "1chunk",
+			"depth": "1chunk",
+			"height": "1chunk",
+			"wall_thickness": "1/4inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}
