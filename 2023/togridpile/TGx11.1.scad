@@ -1,4 +1,4 @@
-// TGx11.1.23
+// TGx11.1.25
 //
 // Attenot at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -24,6 +24,11 @@
 // v11.1.23:
 // - Allow cavity wall thickness--nominal and minimum actual--to be customized
 // - 3/4-xs mode, for when you want to inspect wall thicknesses or whatever
+// v11.1.25:
+// - Allow customization of some units that drive basic foot shape
+//   to demonstrate that you can 'kinda sorta' use TGx11.1Lib to
+//   e.g. make round columns that will fit between each other diagonally by
+//   setting tgp-column-inset = 1.8mm, tgp-m-outer-corner-radius = 1/2atom
 
 item = "block"; // ["block", "foot-column", "v6hc-xc", "concave-qath-demo","autozath-demo"]
 block_size_chunks = [2,2];
@@ -37,6 +42,11 @@ bottom_foot_bevel = 0.0; // 0.1
 bottom_v6hc_style = "v6.1"; // ["v6.1", "none"]
 
 lip_height = 2.54;
+
+/* [Foot shape adjustments; WATCH OUT THESE WILL APPLY TO FEMALE ALSO] */
+standard_bevel = "2u";
+foot_column_inset = "1u";
+outer_corner_radius = "1u";
 
 // 'shell-xs' makes a cross section of the 'shell' between the ideal shape and the offset one
 mode = "normal"; // ["normal", "shell-xs", "3/4-xs"]
@@ -72,6 +82,7 @@ use <../lib/TOGridLib3.scad>
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGHoleLib2.scad>
 use <../lib/TOGPath1.scad>
+use <../lib/TOGUnits1.scad>
 use <../lib/TOGVecLib0.scad>
 
 function test_plate(size) =
@@ -217,7 +228,12 @@ module tgmain() {
 }
 
 tgmain(
-	$togridlib3_unit_table = tgx11_get_default_unit_table(),
+	$togridlib3_unit_table = [
+		["tgp-standard-bevel", togunits1_to_ca(standard_bevel)],
+		["tgp-column-inset", togunits1_to_ca(foot_column_inset)],
+		["tgp-m-outer-corner-radius", togunits1_to_ca(outer_corner_radius)],
+		each tgx11_get_default_unit_table(),
+	],
 	$tgx11_offset = offset,
 	$fn = $preview ? preview_fn : render_fn
 );

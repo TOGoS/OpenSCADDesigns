@@ -446,6 +446,26 @@
 			"cavity_wall_min_actual_thickness": 2.1,
 			"lip_height": "-1",
 			"offset": "-0.15"
+		},
+		"p2614": {
+			"description": "Demonstration of TGx11-based block with round sqrt(2)*1/4-inch-diameter foot columns",
+			"item": "block",
+			"block_height_u": "24",
+			"block_size_chunks": "[1, 1]",
+			"outer_corner_radius": "4u",
+			"standard_bevel": "2u",
+			"top_segmentation": "chunk",
+			"atom_hole_style": "none",
+			"bottom_foot_bevel": "0.4",
+			"bottom_segmentation": "atom",
+			"bottom_shape": "footed",
+			"bottom_v6hc_style": "none",
+			"cavity_type": "clarp2505-square",
+			"cavity_wall_min_actual_thickness": "2.1",
+			"cavity_wall_thickness": "2.1",
+			"foot_column_inset": "1.8mm",
+			"lip_height": "-1",
+			"offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"

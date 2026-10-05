@@ -1,4 +1,4 @@
-// TGx11.1Lib - v11.1.22
+// TGx11.1Lib - v11.1.25
 // 
 // Attempt at re-implementation of TGx9 shapes
 // using TOGMod1 S-shapes and cleaner APIs with better defaults.
@@ -60,6 +60,14 @@
 // - Fix lip_height < 0 case to not shorten the top of the block
 // v11.1.22:
 // - tgx11_block now accepts 'top_foot_bevel' option
+// v11.1.25:
+// - Actually take tgp-column-inset and tgp-standard-bevel into account
+//   rather than assuming 1u and 2u when generating chunk/atom feet.
+// - Gracefully handle large rounding radii (forcing feet to be circles)
+// - Handle different column insets than 1u
+// - Note UH OH regarding tgx11_chunk_xs_half_qath being 'somewhat wrong'
+// - These changes are somewhat experimental; they are a step towards correctness
+//   and flexibility but could turn out to be buggy or just over-complicated!
 
 module __tgx11lib_end_params() { }
 
@@ -77,6 +85,10 @@ function tgx11_ath_to_polygon(thing, offset=0) =
 		assert(false, str("Unrecognized object: ", thing))
 	);
 
+/**
+ * bevels indicate whether [back right, back left, front left, front right] corners should be beveled
+ * (front = -Y, back = +Y)
+ */
 function tgx11__gnerate_beveled_rect_data(bevels=[true,true,true,true]) =
 let(z41 = sqrt(2)-1) [
 	each bevels[0] ? [
@@ -105,7 +117,7 @@ let(z41 = sqrt(2)-1) [
 	]
 ];
 
-// TODO: Just use togpath1_points_to_zath!
+// Hmm: Could just use togpath1_points_to_zath!
 function tgx11_beveled_rect_zath(size, bevel_size, bevels=[true,true,true,true]) =
 assert(is_list(size))
 assert(is_num(size[0]))
@@ -135,39 +147,66 @@ function tgx11__bare_column_height() =
 	togridlib3_decode([1, "tgp-standard-bevel"]) - 
 	togridlib3_decode([1, "tgp-column-inset"]);
 
+// Maximum corner radius for a square, taking $fn into account
+function tgx11__max_square_corner_radius(min_side_length) = min_side_length*($fn-1)/($fn*2);
+
 /**
  * Returns radius for corners for the given gender
- * at the given offset from the 'ideal' chunk hull
+ * at the given offset from the 'ideal' chunk hull.
  */
 function tgx11__corner_radius(offset, gender) =
 	assert(is_num(offset))
 	assert(is_string(gender))
-	max(
+   max(
 		togridlib3_decode([1, gender == "m" ? "tgp-min-m-corner-radius" : "tgp-min-f-corner-radius"]),
 		togridlib3_decode([1, gender == "m" ? "tgp-m-outer-corner-radius" : "tgp-f-outer-corner-radius"]) + offset
 	);
 
+/**
+ * Sometimes the number of points returned by togpath1_qath_to_polypoints(...)
+ * seems slightly non-deterministic, possibly due to rounding errors,
+ * or possibly due to a bug in this program.  Anyway, we usually use
+ * $fn that are a multiple of 8 anyway, so we can use that to force
+ * the point count to be the same every time.
+ */
+function tgx11__force_qath_point_count(qath, approximate_total_point_count) =
+	let( ppseg = max(2, round(approximate_total_point_count / (len(qath)-1))) )
+	["togpath1-qath",
+		for( i=[1:1:len(qath)-1] )
+		[qath[i][0], qath[i][1], qath[i][2], qath[i][3], qath[i][4], ppseg]
+	];
+
 function tgx11_chunk_xs_zath(size, gender, bevels=undef) =
-	// Cleverly skip beveling corners by default if rounding radius sufficiently large:
-	let( rounding_radius = tgx11__corner_radius(offset=0,gender=gender) )
+	// Cleverly skip beveling corners by default if [ideal] rounding radius sufficiently large:
 	let( bevel_size = togridlib3_decode([1, "tgp-standard-bevel"]) )
+	let( rounding_radius = tgx11__corner_radius(offset=0, gender=gender) )
 	let( default_bevel = rounding_radius < bevel_size * 1.707 )
 	let( _bevels1 = is_undef(bevels) ? [undef,undef,undef,undef] : bevels )
 	let( _bevels2 = [for(b=_bevels1) is_undef(b) ? default_bevel : b] )
-	tgx11_beveled_rect_zath(size, bevel_size=togridlib3_decode([1,"tgp-standard-bevel"]), bevels=_bevels2);
+	tgx11_beveled_rect_zath(size, bevel_size=bevel_size, bevels=_bevels2);
 
-function tgx11_chunk_xs_qath(size, offset=0, gender="m") = togpath1_zath_to_qath(
+function tgx11_chunk_xs_qath(size, offset=0, gender="m") = tgx11__force_qath_point_count(togpath1_zath_to_qath(
 	tgx11_chunk_xs_zath(size, gender=gender),
 	offset = offset,
-	radius = tgx11__corner_radius(offset=offset, gender=gender)
-);
+	radius = min(
+		tgx11__max_square_corner_radius(min(size[0],size[1]) + offset*2),
+		max(1/128, tgx11__corner_radius(offset=offset, gender=gender))
+	)
+), $fn);
 
-function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = togpath1_zath_to_qath(
+// Generate a qath for just the left side of chunk/atom
+function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = tgx11__force_qath_point_count(togpath1_zath_to_qath(
 	tgx11_chunk_xs_zath(size, gender=gender, bevels=[false,undef,undef,false]),
 	offset = offset,
-	radius = tgx11__corner_radius(offset=offset, gender=gender),
-	closed=false
-);
+	// UH OH: size[0]/2 is a hack to prevent corner radius from being too large given
+	// the shortened length of the top as needed by tgx11_v6c_flatright_polygon.
+	// Probably the actual length of the top should be passed in somehow.
+	radius = min(
+		tgx11__max_square_corner_radius(min(size[0]/2,size[1]) + offset*2),
+		tgx11__corner_radius(offset=offset, gender=gender)
+	),
+	closed = false
+), $fn);
 
 /**
  * 'chunk cross-section points'
@@ -179,7 +218,9 @@ function tgx11_chunk_xs_half_qath(size, offset=0, gender="m") = togpath1_zath_to
 function tgx11_chunk_xs_points(size, gender="m", offset=0) =
 	assert( is_list(size) && is_num(size[0]) && is_num(size[1]) )
 	let( qath = tgx11_chunk_xs_qath(size, gender=gender, offset=offset) )
-	togpath1_qath_to_polypoints(qath);
+	let( polypoints = togpath1_qath_to_polypoints(qath) )
+	// echo(size=size, offset=offset, qath_len=len(qath)-1, points_len=len(polypoints), qath=qath)
+	polypoints;
 
 // v6 atom foot cross-section
 function tgx11_v6c_polygon(atom_size, gender="m", offset=0) = // tgx11_ath_to_polygon(tgx11_atom_foot_qath(atom_size, gender=gender, offset=offset));
@@ -222,13 +263,14 @@ function tgx11__chunk_footlike(layer_keys, size) =
  */
 function tgx11_chunk_foot(size) =
 	let( u = togridlib3_decode([1,"u"]) )
+	let( b_inset = togridlib3_decode([1,"tgp-standard-bevel"]) )
 	let( offset=$tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
 	let( height = max(size[2], 8*u+3/32) )
 	tgx11__chunk_footlike([
-		[0*u - offset    , -2*u + offset*z41],
-		[4*u - offset*z41,  2*u + offset],
-		[height          ,  2*u + offset]
+		[        0 - offset    , -b_inset + offset*z41],
+		[2*b_inset - offset*z41,  b_inset + offset],
+		[   height             ,  b_inset + offset]
 	], size=size);
 
 /*
@@ -236,26 +278,37 @@ function tgx11_chunk_foot(size) =
  */
 function tgx11_chunk_unifoot(size, foot_bevel=0) =
 	let( u = togridlib3_decode([1,"u"]) )
-	let( offset=$tgx11_offset )
+	let( b_inset = togridlib3_decode([1,"tgp-standard-bevel"]) )
+	let( c_inset = togridlib3_decode([1,"tgp-column-inset"]) )
+	assert( c_inset < b_inset )
+	// foot_height is the 'nominal' distance (not taking offset into account) from
+	// the floor (0) to where the foot column meets the bevel (traditionally 1u)
+	let( foot_height = b_inset - c_inset )
+	let( eff_foot_bevel = min(foot_bevel, foot_height) )
+	let( offset = $tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
 	let( height = max(size[2], 8*u+3/32) )
 	tgx11__chunk_footlike([
-		[0*u - offset    , -1*u + offset - foot_bevel],
-		if( foot_bevel > 0 ) [0*u - offset + foot_bevel, -1*u + offset],
-		[1*u - offset*z41, -1*u + offset],
-		[4*u - offset*z41,  2*u + offset],
-		[height          ,  2*u + offset]
+		[             0 - offset    , -c_inset + offset - eff_foot_bevel],
+		
+		if( eff_foot_bevel > 0 )
+		[eff_foot_bevel - offset    , -c_inset + offset],
+		
+		[   foot_height - offset*z41, -c_inset + offset],
+		[     2*b_inset - offset*z41,  b_inset + offset],
+		[        height             ,  b_inset + offset]
 	], size=size);
 
 function tgx11_chunk_column(size, foot_bevel=0) =
 	let( u = togridlib3_decode([1,"u"]) )
-	let( offset=$tgx11_offset )
+	let( c_inset = togridlib3_decode([1,"tgp-column-inset"]) )
+	let( offset = $tgx11_offset )
 	let( z41 = sqrt(2) - 1 )
 	let( height = max(size[2], 8*u+3/32) )
 	tgx11__chunk_footlike([
-		[0*u - offset    , -1*u + offset - foot_bevel],
-		if( foot_bevel > 0 ) [0*u - offset + foot_bevel, -1*u + offset],
-		[height          , -1*u + offset]
+		[0*u - offset    , -c_inset + offset - foot_bevel],
+		if( foot_bevel > 0 ) [0*u - offset + foot_bevel, -c_inset + offset],
+		[height          , -c_inset + offset]
 	], size=size);
 
 
@@ -378,7 +431,6 @@ let($tgx11_gender = tgx11__get_gender())
 let(atom = togridlib3_decode([1,"atom"]))
 let(positive_lip_height = lip_height > 0 ? lip_height : 0)
 let(top_shape_eff = is_undef(top_shape) ? bottom_shape : top_shape)
-// TODO: Taper top and bottom all cool?
 ["difference",
 	["intersection",
 		tphl1_extrude_polypoints([-1,block_size[2]+positive_lip_height], tgx11_chunk_xs_points(

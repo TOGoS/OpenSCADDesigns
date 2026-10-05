@@ -917,6 +917,7 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/togridpile/TGx11.1.scad", [
 			// Same as p2053 etc, but let's use the faster OpenSCAD
 			...partIdRange("p",2581,2589),
+			"p2614",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {
