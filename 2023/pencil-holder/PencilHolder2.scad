@@ -3,6 +3,7 @@
 width = "2chunk";
 depth = "1chunk";
 height = "3chunk";
+lip_height = "0mm";
 
 $fn = 24;
 $tgx11_offset = -0.1;
@@ -26,6 +27,7 @@ height_chunks = togunits1_decode(height, unit="chunk");
 width_mm = togunits1_decode(width);
 depth_mm = togunits1_decode(depth);
 height_mm = togunits1_decode(height);
+lip_height_mm = togunits1_decode(lip_height);
 chunk_mm = togunits1_decode("chunk");
 
 outer_wall_thickness_mm = 2;
@@ -39,7 +41,8 @@ togmod1_domodule(
 		bottom_shape = "footed",
 		bottom_segmentation = "atom",
 		bottom_foot_bevel = 0.4,
-		lip_height = 0
+		top_segmentation = "block",
+		lip_height = lip_height_mm
 	))
 	let( compartments_2d = ["union",
 		["translate", [0,0], togmod1_make_rounded_rect([25.4-inner_wall_thickness_mm, 38.1-inner_wall_thickness_mm], r=2)],

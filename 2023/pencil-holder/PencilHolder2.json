@@ -6,6 +6,14 @@
 			"height": "3chunk",
 			"$fn": "24",
 			"$tgx11_offset": "-0.1"
+		},
+		"p2616": {
+			"width": "2chunk",
+			"depth": "1chunk",
+			"height": "3chunk",
+			"lip_height": "1u",
+			"$fn": "24",
+			"$tgx11_offset": "-0.1"
 		}
 	},
 	"fileFormatVersion": "1"
