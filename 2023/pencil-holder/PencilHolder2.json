@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2615": {
+			"width": "2chunk",
+			"depth": "1chunk",
+			"height": "3chunk",
+			"$fn": "24",
+			"$tgx11_offset": "-0.1"
+		}
+	},
+	"fileFormatVersion": "1"
+}

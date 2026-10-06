@@ -1690,6 +1690,16 @@ const builder = new Builder({
 			cameraPosition: [-20,-40,-30],
 			imageSize: [512, 512],
 		}),
+		...multiOsdBuildRules("2023/pencil-holder/PencilHolder2.scad", [
+			"p2615",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPositions: {
+				top: [-40,-40, 90],
+				bottom: [-40,-40, -40],
+			},
+			imageSize: [512, 512],
+		}),
 	},
 });
 
