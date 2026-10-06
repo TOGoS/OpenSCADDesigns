@@ -535,7 +535,7 @@ function osdBuildRules(partId:string, opts:{
 				await mkRoom(ctx.targetName);
 				using writeStream = await Deno.open(ctx.targetName, {write:true, createNew:true});
 				const textEncoder = new TextEncoder;
-				writeStream.write(textEncoder.encode(
+				await writeStream.write(textEncoder.encode(
 					`=part ${partId}\n`+
 					`short-description: ${description}\n`+
 					`stl-file: ${partId}.stl\t${stlUrn}\n`
@@ -544,11 +544,11 @@ function osdBuildRules(partId:string, opts:{
 					const pngPath = simplifiedPngPaths[i];
 					const pngBasename = basename(pngPath);
 					const pngUrn = pngUrns[i];
-					writeStream.write(textEncoder.encode(
+					await writeStream.write(textEncoder.encode(
 						`openscad-rendering-ref: http://picture-files.nuke24.net/uri-res/raw/${pngUrn}/${pngBasename}\n`
 					));
 				}
-				writeStream.write(textEncoder.encode("\n" + bodyText));
+				await writeStream.write(textEncoder.encode("\n" + bodyText));
 			}
 		},
 		[partId]: brAlias([simplifiedStlPath, ...simplifiedPngPaths, partTefPath]),
