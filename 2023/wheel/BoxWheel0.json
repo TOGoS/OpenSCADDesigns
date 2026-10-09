@@ -1,0 +1,11 @@
+{
+	"parameterSets": {
+		"p2618": {
+			"diameter": "1inch",
+			"width": "1/2inch",
+			"hole_diameter": "5/16inch",
+			"$fn": "128"
+		}
+	},
+	"fileFormatVersion": "1"
+}
