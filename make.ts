@@ -1700,6 +1700,13 @@ const builder = new Builder({
 			},
 			imageSize: [512, 512],
 		}),
+		...multiOsdBuildRules("2023/wheel/FCWheel0.scad", [
+			"p2617",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [0, -40, 25],
+			imageSize: [256, 256],
+		}),
 	},
 });
 
