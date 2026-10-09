@@ -1714,6 +1714,13 @@ const builder = new Builder({
 			cameraPosition: [0, -40, 25],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/wheel/WheelBox0.scad", [
+			"p2620",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-40, -20, 40],
+			imageSize: [256, 256],
+		}),
 	},
 });
 

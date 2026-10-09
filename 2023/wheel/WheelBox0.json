@@ -1,0 +1,14 @@
+{
+	"parameterSets": {
+		"p2620": {
+			"system_height": "12/8inch",
+			"wheel_diameter": "1inch",
+			"box_trim_z": "3/16inch",
+			"wheel_margin_z": "1/8inch",
+			"wheelwell_width": "3/4inch",
+			"$tgx11_offset": "-0.1",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
