@@ -1,4 +1,4 @@
-// TOGPolyhedronLib1.15
+// TOGPolyhedronLib1.16
 // 
 // v1.1:
 // - tphl1_make_polyhedron_from_layer_function can take a list of inputs ('layer keys')
@@ -57,6 +57,8 @@
 // - Add 'xyz-to-yzx' layer points transform
 // - Fix 'rcompose' to compose right-to-left, add 'lcompose' to go the other way.
 //   Don't forget to only use these with OpenSCAD version >= 2024!
+// v1.16:
+// - tphl1_make_z_cylinder accepts `zrs` as alternative to `zds` or `d` and `zrange`
 
 // Winding order:
 // 
@@ -313,10 +315,17 @@ function tphl1_make_rounded_cuboid(size, r, corner_shape="ellipsoid", z_quarter_
 			]*/, pos=[0,0,z_za[0]])
 	);
 
-function tphl1_make_z_cylinder(d=undef, zrange=undef, zds=undef, cap_bottom=true, cap_top=true) =
-	let( _zds = !is_undef(zds) ? zds :
-		assert(!is_undef(d))
-		assert(!is_undef(zrange))
+function tphl1_make_z_cylinder(d=undef, zrange=undef, zds=undef, zrs=undef, cap_bottom=true, cap_top=true) =
+	assert(
+		(!is_undef(d) && !is_undef(zrange) &&  is_undef(zds) &&  is_undef(zrs)) ||
+		( is_undef(d) &&  is_undef(zrange) && !is_undef(zds) &&  is_undef(zrs)) ||
+		( is_undef(d) &&  is_undef(zrange) &&  is_undef(zds) && !is_undef(zrs)),
+		str("Exactly one of d+zrange, zds, or zrs must be specified; got ",
+		    " d=", d, ", zrange=", zrange, ", zds=", zds, ", zrs=", zrs)
+	)	
+	let( _zds =
+		!is_undef(zds) ? zds :
+		!is_undef(zrs) ? [for(zr=zrs) [zr[0],zr[1]*2]] :
 		[ for( z=zrange ) [z, d] ]
 	)
 	assert(!is_undef(_zds))
