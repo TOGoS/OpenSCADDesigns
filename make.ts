@@ -1721,6 +1721,20 @@ const builder = new Builder({
 			cameraPosition: [-40, -20, 40],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/wheel/FCWheelSpacer1.scad", [
+			"p2621",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [0, -40, 25],
+			imageSize: [256, 256],
+		}),
+		...multiOsdBuildRules("2023/wheel/FCWheel1.scad", [
+			"p2622",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [0, -40, 25],
+			imageSize: [256, 256],
+		}),
 	},
 });
 

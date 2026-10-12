@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p2622": {
+			"wheel_width": "3/4inch",
+			"wheel_diameter": "2+1/4inch",
+			"groove_width": "2mm",
+			"wheel_flanginess": "1",
+			"bearing_diameter": "22mm",
+			"bearing_lip": "2mm",
+			"bearing_width": "7mm",
+			"$fn": "128"
+		}
+	},
+	"fileFormatVersion": "1"
+}
