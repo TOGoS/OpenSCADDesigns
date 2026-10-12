@@ -7,6 +7,14 @@
 			"neck_height": "1mm",
 			"foot_diameter": "3/4inch",
 			"$fn": "32"
+		},
+		"p2623": {
+			"bore_diameter": "7mm",
+			"total_height": "15.55mm",
+			"neck_diameter": "11mm",
+			"neck_height": "0mm",
+			"foot_diameter": "1inch",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"
