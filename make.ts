@@ -1735,6 +1735,13 @@ const builder = new Builder({
 			cameraPosition: [0, -40, 25],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/routing-template/DrillBitBushingJig3.scad", [
+			"p1785", "p2624",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [20, -40, 20],
+			imageSize: [256, 256],
+		}),
 	},
 });
 

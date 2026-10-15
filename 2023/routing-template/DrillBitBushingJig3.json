@@ -1,0 +1,24 @@
+{
+	"parameterSets": {
+		"p1785": {
+			"description": "jig for drilling 1/2-inch holes into the ends of two-by-fours using a 18.9mm metal bushing",
+			"width": "3.5inch",
+			"height": "2inch",
+			"lateral_hole_spacing": "2inch",
+			"main_hole_diameter": "18.97mm",
+			"main_hole_floor_diameter": "17mm",
+			"main_hole_floor_thickness": "1/8inch",
+			"$fn": "48"
+		},
+		"p2624": {
+			"description": "jig for drilling into the end of a 3\" x 1+1/2\" board, with 1/2\" main hole",
+			"width": "3inch",
+			"height": "1.5inch",
+			"lateral_hole_spacing": "1.5inch",
+			"main_hole_diameter": "1/2inch",
+			"main_hole_floor_diameter": "1/2inch",
+			"$fn": "48"
+		}
+	},
+	"fileFormatVersion": "1"
+}
