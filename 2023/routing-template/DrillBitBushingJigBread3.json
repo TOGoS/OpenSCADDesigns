@@ -1,0 +1,20 @@
+{
+	"parameterSets": {
+		"p1786": {
+			"length": "3chunk",
+			"width": "3.5inch",
+			"lateral_hole_spacing": "2inch",
+			"thickness": "3/8inch",
+			"$fn": "32"
+		},
+		"p2625": {
+			"length": "3chunk",
+			"width": "2chunk",
+			"lateral_hole_spacing": "1chunk",
+			"thickness": "3/8inch",
+			"thickness": "3/8inch",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
