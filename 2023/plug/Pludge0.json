@@ -1,0 +1,10 @@
+{
+	"parameterSets": {
+		"p2626": {
+			"housed_shape": "771W-X2/01",
+			"housing_shape": "1+1/4-7-UNC",
+			"$fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}

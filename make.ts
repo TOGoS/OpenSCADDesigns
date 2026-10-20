@@ -1750,6 +1750,13 @@ const builder = new Builder({
 			cameraPosition: [20, -20, 40],
 			imageSize: [256, 256],
 		}),
+		...multiOsdBuildRules("2023/plug/Pludge0.scad", [
+			"p2626",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-20, -20, 30],
+			imageSize: [512, 512],
+		}),
 	},
 });
 
