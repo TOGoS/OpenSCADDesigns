@@ -1,4 +1,4 @@
-// TubePort[Lib]4.2
+// TubePort[Lib]4.3
 // 
 // Functions for making 'standard' ports for tubing
 // 
@@ -6,6 +6,8 @@
 // - Replace qtube_diameter and donut_bevel_mm with outer_diameter
 // v4.2:
 // - Name the r_offset argument to togthreads2_make_threads
+// v4.3:
+// - Add tubeport4_make_hbarb
 
 use <../lib/TOGThreads2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -38,3 +40,27 @@ function tubeport4_make_qport(
 		]),
 	]
 ];
+
+// Barb for so-called 1/2" tubing with optional threads
+// for a squish-down cap
+function tubeport4_make_hbarb(
+	hbarb_thread_length = 0,
+	hbarb_thread_r_offset = -0.1
+) =
+	["union",
+		if( hbarb_thread_length > 0 ) togthreads2_make_threads(
+			togthreads2_simple_zparams([[-1, 0], [hbarb_thread_length, -1]], 3, inset=1),
+			"7/8-10-UNC",
+			r_offset = hbarb_thread_r_offset
+		),
+		let(z3 = hbarb_thread_length)
+		let(z4 = z3 + 254/16 )
+		tphl1_make_z_cylinder(zds=[
+			[z3     , 12],
+			[z3 + 10, 12],
+			[z3 + 11, 9*254/160],
+			[z4     , 11],
+			[z4     ,  9],
+			[z4 - 2 ,  5],
+		])
+	];

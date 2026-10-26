@@ -1,4 +1,4 @@
-// Tubeport3.3
+// Tubeport3.3.1
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -18,6 +18,8 @@
 // v3.3:
 // - qport_thread_radius_offset, shaft_thread_radius_offset, and
 //   hbarb_thread_radius_offset are now all customizable
+// v3.3.1:
+// - Use tubeport4_make_hbarb for generating the H-barb
 
 top_port = "h-barb"; // ["h-barb", "q-port"]
 head_height = "1/4inch";
@@ -63,7 +65,6 @@ togmod1_domodule(
 	let( u = 254/160 )
 	let( head_height = togunits1_decode(head_height, unit="mm") )
 	let( shaft_length = togunits1_decode(shaft_length, unit="mm") )
-	let( hport_threads_length = 254/16 )
 	let( qport = ["render",
 		tubeport4_make_qport(depth=qport_depth_mm, thread_style=qport_thread_style, thread_r_offset=qport_thread_r_offset_mm, outer_diameter=19.55),
 	])
@@ -86,21 +87,13 @@ togmod1_domodule(
 			),
 			
 			each top_port == "h-barb" ? [
-				togthreads2_make_threads(
-					togthreads2_simple_zparams([[head_height+shaft_length-1, 0], [head_height+shaft_length+hport_threads_length, -1]], 3, inset=1),
-					"7/8-10-UNC",
-					r_offset = hbarb_thread_r_offset_mm
-				),
-				let(z3 = head_height+shaft_length+hport_threads_length)
-				let(z4 = z3 + 254/16 )
-				tphl1_make_z_cylinder(zds=[
-					[z3     , 12],
-					[z3 + 10, 12],
-					[z3 + 11, 9*u],
-					[z4     , 11],
-					[z4     ,  9],
-					[z4 - 2 ,  5],
-				]),
+				["translate",
+					[0, 0, head_height+shaft_length],
+					tubeport4_make_hbarb(
+						hbarb_thread_length = 254/16,
+						hbarb_thread_r_offset = hbarb_thread_r_offset_mm
+					)
+				]
 			] : []
 		],
 		
