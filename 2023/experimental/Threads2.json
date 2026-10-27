@@ -1447,6 +1447,32 @@
 			"outer_thread_radius_offset": "-0.1",
 			"outer_threads": "1-8-UNC",
 			"$fn": "144"
+		},
+		"p2628": {
+			"description": "1\" 1+1/4\"-7 port with 7/8\"-10 (nonstandard) inner threads",
+			"comments": [
+				"Two p2627s may kiss in the middle"
+			],
+			"total_height": "25.4",
+			"cross_section": "false",
+			"floor_thickness": "0",
+			"floor_thread_radius_offset": "0.3",
+			"floor_threads": "3/8-16-UNC",
+			"handedness": "right",
+			"head_height": "3.17",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "38.1",
+			"inner_threads": "7/8-10-UNC",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.3",
+			"inner_thread_taper_length": "1",
+			"outer_threads": "1+1/4-7-UNC",
+			"outer_thread_inset": "1",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_thread_taper_length": "1",
+			"$tphl1_vertex_deduplication_enabled": "false",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"

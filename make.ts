@@ -635,6 +635,9 @@ const p192xBuildRules = flattenObj(map(
 	},
 ));
 
+// For 'classic' Threads2 renderings
+const DEFAULT_THREADS2_CAMERA_POSITION : Vec3<number> = [-60,-120, 140];
+
 // Something like this.
 const builder = new Builder({
 	rules: {
@@ -680,8 +683,16 @@ const builder = new Builder({
 			"p2201","p2202","p2203","p2204","p2205","p2206","p2207","p2208","p2209",
 			"p2316","p2317",
 		], {
-			cameraPosition: [-60,-120, 140],
+			cameraPosition: DEFAULT_THREADS2_CAMERA_POSITION,
 			imageSize: [256,256],
+			paletteSize: 64,
+		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2628",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: DEFAULT_THREADS2_CAMERA_POSITION,
+			imageSize: [512,512],
 			paletteSize: 64,
 		}),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
