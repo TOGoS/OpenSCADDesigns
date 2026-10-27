@@ -1,4 +1,4 @@
-// TubePort[Lib]4.3
+// TubePort[Lib]4.4
 // 
 // Functions for making 'standard' ports for tubing
 // 
@@ -8,6 +8,8 @@
 // - Name the r_offset argument to togthreads2_make_threads
 // v4.3:
 // - Add tubeport4_make_hbarb
+// v4.4:
+// - `tubeport4_make_hbarb` accepts `z0` parameter (default = 0)
 
 use <../lib/TOGThreads2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -45,11 +47,12 @@ function tubeport4_make_qport(
 // for a squish-down cap
 function tubeport4_make_hbarb(
 	hbarb_thread_length = 0,
-	hbarb_thread_r_offset = -0.1
+	hbarb_thread_r_offset = -0.1,
+	z0 = 0,
 ) =
 	["union",
 		if( hbarb_thread_length > 0 ) togthreads2_make_threads(
-			togthreads2_simple_zparams([[-1, 0], [hbarb_thread_length, -1]], 3, inset=1),
+			togthreads2_simple_zparams([[z0, 0], [hbarb_thread_length, -1]], 3, inset=1),
 			"7/8-10-UNC",
 			r_offset = hbarb_thread_r_offset
 		),
