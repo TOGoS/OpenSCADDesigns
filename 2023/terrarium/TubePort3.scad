@@ -1,4 +1,4 @@
-// Tubeport3.4
+// Tubeport3.5
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -23,6 +23,8 @@
 // v3.4:
 // - Options to omit shaft and head
 // - Options for midriff cuts
+// v3.5:
+// - Fix generation of H-barb threads when they start at z != 0
 
 top_port = "h-barb"; // ["h-barb", "q-port"]
 bottom_port = "q-port"; // ["q-port", "straight"]
@@ -114,7 +116,7 @@ togmod1_domodule(
 				// so we can do weird things to it
 				let(hbarb_z0 = head_height+shaft_length)
 				togthreads2_make_threads(
-					togthreads2_simple_zparams([[max(0, hbarb_z0-1), hbarb_z0 == 0 ? -1 : 0], [hbarb_thread_length_mm, -1]], 3, inset=1),
+					togthreads2_simple_zparams([[max(0, hbarb_z0-1), hbarb_z0 == 0 ? -1 : 0], [hbarb_z0+hbarb_thread_length_mm, -1]], 3, inset=1),
 					"7/8-10-UNC",
 					r_offset = hbarb_thread_r_offset_mm
 				),
