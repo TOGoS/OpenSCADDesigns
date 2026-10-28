@@ -1,4 +1,4 @@
-// TubePort[Lib]4.4
+// TubePort[Lib]4.6
 // 
 // Functions for making 'standard' ports for tubing
 // 
@@ -10,6 +10,8 @@
 // - Add tubeport4_make_hbarb
 // v4.4:
 // - `tubeport4_make_hbarb` accepts `z0` parameter (default = 0)
+// v4.6:
+// - Option of 'v1' or 'v2' styles for H-barb
 
 use <../lib/TOGThreads2.scad>
 use <../lib/TOGPolyhedronLib1.scad>
@@ -43,12 +45,38 @@ function tubeport4_make_qport(
 	]
 ];
 
+function tubeport4_make_hbarb(
+	hbarb_style = "v1",
+	z0 = 0
+) =
+	let(z3 = 0)
+	let(z4 = z3 + 254/16 )
+	tphl1_make_z_cylinder(zds=
+		hbarb_style == "v1" ? [
+			[z0     , 12],
+			[z3 + 10, 12],
+			[z3 + 11, 9*254/160],
+			[z4     , 11],
+			[z4     ,  9],
+			[z4 - 2 ,  5],
+		] : hbarb_style == "v2" ? [
+			[z0     , 12],
+			[z3 +  8, 12],
+			[z3 +  9, 15.15],
+			[z3 + 11, 15.15],
+			[z4     , 11],
+			[z4     ,  9],
+			[z4 - 2 ,  5],
+		] : assert(false, str("Unrecognized H-barb style: '", hbarb_style, "'"))
+	);
+
 // Barb for so-called 1/2" tubing with optional threads
 // for a squish-down cap
-function tubeport4_make_hbarb(
+function tubeport4_make_hbarb_port(
+	hbarb_style = "v1",
 	hbarb_thread_length = 0,
 	hbarb_thread_r_offset = -0.1,
-	z0 = 0,
+	z0 = 0
 ) =
 	["union",
 		if( hbarb_thread_length > 0 ) togthreads2_make_threads(
@@ -56,14 +84,8 @@ function tubeport4_make_hbarb(
 			"7/8-10-UNC",
 			r_offset = hbarb_thread_r_offset
 		),
-		let(z3 = hbarb_thread_length)
-		let(z4 = z3 + 254/16 )
-		tphl1_make_z_cylinder(zds=[
-			[z3     , 12],
-			[z3 + 10, 12],
-			[z3 + 11, 9*254/160],
-			[z4     , 11],
-			[z4     ,  9],
-			[z4 - 2 ,  5],
-		])
+		["translate", [0,0,hbarb_thread_length], tubeport4_make_hbarb(
+			hbarb_style = hbarb_style,
+			z0 = max(z0, hbarb_thread_length)
+		)]
 	];

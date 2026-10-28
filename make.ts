@@ -1317,7 +1317,7 @@ const builder = new Builder({
 		}),
 		...multiOsdBuildRules("2023/terrarium/TubePort3.scad", [
 			"p2306", "p2306-tubeport4", "p2488", "p2489",
-			"p2627",
+			"p2627", "p2629",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {

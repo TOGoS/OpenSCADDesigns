@@ -1,4 +1,4 @@
-// Tubeport3.5
+// TubePort3.6
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -25,6 +25,8 @@
 // - Options for midriff cuts
 // v3.5:
 // - Fix generation of H-barb threads when they start at z != 0
+// v3.6:
+// - Option of 'v1' or 'v2' styles for H-barb
 
 top_port = "h-barb"; // ["h-barb", "q-port"]
 bottom_port = "q-port"; // ["q-port", "straight"]
@@ -33,6 +35,7 @@ shaft_length = "3/4inch";
 qport_thread_radius_offset = "0.2mm";
 shaft_thread_radius_offset = "-0.1mm";
 
+hbarb_style = "v1"; // ["v1", "v2"]
 hbarb_thread_radius_offset = "-0.1mm";
 hbarb_thread_length = "254/16mm";
 
@@ -123,8 +126,7 @@ togmod1_domodule(
 				["translate",
 					[0, 0, head_height+shaft_length+hbarb_thread_length_mm],
 					tubeport4_make_hbarb(
-						hbarb_thread_length = 0,
-						hbarb_thread_r_offset = hbarb_thread_r_offset_mm
+						hbarb_style = hbarb_style
 					)
 				]
 			] : []

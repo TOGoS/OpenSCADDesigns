@@ -32,8 +32,25 @@
 			"$tgx11_offset": "-0.15"
 		},
 		"p2627": {
-			"description": "long-threaded H-barb with 7/16\" midriff",
+			"description": "long-threaded H-barb (v1) with 7/16\" midriff",
 			"top_port": "h-barb",
+			"bottom_port": "straight",
+			"head_height": "0",
+			"shaft_length": "0",
+			"hbarb_thread_length": "1inch",
+			"hbarb_thread_radius_offset": "-0.15mm",
+			"midriff_width": "7/16inch",
+			"midriff_z0": "1/4inch",
+			"midriff_z1": "3/4inch",
+			"qport_thread_radius_offset": "0.2mm",
+			"shaft_thread_radius_offset": "-0.1mm",
+			"$tgx11_offset": "-0.15",
+			"$fn": "96"
+		},
+		"p2629": {
+			"description": "long-threaded H-barb (v2) with 7/16\" midriff",
+			"top_port": "h-barb",
+			"hbarb_style": "v2",
 			"bottom_port": "straight",
 			"head_height": "0",
 			"shaft_length": "0",
