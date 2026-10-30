@@ -2,7 +2,17 @@
 	"parameterSets": {
 		"p2307": {
 			"description": "1-inch tall x 1+1/2-inch wide 'nut' for clamping 1/2\" (ID) tubing onto barbs, e.g. p2306",
-			"inner_thread_radius_offset": "0.2",
+			"inner_thread_radius_offset": "0.2mm",
+			"$tgx11_offset": "-0.15",
+			"$fn": "144"
+		},
+		"p2630": {
+			"nut_width": "1+1/8inch",
+			"cavity_diameter": "15/16inch",
+			"edge_bevel": "0.4mm",
+			"inner_thread_radius_offset": "0.2mm",
+			"bottom_shape": "straight",
+			"top_shape": "footed",
 			"$tgx11_offset": "-0.15",
 			"$fn": "144"
 		}

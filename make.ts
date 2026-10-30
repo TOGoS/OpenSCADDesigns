@@ -1327,9 +1327,14 @@ const builder = new Builder({
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
-		...multiOsdBuildRules("2023/terrarium/TubePortNut3.scad", ["p2307"], {
+		...multiOsdBuildRules("2023/terrarium/TubePortNut3.scad", [
+			"p2307", "p2630",
+		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
-			cameraPosition: [-30, -23, 60],
+			cameraPositions: {
+				top   : [-30, -23, 60],
+				bottom: [-30, -23, -60],
+			},
 			imageSize: [512, 512],
 			paletteSize: 128,
 		}),
