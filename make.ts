@@ -32,12 +32,14 @@ function flattenObj<T>(input:Iterable<{[k:string]: T}>) : {[k:string]: T} {
 
 const OPENSCAD202101_CMD = "x:OpenSCAD202101Com" as const;
 const OPENSCAD20240727_CMD = "x:OpenSCAD20240727Com" as const;
+const OPENSCAD20261031_CMD = "x:OpenSCAD20261031Com" as const;
 const OPENSCAD2024_MANIFOLD_CMD = "x:OpenSCAD20240727Com+Manifold" as const;
 const DEFAULT_OPENSCAD_CMD = OPENSCAD202101_CMD;
 
 type BaseOpenSCADCmd =
 	typeof OPENSCAD202101_CMD |
-	typeof OPENSCAD20240727_CMD;
+	typeof OPENSCAD20240727_CMD |
+	typeof OPENSCAD20261031_CMD;
 
 type OpenSCADCmd =
 	BaseOpenSCADCmd |
@@ -49,6 +51,7 @@ type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for mor
 // which is where this naming convention (minus the version) is copied from.
 const OPENSCAD202101_COM   = Deno.env.get("OPENSCAD_202101_CLI_EXE"  ) ?? "x:UnconfiguredCommand:OPENSCAD_202101_CLI_EXE"  ;
 const OPENSCAD20240727_COM = Deno.env.get("OPENSCAD_20240727_CLI_EXE") ?? "x:UnconfiguredCommand:OPENSCAD_20240727_CLI_EXE";
+const OPENSCAD20261031_COM = Deno.env.get("OPENSCAD_20261031_CLI_EXE") ?? "x:UnconfiguredCommand:OPENSCAD_20261031_CLI_EXE";
 const MAGICK_EXE = Deno.env.get("MAGICK_EXE") ?? "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
@@ -182,6 +185,7 @@ async function run(cmd:Commande) : Promise<void> {
 	const realExe =
 		cmd.argv[0] == OPENSCAD202101_CMD ? OPENSCAD202101_COM :
 		cmd.argv[0] == OPENSCAD20240727_CMD ? OPENSCAD20240727_COM :
+		cmd.argv[0] == OPENSCAD20261031_CMD ? OPENSCAD20261031_COM :
 		cmd.argv[0] == "x:Magick" ? MAGICK_EXE :
 		cmd.argv[0];
 		
@@ -405,7 +409,10 @@ function osdBuildRules(partId:string, opts:{
 	case OPENSCAD202101_CMD:
 		break;
 	case OPENSCAD20240727_CMD:
-		scadVariantSuffix += "+scad20240727"; // Typo lol
+		scadVariantSuffix += "+scad20240727";
+		break;
+	case OPENSCAD20261031_CMD:
+		scadVariantSuffix += "+scad20261031";
 		break;
 	default:
 		throw new Error(`Unrecognized openScadCmd: '${openScadCmd}'`);
@@ -1795,16 +1802,6 @@ const builder = new Builder({
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-20, -20, 30],
 			imageSize: [512, 512],
-		}),
-		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
-			"p2631", "p2632",
-		], {
-			// Using OpenSCAD 2026 because that's what I happen to have on Dellie
-			// (I couldn't find archives of 2024.07.27!)
-			openScadCmd: OPENSCAD20261031_CMD,
-			cameraPosition: DEFAULT_THREADS2_CAMERA_POSITION,
-			imageSize: [512,512],
-			paletteSize: 64,
 		}),
 	},
 });
