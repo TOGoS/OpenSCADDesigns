@@ -1473,6 +1473,46 @@
 			"outer_thread_taper_length": "1",
 			"$tphl1_vertex_deduplication_enabled": "false",
 			"$fn": "96"
+		},
+		"p2631": {
+			"description": "1/8\" (head) + 7/8\" (threads) 3/4\"-10 bolt with 1/2\"-13 inner threads",
+			"comments": [
+				"Bolt to hold p2632 in place, plugging a ceramic pot hole"
+			],
+			"total_height": "25.4",
+			"handedness": "right",
+			"head_height": "3.175",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_threads": "1/2-13-UNC",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.2",
+			"inner_thread_taper_length": "0.5",
+			"outer_threads": "3/4-10-UNC",
+			"outer_thread_inset": "1",
+			"outer_thread_radius_offset": "-0.1",
+			"outer_thread_taper_length": "0.5",
+			"$fn": "96"
+		},
+		"p2632": {
+			"description": "3/4\" octagonal cap nut with 3/4\"-10 inner threads",
+			"comments": [
+				"To plug a ceramic pot hole, along with p2631"
+			],
+			"total_height": "19.05",
+			"floor_thickness": "3.175",
+			"handedness": "right",
+			"head_height": "19.05",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_threads": "3/4-10-UNC",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.2",
+			"inner_thread_taper_length": "0.5",
+			"outer_threads": "none",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"

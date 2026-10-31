@@ -1803,6 +1803,16 @@ const builder = new Builder({
 			cameraPosition: [-20, -20, 30],
 			imageSize: [512, 512],
 		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2631", "p2632",
+		], {
+			// Using OpenSCAD 2026 because that's what I happen to have on Dellie
+			// (I couldn't find archives of 2024.07.27!)
+			openScadCmd: OPENSCAD20261031_CMD,
+			cameraPosition: DEFAULT_THREADS2_CAMERA_POSITION,
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
