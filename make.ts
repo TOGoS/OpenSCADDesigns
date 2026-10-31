@@ -9,7 +9,9 @@ import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
 
 //// Utility functions
 
-let skipScadReruns = false;
+type RerunMode = "skip"|"error"|"overwrite";
+
+let scadRerunMode : RerunMode = "error";
 
 function* map<T,U>(input:Iterable<T>, fn:(x:T) => U) : Iterable<U> {
 	for( const x of input ) yield fn(x);
@@ -350,6 +352,26 @@ function normalizeFeatureList(input: Iterable<string>) : string[] {
 	return Array.from(new Set(input)).sort();
 }
 
+/**
+ * Returns:
+ * true  => go ahead and rebuilt it
+ * false => skip rebuilding it
+ */
+function onScadOutputExists(targetName:FilePath) {
+	switch( scadRerunMode ) {
+	case "skip":
+		console.log(`${targetName} already exists; skipping rebuilding it; --allow-scad-reruns to override`);
+		return false;
+	case "error":
+		throw new Error(`${targetName} already exists; delete it or run with --skip-scad-reruns or --allow-scad-reruns`)
+	case "overwrite":
+		// Fall through and carry on.
+		return true;
+	default:
+		throw new Error(`Undecognized scadRerunMode: '${scadRerunMode}'`);
+	}
+}
+
 function osdBuildRules(partId:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	featuresEnabled?: OpenSCADFeatureName[],
@@ -455,7 +477,7 @@ function osdBuildRules(partId:string, opts:{
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
 				const exists = await fileExists(ctx.targetName);
-				if( exists && skipScadReruns ) return;
+				if( exists && !onScadOutputExists(ctx.targetName) ) return;
 				
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
@@ -485,7 +507,7 @@ function osdBuildRules(partId:string, opts:{
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
 				const exists = await fileExists(ctx.targetName);
-				if( exists && skipScadReruns ) return;
+				if( exists && !onScadOutputExists(ctx.targetName) ) return;
 				
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
@@ -1774,16 +1796,33 @@ const builder = new Builder({
 			cameraPosition: [-20, -20, 30],
 			imageSize: [512, 512],
 		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2631", "p2632",
+		], {
+			// Using OpenSCAD 2026 because that's what I happen to have on Dellie
+			// (I couldn't find archives of 2024.07.27!)
+			openScadCmd: OPENSCAD20261031_CMD,
+			cameraPosition: DEFAULT_THREADS2_CAMERA_POSITION,
+			imageSize: [512,512],
+			paletteSize: 64,
+		}),
 	},
 });
 
 if( import.meta.main ) {
 	let args = Deno.args;
-	// Use this when you know the shape is unchanged,
-	// even if perhaps the .scad or .json has been updated:
-	if( args[0] == "--skip-scad-reruns" ) {
-		skipScadReruns = true;
-		args = args.slice(1);
+	while( args.length > 0 ) {
+		// Use this when you know the shape is unchanged,
+		// even if perhaps the .scad or .json has been updated:
+		if( args[0] == "--allow-scad-reruns" ) {
+			scadRerunMode = "overwrite";
+			args = args.slice(1);
+		} else if( args[0] == "--skip-scad-reruns" ) {
+			scadRerunMode = "skip";
+			args = args.slice(1);
+		} else {
+			break;
+		}
 	}
 	Deno.exit(await builder.processCommandLine(args));
 }
