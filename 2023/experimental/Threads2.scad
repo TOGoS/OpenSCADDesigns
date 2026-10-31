@@ -1,4 +1,4 @@
-// Threads2.37
+// Threads2.38
 // 
 // New screw threads proto-library
 // 
@@ -129,6 +129,8 @@
 // - Use a smaller (256 instead of 65536) `xy_inf` value for the outer intersector,
 //   since OpenSCAD 2024/manifold made a mess when told to intersect everything by
 //   a 65536mm square.  Really it should be whatever the max size of the bolt is, plus a bit.
+// v2.38:
+// - Smaller increments for some numeric parameters
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -143,26 +145,26 @@ description = "";
 handedness = "right"; // ["right","left"]
 // e.g. "straight-5mm", "1+1/4-7-UNC"
 outer_threads = "1+1/4-7-UNC";
-outer_thread_radius_offset = -0.1;
-outer_thread_inset = 0;
+outer_thread_radius_offset = -0.1; // 0.01
+outer_thread_inset = 0; // 0.1
 // Length along screw of outer threads' taper; -1 for 'default'
-outer_thread_taper_length = -1;
+outer_thread_taper_length = -1; // 0.1
 inner_threads = "1/2-13-UNC";
-inner_thread_radius_offset =  0.3;
-inner_thread_inset = 0;
+inner_thread_radius_offset =  0.3; // 0.01
+inner_thread_inset = 0; // 0.1
 // Length along screw of inner threads' taper; -1 for 'default'
-inner_thread_taper_length = -1;
-floor_thickness = 0; // 0.01
+inner_thread_taper_length = -1; // 0.1
+floor_thickness = 0;  // 0.01
 floor_threads = "3/8-16-UNC";
-floor_thread_radius_offset =  0.3;
-total_height = 19.05;
+floor_thread_radius_offset =  0.3; // 0.01
+total_height = 19.05; // 0.01
 
-head_width   = 38.1;
-head_height  =  6.35;
+head_width   = 38.1;  // 0.01
+head_height  =  6.35; // 0.01
 head_shape = "square"; // ["triangle","square","pentagon","hexagon","septagon","octagon","nonagon","decagon","circle","togridpile-chunk","octogridpile"]
 headside_threads = "none";
-headside_thread_radius_offset =  0.3;
-head_surface_offset = -0.1;
+headside_thread_radius_offset =  0.3; // 0.01
+head_surface_offset = -0.1; // 0.01
 
 // Diameter of 'mounting holes' in head
 head_mhole_diameter = 0; // 0.1
