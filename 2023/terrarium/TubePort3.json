@@ -1,12 +1,13 @@
 {
 	"parameterSets": {
 		"p2306": {
-			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing",
+			"description": "1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing with v1 H-barb",
 			"$fn": "144",
 			"$tgx11_offset": "-0.15"
 		},
-		"p2306-tubeport4": {
-			"description": "prototype 1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing, using TubePort4 library",
+		"p2633": {
+			"description": "1/4\" (OD) to 1/2\" (ID) irrigation tubing adapter/port thing with v2 H-barb",
+			"hbarb_style": "v2",
 			"$fn": "144",
 			"$tgx11_offset": "-0.15"
 		},
