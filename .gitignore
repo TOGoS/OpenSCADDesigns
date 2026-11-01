@@ -2,6 +2,7 @@
 # In general, want to ignore these:
 *.stl
 *.gcode
+/.vscode
 /test-output.stl
 /print-archive
 /2023/print-archive
