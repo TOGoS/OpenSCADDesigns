@@ -1496,12 +1496,30 @@
 			"$fn": "96"
 		},
 		"p2632": {
+			"description": "3/4\" octagonal cap nut with 3/4\"-10 inner threads and 3/8\"-16 floor threads",
+			"total_height": "19.05",
+			"floor_thickness": "3.175",
+			"floor_threads": "3/8-16-UNC",
+			"handedness": "right",
+			"head_height": "19.05",
+			"head_shape": "octagon",
+			"head_surface_offset": "-0.1",
+			"head_width": "25.4",
+			"inner_threads": "3/4-10-UNC",
+			"inner_thread_inset": "1",
+			"inner_thread_radius_offset": "0.2",
+			"inner_thread_taper_length": "0.5",
+			"outer_threads": "none",
+			"$fn": "96"
+		},
+		"p2634": {
 			"description": "3/4\" octagonal cap nut with 3/4\"-10 inner threads",
 			"comments": [
 				"To plug a ceramic pot hole, along with p2631"
 			],
 			"total_height": "19.05",
 			"floor_thickness": "3.175",
+			"floor_threads": "none",
 			"handedness": "right",
 			"head_height": "19.05",
 			"head_shape": "octagon",

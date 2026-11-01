@@ -666,6 +666,10 @@ const p192xBuildRules = flattenObj(map(
 
 // For 'classic' Threads2 renderings
 const DEFAULT_THREADS2_CAMERA_POSITION : Vec3<number> = [-60,-120, 140];
+const DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS : {[cameraName:string]: Vec3<number>} = {
+	top   : [-60,-120, 140],
+	bottom: [-60,-120,-140],
+};
 
 // Something like this.
 const builder = new Builder({
@@ -1815,12 +1819,12 @@ const builder = new Builder({
 			imageSize: [512, 512],
 		}),
 		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
-			"p2631", "p2632",
+			"p2631", "p2632", "p2634",
 		], {
 			// Using OpenSCAD 2026 because that's what I happen to have on Dellie
 			// (I couldn't find archives of 2024.07.27!)
 			openScadCmd: OPENSCAD20261031_CMD,
-			cameraPosition: DEFAULT_THREADS2_CAMERA_POSITION,
+			cameraPositions: DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS,
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
