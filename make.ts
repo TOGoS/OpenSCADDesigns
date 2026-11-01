@@ -391,9 +391,9 @@ function osdBuildRules(partId:string, opts:{
 	let m : RegExpMatchArray | null;
 	let outDir : FilePath;
 	if( (m = /^p(\d\d)(\d\d)(?:[\\.-].*)?$/.exec(partId)) != null ) {
-		outDir = `2023/print-archive/p${m[1]}xx`;
+		outDir = `print-archive/p${m[1]}xx`;
 	} else {
-		outDir = `2023/print-archive/misc`;
+		outDir = `print-archive/misc`;
 	}
 	const tempDir = `${outDir}/.temp`;
 	
