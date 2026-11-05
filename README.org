@@ -73,7 +73,7 @@ Some standards I try to follow are:
   - 3/4", 1/4", and 1/8" being common thicknesses for panels
 - Gridbeam holes for bolting things together
 - TOGridPile (stacking cups based around a 1+1/2" or 1/2" grid)
-- French cleats
+- French cleats (specifically [[https://gitlab.com/TOGoS/ProjectNotes2/-/blob/master/2020/FrenchCleats/WSTYPE-4114.org][WSTYPE-4114]])
 - MiniRail (serves similar role to DIN rail)
 - Clarp2505 (a shape for snap-together conduit or other things)
 - UNC threads, esp. 1+1/4"-7 (see [[./2023/experimental/Threads2.scad][Threads2]])
@@ -108,7 +108,7 @@ The 3D-prunt ones seem sturdy enough for most purposes.
 #+CAPTION: 7+1/2-inch WSTYPE-4114-H1.5FFS French cleat with extended holes for furniture bolts
 [[http://picture-files.nuke24.net/uri-res/raw/urn:bitprint:RXTRUOJCUNCNAZCNGALTNAKBF654LZPL.KDJVFNAWTL7T35WLDSHOCVMAGY2DORP2NNJTHVQ/p1715.png]]
 
-See [[./2023/french-cleat/FrenchCleat.scad][FrenchCleat]] (note that OpenSCAD 2021 doesn't like the mixed array parameters, so this only works in OpenSCAD 2021).
+See [[./2023/french-cleat/FrenchCleat.scad][FrenchCleat]] (note that OpenSCAD 2024 doesn't like the mixed array parameters, so this only works in OpenSCAD 2021).
 
 ** Clarp[2505]
 
