@@ -1746,7 +1746,7 @@ const builder = new Builder({
 			imageSize: [512, 512],
 		}),
 		...multiOsdBuildRules("2023/gridbeam/HollowCornerBracket0.scad", [
-			"p2613",
+			"p2613", "p2635", "p2636",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [-20,-40,-30],
