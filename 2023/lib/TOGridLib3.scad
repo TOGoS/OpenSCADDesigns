@@ -1,4 +1,4 @@
-// TOGridPileLib-v3.2
+// TOGridPileLib-v3.4
 // 
 // HOKAY WHAT ARE THE COMMON
 // things that I want the library to do?
@@ -22,6 +22,8 @@
 // - togridpile3_decode(num) = num
 // v3.3:
 // - Change prefix from `togridpile3` to `togridlib3`
+// v3.4:
+// - Add optional 'dbgctxstr' parameter to unit decoding functions, for better error messages
 
 use <../lib/TOGUnitTable-v1.scad>
 
@@ -42,10 +44,10 @@ togridlib3_default_unit_table = [
 function togridlib3_get_default_unit_table() = togridlib3_default_unit_table;
 function togridlib3_get_unit_table() = is_undef($togridlib3_unit_table) ? togridlib3_default_unit_table : $togridlib3_unit_table;
 
-function togridlib3_decode(dim, unit=[1, "mm"], unit_table=togridlib3_get_unit_table()) =
-	is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit);
-function togridlib3_decode_vector(size, unit=[1, "mm"], unit_table=togridlib3_get_unit_table()) =
-	togridlib3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit));
+function togridlib3_decode(dim, unit=[1, "mm"], unit_table=togridlib3_get_unit_table(), dbgctxstr=undef) =
+	is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit, dbgctxstr=dbgctxstr);
+function togridlib3_decode_vector(size, unit=[1, "mm"], unit_table=togridlib3_get_unit_table(), dbgctxstr=undef) =
+	togridlib3_map(size, function(dim) is_num(dim) ? dim : tog_unittable__divide_ca(unit_table, dim, unit, dbgctxstr=dbgctxstr));
 
 module togridlib3_cube(size, offset=0) {
 	cube(togridlib3_decode_vector(size), center=true);

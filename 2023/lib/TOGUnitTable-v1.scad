@@ -1,4 +1,4 @@
-// TOGUnitTable-v1.0.0 - Library for handling 'complex amounts' in the form of [multiplier, unit name], e.g. [1.5, "inch"]
+// TOGUnitTable-v1.1.0 - Library for handling 'complex amounts' in the form of [multiplier, unit name], e.g. [1.5, "inch"]
 //
 // 2023-07-01: the following 'annotation' is something I just made up,
 // but is intended as a way for future packaging tools to know that it's 'safe'
@@ -9,6 +9,8 @@
 // Versions:
 // v1.0.0:
 // - Created it.
+// v1.1.0:
+// - Add optional 'dbgctxstr' parameter to unit decoding functions, for better error messages
 // 
 // Naming convention:
 // Doing 'OO without classes', here.
@@ -27,31 +29,36 @@ tog_unittable__demo_unit_table = [
 	["chunk", [    3   , "atom"], "model chunk"],
 ];
 
+use <./DbgCtxStrLib1.scad>
+
 function tog_unittable__list__filter(list, predicate) = [
 	for( item=list ) if( predicate(item) ) item
 ];
 function tog_unittable__list__first(list, on_error) =
 	len(list) > 0 ? list[0] : on_error();
 
-function tog_unittable__unit_value_ca(unit_table, unit_name) =
+function tog_unittable__unit_value_ca(unit_table, unit_name, dbgctxstr=undef) =
 	tog_unittable__list__first(
 		tog_unittable__list__filter(unit_table, function (entry) entry[0] == unit_name),
-		function () assert(false, str("Did not find entry for unit '", unit_name, "' in unit table")))[1];
+		function () assert(false,
+			str("Did not find entry for unit '", unit_name, "' in unit table", dbgctxstr_errmsg_suffix(dbgctxstr))
+		)
+	)[1];
 
 function tog_unittable__ca__is_valid( ca ) =
 	is_list(ca) && len(ca) == 2;
 
 // Break down 'amount' until it is in a base unit (one which is defined in terms of itself)
-function tog_unittable__simplify_ca(unit_table, amount) =
-	assert( tog_unittable__ca__is_valid(amount), str(amount, " is not a valid Complex Amount (should be [numeric_value, \"unit_name\"])") )
-	let( unit_value_ca = tog_unittable__unit_value_ca(unit_table, amount[1]) )
+function tog_unittable__simplify_ca(unit_table, amount, dbgctxstr=undef) =
+	assert( tog_unittable__ca__is_valid(amount), str(amount, " is not a valid Complex Amount (should be [numeric_value, \"unit_name\"])", dbgctxstr=dbgctxstr) )
+	let( unit_value_ca = tog_unittable__unit_value_ca(unit_table, amount[1], dbgctxstr=dbgctxstr) )
 	unit_value_ca[1] == amount[1] ? amount :
 		tog_unittable__simplify_ca(unit_table, [amount[0] * unit_value_ca[0], unit_value_ca[1]]);
 
-function tog_unittable__divide_ca(unit_table, numerator, denominator) =
+function tog_unittable__divide_ca(unit_table, numerator, denominator, dbgctxstr=undef) =
 	let(
-		numerator_base_ca   = tog_unittable__simplify_ca(unit_table, numerator),
-		denominator_base_ca = tog_unittable__simplify_ca(unit_table, denominator)
+		numerator_base_ca   = tog_unittable__simplify_ca(unit_table, numerator, dbgctxstr=dbgctxstr),
+		denominator_base_ca = tog_unittable__simplify_ca(unit_table, denominator, dbgctxstr=dbgctxstr)
 	)
 	assert(numerator_base_ca[1] == denominator_base_ca[1], str("Different base units found for ", numerator[1], " and ", denominator[1]))
 	numerator_base_ca[0] / denominator_base_ca[0];	

@@ -1,4 +1,4 @@
-// TOGStringLib1.6
+// TOGStringLib1.7
 // 
 // Functions for parsing quantities
 // and other misc. string handling.
@@ -8,6 +8,8 @@
 //   e.g. togstr1_parse_quantity("foot") = [[[1,1], "foot", 4]]
 // v1.6:
 // - togstr1_parse_quantity allows unit name to be omitted when quantity is zero and $togunits1_default_unit is defined
+// v1.7:
+// - Add optional 'dbgctxstr' parameter to unit decoding functions, for better error messages
 // 
 // Globals: $togunits1_default_unit - affects what 'unit' is returned
 // when interpreting numbers or strings that lack the unit.
@@ -55,20 +57,20 @@ togstr1__assert_eq( ["foo"], togstr1_tokenize("--foo--", "-", 2) );
 
 
 /** \d+ -> [num, end_index] */
-function togstr1_parse_decimal_nat(str, index=0, current=0) =
+function togstr1_parse_decimal_nat(str, index=0, current=0, dbgctxstr=undef) =
 	len(str) == index ? [current, index] :
 	let( dig = ord(str[index]) - ord("0") )
-	(dig >= 0 && dig <= 9) ? togstr1_parse_decimal_nat(str, index+1, current*10 + dig) :
+	(dig >= 0 && dig <= 9) ? togstr1_parse_decimal_nat(str, index+1, current*10 + dig, dbgctxstr=dbgctxstr) :
 	[current, index];
 
 togstr1__assert_eq( [123,3], togstr1_parse_decimal_nat("123") );
 togstr1__assert_eq( [123,3], togstr1_parse_decimal_nat("123.45") );
 
 /** [+-]*\d+ ->  [[num, den], end_index] */
-function togstr1_parse_decimal_number(str, index=0) =
+function togstr1_parse_decimal_number(str, index=0, dbgctxstr=undef) =
 	str[index] == "+" ? togstr1_parse_decimal_number(str, index+1) :
 	str[index] == "-" ? let(r=togstr1_parse_decimal_number(str, index+1)) [[-r[0][0], r[0][1]], r[1]] :
-	let(r = togstr1_parse_decimal_nat(str, index))
+	let(r = togstr1_parse_decimal_nat(str, index, dbgctxstr=dbgctxstr))
 	str[r[1]] != "." ? [[r[0], 1], r[1]] :
 	let(fracr = togstr1_parse_decimal_nat(str, r[1]+1))
 	let(mult = pow(10, fracr[1]-(r[1]+1)))
@@ -108,13 +110,13 @@ togstr1__assert_eq([1, 2], togstr1__add_rat([1, 3], [1, 6]));
 
 
 /** Return [[num, den], end_index] */
-function togstr1_parse_rational_number(str, index=0) =
-	let( numr = togstr1_parse_decimal_number(str, index) )
+function togstr1_parse_rational_number(str, index=0, dbgctxstr=undef) =
+	let( numr = togstr1_parse_decimal_number(str, index, dbgctxstr=dbgctxstr) )
 	str[numr[1]] == "+" ?
-		let(numrb = togstr1_parse_rational_number(str, numr[1]+1))
+		let(numrb = togstr1_parse_rational_number(str, numr[1]+1, dbgctxstr=dbgctxstr))
 		[togstr1__add_rat(numr[0], numrb[0]), numrb[1]]	:
 	str[numr[1]] == "/" ?
-		let( denr = togstr1_parse_decimal_number(str, numr[1]+1) )
+		let( denr = togstr1_parse_decimal_number(str, numr[1]+1, dbgctxstr=dbgctxstr) )
 		[togstr1__divide_rat(numr[0], denr[0]), denr[1]] :
 	numr;
 
@@ -130,8 +132,8 @@ togstr1__assert_eq( [[     0,  1],0], togstr1_parse_rational_number( "NotANumber
 
 
 /** Return [[[num, den], unit], end_index] */
-function togstr1_parse_quantity(str) =
-	let( numr = togstr1_parse_rational_number(str) )
+function togstr1_parse_quantity(str, dbgctxstr=undef) =
+	let( numr = togstr1_parse_rational_number(str, dbgctxstr=dbgctxstr) )
 	// For now, just let the unit be the rest of the string;
 	// can revisit to stop at delimiters if needed in the future.
 	numr[1] > 0 && numr[1] == len(str) && numr[0][0] == 0 && !is_undef($togunits1_default_unit) ? [[[0,1], $togunits1_default_unit], numr[1]] :

@@ -1,4 +1,4 @@
-// TOGUnits1.6
+// TOGUnits1.7
 // 
 // For simlifying quantity parsing and unit conversion
 // 
@@ -14,6 +14,8 @@
 // - Remove unused `unit` parameter from `togunits1_vec_to_cas`
 // v1.6:
 // - togunits1_decode accepts `xf` parameter, same as togunits1_decode_vec
+// v1.7:
+// - Add optional 'dbgctxstr' parameter to unit decoding functions, for better error messages
 // 
 // Reserved but not-yet-actually-used globals:
 // - $togunits1_default_unit - default unit when interpreting "0"
@@ -21,24 +23,24 @@
 // - $togunits1_default_implied_unit - when interpreting quantities without unit, assume they have this one
 //   - This might be a bad idea, so never implemented!
 
+use <./DbgCtxStrLib1.scad>
 use <./TOGridLib3.scad>
 use <./TOGStringLib1.scad>
-
 
 function togunits1__is_ca(what) =
 	is_list(what) && len(what) == 2 && is_num(what[0]) && is_string(what[1]);
 
-function togunits1__parse_to_ca(what) =
+function togunits1__parse_to_ca(what, dbgctxstr=undef) =
 	assert( is_string(what) )
-	let( parseresult = togstr1_parse_quantity(what) )
-	assert( parseresult[1] > 0, str("Failed to parse quantity from  ", what) )
+	let( parseresult = togstr1_parse_quantity(what, dbgctxstr) )
+	assert( parseresult[1] > 0, str("Failed to parse quantity from  ", what, dbgctxstr=dbgctxstr) )
 	let( parsed = parseresult[0] )
 	let( rat = parsed[0] )
 	let( unit = parsed[1] )
 	[rat[0]/rat[1], unit];
 
-function togunits1_to_ca(what) =
-	is_string(what) ? togunits1__parse_to_ca(what) :
+function togunits1_to_ca(what, dbgctxstr=undef) =
+	is_string(what) ? togunits1__parse_to_ca(what, dbgctxstr=dbgctxstr) :
 	togunits1__is_ca(what) ? what :
 	is_num(what) ? [what, "mm"] :
 	assert(false, str("Unrecognized quantity representation: ", what));
@@ -53,15 +55,15 @@ function togunits1__get_transform(name) =
 	name == "ceil" ? function(n) ceil(n) :
 	assert(false, str("Unrecognized transform: '", name, "'"));
 
-function togunits1_decode(what, unit=[1,"mm"], xf=undef) =
-	let( ca = togunits1_to_ca(what) )
+function togunits1_decode(what, unit=[1,"mm"], xf=undef, dbgctxstr=undef) =
+	let( ca = togunits1_to_ca(what, dbgctxstr=dbgctxstr) )
 	let( xf1 = togunits1__get_transform(xf) )
-	xf1(togridlib3_decode(ca, unit=togunits1_to_ca(unit)));
+	xf1(togridlib3_decode(ca, unit=togunits1_to_ca(unit), dbgctxstr=dbgctxstr));
 
 function togunits1_decode_vec(whats, unit=[1,"mm"], xf=undef) =
 	let( unit_ca = togunits1_to_ca(unit) )
 	let( xf1 = togunits1__get_transform(xf) )
 	[for(w=whats) xf1(togunits1_decode(w, unit_ca))];
 
-function togunits1_to_mm(what) = togunits1_decode(what, [1,"mm"]);
+function togunits1_to_mm(what, dbgctxstr=undef) = togunits1_decode(what, [1,"mm"], dbgctxstr=dbgctxstr);
 function togunits1_vec_to_mms(what) = togunits1_decode_vec(what, [1,"mm"]);
