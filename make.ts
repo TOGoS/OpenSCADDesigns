@@ -1833,18 +1833,15 @@ const builder = new Builder({
 
 if( import.meta.main ) {
 	let args = Deno.args;
-	while( args.length > 0 ) {
-		// Use this when you know the shape is unchanged,
-		// even if perhaps the .scad or .json has been updated:
-		if( args[0] == "--allow-scad-reruns" ) {
+	const pass_args = [];
+	for( const arg of args ) {
+		if( arg == "--allow-scad-reruns" ) {
 			scadRerunMode = "overwrite";
-			args = args.slice(1);
-		} else if( args[0] == "--skip-scad-reruns" ) {
+		} else if( arg == "--skip-scad-reruns" ) {
 			scadRerunMode = "skip";
-			args = args.slice(1);
 		} else {
-			break;
+			pass_args.push(arg)
 		}
 	}
-	Deno.exit(await builder.processCommandLine(args));
+	Deno.exit(await builder.processCommandLine(pass_args));
 }
