@@ -1,4 +1,4 @@
-// HollowCornerBracket0.2
+// HollowCornerBracket0.3
 // 
 // A simple gridbeam corner bracket.
 // 
@@ -12,6 +12,8 @@
 // - Fix placement of Y and Z holes when height and depth are different
 // - y_hole_z_frequency parameter, for cases where you want more holes per chunk
 // - hole_fn parameter, with less rediculous default
+// v0.3:
+// - Add 'footed-atomic-back' feature
 
 width = "1chunk";
 height = "1chunk";
@@ -20,7 +22,8 @@ wall_thickness = "1/4inch";
 hole_style = "THL-1006";
 y_hole_z_frequency = 1;
 counterbore_depth = "1/16inch";
-extra_features = ""; // ["", "p2601-hole"]
+// Space-separated list of feature names, e.g. "p2601-hole footed-atomic-back"
+extra_features = "";
 // Space-separated list of rath corner ops, e.g. "bevel-3/4inch round-3mm"
 inner_corner_ops = "";
 
@@ -31,6 +34,7 @@ hole_fn = "";
 
 module __hollowcornerbracket0__end_params() { }
 
+use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
@@ -39,9 +43,14 @@ use <../lib/TOGStringLib1.scad>
 use <../lib/TOGUnits1.scad>
 use <../lib/TOGHoleLib2.scad>
 
+$togridlib3_unit_table = tgx11_get_default_unit_table();
+
 width_mm  = togunits1_to_mm(width );
 height_mm = togunits1_to_mm(height);
 depth_mm  = togunits1_to_mm(depth );
+width_ca  = togunits1_to_ca(width );
+height_ca = togunits1_to_ca(height);
+depth_ca  = togunits1_to_ca(depth );
 
 hole_fn_decoded =
 	hole_fn == "" ? min(180, $fn*2) :
@@ -67,12 +76,28 @@ function make_phi_1007like_cutout_2d(eff_slot_width=19.05, outer_margin=0.6) =
 		togmod1_make_rounded_rect([eff_slot_width, 50], r=[6, 6, 0])
 	];
 
-extra_cutouts =
+extra_feature_strs =
 	extra_features == "" ? [] :
-	extra_features == "p2601-hole" ? [
-		togmod1_linear_extrude_z([-height_mm, height_mm], make_phi_1007like_cutout_2d())
-	] :
-	assert(false, str("Unrecognized extra feature[s]: \"", extra_features, "\""));
+	togstr1_tokenize(extra_features, " ");
+
+extra_cutouts = [
+	for( efs = extra_feature_strs ) each
+		efs == "p2601-hole" ? [
+			togmod1_linear_extrude_z([-height_mm, height_mm], make_phi_1007like_cutout_2d())
+		] : [],
+];
+extra_intersections = [
+	for( efs = extra_feature_strs ) each
+		efs == "footed-atomic-back" ? [
+			["translate", [0,depth_mm/2,0], ["rotate", [90,0,0], tgx11_block_bottom(
+				[width_ca, height_ca, depth_ca],
+				bottom_shape = "footed",
+				segmentation = "atom",
+				v6hc_style = "none"
+			)]]
+		] : [],
+];
+//	assert(false, str("Unrecognized extra feature[s]: \"", efs, "\""));
 
 togmod1_domodule(
 	let( chunk_mm  = togunits1_to_mm("chunk") )
@@ -134,12 +159,16 @@ togmod1_domodule(
 			["translate", [0,ym*chunk_mm,0], z_hole],			
 		]
 	)
-	["difference",
-		the_hull,
+	["intersection",
+		["difference",
+			the_hull,
+			
+			for( xm=[-width_chunks/2 + 0.5 : 1 : width_chunks/2-0.5] )
+			["translate", [xm*chunk_mm, 0, 0], chunk_cutout],
+			
+			for( ec=extra_cutouts ) ec,
+		],
 		
-		for( xm=[-width_chunks/2 + 0.5 : 1 : width_chunks/2-0.5] )
-		["translate", [xm*chunk_mm, 0, 0], chunk_cutout],
-		
-		for( ec=extra_cutouts ) ec,
+		for( inter = extra_intersections ) inter,
 	]
 );

@@ -34,6 +34,20 @@
 			"hole_fn": "16",
 			"$tgx11_offset": "0",
 			"$fn": "24"
+		},
+		"p2637": {
+			"width": "3chunk",
+			"depth": "1chunk",
+			"height": "1chunk",
+			"y_hole_z_frequency": "2",
+			"wall_thickness": "1/4inch",
+			"inner_corner_ops": "round-12mm",
+			"extra_features": "p2601-hole footed-atomic-back",
+			"hole_style": "THL-1010",
+			"counterbore_depth": "1mm",
+			"hole_fn": "16",
+			"$tgx11_offset": "0",
+			"$fn": "24"
 		}
 	},
 	"fileFormatVersion": "1"
