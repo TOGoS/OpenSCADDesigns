@@ -782,8 +782,14 @@ const builder = new Builder({
 		"p190x": brAlias(p190xPartIds),
 		...p192xBuildRules,
 		"p1920": brAlias(partIdRange('p',1921,1939)),
-		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", ["p1916"], {
-			cameraPosition: [-20,-20,-30],
+		...multiOsdBuildRules("2023/french-cleat/FrenchCleat.scad", [
+			"p1916", "p2638",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPositions: {
+				default: [ 100, 100, 150],
+				bottom : [ -20, -20, -30],
+			},
 			imageSize: [512,512],			
 		}),
 		...multiOsdBuildRules("2023/experimental/WSTYPE201630Nub1.scad", ["p1917"], {
