@@ -1,4 +1,4 @@
-// Threads2.38
+// Threads2.38.1
 // 
 // New screw threads proto-library
 // 
@@ -131,6 +131,8 @@
 //   a 65536mm square.  Really it should be whatever the max size of the bolt is, plus a bit.
 // v2.38:
 // - Smaller increments for some numeric parameters
+// v2.38.1:
+// - Use `apothem` option to togpath1_make_polygon_rath instead of calculating it ourself.
 
 use <../lib/TGx11.1Lib.scad>
 use <../lib/TOGMod1.scad>
@@ -274,14 +276,15 @@ make_rounded_rath_base = function(zrange, rath, r=0.6)
 function make_polygon_base(sidecount, width, height, extratholation_func=undef ) =
 	let( r1 = min(3, width/10) )
 	let( r2 = min(0.6, r1/2) )
-	let( c_to_c_r = width/2 / cos(360/sidecount/2) )
 	let( eff_extratholation_func =
 		!is_undef(extratholation_func) ? extratholation_func :
 		function(zrange,rath) make_rounded_rath_base(zrange, rath, r=r2)
 	)
 	eff_extratholation_func(
 		[0, height],
-		togpath1_make_polygon_rath(r=c_to_c_r, $fn=sidecount, corner_ops=[["round", r1]], rotation=90+180/sidecount)
+		togpath1_make_polygon_rath(apothem=width/2, $fn=sidecount, corner_ops=[["round", r1]], rotation=90)
+		// For backward-compatibility, that should be identical to:
+		//	togpath1_make_polygon_rath(r=(width/2)/cos(180/sidecount), $fn=sidecount, corner_ops=[["round", r1]], rotation=90+180/sidecount)
 	);
 
 function make_togridpile_chunk_bottom(width,height) =

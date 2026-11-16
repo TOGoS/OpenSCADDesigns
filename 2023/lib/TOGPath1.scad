@@ -1,4 +1,4 @@
-// TOGPath1.106.1
+// TOGPath1.107
 //
 // Functions for transforming 2D paths
 // 
@@ -30,6 +30,8 @@
 //   as an alternative to bare point list.
 // v1.106.1
 // - togpath1_polyline_to_rath: Validate that passed-in _r_adius is a number.
+// v1.107:
+// - togpath1_make_polygon_rath: Explicit options for cirumradius and apothem
 
 use <./TOGComplexLib1.scad>
 
@@ -541,9 +543,42 @@ function togpath1_polypoints_to_rath(points, corner_ops=[]) = ["togpath1-rath",
 	for(p=points) ["togpath1-rathnode", p, each corner_ops]
 ];
 
-function togpath1_make_polygon_rath(r, corner_ops=[], position=[0,0], rotation=0) = ["togpath1-rath",
-	for( i=[0:1:$fn-1] ) ["togpath1-rathnode", [position[0]+r*cos(rotation+i*360/$fn), position[1]+r*sin(rotation+i*360/$fn)], each corner_ops]
-];
+/**
+ * Create a rath for a regular polygon.
+ *
+ * - Side count is taken from $fn.
+ * - Size may be indicated by either apothem (center-to-side distance),
+ *   or circumradius (center-to-corner distance, may also be spelled 'r').
+ * - Rotation is counter-clockwise, where rotation = 0 means either:
+ *   - first side centered at [apothem, 0], if apothem is indicated
+ *   - first point at [circumradius, 0], if r/circumradius is indicated
+ */
+function togpath1_make_polygon_rath(
+	r            = undef, // compatibility alias for circumradius
+	circumradius = undef, // center-to-corner distance
+	apothem      = undef, // center-to-face distance
+	corner_ops   = [],    // Ops to be applied at each corner
+	position     = [0,0], // Center position
+	rotation     = 0      // Rotation in degrees
+) =
+	assert(
+		(is_undef(r)?0:1) + (is_undef(circumradius)?0:1) + (is_undef(apothem)?0:1) == 1,
+		str(
+			"togpath1_make_polygon_rath: Exactly one of r, circumradius, or apothem must be specified; ",
+			"given: r=", r, ", circumradius=", circumradius, ", apothem=", apothem
+		)
+	)
+	let( r =
+		!is_undef(r)            ? r            :
+		!is_undef(circumradius) ? circumradius :
+		!is_undef(apothem)      ? apothem / cos(180/$fn) :
+		assert(false, "Neither r, circumradius, nor apothem is defined!")
+	)
+	// Base rotation depends whether they gave us circumradius or apothem:
+	let( rot = rotation + (is_undef(apothem) ? 0 : 180/$fn) )
+	["togpath1-rath",
+		for( i=[0:1:$fn-1] ) ["togpath1-rathnode", [position[0]+r*cos(rot+i*360/$fn), position[1]+r*sin(rot+i*360/$fn)], each corner_ops]
+	];
 
 function togpath1_make_circle_rath(r, position=[0,0]) = togpath1_make_rectangle_rath(
 	[r*2, r*2], corner_ops=[["round", r]], position=position
