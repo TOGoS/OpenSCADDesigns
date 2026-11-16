@@ -1,8 +1,10 @@
 {
 	"parameterSets": {
 		"p2641": {
-			"description": "6x3x1/2-atom block with 8-sided nubbins",
+			"description": "6x3x1/2-atom M-to-F block with 8-sided nubbins",
 			"block_size": "6atom 3atom 1/2atom",
+			"bottom_gender": "m",
+			"top_gender"   : "f",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
 			"$tgx12_fc_fn": "8",
@@ -10,8 +12,10 @@
 			"$fn": "32"
 		},
 		"p2642": {
-			"description": "6x3x1/2-atom block with 15-sided nubbins",
+			"description": "6x3x1/2-atom M-to-F block with 15-sided nubbins",
 			"block_size": "6atom 3atom 1/2atom",
+			"bottom_gender": "m",
+			"top_gender"   : "f",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
 			"$tgx12_fc_fn": "16",
@@ -19,10 +23,11 @@
 			"$fn": "32"
 		},
 		"p2643": {
-			"description": "6x3x1/2-atom inverted block with 8-sided nubbins and beams between bottom feet",
+			"description": "6x3x1/2-atom F-to-F block with 8-sided nubbins and beams between bottom feet",
 			"block_size": "6atom 3atom 1/2atom",
 			"bottom_foot_connector_width": "3mm",
-			"polarity": "feet-up",
+			"bottom_gender": "f",
+			"top_gender"   : "f",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
 			"$tgx12_fc_fn": "8",
@@ -30,10 +35,11 @@
 			"$fn": "32"
 		},
 		"p2644": {
-			"description": "6x3x1/2-atom inverted block with 16-sided nubbins and beams between bottom feet",
+			"description": "6x3x1/2-atom F-to-F block with 16-sided nubbins and beams between bottom feet",
 			"block_size": "6atom 3atom 1/2atom",
 			"bottom_foot_connector_width": "3mm",
-			"polarity": "feet-up",
+			"bottom_gender": "f",
+			"top_gender"   : "f",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
 			"$tgx12_fc_fn": "16",

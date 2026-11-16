@@ -1,4 +1,4 @@
-// TGx12.0.2 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.3 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -18,9 +18,13 @@
 //   `bottom_foot_connector_width` so that the first layer of your print
 //   can be something a bit more solid and less likely to tear off the bed.
 // - Top feet ('toots') don't get a bevel
+// - Note that polarity handling is *BROKEN* haha top always mirrors bottom oops
+// v12.0.3:
+// - Replace `polarity` with separate gender options for top and bottom
 
 block_size = "6atom 3atom 1/4inch";
-polarity = "feet-down"; // ["feet-down", "feet-up"]
+top_gender    = "f"; // ["m","f"]
+bottom_gender = "m"; // ["m","f"]
 bottom_foot_connector_width = "0mm";
 
 // General face offset
@@ -126,8 +130,8 @@ togmod1_domodule(
 		for( xm=[-block_size_atoms_r[0]/2 : 1 : block_size_atoms_r[0]/2] )
 		[xm*atom, ym*atom]
 	])
-	let( bottom_foot_positions = polarity == "feet-down" ? m_foot_positions : f_foot_positions )
-	let( top_foot_positions    = polarity == "feet-up"   ? f_foot_positions : m_foot_positions )
+	let( bottom_foot_positions = bottom_gender == "m" ? m_foot_positions : f_foot_positions )
+	let( top_foot_positions    = top_gender    == "m" ? m_foot_positions : f_foot_positions )
 	["intersection",
 		// Bottom
 		["union",
@@ -137,7 +141,7 @@ togmod1_domodule(
 			["translate", pos, boot],
 			
 			each bottom_foot_connector_width_mm <= 0 ? [] :
-				polarity == "feet-up" ?
+				bottom_gender == "f" ?
 					let(y_bar = togmod1_linear_extrude_z([1/128, block_size_mm[2]+4/128], togmod1_make_rect([bottom_foot_connector_width_mm, block_size_mm[1]])))
 					let(x_bar = togmod1_linear_extrude_z([1/128, block_size_mm[2]+4/128], togmod1_make_rect([block_size_mm[0], bottom_foot_connector_width_mm])))
 					[
