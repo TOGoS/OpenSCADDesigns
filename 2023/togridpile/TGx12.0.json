@@ -1,0 +1,21 @@
+{
+	"parameterSets": {
+		"p2641": {
+			"block_size": "6atom 3atom 1/2atom",
+			"$tgx11_offset": "-0.15",
+			"$tgx12_fc_circfact": "1",
+			"$tgx12_fc_fn": "8",
+			"$tgx12_fc_offset": "-0.03",
+			"$fn": "32"
+		},
+		"p2642": {
+			"block_size": "6atom 3atom 1/2atom",
+			"$tgx11_offset": "-0.15",
+			"$tgx12_fc_circfact": "1",
+			"$tgx12_fc_fn": "16",
+			"$tgx12_fc_offset": "-0.03",
+			"$fn": "32"
+		}
+	},
+	"fileFormatVersion": "1"
+}
