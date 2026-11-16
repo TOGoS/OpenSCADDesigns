@@ -22,24 +22,26 @@
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
-		"p2643": {
+		"p2645": {
 			"description": "6x3x1/2-atom F-to-F block with 8-sided nubbins and beams between bottom feet",
 			"block_size": "6atom 3atom 1/2atom",
 			"bottom_foot_connector_width": "3mm",
 			"bottom_gender": "f",
-			"top_gender"   : "f",
+			"top_gender"   : "m",
+			"top_secondary_segmentation": "chunk",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
 			"$tgx12_fc_fn": "8",
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
-		"p2644": {
+		"p2646": {
 			"description": "6x3x1/2-atom F-to-F block with 16-sided nubbins and beams between bottom feet",
 			"block_size": "6atom 3atom 1/2atom",
 			"bottom_foot_connector_width": "3mm",
 			"bottom_gender": "f",
-			"top_gender"   : "f",
+			"top_gender"   : "m",
+			"top_secondary_segmentation": "chunk",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
 			"$tgx12_fc_fn": "16",
