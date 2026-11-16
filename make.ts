@@ -1841,7 +1841,18 @@ const builder = new Builder({
 			"p2641", "p2642",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
-			cameraPosition: [ 60, -60 ,60],
+			cameraPosition: [ 60,-60, 60],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
+		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
+			"p2643", "p2644",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPositions: {
+				default: [ 60, -60, 60],
+				bottom : [ 60, -60,-60],
+			},
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),

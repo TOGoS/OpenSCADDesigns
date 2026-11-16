@@ -1,4 +1,4 @@
-// TGx12.0.1 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.2 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -13,8 +13,15 @@
 //   in 3 dimensions?  Definitely easier to reason about, anyway.
 // - That said, I think the goal was to to have $tgx11_offset have the usual meaning,
 //   except horizontal offset of the foot column faces would use $tgx12_fc_offset instead.
+// v12.0.2:
+// - Allow the `polarity` to be inverted and provide an option for
+//   `bottom_foot_connector_width` so that the first layer of your print
+//   can be something a bit more solid and less likely to tear off the bed.
+// - Top feet ('toots') don't get a bevel
 
 block_size = "6atom 3atom 1/4inch";
+polarity = "feet-down"; // ["feet-down", "feet-up"]
+bottom_foot_connector_width = "0mm";
 
 // General face offset
 $tgx11_offset = -0.15;
@@ -41,6 +48,7 @@ block_size_strs = togstr1_tokenize(block_size, " ");
 block_size_mm = togunits1_decode_vec(block_size_strs, unit="mm");
 // Size in atoms, rounded to nearest integer
 block_size_atoms_r = togunits1_decode_vec(block_size_strs, unit="atom", xf="round");
+bottom_foot_connector_width_mm = togunits1_to_mm(bottom_foot_connector_width);
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
@@ -64,7 +72,7 @@ function tgx12_make_rp_atom_foot_column_rath(fc_rad) =
 		$fn = $tgx12_fc_fn
 	);
 
-function tgx12_make_atom_foot(height, shape) =
+function tgx12_make_atom_foot(height, shape, foot_bevel=0) =
 	assert(shape == "column" || shape == "column+padbevel")
 	let( atom = togunits1_to_mm("atom") )
 	let( bev = togunits1_to_mm("tgp-standard-bevel") )
@@ -81,11 +89,10 @@ function tgx12_make_atom_foot(height, shape) =
 	let( fc_inset = atom/2 - fc_rad )
 	// Ideal z position of foot column/bevel intersection
 	let( fcbev_z = bev - fc_inset )
-	echo( fc_rad = fc_rad, fc_inset = fc_inset )
 	tphl1_make_polyhedron_from_layer_function(
 		[
-			[    0    , -fc_inset-0.4    ],
-			[    0.4  , -fc_inset        ],
+			[    0    , -fc_inset-foot_bevel],
+			if( foot_bevel > 0 ) [foot_bevel, -fc_inset        ],
 			each shape == "column" ? [
 				[height   , -fc_inset        ],
 			] : [
@@ -106,24 +113,47 @@ togmod1_domodule(
 	/*togmod1_linear_extrude_z([0, 12.7],
 		togpath1_rath_to_polygon(tgx12_make_rp_atom_foot_column_rath())
 	)*/
-	let( foot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column+padbevel")] )
-	let( toot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column")] )
+	let( boot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column+padbevel", foot_bevel=0.4)] )
+	let( toot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column", foot_bevel=0)] )
 	let( bev = togunits1_to_mm("tgp-standard-bevel") )
+	let( m_foot_positions = [
+		for( ym=[-block_size_atoms_r[1]/2+0.5 : 1 : block_size_atoms_r[1]/2-0.5] )
+		for( xm=[-block_size_atoms_r[0]/2+0.5 : 1 : block_size_atoms_r[0]/2-0.5] )
+		[xm*atom, ym*atom]
+	])
+	let( f_foot_positions = [
+		for( ym=[-block_size_atoms_r[1]/2 : 1 : block_size_atoms_r[1]/2] )
+		for( xm=[-block_size_atoms_r[0]/2 : 1 : block_size_atoms_r[0]/2] )
+		[xm*atom, ym*atom]
+	])
+	let( bottom_foot_positions = polarity == "feet-down" ? m_foot_positions : f_foot_positions )
+	let( top_foot_positions    = polarity == "feet-up"   ? f_foot_positions : m_foot_positions )
 	["intersection",
+		// Bottom
 		["union",
-			togmod1_linear_extrude_z([bev+1, block_size_mm[2]+3/128], togmod1_make_rect([block_size_mm[0]-atom, block_size_mm[1]-atom])),
+			togmod1_linear_extrude_z([bev+1, block_size_mm[2]+3/128], togmod1_make_rect([block_size_mm[0]-atom/2, block_size_mm[1]-atom/2])),
+
+			for( pos = bottom_foot_positions )			
+			["translate", pos, boot],
 			
-			for( ym=[-block_size_atoms_r[1]/2+0.5 : 1 : block_size_atoms_r[1]/2-0.5] )
-			for( xm=[-block_size_atoms_r[0]/2+0.5 : 1 : block_size_atoms_r[0]/2-0.5] )
-			["translate", [xm*atom, ym*atom], foot],
+			each bottom_foot_connector_width_mm <= 0 ? [] :
+				polarity == "feet-up" ?
+					let(y_bar = togmod1_linear_extrude_z([1/128, block_size_mm[2]+4/128], togmod1_make_rect([bottom_foot_connector_width_mm, block_size_mm[1]])))
+					let(x_bar = togmod1_linear_extrude_z([1/128, block_size_mm[2]+4/128], togmod1_make_rect([block_size_mm[0], bottom_foot_connector_width_mm])))
+					[
+						for( xm = [-block_size_atoms_r[0]/2 : 1 : +block_size_atoms_r[0]/2] ) ["translate", [xm*atom, 0, 0], y_bar],
+						for( ym = [-block_size_atoms_r[1]/2 : 1 : +block_size_atoms_r[1]/2] ) ["translate", [0, ym*atom, 0], x_bar],
+					] :
+				assert(false, "Bottom foot connector not yet implemented for feet-down polarity")
 		],
+		// Top
 		["union",
 			togmod1_linear_extrude_z([-1, block_size_mm[2]], togmod1_make_rect(block_size_mm*2)),
 			
-			for( ym=[-block_size_atoms_r[1]/2 : 1 : block_size_atoms_r[1]/2] )
-			for( xm=[-block_size_atoms_r[0]/2 : 1 : block_size_atoms_r[0]/2] )
-			["translate", [xm*atom, ym*atom, block_size_mm[2] + u], ["rotate", [180,0,0], toot]],
+			for( pos = top_foot_positions )			
+			["translate", [pos[0], pos[1], block_size_mm[2] + u], ["rotate", [180,0,0], toot]],
 		],
+		// X/Y hull
 		togmod1_linear_extrude_z(
 			[0, block_size_mm[2] + atom + 2/128],
 			togpath1_rath_to_polygon(togpath1_make_rectangle_rath(
