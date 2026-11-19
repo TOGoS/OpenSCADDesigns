@@ -1,0 +1,12 @@
+{
+	"parameterSets": {
+		"p2639": {
+			"width": "1chunk",
+			"height": "4chunk",
+			"cc_bolt_hole_style": "straight-4.5mm",
+			"minirail_edge_offset": "-0.1mm",
+			"$fn": "24"
+		}
+	},
+	"fileFormatVersion": "1"
+}

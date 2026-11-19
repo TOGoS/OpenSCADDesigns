@@ -1837,6 +1837,14 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/track/FCMiniRail0.scad", [
+			"p2639",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [ 60,-60, 60],
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
 			"p2641", "p2642",
 		], {
