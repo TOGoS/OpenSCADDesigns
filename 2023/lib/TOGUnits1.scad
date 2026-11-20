@@ -1,4 +1,4 @@
-// TOGUnits1.7
+// TOGUnits1.8
 // 
 // For simlifying quantity parsing and unit conversion
 // 
@@ -16,12 +16,15 @@
 // - togunits1_decode accepts `xf` parameter, same as togunits1_decode_vec
 // v1.7:
 // - Add optional 'dbgctxstr' parameter to unit decoding functions, for better error messages
+// v1.8:
+// - Mind $togunits1_default_implied_unit when interpreting numbers as quantities
 // 
 // Reserved but not-yet-actually-used globals:
 // - $togunits1_default_unit - default unit when interpreting "0"
 //   - See TOGStringLib1
 // - $togunits1_default_implied_unit - when interpreting quantities without unit, assume they have this one
-//   - This might be a bad idea, so never implemented!
+//   - For numeric quantities, defaults to "mm"
+//   - For string quantities, not yet implemented, since it's normally a bad idea!
 
 use <./DbgCtxStrLib1.scad>
 use <./TOGridLib3.scad>
@@ -42,7 +45,7 @@ function togunits1__parse_to_ca(what, dbgctxstr=undef) =
 function togunits1_to_ca(what, dbgctxstr=undef) =
 	is_string(what) ? togunits1__parse_to_ca(what, dbgctxstr=dbgctxstr) :
 	togunits1__is_ca(what) ? what :
-	is_num(what) ? [what, "mm"] :
+	is_num(what) ? [what, !is_undef($togunits1_default_implied_unit) ? $togunits1_default_implied_unit : "mm"] :
 	assert(false, str("Unrecognized quantity representation: ", what));
 
 function togunits1_vec_to_cas(whats) =
