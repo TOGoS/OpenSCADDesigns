@@ -1,6 +1,6 @@
 {
 	"parameterSets": {
-		"p2641": {
+		"p2641-alt": {
 			"description": "6x3x1/2-atom M-to-F block with 8-sided nubbins",
 			"block_size": "6atom 3atom 1/2atom",
 			"bottom_style": "tgx12-m-atom",
@@ -11,7 +11,7 @@
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
-		"p2642": {
+		"p2642-alt": {
 			"description": "6x3x1/2-atom M-to-F block with 15-sided nubbins",
 			"block_size": "6atom 3atom 1/2atom",
 			"bottom_style": "tgx12-m-atom",
@@ -22,7 +22,7 @@
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
-		"p2645": {
+		"p2645-alt": {
 			"description": "6x3x1/2-atom F-to-F block with 8-sided nubbins and beams between bottom feet",
 			"block_size": "6atom 3atom 1/2atom",
 			"foot_connector_width": "3mm",
@@ -34,7 +34,7 @@
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
-		"p2646": {
+		"p2646-alt": {
 			"description": "6x3x1/2-atom F-to-F block with 16-sided nubbins and beams between bottom feet",
 			"block_size": "6atom 3atom 1/2atom",
 			"foot_connector_width": "3mm",
@@ -47,7 +47,7 @@
 			"$fn": "32"
 		},
 		"-- TOGridPile bins --": "",
-		"p2647": {
+		"p2647-alt": {
 			"description": "1x1x1-chunk basic cavity box with TGx12-M-atom feet with thin connectors",
 			"block_size": "3atom 3atom 3atom",
 			"bottom_style": "tgx12-m-atom+connectors",

@@ -1,9 +1,12 @@
-// TGx12.0[.6]Lib
+// TGx12.0[.10]Lib
 // 
 // Generate a simplified atomn foot shape
 // 
 // v12.0.6:
 // - Separated from TGx12.0.scad
+// v12.0.10:
+// - Adjust column+padbev bevel to ensure nub_overlap of space around the nubbins
+// - This could stand some additional improvement (see TODO in tgx12_make_atom_foot)
 // 
 // TODO: Once alternate segmentations are defined,
 // add a function for non-atomic feet that unions in chunks or whatever.
@@ -20,6 +23,12 @@ function tgx12__regular_polypoints(apothem, position=[0,0], rotation=0) =
 		togvec0_add_vec([circumradius * cos(rot + i*360/$fn), circumradius * sin(rot + i*360/$fn)], position),
 	];
 
+// Peraps this should be in the unit table?
+// Not actually obvious (to me, at the moment) how it should be calculated.
+// Column inset sounds about right, though.
+function tgx12__get_nub_overlap() =
+	togunits1_to_mm("tgp-column-inset");
+
 // A simple circular foot.
 // Horizontal foot column face offset (foot bottom is always at exactly 0) may be specified
 // as $tgx12_fc_r_offset, independently of the regular TOGridPile bevel face offset ($tgx11_offset).
@@ -35,6 +44,12 @@ function tgx12_make_atom_foot(height, shape="column+padbevel", foot_bevel=0) =
 	let( fc_rad = sqrt(2)*atom/4 + fc_r_offset )
 	let( bev_z0    = bev - atom/2 - $tgx11_offset*sqrt(2) ) // Z of imaginary 'bottom point' of bevel under center of foot
 	let( fcbev_z   = bev_z0 + fc_rad) // Z at center + radius at which they intersect; easy peasy!
+	// actual_fcbev_z: fcbev_z, but adjusted to ensure that the 'chin' of the bevel
+	// doesn't prevent full M/F nubbin overlap!
+	let( actual_fcbev_z = max(fcbev_z, tgx12__get_nub_overlap()-$tgx11_offset) )
+	// TODO: Adjust padedge_z to account for the bevel slope not necessarily being 1.
+	// (So calculate slope based on actual_fcbev_z and desired bevel bottom Z at atom edge,
+	// clamped to avoid things being too overhang-ey, and then calculate padedge_z from that.)
 	let( padedge_z = bev_z0 + padded_r ) // Z position where radius of beveled section reaches padded_r
 	// Ideal z position of foot column/bevel intersection
 	let( r0 = atom/2 )
@@ -44,10 +59,10 @@ function tgx12_make_atom_foot(height, shape="column+padbevel", foot_bevel=0) =
 			[    0    , fc_rad - foot_bevel],
 			if( foot_bevel > 0 ) [foot_bevel, fc_rad],
 			each shape == "column" ? [
-				[height   , fc_rad        ],
+				[height         , fc_rad        ],
 			] : [
-				[fcbev_z  , fc_rad        ],
-				[padedge_z, padded_r      ],
+				[actual_fcbev_z , fc_rad        ],
+				[padedge_z      , padded_r      ],
 				[max(padedge_z+1, + height), padded_r],
 			],
 		],

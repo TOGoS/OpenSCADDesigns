@@ -1846,7 +1846,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
-			"p2641", "p2642",
+			"p2641-alt", "p2642-alt",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPosition: [ 60,-60, 60],
@@ -1854,7 +1854,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
-			"p2645", "p2646",
+			"p2645-alt", "p2646-alt",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {
@@ -1865,7 +1865,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
-			"p2647",
+			"p2647-alt",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {

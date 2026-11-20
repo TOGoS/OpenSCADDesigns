@@ -1,4 +1,4 @@
-// TGx12.0.9 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.10 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -39,9 +39,16 @@
 // - Cavity options
 // v12.0.9:
 // - Wonderfully elegant fingerslide generation using TPLists and TPGens and stuff
+// v12.0.10:
+// - To match TGx12.0[.10]Lib, updated to ensure nub_overlap of space under atom bevels around nubbins
 // 
-// TODO: Don't try to ensure 45-degree bevels around atom feet.
-// Do guarantee num_overlap of nubbin before it meets the bevel!
+// For now, chunk-based structures will only work properly when
+// block X/Y size is an integer multiple of one chunk.
+// I *could* fix this at some point, but it's low priority.
+// Just switch to atom- or block-based styles.
+// 
+// TODO: tgx12-m-atom+intra-chunk-connectors : like tgx12-m-atom+connectors,
+// but connectors don't span between chunks.
 
 block_size = "6atom 3atom 1/4inch";
 // Segmentation of bottom of block above the nubbins
