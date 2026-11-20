@@ -1,4 +1,4 @@
-// TGx12.0.4 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.5 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -25,6 +25,10 @@
 //   and `f` connectors protrude by `lip_height`
 // - Option for `top_secondary_segmentation`
 // - Fix Z position of block bottom
+// v12.0.5:
+// - Simplify foot generation
+//   - Always assume we're talking about apothem rather than circumradius
+//   - Fix calculation of bevel/foot intersection
 
 block_size = "6atom 3atom 1/4inch";
 bottom_gender = "m"; // ["m","f"]
@@ -38,13 +42,11 @@ top_secondary_segmentation = "none"; // ["none", "chunk", "atom"]
 lip_height = "1u";
 
 // General face offset
-$tgx11_offset = -0.15;
+$tgx11_offset = -0.15; // 0.01
 // Offset of foot colum side faces; id undefined, defaults to $tgx11_offset
-$tgx12_fc_offset = 0;
-// Number of sides of foot
-$tgx12_fc_fn = 8; // [4 : 4 : 128]
-// Should be large when $tgx12_fn is low; may be smaller as shape approaches a circle (effectively shrinking it slightly)
-$tgx12_fc_circfact = 1; // [0 : 0.1 : 1]
+$tgx12_fc_r_offset = 0; // 0.01
+// Number of sides of foot; multiples of 8 are probably best, but in-between multiples of 4 may be interesting, too
+foot_side_count = 8; // [4 : 4 : 128]
 // Fn for things other than the foot columns
 $fn = 32;
 
@@ -57,6 +59,7 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGStringLib1.scad>
 use <../lib/TOGUnits1.scad>
+use <../lib/TOGVecLib0.scad>
 
 block_size_strs = togstr1_tokenize(block_size, " ");
 block_size_mm = togunits1_decode_vec(block_size_strs, unit="mm");
@@ -72,55 +75,57 @@ $togridlib3_unit_table = tgx11_get_default_unit_table();
  * Generate a circumradius between that which would be needed
  * if r = circumradius (smaller polygon, circfact=0)
  *    r = apothem      ( larger polygon, circfact=1)
+ *
+ * Fun to think about for circle-approximation, but not actually used.
  */
-function circfact_polyrad(r, circfact=0.5) =
+/*
+function tgx12__circfact_polyrad(r, circfact=0.5) =
 	let(
 		circumradius_a = r,
 		circumradius_b = r / cos(180/$fn)
 	)
 	circumradius_a * (1-circfact) + circumradius_b * circfact;
+*/
 
-function tgx12_make_rp_atom_foot_column_rath(fc_rad) =
-	let( fs_offset = !is_undef($tgx12_fc_offset) ? $tgx12_fc_offset : $tgx11_offset )
-	togpath1_make_polygon_rath(
-		r = circfact_polyrad(fs_offset + fc_rad, circfact = $tgx12_fc_circfact),
-		rotation = 45 + 180/$tgx12_fc_fn,
-		$fn = $tgx12_fc_fn
-	);
+function tgx12__regular_polypoints(apothem, position=[0,0], rotation=0) =
+	let( circumradius = apothem / cos(180/$fn) )
+	let( rot = rotation + 180/$fn )
+	[
+		for( i=[0 : 1 : $fn-1] )
+		togvec0_add_vec([circumradius * cos(rot + i*360/$fn), circumradius * sin(rot + i*360/$fn)], position),
+	];
 
+// A simple circular foot.
+// Horizontal foot column face offset (foot bottom is always at exactly 0) may be specified
+// as $tgx12_fc_r_offset, independently of the regular TOGridPile bevel face offset ($tgx11_offset).
 function tgx12_make_atom_foot(height, shape, foot_bevel=0) =
 	assert(shape == "column" || shape == "column+padbevel")
 	let( atom = togunits1_to_mm("atom") )
 	let( bev = togunits1_to_mm("tgp-standard-bevel") )
-	let( pad = atom/2 ) // Horizontal extension
-	// Note: This all assumes $tgx12_fc_circfact = 1 lol;
-	// I should probably calculate a list of actual insets for the different points
-	// (i.e. atom/2 - circumradius, assuming $tgx12_fc_fn > 4)
-	// rather than delegate to tgx12_make_rp_atom_foot_column_rath,
-	// then calculate actual Z positions from that. 
-	// and from that 
-	// Ideal foot column radius
-	let( fc_rad = sqrt(2)*atom/4 )
-	// Ideal foot column inset from block edge
-	let( fc_inset = atom/2 - fc_rad )
+	// padded_r = maximum radius of bevel to put the edge comfortably outside the atom;
+	// minimum to guarantee overlap would be sqrt(2)*atom/2
+	let( padded_r = atom )
+	let( fc_r_offset = !is_undef($tgx12_fc_r_offset) ? $tgx12_fc_r_offset : $tgx11_offset )
+	let( fc_rad = sqrt(2)*atom/4 + fc_r_offset )
+	let( bev_z0    = bev - atom/2 - $tgx11_offset*sqrt(2) ) // Z of imaginary 'bottom point' of bevel under center of foot
+	let( fcbev_z   = bev_z0 + fc_rad) // Z at center + radius at which they intersect; easy peasy!
+	let( padedge_z = bev_z0 + padded_r ) // Z position where radius of beveled section reaches padded_r
 	// Ideal z position of foot column/bevel intersection
-	let( fcbev_z = bev - fc_inset )
+	let( r0 = atom/2 )
+	assert( shape == "column" || fcbev_z > foot_bevel, str("Z at which column and bevel meet should be > foot bevel height; got ", fcbev_z, " and ", foot_bevel) )
 	tphl1_make_polyhedron_from_layer_function(
 		[
-			[    0    , -fc_inset-foot_bevel],
-			if( foot_bevel > 0 ) [foot_bevel, -fc_inset        ],
+			[    0    , fc_rad - foot_bevel],
+			if( foot_bevel > 0 ) [foot_bevel, fc_rad],
 			each shape == "column" ? [
-				[height   , -fc_inset        ],
+				[height   , fc_rad        ],
 			] : [
-				[fcbev_z  , -fc_inset        ],
-				[bev + pad,  pad             ],
-				[height   ,  pad             ],
+				[fcbev_z  , fc_rad        ],
+				[padedge_z, padded_r      ],
+				[max(padedge_z+1, + height), padded_r],
 			],
 		],
-		function(zo) togpath1_rath_to_polypoints(
-			tgx12_make_rp_atom_foot_column_rath(zo[1] + atom/2)
-		),
-		layer_points_transform = "key0-to-z"
+		function(zo) tgx12__regular_polypoints(zo[1], position=[0,0,zo[0]], rotation=45)
 	);
 
 togmod1_domodule(
@@ -131,8 +136,8 @@ togmod1_domodule(
 	/*togmod1_linear_extrude_z([0, 12.7],
 		togpath1_rath_to_polygon(tgx12_make_rp_atom_foot_column_rath())
 	)*/
-	let( boot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column+padbevel", foot_bevel=0.4)] )
-	let( toot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape=(top_secondary_segmentation == "atom" ? "column+padbevel" : "column"), foot_bevel=0)] )
+	let( boot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column+padbevel", foot_bevel=0.4, $fn=foot_side_count)] )
+	let( toot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape=(top_secondary_segmentation == "atom" ? "column+padbevel" : "column"), foot_bevel=0, $fn=foot_side_count)] )
 	let( bev = togunits1_to_mm("tgp-standard-bevel") )
 	let( m_foot_positions = [
 		for( ym=[-block_size_atoms_r[1]/2+0.5 : 1 : block_size_atoms_r[1]/2-0.5] )

@@ -7,7 +7,7 @@
 			"top_gender"   : "f",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
-			"$tgx12_fc_fn": "8",
+			"foot_side_count": "8",
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
@@ -18,7 +18,7 @@
 			"top_gender"   : "f",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
-			"$tgx12_fc_fn": "16",
+			"foot_side_count": "16",
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
@@ -31,7 +31,7 @@
 			"top_secondary_segmentation": "chunk",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
-			"$tgx12_fc_fn": "8",
+			"foot_side_count": "8",
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		},
@@ -44,7 +44,7 @@
 			"top_secondary_segmentation": "chunk",
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_circfact": "1",
-			"$tgx12_fc_fn": "16",
+			"foot_side_count": "16",
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
 		}
