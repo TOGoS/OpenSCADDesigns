@@ -1865,7 +1865,7 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
-			"p2647-alt", "p2648",
+			"p2647-alt", "p2648", "p2649",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {
