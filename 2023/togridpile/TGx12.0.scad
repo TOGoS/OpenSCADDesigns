@@ -1,4 +1,4 @@
-// TGx12.0.8 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.9 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -37,6 +37,8 @@
 // - `foot_connector_thickness` option - make it small and maybe you could break off the connectors after printing
 // v12.0.8:
 // - Cavity options
+// v12.0.9:
+// - Wonderfully elegant fingerslide generation using TPLists and TPGens and stuff
 // 
 // TODO: Don't try to ensure 45-degree bevels around atom feet.
 // Do guarantee num_overlap of nubbin before it meets the bevel!
@@ -54,7 +56,7 @@ foot_connector_thickness = "99mm";
 
 /* [Cavity] */
 
-cavity_type = "none"; // ["none", "clarp2505-square", "clarp2505-square+fs+ll"]
+cavity_type = "none"; // ["none", "clarp2505-square", "clarp2505-square+fs"]
 // Nominal thickness of cavity wall; i.e. inset from ideal block boundary
 cavity_wall_thickness = "1u";
 // Don't let the actual wall thickness be less than this
@@ -115,7 +117,141 @@ function tgx12__circfact_polyrad(r, circfact=0.5) =
 	circumradius_a * (1-circfact) + circumradius_b * circfact;
 */
 
-function tgx12_basic_cavity_rect_points(rblf, bev=2) = [
+
+// Some types:
+// 
+// RBLF<D> = [right_x:T, back_y:D, left_x:D, front_y:D]
+// Combiner<I,O> = (left:I, right:I) -> O
+// TList<I> = [t:I, ...]
+// TPList<I,O> = [[t:I, data:O], ...]
+// TFunc<I,O> = t:I -> O
+// TPGen<I,O> = [[t:I, ...], TFunc<I,O>]
+// Interpolator<T> = (left:T, right:T, rat:Number 0..1) -> T
+// Tagged = [type_name = nameof(T):TypeName, value:T]
+// TypeName = "TPList<RBLF<Number>>" | "TPGen<Number,RBLF<Number>>" | ...
+
+tgx12__is_number = function(t) is_num(t);
+
+function tgx12__is_tlist(is_t, maybe_tlist, index=0) =
+	assert( is_function(is_t), "tgx12__is_tlist: is_t should be a function!" )
+	is_list(maybe_tlist) && index >= len(maybe_tlist) || is_t(maybe_tlist[index]) && tgx12__is_tlist(is_t, maybe_tlist, index+1);
+
+function tgx12__is_tpgen(is_t, maybe_tpgen) =
+	tgx12__is_tlist(is_t, maybe_tpgen[0]) && is_function(maybe_tpgen[1]);
+
+// The merge part of merge sort.
+// [1, 4, 6, 7], [3, 4, 9, 10] -> [1, 3, 4, 4, 6, 7, 9, 10]
+function tgx12__merge_tlist( left_ts, right_ts, left_index=0, right_index=0 ) =
+	// Either list ran out?  It's the rest of the other list (which could also be at its end!)
+	left_index  >= len(left_ts)  ? [for(i=[right_index : 1 : len(right_ts)-1]) right_ts[i]] :
+	right_index >= len(right_ts) ? [for(i=[ left_index : 1 : len( left_ts)-1])  left_ts[i]] :
+	left_ts[left_index] < right_ts[right_index] ? [
+		left_ts[left_index],
+		each tgx12__merge_tlist(left_ts, right_ts, left_index+1, right_index)
+	] : [
+		right_ts[right_index],
+		each tgx12__merge_tlist(left_ts, right_ts, left_index, right_index+1)
+	];
+function tgx12__uniq_tlist( ts, index=0, prev=undef ) =
+	index >= len(ts) ? [] :
+	!is_undef(prev) && ts[index] == prev ? tgx12__uniq_tlist(ts, index+1, prev) :
+	[ts[index], each tgx12__uniq_tlist(ts, index+1, ts[index])];
+
+function tgx12__tpgen_to_tplist( tpgen ) =
+	assert( tgx12__is_tpgen(tgx12__is_number, tpgen) )
+	[for(t=tpgen[0]) [t, tpgen[1](t)]];
+
+// tgx12__combine_tfunc : (right_func : (x:I) -> O, left_func : (y:I) -> O, combiner: (left:O, right:O) -> O ) -> (x:I) -> O
+function tgx12__combine_tfunc( left_func, right_func, combiner ) =
+	function(t) combiner( left_func(t), right_func(t) );
+
+far = 65536; // Big number
+
+// tgx12__min_rblf : (left_func:TFunc<T, RBLF>, right_func:TFunc<T, RBLF>) -> TFunc<T, RBLF>
+tgx12__min_rblf = function( left, right ) [
+	min(left[0], right[0]),
+	min(left[1], right[1]),
+	max(left[2], right[2]),
+	max(left[3], right[3]),
+];
+// tgx12__max_rblf : (left_func:TFunc<T, RBLF>, right_func:TFunc<T, RBLF>) -> TFunc<T, RBLF>
+tgx12__max_rblf = function( left, right ) [
+	max(left[0], right[0]),
+	max(left[1], right[1]),
+	min(left[2], right[2]),
+	min(left[3], right[3]),
+];
+
+function tgx12__fingerslide_tpgen( zrange, front_y ) =
+	let( rad = zrange[1] - zrange[0] )
+	let( pivot_y = front_y + rad )
+	let( segcount = ceil($fn/4+0.5) )
+	[
+		[
+			for( am = [0 : 1 : segcount] )
+			let( angle = am*90/segcount - 90 )
+			zrange[1] + rad * sin(angle)
+		],
+		function(z) [
+			// Right, back, left: Don't care
+			far, far, -far,
+			// And for front Y:
+			z >= zrange[1] ? front_y :
+			z <= zrange[0] ? pivot_y :
+			let( angle = asin((z - zrange[1])/rad) )
+			pivot_y - rad * cos(angle)
+		]
+	];
+
+function tgx12__make_lookup_function( interpolator ) =
+	// TODO: Binary subdivision instead of linear scan?
+	// TODO: Could always use interpolator, even at exact matches,
+	// and maybe using (undef, first) and (last, undef) to indicate inputs beyond first/last position,
+	// with which it could do something special if desired!
+	let( lookup_func = function( t, list, index=0 )
+		assert(len(list) > 0, "Lookup requires at least one item, but empty list was given!")
+		// At or beyond last position?   Give 'em the last value.
+		index >= len(list)-1 ? list[len(list)-1][1] :
+		// At or before current position?  Give 'em the current value.
+		t <= list[index][0] ? list[index][1] :
+		t < list[index+1][0] ?
+			// Time to interpolate!
+			assert( index >= 0 )
+			assert( index+1 < len(list) )
+			let( t0 = list[index+0][0], t1 = list[index+1][0] )
+			let( v0 = list[index+0][1], v1 = list[index+1][1] )
+			let( rat = (t-t0)/(t1-t0) )
+		   interpolator(v0, v1, rat) :
+		// Try next span
+		lookup_func(t, list, index+1)
+	)
+   lookup_func;
+
+tgx12__lerp_vectors = function(left, right, rat)
+	assert(len(left) == len(right), "left/right vectors must be same length to interpolate")
+	[
+		for( i=[0 : 1 : len(left)-1] )
+		left[i] + (right[i] - left[i])*rat
+	];
+
+function tgx12__tplist_to_tpgen(tplist, value_interpolator) =
+	let( my_lookup = tgx12__make_lookup_function(value_interpolator) )
+	[
+		[for(tp=tplist) tp[0]],
+		function(t) my_lookup(t, tplist)
+	];
+
+function tgx12__merge_tpgen(left_tpgen, right_tpgen, value_combiner) =
+	let( merged_ts = tgx12__uniq_tlist(tgx12__merge_tlist(left_tpgen[0], right_tpgen[0])) )
+	[merged_ts, tgx12__combine_tfunc(left_tpgen[1], right_tpgen[1], value_combiner)];
+
+function tgx12__merge_tplist(left_tplist, right_tplist, value_interpolator, value_combiner) =
+	let(   left_tpgen = tgx12__tplist_to_tpgen( left_tplist, value_interpolator) )
+	let(  right_tpgen = tgx12__tplist_to_tpgen(right_tplist, value_interpolator) )
+	let( merged_tpgen = tgx12__merge_tpgen(left_tpgen, right_tpgen, value_combiner) )
+	tgx12__tpgen_to_tplist(merged_tpgen);
+
+function tgx12_basic_cavity_rect_points(rblf, bev=2) = echo(rblf=rblf) [
 	// Could adjust bev as needed here
    [rblf[0]    , rblf[1]-bev],
    [rblf[0]-bev, rblf[1]    ],
@@ -127,19 +263,25 @@ function tgx12_basic_cavity_rect_points(rblf, bev=2) = [
    [rblf[0]    , rblf[3]+bev],
 ];
 
+tgx12__rblf_to_beveled_rect_polypoints_function = function(bev)
+	function(rblf) tgx12_basic_cavity_rect_points(rblf, bev=bev);
+
 /**
- * zos = list of [z, [+x, +y, -x, -y positions of inner faces]
+ * rblf_zlist : TList<Number,RBLF<Number>> = list of [z, [+x, +y, -x, -y positions of inner faces]
  */
-function tgx12_zos_to_basic_cavity(zrblfs, bev=2) =
+function tgx12__rblf_tplist_to_polyhedron(rblf_zlist, rblf_to_polypoints) =
+	assert( is_function(rblf_to_polypoints) )
+	echo( rblf_zlist = rblf_zlist )
 	tphl1_make_polyhedron_from_layer_function(
-		zrblfs,
-		function(zrblf) tgx12_basic_cavity_rect_points(zrblf[1]),
+		rblf_zlist,
+		function(zrblf) rblf_to_polypoints(zrblf[1]),
 		layer_points_transform = "key0-to-z"
 	);
+function tgx12__rblf_tpgen_to_polyhedron(rblf_tpgen, rblf_to_polypoints) =
+	assert( is_function(rblf_to_polypoints) )
+	tgx12__rblf_tplist_to_polyhedron(tgx12__tpgen_to_tplist(rblf_tpgen), rblf_to_polypoints);
 
-function tgx12_make_basic_cavity(block_size) =
-	// TODO: Merge several zrblfses (some could indicate min/max, or just be a function)
-	// in order to add fingerslides, trimmed front sublips, and label ledges
+function tgx12__basic_cavity_rblf_tplist(block_size) =
 	let( bx1 = block_size[0]/2 )
 	let( by1 = block_size[1]/2 )
 	let( bx0 = -bx1, by0 = -by1 )
@@ -149,14 +291,14 @@ function tgx12_make_basic_cavity(block_size) =
 	let( cy1 = min(by1 - cavity_wall_thickness_mm, by1 + $tgx11_offset - cavity_wall_min_actual_thickness_mm) )
 	// TODO: I suppose min_actual_thickness should be applied to everything, not just cx1 and cy1
 	let( cx0 = -cx1, cy0 = -cy1 )
-	tgx12_zos_to_basic_cavity([
+	[
 		[      4*u, [cx1-1*u, cy1-1*u, cx0+1*u, cy0+1*u]],
 		[      5*u, [cx1    , cy1    , cx0    , cy0    ]],
 		[bz1 - 7*u, [cx1    , cy1    , cx0    , cy0    ]],
 		[bz1 - 3*u, [bx1-2*u, by1-2*u, bx0+2*u, by0+2*u]],
 		[bz1 - 2*u, [bx1-3*u, by1-3*u, bx0+3*u, by0+3*u]],
 		[bz1 + 2*u, [bx1-3*u, by1-3*u, bx0+3*u, by0+3*u]],
-	]);
+	];
 
 togmod1_domodule(
 	let( atom = togunits1_to_mm("atom") )
@@ -261,9 +403,30 @@ togmod1_domodule(
 		] :
 		assert(false, str("Unrecognized style: '", foot_style, "'"))
 	)
+	let( rblf_to_polypoints_function = tgx12__rblf_to_beveled_rect_polypoints_function(2) )
+	let( max_rblf = [
+		 block_size_mm[0]/2+$tgx11_offset-cavity_wall_min_actual_thickness_mm,
+		 block_size_mm[1]/2+$tgx11_offset-cavity_wall_min_actual_thickness_mm,
+		-block_size_mm[0]/2-$tgx11_offset+cavity_wall_min_actual_thickness_mm,
+		-block_size_mm[1]/2-$tgx11_offset+cavity_wall_min_actual_thickness_mm,
+	])
+	// Hmm: could pull min wall thickness stuff out of basic cavity,
+	// since we must always apply it anyway.
+	// TODO: Centralize cavity generation; take a list of features to apply and just keep
+	// wrapping the tpgen until we run out.
+	let( basic_cavity_tplist = tgx12__basic_cavity_rblf_tplist(block_size_mm) )
+	let( basic_cavity_tpgen = tgx12__tplist_to_tpgen(basic_cavity_tplist, tgx12__lerp_vectors) )
 	let( cavity =
 		cavity_type == "none" ? ["union"] :
-		cavity_type ==	"clarp2505-square" ? tgx12_make_basic_cavity(block_size_mm) :
+		cavity_type ==	"clarp2505-square" ? tgx12__rblf_tplist_to_polyhedron(basic_cavity_tplist, rblf_to_polypoints_function) :
+		cavity_type ==	"clarp2505-square+fs" ? tgx12__rblf_tpgen_to_polyhedron(
+			tgx12__merge_tpgen(
+				basic_cavity_tpgen,
+				tgx12__fingerslide_tpgen([6.35, 19.05], max_rblf[3]), // TODO: Configurable fingerslide radius
+				tgx12__min_rblf
+			),
+			rblf_to_polypoints_function
+		) :
 		assert(false, str("Unsupported [for now] cavity type: '", cavity_type, "'"))
 	)
 	["intersection",
