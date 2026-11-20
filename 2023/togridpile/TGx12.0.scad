@@ -1,4 +1,4 @@
-// TGx12.0.5 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.6 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -29,6 +29,8 @@
 // - Simplify foot generation
 //   - Always assume we're talking about apothem rather than circumradius
 //   - Fix calculation of bevel/foot intersection
+// v12.0.6:
+// - Use TGx12.0Lib
 
 block_size = "6atom 3atom 1/4inch";
 bottom_gender = "m"; // ["m","f"]
@@ -53,13 +55,13 @@ $fn = 32;
 module __tgx12_0_end_params() { }
 
 use <../lib/TGx11.1Lib.scad>
+use <../lib/TGx12.0Lib.scad>
 use <../lib/TOGMod1.scad>
 use <../lib/TOGMod1Constructors.scad>
 use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGStringLib1.scad>
 use <../lib/TOGUnits1.scad>
-use <../lib/TOGVecLib0.scad>
 
 block_size_strs = togstr1_tokenize(block_size, " ");
 block_size_mm = togunits1_decode_vec(block_size_strs, unit="mm");
@@ -86,47 +88,6 @@ function tgx12__circfact_polyrad(r, circfact=0.5) =
 	)
 	circumradius_a * (1-circfact) + circumradius_b * circfact;
 */
-
-function tgx12__regular_polypoints(apothem, position=[0,0], rotation=0) =
-	let( circumradius = apothem / cos(180/$fn) )
-	let( rot = rotation + 180/$fn )
-	[
-		for( i=[0 : 1 : $fn-1] )
-		togvec0_add_vec([circumradius * cos(rot + i*360/$fn), circumradius * sin(rot + i*360/$fn)], position),
-	];
-
-// A simple circular foot.
-// Horizontal foot column face offset (foot bottom is always at exactly 0) may be specified
-// as $tgx12_fc_r_offset, independently of the regular TOGridPile bevel face offset ($tgx11_offset).
-function tgx12_make_atom_foot(height, shape, foot_bevel=0) =
-	assert(shape == "column" || shape == "column+padbevel")
-	let( atom = togunits1_to_mm("atom") )
-	let( bev = togunits1_to_mm("tgp-standard-bevel") )
-	// padded_r = maximum radius of bevel to put the edge comfortably outside the atom;
-	// minimum to guarantee overlap would be sqrt(2)*atom/2
-	let( padded_r = atom )
-	let( fc_r_offset = !is_undef($tgx12_fc_r_offset) ? $tgx12_fc_r_offset : $tgx11_offset )
-	let( fc_rad = sqrt(2)*atom/4 + fc_r_offset )
-	let( bev_z0    = bev - atom/2 - $tgx11_offset*sqrt(2) ) // Z of imaginary 'bottom point' of bevel under center of foot
-	let( fcbev_z   = bev_z0 + fc_rad) // Z at center + radius at which they intersect; easy peasy!
-	let( padedge_z = bev_z0 + padded_r ) // Z position where radius of beveled section reaches padded_r
-	// Ideal z position of foot column/bevel intersection
-	let( r0 = atom/2 )
-	assert( shape == "column" || fcbev_z > foot_bevel, str("Z at which column and bevel meet should be > foot bevel height; got ", fcbev_z, " and ", foot_bevel) )
-	tphl1_make_polyhedron_from_layer_function(
-		[
-			[    0    , fc_rad - foot_bevel],
-			if( foot_bevel > 0 ) [foot_bevel, fc_rad],
-			each shape == "column" ? [
-				[height   , fc_rad        ],
-			] : [
-				[fcbev_z  , fc_rad        ],
-				[padedge_z, padded_r      ],
-				[max(padedge_z+1, + height), padded_r],
-			],
-		],
-		function(zo) tgx12__regular_polypoints(zo[1], position=[0,0,zo[0]], rotation=45)
-	);
 
 togmod1_domodule(
 	let( atom = togunits1_to_mm("atom") )
