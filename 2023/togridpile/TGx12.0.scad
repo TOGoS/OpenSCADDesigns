@@ -1,4 +1,4 @@
-// TGx12.0.6 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.7 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -31,17 +31,26 @@
 //   - Fix calculation of bevel/foot intersection
 // v12.0.6:
 // - Use TGx12.0Lib
+// v12.0.7:
+// - Replace segmentation and gender settings with 'style' that can be applied to top or bottom
+// - `tgx11-f-block` and `tgx11-f-chunk` are options for top style!
+// - `foot_connector_thickness` option - make it small and maybe you could break off the connectors after printing
+// 
+// TODO: Option for a cavity so we can make TOGridPile cups!
+// 
+// TODO: Don't try to ensure 45-degree bevels around atom feet.
+// Do guarantee num_overlap of nubbin before it meets the bevel!
 
 block_size = "6atom 3atom 1/4inch";
-bottom_gender = "m"; // ["m","f"]
-top_gender    = "f"; // ["m","f"]
-bottom_foot_connector_width = "0mm";
 // Segmentation of bottom of block above the nubbins
-bottom_secondary_segmentation = "none"; // ["none","atom"]
+bottom_style = "flat"; // ["flat", "tgx12-f-atom", "tgx12-f-atom+connectors", "tgx12-m-atom", "tgx12-m-atom+connectors", "tgx12-m-atom/chunk", "tgx12-m-atom/flat"]
 // Segmentation of top of block under the nubbins
-top_secondary_segmentation = "none"; // ["none", "chunk", "atom"]
+top_style = "flat"; // ["flat", "tgx11-f-block", "tgx11-f-chunk", "tgx12-f-atom", "tgx12-m-atom", "tgx12-m-atom/chunk", "tgx12-m-atom/flat"]
 // Nominal length of nubbins
 lip_height = "1u";
+
+foot_connector_width = "0mm";
+foot_connector_thickness = "99mm";
 
 // General face offset
 $tgx11_offset = -0.15; // 0.01
@@ -63,15 +72,19 @@ use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGStringLib1.scad>
 use <../lib/TOGUnits1.scad>
 
+$togridlib3_unit_table = tgx11_get_default_unit_table();
+
 block_size_strs = togstr1_tokenize(block_size, " ");
 block_size_mm = togunits1_decode_vec(block_size_strs, unit="mm");
 // Size in atoms, rounded to nearest integer
 block_size_atoms_r = togunits1_decode_vec(block_size_strs, unit="atom", xf="round");
 block_size_chunks_r = togunits1_decode_vec(block_size_strs, unit="chunk", xf="round");
 lip_height_mm = togunits1_to_mm(lip_height);
-bottom_foot_connector_width_mm = togunits1_to_mm(bottom_foot_connector_width);
+foot_connector_width_mm = togunits1_to_mm(foot_connector_width);
+foot_connector_thickness_mm = togunits1_to_mm(foot_connector_thickness);
 
-$togridlib3_unit_table = tgx11_get_default_unit_table();
+// Nominal overlap when m nubbins insert between f nubbins.
+nub_overlap_mm = togunits1_to_mm("1u");
 
 /**
  * Generate a circumradius between that which would be needed
@@ -98,7 +111,6 @@ togmod1_domodule(
 		togpath1_rath_to_polygon(tgx12_make_rp_atom_foot_column_rath())
 	)*/
 	let( boot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape="column+padbevel", foot_bevel=0.4, $fn=foot_side_count)] )
-	let( toot = ["render",tgx12_make_atom_foot(height=block_size_mm[2]+atom+1/128, shape=(top_secondary_segmentation == "atom" ? "column+padbevel" : "column"), foot_bevel=0, $fn=foot_side_count)] )
 	let( bev = togunits1_to_mm("tgp-standard-bevel") )
 	let( m_foot_positions = [
 		for( ym=[-block_size_atoms_r[1]/2+0.5 : 1 : block_size_atoms_r[1]/2-0.5] )
@@ -110,68 +122,97 @@ togmod1_domodule(
 		for( xm=[-block_size_atoms_r[0]/2 : 1 : block_size_atoms_r[0]/2] )
 		[xm*atom, ym*atom]
 	])
-	let( bottom_foot_positions = bottom_gender == "m" ? m_foot_positions : f_foot_positions )
-	let( top_foot_positions    = top_gender    == "m" ? m_foot_positions : f_foot_positions )
-	let( bottom_foot_z = bottom_gender == "m" ?               0  :               0  - lip_height_mm )
-	let( top_foot_z    = top_gender    == "m" ? block_size_mm[2] : block_size_mm[2] + lip_height_mm )
+	let( bottom_to_top = function(top_z, thing) ["translate", [0,0,top_z], ["rotate", [180,0,0], thing]] )
+	let( make_atom_feet = function(gender, shape, foot_bevel=0, foot_side_count=3)
+		let( toot = ["render",tgx12_make_atom_foot(
+			height = block_size_mm[2]+atom+1/128,
+			shape = shape,
+			foot_bevel = foot_bevel,
+			$fn = foot_side_count)
+		] )
+		let( foot_positions = gender == "m" ? m_foot_positions : f_foot_positions )
+		["union",
+			for( pos = foot_positions )
+			["translate", [pos[0], pos[1], gender == "m" ? 0 : -nub_overlap_mm], toot],
+		]
+	)
 	let( secondary_chunk_foot = let(oH=$tgx11_offset*(sqrt(2)-1), oF=$tgx11_offset) tphl1_make_polyhedron_from_layer_function(
 		[
-			[  lip_height_mm              - oF, 0 - bev + lip_height_mm + oH],
-			[                   bev + pad - oH, 0 + pad + 5/128         + oF],
-			[block_size_mm[2] + bev + pad     , 0 + pad + 5/128         + oF],
+			[        nub_overlap_mm - oF , 0 - bev + nub_overlap_mm + oH],
+			[             bev + pad - oH , 0 + pad + 5/128          + oF],
+			[block_size_mm[2] + bev + pad, 0 + pad + 5/128          + oF],
 		],
 		function(zo) togpath1_rath_to_polypoints(
 			togpath1_make_rectangle_rath([chunk, chunk], corner_ops=[["bevel", bev], ["round", 3], ["offset", zo[1]]])
 		),
-		layer_points_transform = "key0-to-z"		
+		layer_points_transform = "key0-to-z"
 	))
+	let( make_foot_connectors = function(gender) ["union",
+		each foot_connector_width_mm <= 0 ? [] :
+			let(fc_z0 = (gender == "m" ? 0 : -nub_overlap_mm)+1/128, fc_z1 = fc_z0 + foot_connector_thickness_mm)
+			let(y_bar = togmod1_linear_extrude_z([fc_z0, fc_z1], togmod1_make_rect([foot_connector_width_mm, block_size_mm[1] - (gender == "m" ? atom : 0)])))
+			let(x_bar = togmod1_linear_extrude_z([fc_z0, fc_z1], togmod1_make_rect([block_size_mm[0] - (gender == "m" ? atom : 0), foot_connector_width_mm])))
+			let(xms = gender == "m" ? [-block_size_atoms_r[0]/2+0.5 : 1 : +block_size_atoms_r[0]/2-0.5] : [-block_size_atoms_r[0]/2 : 1 : +block_size_atoms_r[0]/2] )
+			let(yms = gender == "m" ? [-block_size_atoms_r[1]/2+0.5 : 1 : +block_size_atoms_r[1]/2-0.5] : [-block_size_atoms_r[1]/2 : 1 : +block_size_atoms_r[1]/2] )
+			[
+				for( xm = xms ) ["translate", [xm*atom, 0, 0], y_bar],
+				for( ym = yms ) ["translate", [0, ym*atom, 0], x_bar],
+			]
+		]
+	)
+	let( make_block_foot = function(style, foot_bevel=0, foot_side_count=3)
+		style == "flat" ? togmod1_linear_extrude_z([0 /* or maybe $tgx11_offset? */, block_size_mm[2]+1], togmod1_make_rect(block_size_mm*2)) :
+		style == "tgx11-f-block" ? ["difference",
+			togmod1_linear_extrude_z([-lip_height_mm, block_size_mm[2]+1], togmod1_make_rect(block_size_mm*2)),
+			["rotate", [180,0,0], tgx11_block_bottom(
+				[[block_size_mm[0], "mm"], [block_size_mm[1], "mm"], [38.1, "mm"]],
+				bottom_shape = "footed",
+				segmentation = "block",
+				$tgx11_offset = -$tgx11_offset,
+				$tgx11_gender = "f"
+			)]
+		] :
+		style == "tgx11-f-chunk" ? ["difference",
+			togmod1_linear_extrude_z([-lip_height_mm, block_size_mm[2]+1], togmod1_make_rect(block_size_mm*2)),
+			["rotate", [180,0,0], tgx11_block_bottom(
+				[[block_size_mm[0], "mm"], [block_size_mm[1], "mm"], [38.1, "mm"]],
+				bottom_shape = "footed",
+				segmentation = "chunk",
+				v6hc_style = "none",
+				$tgx11_offset = -$tgx11_offset,
+				$tgx11_gender = "f"
+			)]
+		] :
+		style == "tgx12-f-atom" ? make_atom_feet("f", "column+padbevel", foot_bevel=foot_bevel, foot_side_count=foot_side_count) :
+		style == "tgx12-f-atom+connectors" ? ["union",
+			make_atom_feet("f", "column+padbevel", foot_bevel=foot_bevel, foot_side_count=foot_side_count),
+			make_foot_connectors("f"),
+		] :
+		style == "tgx12-m-atom" ? make_atom_feet("m", "column+padbevel", foot_bevel=foot_bevel, foot_side_count=foot_side_count) :
+		style == "tgx12-m-atom+connectors" ? ["union",
+			make_atom_feet("m", "column+padbevel", foot_bevel=foot_bevel, foot_side_count=foot_side_count),
+			make_foot_connectors("m"),
+		] :
+		style == "tgx12-m-atom/flat" ? ["union",
+			make_atom_feet("m", "column", foot_bevel=foot_bevel, foot_side_count=foot_side_count),
+			togmod1_linear_extrude_z([nub_overlap_mm, block_size_mm[2]+1], togmod1_make_rect(block_size_mm*2))
+		] :
+		style == "tgx12-m-atom/chunk" ? ["union",
+			make_atom_feet("m", "column", foot_bevel=foot_bevel, foot_side_count=foot_side_count),
+			for( ym = [-block_size_chunks_r[1]/2+0.5 : 1 : block_size_chunks_r[1]/2-0.5] )
+			for( xm = [-block_size_chunks_r[0]/2+0.5 : 1 : block_size_chunks_r[0]/2-0.5] )
+			["translate", [xm*chunk, ym*chunk, 0], secondary_chunk_foot],
+		] :
+		assert(false, str("Unrecognized style: '", foot_style, "'"))
+	)
 	["intersection",
 		// Bottom
-		["union",
-			each
-				bottom_secondary_segmentation == "none" ? [
-					togmod1_linear_extrude_z(
-						[bottom_foot_z + bev - $tgx11_offset, block_size_mm[2]+3/128],
-						togmod1_make_rect(
-							bottom_foot_connector_width_mm <= 0 ? [block_size_mm[0] - atom/2, block_size_mm[1] - atom/2] :
-							                                      [block_size_mm[0] +  1/128, block_size_mm[1] +  1/128] 
-						)
-					)
-				] :
-				bottom_secondary_segmentation == "atom" ? [] :
-				assert(false, str("Bad bottom_secondary_segmentation '", bottom_secondary_segmentation, "' for gender '", bottom_gender, "'")),
-
-			for( pos = bottom_foot_positions )			
-			["translate", [pos[0], pos[1], bottom_foot_z], boot],
-			
-			each bottom_foot_connector_width_mm <= 0 ? [] :
-				bottom_gender == "f" ?
-					let(y_bar = togmod1_linear_extrude_z([bottom_foot_z+1/128, block_size_mm[2]+4/128], togmod1_make_rect([bottom_foot_connector_width_mm, block_size_mm[1]])))
-					let(x_bar = togmod1_linear_extrude_z([bottom_foot_z+1/128, block_size_mm[2]+4/128], togmod1_make_rect([block_size_mm[0], bottom_foot_connector_width_mm])))
-					[
-						for( xm = [-block_size_atoms_r[0]/2 : 1 : +block_size_atoms_r[0]/2] ) ["translate", [xm*atom, 0, 0], y_bar],
-						for( ym = [-block_size_atoms_r[1]/2 : 1 : +block_size_atoms_r[1]/2] ) ["translate", [0, ym*atom, 0], x_bar],
-					] :
-				assert(false, "Bottom foot connector not yet implemented for feet-down polarity")
-		],
+		make_block_foot(bottom_style, foot_bevel=0.4, foot_side_count=foot_side_count),
 		// Top
-		["union",
-			each
-				top_secondary_segmentation == "none" ? [togmod1_linear_extrude_z([-1, block_size_mm[2]-lip_height_mm], togmod1_make_rect(block_size_mm*2))] :
-				top_secondary_segmentation == "chunk" && top_gender == "m" ? [
-					for( ym = [-block_size_chunks_r[1]/2+0.5 : 1 : block_size_chunks_r[1]/2-0.5] )
-					for( xm = [-block_size_chunks_r[0]/2+0.5 : 1 : block_size_chunks_r[0]/2-0.5] )
-					["translate", [xm*chunk, ym*chunk, top_foot_z], ["rotate", [180,0,0], secondary_chunk_foot]],
-				] :
-				top_secondary_segmentation == "atom" ? [] :
-				assert(false, str("Bad top_secondary_segmentation '", top_secondary_segmentation, "' for gender '", top_gender, "'")),
-			
-			for( pos = top_foot_positions )
-			["translate", [pos[0], pos[1], top_foot_z], ["rotate", [180,0,0], toot]],
-		],
+		bottom_to_top(block_size_mm[2], make_block_foot(top_style, foot_bevel=0.2, foot_side_count=foot_side_count)),
 		// X/Y hull
 		togmod1_linear_extrude_z(
-			[bottom_foot_z - 1, top_foot_z + 1],
+			[-20, block_size_mm[2]+20],
 			togpath1_rath_to_polygon(togpath1_make_rectangle_rath(
 				[block_size_mm[0], block_size_mm[1]],
 				corner_ops = [["bevel", bev], ["round", 3], ["offset", $tgx11_offset]]
