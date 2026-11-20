@@ -45,6 +45,23 @@
 			"foot_side_count": "16",
 			"$tgx12_fc_offset": "-0.03",
 			"$fn": "32"
+		},
+		"-- TOGridPile bins --": "",
+		"p2647": {
+			"description": "1x1x1-chunk basic cavity box with TGx12-M-atom feet with thin connectors",
+			"block_size": "3atom 3atom 3atom",
+			"bottom_style": "tgx12-m-atom+connectors",
+			"top_style": "tgx11-f-chunk",
+			"cavity_type": "clarp2505-square",
+			"cavity_wall_thickness": "1.6mm",
+			"cavity_wall_min_actual_thickness": "2.1mm",
+			"foot_connector_thickness": "0.2mm",
+			"foot_connector_width": "3mm",
+			"foot_side_count": "8",
+			"lip_height": "1u",
+			"$tgx11_offset": "-0.15",
+			"$tgx12_fc_r_offset": "0",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"

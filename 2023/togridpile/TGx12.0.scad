@@ -1,4 +1,4 @@
-// TGx12.0.7 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.8 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -35,8 +35,8 @@
 // - Replace segmentation and gender settings with 'style' that can be applied to top or bottom
 // - `tgx11-f-block` and `tgx11-f-chunk` are options for top style!
 // - `foot_connector_thickness` option - make it small and maybe you could break off the connectors after printing
-// 
-// TODO: Option for a cavity so we can make TOGridPile cups!
+// v12.0.8:
+// - Cavity options
 // 
 // TODO: Don't try to ensure 45-degree bevels around atom feet.
 // Do guarantee num_overlap of nubbin before it meets the bevel!
@@ -51,6 +51,16 @@ lip_height = "1u";
 
 foot_connector_width = "0mm";
 foot_connector_thickness = "99mm";
+
+/* [Cavity] */
+
+cavity_type = "none"; // ["none", "clarp2505-square", "clarp2505-square+fs+ll"]
+// Nominal thickness of cavity wall; i.e. inset from ideal block boundary
+cavity_wall_thickness = "1u";
+// Don't let the actual wall thickness be less than this
+cavity_wall_min_actual_thickness = "2.1mm";
+
+/* [Detail] */
 
 // General face offset
 $tgx11_offset = -0.15; // 0.01
@@ -71,6 +81,7 @@ use <../lib/TOGPath1.scad>
 use <../lib/TOGPolyhedronLib1.scad>
 use <../lib/TOGStringLib1.scad>
 use <../lib/TOGUnits1.scad>
+use <../lib/TOGVecLib0.scad>
 
 $togridlib3_unit_table = tgx11_get_default_unit_table();
 
@@ -82,6 +93,8 @@ block_size_chunks_r = togunits1_decode_vec(block_size_strs, unit="chunk", xf="ro
 lip_height_mm = togunits1_to_mm(lip_height);
 foot_connector_width_mm = togunits1_to_mm(foot_connector_width);
 foot_connector_thickness_mm = togunits1_to_mm(foot_connector_thickness);
+cavity_wall_thickness_mm = togunits1_to_mm(cavity_wall_thickness);
+cavity_wall_min_actual_thickness_mm = togunits1_to_mm(cavity_wall_min_actual_thickness);
 
 // Nominal overlap when m nubbins insert between f nubbins.
 nub_overlap_mm = togunits1_to_mm("1u");
@@ -101,6 +114,49 @@ function tgx12__circfact_polyrad(r, circfact=0.5) =
 	)
 	circumradius_a * (1-circfact) + circumradius_b * circfact;
 */
+
+function tgx12_basic_cavity_rect_points(rblf, bev=2) = [
+	// Could adjust bev as needed here
+   [rblf[0]    , rblf[1]-bev],
+   [rblf[0]-bev, rblf[1]    ],
+   [rblf[2]+bev, rblf[1]    ],
+   [rblf[2]    , rblf[1]-bev],
+   [rblf[2]    , rblf[3]+bev],
+   [rblf[2]+bev, rblf[3]    ],
+   [rblf[0]-bev, rblf[3]    ],
+   [rblf[0]    , rblf[3]+bev],
+];
+
+/**
+ * zos = list of [z, [+x, +y, -x, -y positions of inner faces]
+ */
+function tgx12_zos_to_basic_cavity(zrblfs, bev=2) =
+	tphl1_make_polyhedron_from_layer_function(
+		zrblfs,
+		function(zrblf) tgx12_basic_cavity_rect_points(zrblf[1]),
+		layer_points_transform = "key0-to-z"
+	);
+
+function tgx12_make_basic_cavity(block_size) =
+	// TODO: Merge several zrblfses (some could indicate min/max, or just be a function)
+	// in order to add fingerslides, trimmed front sublips, and label ledges
+	let( bx1 = block_size[0]/2 )
+	let( by1 = block_size[1]/2 )
+	let( bx0 = -bx1, by0 = -by1 )
+	let( u = 254/160 )
+	let( bz1 = block_size[2]   )
+	let( cx1 = min(bx1 - cavity_wall_thickness_mm, bx1 + $tgx11_offset - cavity_wall_min_actual_thickness_mm) )
+	let( cy1 = min(by1 - cavity_wall_thickness_mm, by1 + $tgx11_offset - cavity_wall_min_actual_thickness_mm) )
+	// TODO: I suppose min_actual_thickness should be applied to everything, not just cx1 and cy1
+	let( cx0 = -cx1, cy0 = -cy1 )
+	tgx12_zos_to_basic_cavity([
+		[      4*u, [cx1-1*u, cy1-1*u, cx0+1*u, cy0+1*u]],
+		[      5*u, [cx1    , cy1    , cx0    , cy0    ]],
+		[bz1 - 7*u, [cx1    , cy1    , cx0    , cy0    ]],
+		[bz1 - 3*u, [bx1-2*u, by1-2*u, bx0+2*u, by0+2*u]],
+		[bz1 - 2*u, [bx1-3*u, by1-3*u, bx0+3*u, by0+3*u]],
+		[bz1 + 2*u, [bx1-3*u, by1-3*u, bx0+3*u, by0+3*u]],
+	]);
 
 togmod1_domodule(
 	let( atom = togunits1_to_mm("atom") )
@@ -205,11 +261,20 @@ togmod1_domodule(
 		] :
 		assert(false, str("Unrecognized style: '", foot_style, "'"))
 	)
+	let( cavity =
+		cavity_type == "none" ? ["union"] :
+		cavity_type ==	"clarp2505-square" ? tgx12_make_basic_cavity(block_size_mm) :
+		assert(false, str("Unsupported [for now] cavity type: '", cavity_type, "'"))
+	)
 	["intersection",
 		// Bottom
 		make_block_foot(bottom_style, foot_bevel=0.4, foot_side_count=foot_side_count),
 		// Top
-		bottom_to_top(block_size_mm[2], make_block_foot(top_style, foot_bevel=0.2, foot_side_count=foot_side_count)),
+		["difference",
+			bottom_to_top(block_size_mm[2], make_block_foot(top_style, foot_bevel=0.2, foot_side_count=foot_side_count)),
+			
+			cavity
+		],
 		// X/Y hull
 		togmod1_linear_extrude_z(
 			[-20, block_size_mm[2]+20],
