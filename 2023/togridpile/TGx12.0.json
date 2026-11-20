@@ -62,6 +62,22 @@
 			"$tgx11_offset": "-0.15",
 			"$tgx12_fc_r_offset": "0",
 			"$fn": "32"
+		},
+		"p2648": {
+			"description": "1x1x1-chunk box with label ledge + fingerslide + trimmed sublip, and TGx12-M-atom feet with thin connectors",
+			"block_size": "3atom 3atom 3atom",
+			"bottom_style": "tgx12-m-atom+connectors",
+			"top_style": "tgx11-f-chunk",
+			"cavity_type": "clarp2505-square+tsl+fs+ll",
+			"cavity_wall_thickness": "1.6mm",
+			"cavity_wall_min_actual_thickness": "2.1mm",
+			"foot_connector_thickness": "0.2mm",
+			"foot_connector_width": "3mm",
+			"foot_side_count": "8",
+			"lip_height": "1u",
+			"$tgx11_offset": "-0.15",
+			"$tgx12_fc_r_offset": "0",
+			"$fn": "32"
 		}
 	},
 	"fileFormatVersion": "1"

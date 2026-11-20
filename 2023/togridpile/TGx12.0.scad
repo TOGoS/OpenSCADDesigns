@@ -1,4 +1,4 @@
-// TGx12.0.10 - can we uhm sqrt(2)/4 stuff
+// TGx12.0.11 - can we uhm sqrt(2)/4 stuff
 // 
 // v12.0.1:
 // - Rough first 
@@ -41,6 +41,8 @@
 // - Wonderfully elegant fingerslide generation using TPLists and TPGens and stuff
 // v12.0.10:
 // - To match TGx12.0[.10]Lib, updated to ensure nub_overlap of space under atom bevels around nubbins
+// v12.0.11:
+// - Start work on cavity modifier system, with `tsl+fs` and `ll` modifiers to square cavity.
 // 
 // For now, chunk-based structures will only work properly when
 // block X/Y size is an integer multiple of one chunk.
@@ -63,7 +65,7 @@ foot_connector_thickness = "99mm";
 
 /* [Cavity] */
 
-cavity_type = "none"; // ["none", "clarp2505-square", "clarp2505-square+fs"]
+cavity_type = "none"; // ["none", "clarp2505-square", "clarp2505-square+tsl+fs", "clarp2505-square+tsl+fs+ll"]
 // Nominal thickness of cavity wall; i.e. inset from ideal block boundary
 cavity_wall_thickness = "1u";
 // Don't let the actual wall thickness be less than this
@@ -258,7 +260,7 @@ function tgx12__merge_tplist(left_tplist, right_tplist, value_interpolator, valu
 	let( merged_tpgen = tgx12__merge_tpgen(left_tpgen, right_tpgen, value_combiner) )
 	tgx12__tpgen_to_tplist(merged_tpgen);
 
-function tgx12_basic_cavity_rect_points(rblf, bev=2) = echo(rblf=rblf) [
+function tgx12_basic_cavity_rect_points(rblf, bev=2) = [
 	// Could adjust bev as needed here
    [rblf[0]    , rblf[1]-bev],
    [rblf[0]-bev, rblf[1]    ],
@@ -278,7 +280,6 @@ tgx12__rblf_to_beveled_rect_polypoints_function = function(bev)
  */
 function tgx12__rblf_tplist_to_polyhedron(rblf_zlist, rblf_to_polypoints) =
 	assert( is_function(rblf_to_polypoints) )
-	echo( rblf_zlist = rblf_zlist )
 	tphl1_make_polyhedron_from_layer_function(
 		rblf_zlist,
 		function(zrblf) rblf_to_polypoints(zrblf[1]),
@@ -287,6 +288,7 @@ function tgx12__rblf_tplist_to_polyhedron(rblf_zlist, rblf_to_polypoints) =
 function tgx12__rblf_tpgen_to_polyhedron(rblf_tpgen, rblf_to_polypoints) =
 	assert( is_function(rblf_to_polypoints) )
 	tgx12__rblf_tplist_to_polyhedron(tgx12__tpgen_to_tplist(rblf_tpgen), rblf_to_polypoints);
+
 
 function tgx12__basic_cavity_rblf_tplist(block_size) =
 	let( bx1 = block_size[0]/2 )
@@ -423,15 +425,47 @@ togmod1_domodule(
 	// wrapping the tpgen until we run out.
 	let( basic_cavity_tplist = tgx12__basic_cavity_rblf_tplist(block_size_mm) )
 	let( basic_cavity_tpgen = tgx12__tplist_to_tpgen(basic_cavity_tplist, tgx12__lerp_vectors) )
+	let( tgx12__apply_cavity_rblf_tpgen_modifier = function(base_tpgen, modifier)
+		modifier == "fs" ? tgx12__merge_tpgen(
+			base_tpgen,
+			tgx12__fingerslide_tpgen([6.35, 19.05], max_rblf[3]), // TODO: Configurable fingerslide radius
+			tgx12__min_rblf
+		) :
+		modifier == "tsl" ? tgx12__merge_tpgen(
+			// Really it trims the whole front side of the cavity.
+			// So apply fingerslide etc after this.
+			base_tpgen,
+			[[block_size_mm[2]], function(z) [-far,-far, far, max_rblf[3]]],
+			tgx12__max_rblf
+		) :
+		modifier == "ll" ? tgx12__merge_tpgen(
+			base_tpgen,
+			let( lip_width = 12.7 )
+			tgx12__tplist_to_tpgen(
+				[
+					[block_size_mm[2]-lip_width-1.6, [ far, block_size_mm[1]/2            ,-far,-far]],
+					[block_size_mm[2]          -1.6, [ far, block_size_mm[1]/2 - lip_width,-far,-far]],
+				],
+				tgx12__lerp_vectors
+			),
+			tgx12__min_rblf
+		) :
+		assert(false, str("Unrecognized cavity modifier: '", modifier, "'"))
+	)
+	let( tgx12__apply_cavity_rblf_tpgen_modifiers = function(base_tpgen, modifiers, index=0)
+		index >= len(modifiers) ? base_tpgen :
+		let( modded = tgx12__apply_cavity_rblf_tpgen_modifier(base_tpgen, modifiers[index]) )
+		tgx12__apply_cavity_rblf_tpgen_modifiers(modded, modifiers, index+1)
+	)
 	let( cavity =
 		cavity_type == "none" ? ["union"] :
 		cavity_type ==	"clarp2505-square" ? tgx12__rblf_tplist_to_polyhedron(basic_cavity_tplist, rblf_to_polypoints_function) :
-		cavity_type ==	"clarp2505-square+fs" ? tgx12__rblf_tpgen_to_polyhedron(
-			tgx12__merge_tpgen(
-				basic_cavity_tpgen,
-				tgx12__fingerslide_tpgen([6.35, 19.05], max_rblf[3]), // TODO: Configurable fingerslide radius
-				tgx12__min_rblf
-			),
+		cavity_type ==	"clarp2505-square+tsl+fs" ? tgx12__rblf_tpgen_to_polyhedron(
+			tgx12__apply_cavity_rblf_tpgen_modifiers(basic_cavity_tpgen, ["tsl", "fs"]),
+			rblf_to_polypoints_function
+		) :
+		cavity_type ==	"clarp2505-square+tsl+fs+ll" ? tgx12__rblf_tpgen_to_polyhedron(
+			tgx12__apply_cavity_rblf_tpgen_modifiers(basic_cavity_tpgen, ["tsl", "fs", "ll"]),
 			rblf_to_polypoints_function
 		) :
 		assert(false, str("Unsupported [for now] cavity type: '", cavity_type, "'"))

@@ -1865,12 +1865,13 @@ const builder = new Builder({
 			paletteSize: 128,
 		}),
 		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
-			"p2647-alt",
+			"p2647-alt", "p2648",
 		], {
 			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
 			cameraPositions: {
 				// Try to match perspective of some other TOGridPile bins
-				top    : [-30,-40, 30],
+				default: [-30,-40, 30],
+				top2   : [-40,-20, 60],
 				bottom : [-30,-40,-30],
 				/*
 				bottom : [ 60, -60,-60],
