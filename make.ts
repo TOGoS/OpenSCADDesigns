@@ -1881,6 +1881,18 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/togridpile/TGx12.0.scad", [
+			"p2651", "p2652",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPositions: {
+				// Try to match perspective of some other TOGridPile bins
+				default: [-30,-40, 30],
+				bottom : [-30,-40,-30],
+			},
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
