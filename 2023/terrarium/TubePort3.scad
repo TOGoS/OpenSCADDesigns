@@ -1,4 +1,4 @@
-// TubePort3.6
+// TubePort3.7
 // 
 // Idea:
 // - Adapter between 1/2" (ID) tubing and 1/4" (OD) tubing,
@@ -27,6 +27,8 @@
 // - Fix generation of H-barb threads when they start at z != 0
 // v3.6:
 // - Option of 'v1' or 'v2' styles for H-barb
+// v3.7:
+// - Configurable `midriff_transition_slope` (default = 1/2)
 
 top_port = "h-barb"; // ["h-barb", "q-port"]
 bottom_port = "q-port"; // ["q-port", "straight"]
@@ -42,6 +44,8 @@ hbarb_thread_length = "254/16mm";
 midriff_width = "infinity";
 midriff_z0 = "1/4inch";
 midriff_z1 = "2/4inch";
+// dx/dz of slopes at top and bottom of midriff
+midriff_transition_slope = 0.5; // 0.01
 
 $tgx11_offset = -0.15;
 $fn = 48;
@@ -142,21 +146,25 @@ togmod1_domodule(
 			["translate", [0,0,head_height + shaft_length], qport],
 		] : [],
 	])
-	// TODO: Large parts may require not hardcoding '100' for various things
 	let( pzart1 = midriff_width_mm >= 100 ? pzart0 :
 		["intersection", pzart0, togmod1_linear_extrude_y([-100,100],
 			let( x1 = midriff_width_mm/2 )
+			// TODO: Large parts may require not hardcoding '100' for various things
+			let( x2 = x1 + 50 ) // Outside somewhere
+			let( slope_dz = (x2-x1)*midriff_transition_slope )
 			togmod1_make_polygon([
-				[ x1 + 100, midriff_z0_mm - 50],
-				[ x1      , midriff_z0_mm],
-				[ x1      , midriff_z1_mm],
-				[ x1 + 100, midriff_z1_mm + 50],
-				[ x1 + 100, midriff_z1_mm + 100],
-				[-x1 - 100, midriff_z1_mm + 100],
-				[-x1 - 100, midriff_z1_mm + 50],
-				[-x1      , midriff_z1_mm],
-				[-x1      , midriff_z0_mm],
-				[-x1 - 100, midriff_z0_mm - 50],
+				[ x2, midriff_z0_mm - slope_dz - 100],
+				[ x2, midriff_z0_mm - slope_dz      ],
+				[ x1, midriff_z0_mm                 ],
+				[ x1, midriff_z1_mm                 ],
+				[ x2, midriff_z1_mm + slope_dz      ],
+				[ x2, midriff_z1_mm + slope_dz + 100],
+				[-x2, midriff_z1_mm + slope_dz + 100],
+				[-x2, midriff_z1_mm + slope_dz      ],
+				[-x1, midriff_z1_mm                 ],
+				[-x1, midriff_z0_mm                 ],
+				[-x2, midriff_z0_mm - slope_dz      ],
+				[-x2, midriff_z0_mm - slope_dz - 100],
 			])
 		)]
 	)

@@ -64,6 +64,24 @@
 			"shaft_thread_radius_offset": "-0.1mm",
 			"$tgx11_offset": "-0.15",
 			"$fn": "96"
+		},
+		"p2640": {
+			"description": "longer-threaded H-barb (v2) with 7/16\" midriff",
+			"top_port": "h-barb",
+			"hbarb_style": "v2",
+			"bottom_port": "straight",
+			"head_height": "0",
+			"shaft_length": "0",
+			"hbarb_thread_length": "1+1/2inch",
+			"hbarb_thread_radius_offset": "-0.15mm",
+			"midriff_width": "7/16inch",
+			"midriff_z0": "2/4inch",
+			"midriff_z1": "4/4inch",
+			"midriff_transition_slope": "0.66",
+			"qport_thread_radius_offset": "0.2mm",
+			"shaft_thread_radius_offset": "-0.1mm",
+			"$tgx11_offset": "-0.15",
+			"$fn": "96"
 		}
 	},
 	"fileFormatVersion": "1"
