@@ -208,7 +208,7 @@ function openscadCommand(opts : {
 	openScadCmd : OpenSCADCmd,
 	inScadPath : FilePath,
 	inConfigPath? : FilePath,
-	featuresEnabled : string[],
+	openScadFeaturesEnabled : string[],
 	presetName? : string,
 	renderSize?: Vec2<number>,
 	cameraPosition?: Vec3<number>,
@@ -242,7 +242,7 @@ function openscadCommand(opts : {
 		'--colorscheme=Tomorrow Night',
 	] : [];
 	
-	const featureOpts = opts.featuresEnabled.flatMap(f => ["--enable",f]);
+	const featureOpts = opts.openScadFeaturesEnabled.flatMap(f => ["--enable",f]);
 	
 	return {argv: [
 		"x:MaxConcurrency:OpenSCAD:2",
@@ -378,7 +378,7 @@ function onScadOutputExists(targetName:FilePath) {
 
 function osdBuildRules(partId:string, opts:{
 	openScadCmd?: OpenSCADCmd,
-	featuresEnabled?: OpenSCADFeatureName[],
+	openScadFeaturesEnabled?: OpenSCADFeatureName[],
 	inScadFile: FilePath,
 	cameraPosition?: Vec3<number>,
 	cameraPositions?: {[cameraName:string]: Vec3<number>},
@@ -418,12 +418,12 @@ function osdBuildRules(partId:string, opts:{
 		throw new Error(`Unrecognized openScadCmd: '${openScadCmd}'`);
 	}
 	
-	const featuresEnabled = normalizeFeatureList([
+	const openScadFeaturesEnabled = normalizeFeatureList([
 		...implicitFeatures,
-		...(opts.featuresEnabled ?? []),
+		...(opts.openScadFeaturesEnabled ?? []),
 	]);
 	
-	for( const feat of featuresEnabled ) scadVariantSuffix += '+' + feat;
+	for( const feat of openScadFeaturesEnabled ) scadVariantSuffix += '+' + feat;
 	
 	const outStlPath = `${tempDir}/${partId}-${stlBuilderVersion}${scadVariantSuffix}.stl`;
 	const simplifiedStlPath = `${outDir}/${partId}.stl`;
@@ -489,7 +489,7 @@ function osdBuildRules(partId:string, opts:{
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
 					openScadCmd,
-					featuresEnabled,
+					openScadFeaturesEnabled,
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
 					presetName: opts.presetName,
@@ -519,7 +519,7 @@ function osdBuildRules(partId:string, opts:{
 				await mkRoom(ctx.targetName);
 				await run(openscadCommand({
 					openScadCmd,
-					featuresEnabled,
+					openScadFeaturesEnabled,
 					inScadPath: opts.inScadFile,
 					inConfigPath: inConfigFile,
 					presetName: opts.presetName,
@@ -587,7 +587,7 @@ function osdBuildRules(partId:string, opts:{
 /** Build rules for multiple presets (and otherwise same settings) for one .scad */
 function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	openScadCmd?: OpenSCADCmd,
-	featuresEnabled?: OpenSCADFeatureName[],
+	openScadFeaturesEnabled?: OpenSCADFeatureName[],
 	cameraPosition?: Vec3<number>,
 	cameraPositions?: {[cameraName:string]: Vec3<number>},
 	renderSize?: Vec2<number>,
