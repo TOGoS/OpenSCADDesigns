@@ -599,6 +599,22 @@ function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	})));
 }
 
+function fromStlBuildRules(partId:string, stlRef:string, opts:{
+	openScadCmd?: OpenSCADCmd,
+	openScadFeaturesEnabled?: OpenSCADFeatureName[],
+	cameraPosition?: Vec3<number>,
+	cameraPositions?: {[cameraName:string]: Vec3<number>},
+	renderSize?: Vec2<number>,
+	imageRotation?: number,
+	imageSize?: Vec2<number>,
+	paletteSize?: number,
+}={}) : {[targetName:string]: BuildRule} {
+	// TODO: This should re-use everything from osdBuildRules, plus:
+	// - a rule for fetching the STL file into, let's say, `.temp/<partId>.stl`
+	// - a rule for generating the .scad file (also in `.temp`) (referencing the STL in an 'import(...)'
+	return {}
+}
+
 /**
  * Generate a list of IDs of the form prefix + decimal-encoded integer
  * for the given prefix and numbers between (inclusive) start and end
@@ -848,6 +864,11 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/phone-holder/BrickHolder2.scad", ["p1964", "p1965", "p1966"], {
 			cameraPosition: [-15,-20, 20],
 			imageSize: [256,256],
+		}),
+		...fromStlBuildRules("p1983", "urn:bitprint:OM7GXKXPA4SPDPDVMEQDFLENWQGJOMMU.2OX3FWWEHLIRYLHDAUCLGEVD7VXC7NAGJMFNLBA", {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPosition: [-15,-20, 20],
+			paletteSize: 128
 		}),
 		...multiOsdBuildRules("2023/phone-holder/BrickHolder2.scad", [
 			"p2067","p2076","p2077","p2323","p2331","p2338","p2379",
