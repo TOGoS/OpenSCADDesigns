@@ -136,6 +136,12 @@ The stub in ~make.ts~ now takes any S0039-style 'resource name' as
   ~outDirForPartId~ helper) where the pNNxx outputs go, so the
   final .stl/.png/.tef files land in ~print-archive~ as usual.
 
+Since osdBuildRules would also export the STL by rendering the
+wrapper through OpenSCAD -- pointless re-generation, and not even a
+bit-exact round trip -- fromStlBuildRules overrides that one rule
+(spread order matters; there's a comment) with a hardlink of the
+source STL to ~print-archive/pNNxx/<partId>.stl~.
+
 Bad fetches (non-200, hash mismatch) throw, and ~targetType:
 "file"~ makes the builder delete the target so the next run
 retries.
