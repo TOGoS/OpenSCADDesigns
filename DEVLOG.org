@@ -113,3 +113,29 @@ point when offset is zero fixes things.
 With that figured out, I went ahead and changed
 ~togpath1__merge_offsets~ to omit trailing ~["offset", 0]~,
 because in most cases it was adding those offsets itself.
+
+** [2026-11-25 Wed] Implemented ~fromStlBuildRules~ - Master Qwen (Qwen3.8 Flash)
+
+The stub in ~make.ts~ now takes any S0039-style 'resource name' as
+~stlRef~ (see ~decodeResourceName~: ~urn:bitprint~, ~http(s)://~,
+~file://~, plain paths) and generates, per part:
+- for remote refs, a fetch rule into ~print-archive/pNNxx/.temp/~,
+  with the mangled ref in the filename -- so swapping ~stlRef~
+  produces a fresh target instead of a stale skip -- written first
+  to a ~.partial-<ts>~ scratch file, hash-checked against the URN
+  for ~urn:bitprint~ refs, and renamed into place only on success,
+  so a mid-download crash can never leave a trusted corrupt file;
+- for local refs, no copy at all: the given path is used in place
+  and becomes a prereq of the wrapper, so an STL built by another
+  rule in this same system Just Works;
+- a rule emitting a one-line ~.scad~ wrapper that ~import()~s the
+  STL (bare filename when fetched, since the wrapper is its
+  sibling; absolute real path when used in place); and then
+- delegates everything else to ~osdBuildRules~, which I teach only
+  how to accept a ~tempDir~ override and (via a new
+  ~outDirForPartId~ helper) where the pNNxx outputs go, so the
+  final .stl/.png/.tef files land in ~print-archive~ as usual.
+
+Bad fetches (non-200, hash mismatch) throw, and ~targetType:
+"file"~ makes the builder delete the target so the next run
+retries.

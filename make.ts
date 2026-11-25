@@ -52,6 +52,10 @@ const OPENSCAD20261031_COM = Deno.env.get("OPENSCAD_20261031_CLI_EXE") ?? "x:Unc
 const MAGICK_EXE = Deno.env.get("MAGICK_EXE") ?? "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
+// Base URL for fetching files by content hash; see also the
+// `openscad-rendering-ref` URLs written into .tef files below.
+const URI_RES_RAW_BASE = "http://picture-files.nuke24.net/uri-res/raw";
+
 type FilePath = string;
 
 const defaultRenderSize = 3072;
@@ -59,6 +63,7 @@ const defaultRenderSize = 3072;
 const stlBuilderVersion       = "b1318";
 const renderPngBuilderVersion = "b1322";
 const crushPngBuilderVersion  = "b1327";
+const fromStlBuilderVersion   = "b1328";
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
@@ -373,6 +378,12 @@ function onScadOutputExists(targetName:FilePath) {
 	}
 }
 
+/** Where the 'official' outputs (.stl, .png, .tef) for a part go, per the pNNxx convention */
+function outDirForPartId(partId:string) : FilePath {
+	const m = /^p(\d\d)(\d\d)(?:[\\.-].*)?$/.exec(partId);
+	return m != null ? `print-archive/p${m[1]}xx` : `print-archive/misc`;
+}
+
 function osdBuildRules(partId:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	openScadFeaturesEnabled?: OpenSCADFeatureName[],
@@ -384,15 +395,11 @@ function osdBuildRules(partId:string, opts:{
 	imageSize?: Vec2<number>,
 	presetName?: string,
 	paletteSize?: number,
+	/** Where intermediate (rendered/crushed) files go; defaults to `${outDir}/.temp` */
+	tempDir?: FilePath,
 }) : {[targetName:string]: BuildRule} {
-	let m : RegExpMatchArray | null;
-	let outDir : FilePath;
-	if( (m = /^p(\d\d)(\d\d)(?:[\\.-].*)?$/.exec(partId)) != null ) {
-		outDir = `print-archive/p${m[1]}xx`;
-	} else {
-		outDir = `print-archive/misc`;
-	}
-	const tempDir = `${outDir}/.temp`;
+	const outDir = outDirForPartId(partId);
+	const tempDir = opts.tempDir ?? `${outDir}/.temp`;
 	
 	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
 	const paletteSize = opts.paletteSize ?? 36;
@@ -432,7 +439,8 @@ function osdBuildRules(partId:string, opts:{
 
 	let inConfigFile : FilePath | undefined;
 	if( opts.presetName != undefined ) {
-		if( (m = /^(.*?)\.scad$/.exec(opts.inScadFile)) != null ) {
+		const m = /^(.*?)\.scad$/.exec(opts.inScadFile);
+		if( m != null ) {
 			inConfigFile = `${m[1]}.json`;
 		}
 	}
@@ -599,6 +607,57 @@ function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	})));
 }
 
+/**
+ * Classifies a 'resource name' per the rules in
+ * ../Scratch38-S0039/README.md#resource-names:
+ * `urn:bitprint:` (fetched via the uri-res resolver), `http:`/`https:`
+ * URLs, `file:` URIs, `-` for stdin/stdout, else a file path.
+ *
+ * Unlike S0039, we're not interactive, so `-` and empty string are
+ * errors here.
+ */
+type ResourceRef =
+	{ kind: "content-urn", urn: string } |
+	{ kind: "remote-url", url: string } |
+	{ kind: "local-file", path: FilePath };
+
+function decodeResourceName(ref:string) : ResourceRef {
+	if( ref == "" ) throw new Error("Empty resource name");
+	if( ref == "-" ) throw new Error("Resource name '-' (stdin/stdout) is meaningless in a build rule");
+	if( /^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(ref) ) {
+		// A single letter before the colon, lower- or upper-case, can't be
+		// an RFC scheme; if it's followed by a slash it's a Windows drive:
+		if( /^[A-Za-z]:[\\/]/.test(ref) ) return { kind: "local-file", path: ref };
+		if( ref.startsWith("urn:") ) {
+			if( /^urn:bitprint:[A-Za-z2-7]{32}\.[A-Za-z2-7]{39}$/.test(ref) ) {
+				return { kind: "content-urn", urn: ref };
+			}
+			throw new Error(`Only urn:bitprint is fetchable in a build rule; got '${ref}'`);
+		} else if( ref.startsWith("file:") ) {
+			// file:///path drops the empty-authority 'localhost':
+			return { kind: "local-file", path: ref.substring("file:".length).replace(/^\/\/(localhost)?/,'') };
+		} else if( ref.startsWith("http:") || ref.startsWith("https:") ) {
+			return { kind: "remote-url", url: ref };
+		} else {
+			throw new Error(`Unrecognized URI scheme in resource name '${ref}' (supported: urn:bitprint, http, https, file)`);
+		}
+	}
+	// No recognized scheme (and no scheme at all); per S0039's rules,
+	// anything else -- including bare 'foo.stl' and things containing
+	// colons in weird places -- is a file path:
+	return { kind: "local-file", path: ref };
+}
+
+/**
+ * Resource references mangled for embedding in (Windows-safe) filenames.
+ * Slashes fold to dashes; a colon that survives is from a drive path
+ * (see decodeResourceName) or a pathological filename, so fold it too.
+ * A trailing '-' before the extension (from ':' + ext refs) is dropped.
+ */
+function resourceRefFilePart(ref:string) : string {
+	return '-' + ref.replaceAll(':', '-').replaceAll('/', '-').replaceAll('\\', '-').replace(/-(?=\.[^.\/\\]+$)/, '');
+}
+
 function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	openScadFeaturesEnabled?: OpenSCADFeatureName[],
@@ -609,10 +668,98 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	imageSize?: Vec2<number>,
 	paletteSize?: number,
 }={}) : {[targetName:string]: BuildRule} {
-	// TODO: This should re-use everything from osdBuildRules, plus:
-	// - a rule for fetching the STL file into, let's say, `.temp/<partId>.stl`
-	// - a rule for generating the .scad file (also in `.temp`) (referencing the STL in an 'import(...)'
-	return {}
+	// Re-uses osdBuildRules, feeding it a generated .scad which just
+	// import()s the STL named by stlRef (see decodeResourceName for
+	// what stlRef may look like).
+	// Local files are used in place, as a prereq -- no copy -- so an STL
+	// generated elsewhere in this build system works transparently.
+	// Fetched files land in the same `${outDir}/.temp` the rest of the
+	// pipeline uses, per the pNNxx convention; final .stl/.png/.tef
+	// files land in `print-archive` as usual.
+	const outDir = outDirForPartId(partId);
+	const tempDir = `${outDir}/.temp`;
+	const ref = decodeResourceName(stlRef);
+
+	// For fetched refs, the source goes into the cached filename so
+	// swapping stlRef gives a fresh target rather than a stale file
+	// that gets skipped.  For content URNs the filename is the
+	// strongest possible statement of what the bits should be; for
+	// plain URLs it at least records the source we fetched.  Only a
+	// *content change* at the same URL can slip past unnoticed.
+	// Refs usually carry their own extension; if the basename has no
+	// plausible one (e.g. URNs' embedded '.'), assume .stl.
+	const refExt = /\.[A-Za-z0-9]{1,5}$/.test(basename(stlRef)) ? '' : '.stl';
+	const fetchedStlPath = ref.kind == "local-file" ? ref.path : `${tempDir}/${partId}${resourceRefFilePart(stlRef)}${refExt}`;
+	const generatedScadPath = `${tempDir}/${partId}-${fromStlBuilderVersion}.scad`;
+
+	const rules : {[targetName:string]: BuildRule} = {};
+
+	if( ref.kind != "local-file" ) {
+		rules[fetchedStlPath] = {
+			targetType: "file",
+			description: `Fetch ${stlRef}`,
+			prereqs: ["make.ts"],
+			async invoke(ctx:BuildContext) {
+				await mkRoom(ctx.targetName);
+				const url = ref.kind == "content-urn" ?
+					// The trailing filename is decorative; the resolver serves by hash.
+					`${URI_RES_RAW_BASE}/${encodeURIComponent(ref.urn)}/${basename(ctx.targetName)}` :
+					ref.url;
+				const res = await fetch(url);
+				if( !res.ok ) {
+					throw new Error(`Failed to fetch ${stlRef} for ${partId}: ${res.status} ${res.statusText} (${url})`);
+				}
+				// Write to a scratch name, verify, then rename, so a
+				// crash/truncation mid-download can never leave a bad
+				// file at the target for future runs to trust.
+				const tmpPath = `${ctx.targetName}.partial-${Date.now()}`;
+				{
+					using outFile = await Deno.open(tmpPath, {write:true, create:true, truncate:true});
+					// pipeTo closes (and thus flushes) the writable on completion:
+					await res.body!.pipeTo(outFile.writable);
+				}
+				if( ref.kind == "content-urn" ) {
+					// If the fetched copy disagrees with the URN, fail
+					// loudly rather than printing lies.
+					const actualUrn = await hashFile(tmpPath, BITPRINT_ALGORITHM);
+					const expectedUrn = BITPRINT_ALGORITHM.getUrn(BITPRINT_ALGORITHM.decodeUrn(ref.urn));
+					if( actualUrn != expectedUrn ) {
+						await unlink(tmpPath);
+						throw new Error(`Fetched STL for ${partId} hashes to ${actualUrn}, expected ${expectedUrn}`);
+					}
+				}
+				await Deno.rename(tmpPath, ctx.targetName);
+			},
+		};
+	}
+
+	rules[generatedScadPath] = {
+		targetType: "file",
+		description: `Generate ${partId}.scad wrapper importing ${stlRef}`,
+		// For local files, this prereq *is* the STL: if it's built by
+		// another rule, building this wrapper builds it first.
+		prereqs: [fetchedStlPath, "make.ts"],
+		async invoke(ctx:BuildContext) {
+			await mkRoom(ctx.targetName);
+			// If the STL sits next to this wrapper (the fetched case), a
+			// bare filename works anywhere the .temp tree lives;
+			// otherwise (in-place local files) OpenSCAD resolves imports
+			// relative to *this* file, so use the absolute real path.
+			const importPath = fetchedStlPath.startsWith(tempDir) ?
+				basename(fetchedStlPath) :
+				(await Deno.realPath(fetchedStlPath)).replaceAll('\\','/');
+			await Deno.writeTextFile(ctx.targetName,
+				`// Generated by fromStlBuildRules in make.ts; imports ${stlRef}\n`+
+				`import("${importPath}");\n`
+			);
+		},
+	};
+
+	return {...rules, ...osdBuildRules(partId, {
+		...opts,
+		inScadFile: generatedScadPath,
+		tempDir,
+	})};
 }
 
 /**
