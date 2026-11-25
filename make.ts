@@ -1,8 +1,5 @@
 #!/usr/bin/env deno -A
 
-// TODO: Error on SCAD reruns by default, with option to allow SCAD reruns.
-// I grow weary of accidentally overwriting outputs.
-
 import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
