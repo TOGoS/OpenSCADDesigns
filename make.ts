@@ -1903,6 +1903,15 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/experimental/Threads2.scad", [
+			"p2653"
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			//              [ -60,-120, 140] is DEFAULT_THREADS2_CAMERA_POSITION
+			cameraPosition: [-120,  60, 140], // DEFAULT_THREADS2_CAMERA_POSITION but rotated 90 degrees
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
