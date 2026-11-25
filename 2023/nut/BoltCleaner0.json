@@ -1,0 +1,15 @@
+{
+	"parameterSets": {
+		"p2650": {
+			"block_width": "3inch",
+			"block_depth": "1+1/2inch",
+			"block_height": "1/4inch",
+			"hole_position": "center-right",
+			"thread_style": "7/8-10-UNC",
+			"thread_radius_offset": "0.2mm",
+			"hull_fn": "24",
+			"thread_fn": "144"
+		}
+	},
+	"fileFormatVersion": "1"
+}

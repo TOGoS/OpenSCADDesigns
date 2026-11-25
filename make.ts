@@ -1893,6 +1893,16 @@ const builder = new Builder({
 			imageSize: [512,512],
 			paletteSize: 128,
 		}),
+		...multiOsdBuildRules("2023/nut/BoltCleaner0.scad", [
+			"p2650",
+		], {
+			openScadCmd: OPENSCAD2024_MANIFOLD_CMD,
+			cameraPositions: {
+				default: [-30,-40, 30],
+			},
+			imageSize: [512,512],
+			paletteSize: 128,
+		}),
 	},
 });
 
