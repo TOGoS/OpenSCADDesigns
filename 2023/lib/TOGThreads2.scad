@@ -1,4 +1,4 @@
-// TOGThreads2.35.1
+// TOGThreads2.36
 // 
 // Versions:
 // v2.25:
@@ -28,6 +28,8 @@
 //   returning the passed-in list instead of the normalized one
 // v2.35.1:
 // - Add some assertions
+// v2.36:
+// - Add `togthreads2_get_hole_diameter`
 // 
 // To use this library, set the following dynamic variables:
 // 
@@ -384,6 +386,9 @@ function togthreads2__get_thread_type23(spec) =
 	is_list(spec) && spec[0] == "demo" ? togthreads2__demo_to_type23(spec[1], spec[2]) :
 	is_list(spec) && spec[0] == "togthreads2.3-type" ? spec :
 	assert(false, str("Unrecognized thread spec: ", spec));
+
+function togthreads2_get_hole_diameter(spec, r_offset=0) =
+	(togthreads2__get_thread_type23(spec)[4] + r_offset) * 2;
 
 // TODO: Allow 'spec' to be a type23
 function togthreads2_make_threads(zparams, spec, r_offset=0, direction="right", end_mode="flush", thread_origin_z=0) =
