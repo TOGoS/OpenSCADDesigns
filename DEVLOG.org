@@ -220,3 +220,36 @@ could), ~run-build-tests~ (the Deno tests), and ~run-tests~ (both).
 ~test-output-*.stl~ scratch files.  The OpenSCAD sweep needs
 ~OPENSCAD_202101_CLI_EXE~ set -- untested against a real binary
 from this Linux box.
+
+** [2026-11-26 Fri] - Embedded .scad options headers (prototype branch) - Master Qwen (Qwen3.8 Flash)
+
+On branch ~embedded-scad-version-indicators~: per-file build
+metadata as a comment line, e.g.
+
+#+begin_example
+// FrenchCleat.scad 2021-06
+//
+// tog-scad-options: openscad=x:OpenSCAD20240727Com+Manifold; requires=csg-engine:manifold; prefers=speed:fast
+#+end_example
+
+placed by convention below the file's title comment (line 3).
+Three keys, deliberately different in strength: ~openscad=~ pins
+the exact pseudo-command; ~requires=~ lists feature thunks the
+command must provide (unknown tokens error, per parser doctrine);
+~prefers=~ is advisory (unknown warn, unsatisfiable fall back
+silently).  Values must be thunks -- machine-shaped atoms -- so
+prose can't masquerade as metadata; the vocabulary lives in
+~make.ts~ (~OPENSCAD_COMMAND_PROFILES~), the grammar in
+~src/lib/ts/_util/scadoptions.ts~ with unit tests.
+~run-openscad-tests~ groups files by selected command; an
+~x:SelfTest-Options~ phony exercises selection without any
+OpenSCAD binary.
+
+The marker went through two abortive suitors: first ~// -*- ...
+-*-~, which turns out to be Emacs' magic-file syntax -- it parsed
+our pseudo-commands as local-variables and offered to set a buffer
+variable named 'openscad' -- proof by alarm that borrowed grammar
+is not inert; and namespaced ~scad-build:~/~tdbuild:~ comments,
+whose offspring spoke ~tog-scad-options:~, unique without special
+characters.  Line-3 placement also dodges the line-1 encoding
+sniff entirely.

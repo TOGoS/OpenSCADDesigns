@@ -4,6 +4,7 @@ import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
 import { type FilePath, basename, relativePath } from './src/lib/ts/_util/pathutil.ts';
+import { parseScadOptions, type ScadOptions } from './src/lib/ts/_util/scadoptions.ts';
 
 //// Utility functions
 
@@ -44,6 +45,58 @@ type OpenSCADCmd =
 	typeof OPENSCAD2024_MANIFOLD_CMD;
 
 type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for more
+
+/**
+ * Metadata the build system knows about each configured command:
+ * 'features' is the vocabulary that directive 'requires:' tokens are
+ * checked against; 'speedRank' backs the 'speed:fast' preference
+ * (higher is faster; purely advisory, for selection).
+ */
+type CommandProfile = { features: string[], speedRank: number };
+const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
+	[OPENSCAD202101_CMD]:     { features: ["csg-engine:cgal", "string-parameters"], speedRank: 1 },
+	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal", "string-parameters"], speedRank: 1 },
+	[OPENSCAD20261031_CMD]:   { features: ["csg-engine:cgal", "string-parameters"], speedRank: 1 },
+	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold", "string-parameters"], speedRank: 2 },
+};
+const DEFAULT_OSD_FEATURES = ["string-parameters"]; // assumed of every command for now
+
+/**
+ * Pick the command for a .scad given its parsed directives:
+ * a pin must satisfy the requires list; otherwise the fastest
+ * command that does, falling back to the default command.
+ * Unparseable/duplicate 'prefers:' tokens warn (they're wishes);
+ * unknown 'requires:' tokens throw (they're contracts).
+ */
+function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
+	if( d == null ) return DEFAULT_OPENSCAD_CMD as OpenSCADCmd;
+	for( const tok of d.requires ) {
+		const known = Object.values(OPENSCAD_COMMAND_PROFILES).some(p => p.features.includes(tok));
+		if( !known ) throw new Error(`Unknown required feature '${tok}' (known: ${[...new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features))].join(', ')})`);
+	}
+	for( const tok of d.prefers ) {
+		if( tok != "speed:fast" ) warn(`Ignoring unknown preference '${tok}'`);
+	}
+	const qualifying = (cmd:OpenSCADCmd) =>
+		d.requires.every(f => OPENSCAD_COMMAND_PROFILES[cmd].features.includes(f));
+	if( d.pin != undefined ) {
+		const profile = OPENSCAD_COMMAND_PROFILES[d.pin];
+		if( profile == undefined ) throw new Error(`Pinned command '${d.pin}' is not a known x: pseudo-command`);
+		if( !qualifying(d.pin as OpenSCADCmd) ) {
+			throw new Error(`Pinned command '${d.pin}' does not satisfy requires: ${d.requires.join(', ')}`);
+		}
+		return d.pin as OpenSCADCmd;
+	}
+	let best:OpenSCADCmd|undefined;
+	for( const cmd of Object.keys(OPENSCAD_COMMAND_PROFILES) as OpenSCADCmd[] ) {
+		if( !qualifying(cmd) ) continue;
+		const rank = OPENSCAD_COMMAND_PROFILES[cmd].speedRank;
+		const bestRank = best != undefined ? OPENSCAD_COMMAND_PROFILES[best].speedRank : -1;
+		if( rank > bestRank ) best = cmd;
+	}
+	// (speed is a preference, so unsatisfiable is fine: fall back)
+	return best ?? (DEFAULT_OPENSCAD_CMD as OpenSCADCmd);
+}
 
 // See also: `SynthGen2100/P0019/packages/sgutils@0.1/tdarx/openscad.ts`
 // which is where this naming convention (minus the version) is copied from.
@@ -919,25 +972,77 @@ const builder = new Builder({
 				// has no subdirectories; add recursion here if that changes.)
 				await scan("2023/test");
 				if( scadPaths.length == 0 ) throw new Error("No .scad test files found under 2023/test");
-				let failures = 0;
+				// Resolve each file's command from its header directives
+				// before running anything, so a bad 'requires:' fails the
+				// whole run up-front rather than halfway through.
+				const byCmd = new Map<OpenSCADCmd,string[]>();
 				for( const scadPath of scadPaths.sort() ) {
-					const outFile = `test-output-${basename(scadPath)}.stl`;
-					try {
-						await run({argv: [
-							DEFAULT_OPENSCAD_CMD, "--hardwarnings",
-							"--render=useless-render-argument", // see openscadCommand
-							"--export-format=binstl",
-							"-o", outFile, scadPath,
-						]}, {quiet:true});
-					} catch( e ) {
-						++failures;
-						console.error(`ERROR EVALUATING ${scadPath}: ${(e as Error).message}`);
-					} finally {
-						await unlink(outFile);
+					const { options, warnings } = parseScadOptions(await readTextFile(scadPath));
+					for( const w of warnings ) console.warn(`WARN: ${scadPath}: ${w}`);
+					const cmd = selectOpenscadCommand(options, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`));
+					const group = byCmd.get(cmd);
+					if( group ) group.push(scadPath);
+					else byCmd.set(cmd, [scadPath]);
+				}
+				let ran = 0, failures = 0;
+				for( const [cmd, paths] of byCmd ) {
+					for( const scadPath of paths ) {
+						const outFile = `test-output-${basename(scadPath)}.stl`;
+						try {
+							await run({argv: [
+								cmd, "--hardwarnings",
+								"--render=useless-render-argument", // see openscadCommand
+								"--export-format=binstl",
+								"-o", outFile, scadPath,
+							]}, {quiet:true});
+							++ran;
+						} catch( e ) {
+							++failures;
+							console.error(`ERROR EVALUATING ${scadPath} (${cmd}): ${(e as Error).message}`);
+						} finally {
+							await unlink(outFile);
+						}
 					}
 				}
-				if( failures > 0 ) throw new Error(`${failures} of ${scadPaths.length} test .scad files failed to evaluate`);
-				console.log(`All ${scadPaths.length} test .scad files evaluated cleanly`);
+				console.log(`${ran} evaluated cleanly, ${failures} failed`);
+				if( failures > 0 ) throw new Error(`${failures} of ${ran+failures} test .scad files failed to evaluate`);
+			},
+		},
+		"x:SelfTest-Options": {
+			targetType: "phony",
+			description: "Exercise options parsing/selection without running OpenSCAD",
+			async invoke(_ctx:BuildContext) {
+				const warns : string[] = [];
+				const warn = (m:string) => { warns.push(m); };
+				const check = (name:string, fn:() => void) => {
+					try { fn(); console.log(`  PASS ${name}`); }
+					catch( e ) { throw new Error(`Self-test '${name}' failed: ${(e as Error).message}`); }
+				};
+				const pinned = parseScadOptions("// -*- irrelevant -*-\n//\n// tog-scad-options: openscad=x:OpenSCAD20261031Com").options!;
+				check("pin honored", () => { if( selectOpenscadCommand(pinned,warn) != OPENSCAD20261031_CMD ) throw new Error("wrong pick"); });
+				check("default when unmarked", () => { if( selectOpenscadCommand(null,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick"); });
+				check("speed:fast + manifold requirement", () => {
+					const d = parseScadOptions(`// tog-scad-options: requires=csg-engine:manifold; prefers=speed:fast`).options!;
+					if( selectOpenscadCommand(d,warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong pick");
+				});
+				check("pin contradicted by requires -> error", () => {
+					const d = parseScadOptions(`// tog-scad-options: openscad=x:OpenSCAD202101Com; requires=csg-engine:manifold`).options!;
+					let threw = false;
+					try { selectOpenscadCommand(d,warn); } catch(_e) { threw = true; }
+					if( !threw ) throw new Error("expected contradiction error");
+				});
+				check("unknown required feature -> error", () => {
+					const d = parseScadOptions(`// tog-scad-options: requires=csg-engine:quantum`).options!;
+					let threw = false;
+					try { selectOpenscadCommand(d,warn); } catch(_e) { threw = true; }
+					if( !threw ) throw new Error("expected unknown-feature error");
+				});
+				check("unknown preference -> warned, not fatal", () => {
+					const d = parseScadOptions(`// tog-scad-options: prefers=speed:lightspeed`).options!;
+					selectOpenscadCommand(d,warn);
+					if( !warns.some(w => w.includes('speed:lightspeed')) ) throw new Error("no warning emitted");
+				});
+				console.log(`x:SelfTest-Options: all checks passed (${warns.length} expected warning(s))`);
 			},
 		},
 		"run-build-tests": {
