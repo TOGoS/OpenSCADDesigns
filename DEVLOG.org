@@ -208,3 +208,15 @@ runnable under bare ~deno test~ with no permission flags.  The
 suffix still matches Deno's default discovery glob, so directory
 runs pick up both.  ~pathutil.test.ts~ is now purely lexical; the
 realpath-oracle moved to ~pathutil.io.test.ts~.
+
+** [2026-11-26 Thu] - test.bat is now build rules - Master Qwen (Qwen3.8 Flash)
+
+~make.ts~ gained three phony targets at the top of its rule list
+(part recipes stay at the bottom where the newest live):
+~run-openscad-tests~ (evaluates every 2023/test ~.scad~ with
+~--hardwarnings~, reporting failures the old find invocation never
+could), ~run-build-tests~ (the Deno tests), and ~run-tests~ (both).
+~test.bat~ is deleted; ~.gitignore~ now covers its
+~test-output-*.stl~ scratch files.  The OpenSCAD sweep needs
+~OPENSCAD_202101_CLI_EXE~ set -- untested against a real binary
+from this Linux box.

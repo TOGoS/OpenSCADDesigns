@@ -21,6 +21,11 @@ and stuff.  (See 'built marker' comments in ~make.ts~.)
 This exists mostly so that I can more easily reproduce
 renderings from specific viewing angles.
 
+~make.ts~ also has test targets:
+- ~run-openscad-tests~ evaluates every ~.scad~ in ~2023/test/~.
+- ~run-build-tests~ runs the build system's own Deno tests.
+- ~run-tests~ does both.
+
 You can use the OpenSCAD libraries within
 without having to know or care about ~make.ts~.
 

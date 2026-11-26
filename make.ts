@@ -150,7 +150,7 @@ function mkdir(dir:FilePath) : Promise<void> {
 	return prom;
 }
 
-async function run(cmd:Commande) : Promise<void> {
+async function run(cmd:Commande, opts:{quiet?:boolean}={}) : Promise<void> {
 	if( cmd.argv.length == 0 ) {
 		throw new Error("Empty command");
 	}
@@ -198,7 +198,7 @@ async function run(cmd:Commande) : Promise<void> {
 		throw new Error(`Please set environment variable: ${missingEnvVar}`);
 	}
 	
-	console.log(`Spawning: ${quotedArgv([realExe, ...cmd.argv.slice(1)])}`);
+	if( !opts.quiet ) console.log(`Spawning: ${quotedArgv([realExe, ...cmd.argv.slice(1)])}`);
 	
 	const dcmd = new Deno.Command(realExe, { args: cmd.argv.slice(1) });
 	const proc = dcmd.spawn();
@@ -902,6 +902,52 @@ const DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS : {[cameraName:string]: Vec3<
 const builder = new Builder({
 	mtimeFunction: mtimeWithBuiltMarkers,
 	rules: {
+		// Test targets first; part recipes keep piling up at the end.
+		"run-openscad-tests": {
+			targetType: "phony",
+			description: "Evaluate every .scad under 2023/test with --hardwarnings",
+			async invoke(_ctx:BuildContext) {
+				// (Replaces test.bat's find -exec dance, which could never
+				// actually signal failure.)
+				const scadPaths:string[] = [];
+				async function scan(dir:FilePath) {
+					for await( const e of Deno.readDir(dir) ) {
+						if( e.name.endsWith('.scad') ) scadPaths.push(`${dir}/${e.name}`);
+					}
+				}
+				// (test.bat's '-not -path ./2023/lib/*' was moot: 2023/test
+				// has no subdirectories; add recursion here if that changes.)
+				await scan("2023/test");
+				if( scadPaths.length == 0 ) throw new Error("No .scad test files found under 2023/test");
+				let failures = 0;
+				for( const scadPath of scadPaths.sort() ) {
+					const outFile = `test-output-${basename(scadPath)}.stl`;
+					try {
+						await run({argv: [
+							DEFAULT_OPENSCAD_CMD, "--hardwarnings",
+							"--render=useless-render-argument", // see openscadCommand
+							"--export-format=binstl",
+							"-o", outFile, scadPath,
+						]}, {quiet:true});
+					} catch( e ) {
+						++failures;
+						console.error(`ERROR EVALUATING ${scadPath}: ${(e as Error).message}`);
+					} finally {
+						await unlink(outFile);
+					}
+				}
+				if( failures > 0 ) throw new Error(`${failures} of ${scadPaths.length} test .scad files failed to evaluate`);
+				console.log(`All ${scadPaths.length} test .scad files evaluated cleanly`);
+			},
+		},
+		"run-build-tests": {
+			targetType: "phony",
+			description: "Run the make.ts/pathutil Deno tests",
+			async invoke(_ctx:BuildContext) {
+				await run({argv: [Deno.execPath(), "test", "--allow-read", "--allow-write", "--allow-env", "make.io.test.ts", "src/lib/ts"]});
+			},
+		},
+		"run-tests": brAlias(["run-openscad-tests", "run-build-tests"]),
 		...multiOsdBuildRules("2023/board-clip/OuterAngleJig-v2.scad", [
 			"p1162", "p1164", "p1165", "p1210", "p1211",
 		], {
