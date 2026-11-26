@@ -1107,7 +1107,7 @@ const builder = new Builder({
 			...partIdRange("p",2260,2269),
 			...partIdRange("p",2271,2279),
 		], {
-			openScadCmd: OPENSCAD202101_CMD, // 2024 doesn't work due to parameters
+			openScadCmd: OPENSCAD202101_CMD, // file's tog-scad-options requires complex-list-parameters
 			// The p17xxs were made without the help of this makefile,
 			// so I have to guess where the camera was.
 			// Well, actually, I like the shading better if it's flipped:

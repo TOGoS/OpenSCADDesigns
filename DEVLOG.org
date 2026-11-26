@@ -253,3 +253,29 @@ is not inert; and namespaced ~scad-build:~/~tdbuild:~ comments,
 whose offspring spoke ~tog-scad-options:~, unique without special
 characters.  Line-3 placement also dodges the line-1 encoding
 sniff entirely.
+
+** [2026-11-26 Fri] - Evidence pass: which files actually declare needs - Master Qwen (Qwen3.8 Flash)
+
+Demonstration of the header workflow: scanned every .scad pinned to
+a specific OpenSCAD command in ~make.ts~, checked JSON presets and
+file sources for actual evidence, and annotated only where
+certainty is high:
+
+- ~FrenchCleat.scad~: keeps ~requires=complex-list-parameters~
+  (mixed-type list defaults, ~height_ca = [1.5, "inch"]~, and its
+  presets stringifying lists -- ~"height_ca": "[1.5, ..."~ -- prove
+  the workaround was live).
+- ~OvalNut0.scad~: added ~requires=csg-engine:manifold~ (its
+  comment says "Use OpenSCAD 2024 with the manifold engine",
+  corroborated by its existing manifold pin).
+
+Self-corrections during the pass -- files that *looked* like
+candidates but aren't, under the token's actual definition (lists
+of strings / mixed-value lists; plain numerics are out of scope):
+BrickHolder2 and GridbeamPanelRouterTemplate have numeric-list
+defaults only, and their presets stringify numbers to work across
+versions. ~DrywallWasher1~'s 2021 pin is a geometry bug per its
+recipe comment, not parameters. Threads2's manifold comment warns
+*against* the engine for some uses (mixed requirements -- left
+unmarked). The ~make.ts~ FrenchCleat comment now cites the header
+instead of folklore.
