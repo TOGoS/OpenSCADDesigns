@@ -10,9 +10,9 @@ Deno.test("scadoptions: no options line yields null", () => {
 });
 
 Deno.test("scadoptions: full line parses (conventional spot)", () => {
-	const r = parseScadOptions(DOC + "openscad=x:OpenSCAD20240727Com+Manifold; requires=csg-engine:manifold, string-parameters; prefers=speed:fast\n//\ncube();\n");
+	const r = parseScadOptions(DOC + "openscad=x:OpenSCAD20240727Com+Manifold; requires=csg-engine:manifold, complex-list-parameters; prefers=speed:fast\n//\ncube();\n");
 	assertEquals(r.options?.pin, "x:OpenSCAD20240727Com+Manifold");
-	assertEquals(r.options?.requires, ["csg-engine:manifold", "string-parameters"]);
+	assertEquals(r.options?.requires, ["csg-engine:manifold", "complex-list-parameters"]);
 	assertEquals(r.options?.prefers, ["speed:fast"]);
 	assertEquals(r.warnings.length, 0);
 });
@@ -35,15 +35,15 @@ Deno.test("scadoptions: unknown keys error; malformed entries error", () => {
 
 Deno.test("scadoptions: off-convention placement warns but works", () => {
 	// line 7 instead of 3:
-	const r = parseScadOptions("line1\nline2\nline3\nline4\nline5\nline6\n// tog-scad-options: requires=string-parameters\n");
-	assertEquals(r.options?.requires, ["string-parameters"]);
+	const r = parseScadOptions("line1\nline2\nline3\nline4\nline5\nline6\n// tog-scad-options: requires=complex-list-parameters\n");
+	assertEquals(r.options?.requires, ["complex-list-parameters"]);
 	assertEquals(r.warnings.length, 1);
 	assertStringIncludes(r.warnings[0], 'line 3');
 });
 
 Deno.test("scadoptions: outside the header zone warns and does not apply", () => {
 	const lines = Array.from({length:25}, (_,i) => `// line ${i}`);
-	lines[24] = DOC + "requires=string-parameters";
+	lines[24] = DOC + "requires=complex-list-parameters";
 	const r = parseScadOptions(lines.join('\n'));
 	assertEquals(r.options, null);
 	assertEquals(r.warnings.length, 1);

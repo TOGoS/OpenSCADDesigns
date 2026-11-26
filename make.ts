@@ -48,18 +48,23 @@ type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for mor
 
 /**
  * Metadata the build system knows about each configured command:
- * 'features' is the vocabulary that directive 'requires:' tokens are
- * checked against; 'speedRank' backs the 'speed:fast' preference
- * (higher is faster; purely advisory, for selection).
+ * 'features' is the vocabulary that option tokens are checked
+ * against; 'speedRank' backs the 'speed:fast' preference (higher is
+ * faster; purely advisory, for selection).
+ * 'complex-list-parameters': arrays of strings / mixed-type lists as
+ * -P customizer values.  Plain string parameters work everywhere;
+ * complex lists are silently DROPPED (not rejected) by OpenSCAD 2024,
+ * rendering defaults with no warning -- which is the whole reason a
+ * feature token exists for this.
  */
 type CommandProfile = { features: string[], speedRank: number };
 const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
-	[OPENSCAD202101_CMD]:     { features: ["csg-engine:cgal", "string-parameters"], speedRank: 1 },
-	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal", "string-parameters"], speedRank: 1 },
-	[OPENSCAD20261031_CMD]:   { features: ["csg-engine:cgal", "string-parameters"], speedRank: 1 },
-	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold", "string-parameters"], speedRank: 2 },
+	[OPENSCAD202101_CMD]:     { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
+	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
+	[OPENSCAD20261031_CMD]:   { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
+	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold", "complex-list-parameters"], speedRank: 2 },
 };
-const DEFAULT_OSD_FEATURES = ["string-parameters"]; // assumed of every command for now
+const DEFAULT_OSD_FEATURES = ["complex-list-parameters"]; // assumed of every command for now
 
 /**
  * Pick the command for a .scad given its parsed directives:
