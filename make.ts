@@ -173,7 +173,17 @@ async function run(cmd:Commande) : Promise<void> {
 			// Ignore; maybe it just didn't exist.
 		}
 		console.log(`Hardlinking: ${dst} = ${src}`);
-		return Deno.link(src, dst);
+		await Deno.link(src, dst);
+		// A hardlink reports its *source's* mtime, not the moment we
+		// linked it, and we don't restamp -- shared inodes would drag
+		// the source's mtime along, and preserving source mtimes matters.
+		// So instead we leave a sidecar marker recording the link time,
+		// which getStlMtime() consults.  Same trick as tbuilder's own
+		// touchDir (.touchy-touchy.txt), which exists because utime-on-
+		// a-directory is 'too unstable' -- see FSUtil.ts's commented-out
+		// touch().
+		await writeBuiltMarker(dst);
+		return;
 	}
 	
 	let m : RegExpMatchArray | null;
@@ -310,6 +320,51 @@ async function unlink(path:FilePath) {
 		await Deno.remove(path);
 	} catch( e ) {
 		if( (e as Error).name == 'NotFound' ) return;
+		throw e;
+	}
+}
+
+/**
+ * Sidecar marker naming for hardlinked targets: the link itself can
+ * carry no independent timestamp (it shares the source's inode and
+ * mtime, and we deliberately don't restamp), so x:Hardlink records
+ * 'I was built at this instant' in a sibling instead.  Leading dot
+ * hides it on POSIX and matches the .gitignore spirit; print-archive
+ * is ignored wholesale regardless.
+ */
+function builtMarkerPath(targetPath:FilePath) : FilePath {
+	const lastSlash = targetPath.lastIndexOf('/');
+	return lastSlash < 0
+		? `.${targetPath}.built`
+		: targetPath.substring(0, lastSlash+1) + '.' + targetPath.substring(lastSlash+1) + '.built';
+}
+
+async function writeBuiltMarker(targetPath:FilePath) : Promise<void> {
+	const marker = builtMarkerPath(targetPath);
+	await mkdir(marker.substring(0, marker.lastIndexOf('/')) || '.');
+	await Deno.writeTextFile(marker, `Hardlink timestamp for ${targetPath}\n`);
+}
+
+/**
+ * Builder's global mtime override: where a hardlink left a sidecar,
+ * the sidecar's (fresh, uniquely-owned) mtime is the target's
+ * effective build time.  A nonexistent target reports undefined so
+ * mtimeR's own stat still yields 'not found' -> always rebuild,
+ * never a phantom up-to-date-ness if the real file is deleted but
+ * its marker survives.  (Hardlinks are the only markers we write,
+ * but consulting one costs nothing for any other file.)
+ */
+async function mtimeWithBuiltMarkers(path:string) : Promise<number|undefined> {
+	try {
+		await Deno.stat(path);
+	} catch( e ) {
+		if( (e as Error).name == 'NotFound' ) return undefined;
+		throw e;
+	}
+	try {
+		return (await Deno.stat(builtMarkerPath(path))).mtime?.getTime();
+	} catch( e ) {
+		if( (e as Error).name == 'NotFound' ) return undefined;
 		throw e;
 	}
 }
@@ -627,7 +682,7 @@ function decodeResourceName(ref:string) : ResourceRef {
 	if( /^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(ref) ) {
 		// A single letter before the colon, lower- or upper-case, can't be
 		// an RFC scheme; if it's followed by a slash it's a Windows drive:
-		if( /^[A-Za-z]:[\\/]/.test(ref) ) return { kind: "local-file", path: ref };
+		if( /^[A-Za-z]:[\\/]/.test(ref) ) return { kind: "local-file", path: normalizeLocalPath(ref) };
 		if( ref.startsWith("urn:") ) {
 			if( /^urn:bitprint:[A-Za-z2-7]{32}\.[A-Za-z2-7]{39}$/.test(ref) ) {
 				return { kind: "content-urn", urn: ref };
@@ -635,7 +690,7 @@ function decodeResourceName(ref:string) : ResourceRef {
 			throw new Error(`Only urn:bitprint is fetchable in a build rule; got '${ref}'`);
 		} else if( ref.startsWith("file:") ) {
 			// file:///path drops the empty-authority 'localhost':
-			return { kind: "local-file", path: ref.substring("file:".length).replace(/^\/\/(localhost)?/,'') };
+			return { kind: "local-file", path: normalizeLocalPath(ref.substring("file:".length).replace(/^\/\/(localhost)?/,'')) };
 		} else if( ref.startsWith("http:") || ref.startsWith("https:") ) {
 			return { kind: "remote-url", url: ref };
 		} else {
@@ -645,7 +700,17 @@ function decodeResourceName(ref:string) : ResourceRef {
 	// No recognized scheme (and no scheme at all); per S0039's rules,
 	// anything else -- including bare 'foo.stl' and things containing
 	// colons in weird places -- is a file path:
-	return { kind: "local-file", path: ref };
+	return { kind: "local-file", path: normalizeLocalPath(ref) };
+}
+
+/**
+ * Canonicalizes local resource paths as build-target names:
+ * forward slashes, and './'-prefixed == bare, so './foo.stl' and
+ * 'foo.stl' don't become two nodes for one file in the build graph.
+ */
+function normalizeLocalPath(path:string) : FilePath {
+	path = path.replaceAll('\\','/');
+	return path.startsWith("./") ? path.substring(2) : path;
 }
 
 /**
@@ -690,7 +755,19 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	// plausible one (e.g. URNs' embedded '.'), assume .stl.
 	const refExt = /\.[A-Za-z0-9]{1,5}$/.test(basename(stlRef)) ? '' : '.stl';
 	const fetchedStlPath = ref.kind == "local-file" ? ref.path : `${tempDir}/${partId}${resourceRefFilePart(stlRef)}${refExt}`;
+	const archiveStlPath = `${outDir}/${partId}.stl`;
 	const generatedScadPath = `${tempDir}/${partId}-${fromStlBuilderVersion}.scad`;
+
+	// A local ref may name the very file the archive path points at
+	// (e.g. stlRef: 'print-archive/p19xx/p1983.stl' for p1983).  There
+	// is nothing to copy and nothing to link -- the bits are already
+	// home -- so osdBuildRules' OpenSCAD-export rule for that path
+	// must be *dropped entirely*, not overridden: keeping any rule
+	// there, or a hardlink pointing at itself, would make the archive
+	// STL depend on the wrapper that depends on the archive STL: a
+	// cycle the builder deadlocks on.  Remote refs always land in
+	// .temp, so they can't self-collide.
+	const refIsOwnOutput = ref.kind == "local-file" && fetchedStlPath == archiveStlPath;
 
 	const rules : {[targetName:string]: BuildRule} = {};
 
@@ -755,14 +832,16 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 		},
 	};
 
-	// The rule for `${outDir}/${partId}.stl` generated by `osdBuildRules`
+	// The rule for `${archiveStlPath}` generated by `osdBuildRules`
 	// exports the STL by rendering the wrapper .scad through OpenSCAD,
 	// which is pointless work, and the round-trip isn't even bit-exact.
 	// Override with our own rule for building $targetName,
 	// which hardlinks the source STL directly into the target position.
 	// (The wrapper .scad is still generated and used for the PNG renders.)
+	// In the refIsOwnOutput case this key is dropped again below; the
+	// override is harmless to define either way.
 	const stlOverride : {[targetName:string]: BuildRule} = {
-		[`${outDir}/${partId}.stl`]: {
+		[archiveStlPath]: {
 			targetType: "file",
 			description: `Hardlink ${stlRef} in place of an OpenSCAD STL export`,
 			prereqs: [fetchedStlPath, "make.ts"],
@@ -772,14 +851,19 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 			}
 		},
 	};
-	// IMPORTANT: spread order matters -- osdBuildRules must come first
-	// so that our fetch/wrapper rules, and especially the STL override
-	// above, win key collisions with the rules it generates.
-	return {...rules, ...osdBuildRules(partId, {
+
+	const osdRules = osdBuildRules(partId, {
 		...opts,
 		inScadFile: generatedScadPath,
 		tempDir,
-	}), ...stlOverride};
+	});
+	// stlOverride must be last: ${archiveStlPath} is the one key it
+	// shares with osdRules, and ours is the rule we want.
+	// We only ever mutate `allRules`, which this statement creates;
+	// osdRules is left untouched, as it isn't ours to modify.
+	const allRules = {...rules, ...osdRules, ...stlOverride};
+	if( refIsOwnOutput ) delete allRules[archiveStlPath];
+	return allRules;
 }
 
 /**
@@ -853,6 +937,7 @@ const DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS : {[cameraName:string]: Vec3<
 
 // Something like this.
 const builder = new Builder({
+	mtimeFunction: mtimeWithBuiltMarkers,
 	rules: {
 		...multiOsdBuildRules("2023/board-clip/OuterAngleJig-v2.scad", [
 			"p1162", "p1164", "p1165", "p1210", "p1211",

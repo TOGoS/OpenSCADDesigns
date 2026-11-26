@@ -145,3 +145,26 @@ source STL to ~print-archive/pNNxx/<partId>.stl~.
 Bad fetches (non-200, hash mismatch) throw, and ~targetType:
 "file"~ makes the builder delete the target so the next run
 retries.
+
+** [2026-11-25 Wed] - Hardlink staleness & the .built sidecar - Master Qwen (Qwen3.8 Flash)
+
+A hardlink shares its source's inode, so ~stat()~ reports the
+*source's* mtime -- there's no filesystem record of when the link
+was made (and ~utime()~ on the link hits the source too, so
+restamping is out if source mtimes should be preserved).  That made
+~x:Hardlink~ targets false-skip: a rebuilt link never looks newer
+than consumers built before it.
+
+Fix is marker-based, not mtime-mangling: ~x:Hardlink~ now writes a
+~.<name>.built~ sidecar next to each link, and ~make.ts~ installs
+~mtimeWithBuiltMarkers~ as Builder's ~mtimeFunction~ (a hook
+added for exactly this, now remembered), which reports the
+sidecar's mtime as the target's effective build time.  A missing
+target reports undefined so the stat still yields 'not found' ->
+always rebuild, never phantom up-to-date-ness from an orphaned
+marker after a failed build deleted its target.
+
+Tbuilder itself is blameless here: the hook is honored for files
+and directories alike (initial 'directory bug' finding was a
+test-harness artifact), and the sidecar idea mirrors its own
+~touchDir~ trick for directory-mtime granularity.
