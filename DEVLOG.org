@@ -325,3 +325,17 @@ it execs ~make.ts~, whose module scope requires
 ~OPENSCAD_202101_CLI_EXE~, so it would make build-tests fail on
 unconfigured machines.  Better fix (if desired): default the env
 lookup instead of erroring at load.
+
+[Correction, same day: that decline was wrong twice over -- the
+self-test runs in-process, and the ~x:UnconfiguredCommand~
+fallbacks defer env failure to ~run()~, so no spawn means no
+problem.  Demonstrated with all three vars unset.  It's now wired
+into ~run-build-tests~ anyway; the lazy-env follow-up is moot.
+Re-review also caught: a dead NotFound layer in the memo (dropped;
+tolerance lives in parseFileOptions only), collectively-empty
+requires intersections silently falling back to the default (now
+an error -- the silent-defaults class this whole feature exists
+to prevent), a vacuous wiring test (deleted; replaced by checks
+for the intersection error and, via profile injection, the
+speed:fast ranking branch, which was otherwise unreachable), and
+an unguarded profile lookup in missingFeatures (?-chained).

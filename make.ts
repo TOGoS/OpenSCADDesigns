@@ -68,15 +68,16 @@ const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
 
 /**
  * Pick the command for a .scad given its parsed options:
- * a pin must satisfy the requires list; otherwise the default
- * command if it does; otherwise the fastest qualifying command
- * (rank consulted only when the file asks for 'speed:fast').
- * Unparseable 'prefers:' tokens warn (they're wishes); unknown
- * 'requires:' tokens throw (they're contracts).
+ * a pin must satisfy the requires list; otherwise the default if it
+ * qualifies; otherwise the first qualifier in declaration order (or
+ * the fastest, with 'prefers=speed:fast').
+ * 'requires' are contracts: unknown tokens, collectively-empty
+ * intersections, and contradicting pins all throw.  'prefers' are
+ * wishes: unknown tokens warn, unsatisfiable ones are ignored.
  */
 const allFeatures = new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features));
 const missingFeatures = (cmd:OpenSCADCmd, requires:string[]) : string[] =>
-	requires.filter(f => !OPENSCAD_COMMAND_PROFILES[cmd].features.includes(f));
+	requires.filter(f => !(OPENSCAD_COMMAND_PROFILES[cmd]?.features ?? []).includes(f));
 
 function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
 	if( d == null ) return DEFAULT_OPENSCAD_CMD;
@@ -98,11 +99,15 @@ function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : 
 	// among commands the default *can't* satisfy, so a stray
 	// 'prefers=speed:fast' never silently migrates unrequiring files.
 	if( qualifying(DEFAULT_OPENSCAD_CMD) ) return DEFAULT_OPENSCAD_CMD;
-	const wantsFast = d.prefers.includes("speed:fast");
 	const qualified = Object.keys(OPENSCAD_COMMAND_PROFILES)
 		.filter(cmd => missingFeatures(cmd as OpenSCADCmd, d.requires).length == 0);
-	if( qualified.length == 0 ) return DEFAULT_OPENSCAD_CMD; // unsatisfiable preference is fine; the pin/require errors above still apply
-	if( !wantsFast ) return qualified[0] as OpenSCADCmd;
+	if( qualified.length == 0 ) {
+		// Individually-known features with no single provider: picking
+		// any command would silently render defaults -- the exact failure
+		// class contracts exist to prevent:
+		throw new Error(`No command satisfies requires: ${d.requires.join(', ')}`);
+	}
+	if( !d.prefers.includes("speed:fast") ) return qualified[0] as OpenSCADCmd;
 	const rankOf = (cmd:string) => OPENSCAD_COMMAND_PROFILES[cmd as OpenSCADCmd].speedRank;
 	return qualified.reduce((a,b) => rankOf(b) > rankOf(a) ? b : a) as OpenSCADCmd;
 }
@@ -739,21 +744,18 @@ async function parseFileOptions(scadFile:FilePath) : Promise<{ options:ScadOptio
 	}
 }
 
-// Lazily memoized verification per (file, command) pair: the read
-// happens on first *call* (a target about to await it), never at
-// rule-generation, and parts sharing a file read it once.  The
-// re-throwing .catch is safe here only because of that laziness --
-// the derived promise always has an immediate awaiter; created at
-// generation time, it would crash the process unhandled.
+// Lazily memoized verification per (file, command) pair: parts
+// sharing a file read/verify it once, on first call (from an invoke
+// about to await it).  Laziness also keeps rejection hygiene simple:
+// a rejection created at generation would sit unobserved until the
+// first target runs.
 const fileOptionsChecks = new Map<string,Promise<void>>();
 function onceFileOptionsChecked(scadFile:FilePath, cmd:OpenSCADCmd) : () => Promise<void> {
 	const key = `${scadFile} ${cmd}`;
 	return () => {
 		let prom = fileOptionsChecks.get(key);
 		if( prom == null ) {
-			prom = verifyFileOptions(scadFile,cmd).catch((e:Error) => {
-				if( (e as Error).name != 'NotFound' ) throw e;
-			});
+			prom = verifyFileOptions(scadFile,cmd); // NotFound already tolerated in parseFileOptions
 			fileOptionsChecks.set(key, prom);
 		}
 		return prom;
@@ -1137,12 +1139,33 @@ const builder = new Builder({
 					// fromStl wrapper .scads don't exist until built:
 					await onceFileOptionsChecked(`print-archive/p19xx/.temp/does-not-exist-${Deno.pid}.scad`, DEFAULT_OPENSCAD_CMD)();
 				});
-				await check("osdBuildRules registers per-pair thunks", async () => {
-					// (Wiring, not policy: generation hands each recipe the
-					// thunk for its (file, cmd) pair; policy checks above.)
-					const fake = `print-archive/p19xx/.temp/wired-${Deno.pid}.scad`;
-					osdBuildRules("p9997", { inScadFile: fake });
-					await onceFileOptionsChecked(fake, DEFAULT_OPENSCAD_CMD)(); // registered by osd: no throw, no read side effects
+				await check("collectively-unsatisfiable requires -> error", () => {
+					// Both known, no single provider; must not fall back to
+					// the default and silently render defaults (review B):
+					let threw = false;
+					try { selectOpenscadCommand(opts("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
+					if( !threw ) throw new Error("expected no-provider error");
+				});
+				await check("speed:fast ranking decides among qualifiers", () => {
+					// Today exactly one command provides manifold, so the
+					// ranking branch is otherwise unreachable.  Rebuild the
+					// profiles with 'x:OldManifold' declared first and ranked
+					// lowest: declaration order and rank then disagree, and
+					// only the preference may pick rank.  (Iteration order
+					// follows insertion order, hence the rebuild, not assign.)
+					const saved = structuredClone(OPENSCAD_COMMAND_PROFILES);
+					Object.keys(OPENSCAD_COMMAND_PROFILES).forEach(k => delete OPENSCAD_COMMAND_PROFILES[k]);
+					OPENSCAD_COMMAND_PROFILES["x:OldManifold" as OpenSCADCmd] = { features: ["csg-engine:manifold"], speedRank: 1 };
+					Object.assign(OPENSCAD_COMMAND_PROFILES, saved);
+					try {
+						const byOrder = selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn);
+						const byRank = selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn);
+						if( byOrder != ("x:OldManifold" as OpenSCADCmd) ) throw new Error(`declaration order ignored: ${byOrder}`);
+						if( byRank != OPENSCAD2024_MANIFOLD_CMD ) throw new Error(`rank ignored: ${byRank}`);
+					} finally {
+						Object.keys(OPENSCAD_COMMAND_PROFILES).forEach(k => delete OPENSCAD_COMMAND_PROFILES[k]);
+						Object.assign(OPENSCAD_COMMAND_PROFILES, saved);
+					}
 				});
 				console.log(`x:SelfTest-Options: all checks passed (${warns.length} expected warning(s))`);
 			},
@@ -1151,6 +1174,9 @@ const builder = new Builder({
 			targetType: "phony",
 			description: "Run the make.ts/pathutil Deno tests",
 			async invoke(_ctx:BuildContext) {
+				// (x:SelfTest-Options runs in-process -- no env/binary needs --
+				// so it's cheap insurance here rather than only on demand:)
+				await builder.build("x:SelfTest-Options", _ctx);
 				await run({argv: [Deno.execPath(), "test", "--allow-read", "--allow-write", "--allow-env", "make.io.test.ts", "src/lib/ts"]});
 			},
 		},
