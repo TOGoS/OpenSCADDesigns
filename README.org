@@ -12,6 +12,12 @@ There is a ~make.bat~ and ~make.ts~ in this repo
 that can build STLs from their 'part ID'
 (usually "p" + four digits).  This requires Deno 2.something.
 
+~make.ts~ uses a Make-like modification-time-driven dependency-graph
+build system and therefore suffers from the common pitfalls thereof;
+it attempts to work around unreliability of file modification times
+using sidecar/marker files, but, you know, it's like, imperfect
+and stuff.  (See 'built marker' comments in ~make.ts~.)
+
 This exists mostly so that I can more easily reproduce
 renderings from specific viewing angles.
 

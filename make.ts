@@ -1,11 +1,9 @@
 #!/usr/bin/env deno -A
 
-// TODO: Error on SCAD reruns by default, with option to allow SCAD reruns.
-// I grow weary of accidentally overwriting outputs.
-
 import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
+import { type FilePath, basename, relativePath } from './src/lib/ts/_util/pathutil.ts';
 
 //// Utility functions
 
@@ -55,13 +53,15 @@ const OPENSCAD20261031_COM = Deno.env.get("OPENSCAD_20261031_CLI_EXE") ?? "x:Unc
 const MAGICK_EXE = Deno.env.get("MAGICK_EXE") ?? "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
-type FilePath = string;
+// Same resolver that serves the .tef `openscad-rendering-ref` URLs.
+const URI_RES_RAW_BASE = "http://picture-files.nuke24.net/uri-res/raw";
 
 const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
 const stlBuilderVersion       = "b1318";
 const renderPngBuilderVersion = "b1322";
 const crushPngBuilderVersion  = "b1327";
+const fromStlBuilderVersion   = "b1328";
 
 type Vec2<T> = [T, T];
 type Vec3<T> = [T, T, T];
@@ -171,7 +171,11 @@ async function run(cmd:Commande) : Promise<void> {
 			// Ignore; maybe it just didn't exist.
 		}
 		console.log(`Hardlinking: ${dst} = ${src}`);
-		return Deno.link(src, dst);
+		await Deno.link(src, dst);
+		// Hardlinks are a case where the timestamp on the result doesn't
+		// reflect the time it was put there, so write a 'built marker':
+		await writeBuiltMarker(dst);
+		return;
 	}
 	
 	let m : RegExpMatchArray | null;
@@ -312,6 +316,61 @@ async function unlink(path:FilePath) {
 	}
 }
 
+// 'built marker' = mtime-surrogate sidecar file,
+// used in cases when the target's modification time is unreliable.
+
+/**
+ * Given path to some file, returns path to corresponding modification time surrogate file.
+ * "foo/bar/baz.txt" => "foo/bar/.baz.txt.built"
+ */
+function builtMarkerPath(targetPath:FilePath) : FilePath {
+	const lastSlash = targetPath.lastIndexOf('/');
+	return lastSlash < 0
+		? `.${targetPath}.built`
+		: targetPath.substring(0, lastSlash+1) + '.' + targetPath.substring(lastSlash+1) + '.built';
+}
+
+async function writeBuiltMarker(targetPath:FilePath) : Promise<void> {
+	const marker = builtMarkerPath(targetPath);
+	await mkdir(marker.substring(0, marker.lastIndexOf('/')) || '.');
+	await Deno.writeTextFile(marker, `Hardlink timestamp for ${targetPath}\n`);
+}
+
+/**
+ * Builder mtime override: max(file mtime, sidecar mtime).
+ * A sidecar can only *raise* confidence -- it never masks what the
+ * filesystem already knows (e.g. a hand-edited target whose sidecar
+ * was left behind).  A missing target returns undefined so mtimeR's
+ * own stat yields 'not found' -- never up-to-date, rebuild or error
+ * from there as the graph dictates.
+ */
+const warnedOrphanMarkers = new Set<FilePath>();
+async function mtimeWithBuiltMarkers(path:string) : Promise<number|undefined> {
+	let fileMtime : number|undefined = undefined;
+	let fileMissing = false;
+	try {
+		fileMtime = (await Deno.stat(path)).mtime?.getTime();
+	} catch( e ) {
+		if( (e as Error).name != 'NotFound' ) throw e;
+		fileMissing = true;
+	}
+	let markerMtime : number|undefined = undefined;
+	try {
+		markerMtime = (await Deno.stat(builtMarkerPath(path))).mtime?.getTime();
+	} catch( e ) {
+		if( (e as Error).name != 'NotFound' ) throw e;
+	}
+	if( fileMissing ) {
+		if( markerMtime != undefined && !warnedOrphanMarkers.has(path) ) {
+			warnedOrphanMarkers.add(path);
+			console.warn(`WO: ${path} is missing but its built-marker survives. Where'd the file go?`);
+		}
+		return undefined; // let mtimeR's own stat produce 'not found'
+	}
+	if( fileMtime == undefined || markerMtime == undefined ) return fileMtime;
+	return Math.max(fileMtime, markerMtime);
+}
+
 const readTextFile = Deno.readTextFile;
 
 function fileExists(path:FilePath) : Promise<boolean> {
@@ -322,11 +381,6 @@ function fileExists(path:FilePath) : Promise<boolean> {
 			return Promise.reject(err);
 		}
 	});
-}
-
-function basename(path:FilePath) {
-	const lastSlashIndex = path.lastIndexOf('/');
-	return lastSlashIndex < 0 ? path : path.substring(lastSlashIndex+1);
 }
 
 /**
@@ -376,6 +430,12 @@ function onScadOutputExists(targetName:FilePath) {
 	}
 }
 
+/** Where the 'official' outputs (.stl, .png, .tef) for a part go, per the pNNxx convention */
+function outDirForPartId(partId:string) : FilePath {
+	const m = /^p(\d\d)(\d\d)(?:[\\.-].*)?$/.exec(partId);
+	return m != null ? `print-archive/p${m[1]}xx` : `print-archive/misc`;
+}
+
 function osdBuildRules(partId:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	openScadFeaturesEnabled?: OpenSCADFeatureName[],
@@ -387,15 +447,11 @@ function osdBuildRules(partId:string, opts:{
 	imageSize?: Vec2<number>,
 	presetName?: string,
 	paletteSize?: number,
+	/** Where intermediate (rendered/crushed) files go; defaults to `${outDir}/.temp` */
+	tempDir?: FilePath,
 }) : {[targetName:string]: BuildRule} {
-	let m : RegExpMatchArray | null;
-	let outDir : FilePath;
-	if( (m = /^p(\d\d)(\d\d)(?:[\\.-].*)?$/.exec(partId)) != null ) {
-		outDir = `print-archive/p${m[1]}xx`;
-	} else {
-		outDir = `print-archive/misc`;
-	}
-	const tempDir = `${outDir}/.temp`;
+	const outDir = outDirForPartId(partId);
+	const tempDir = opts.tempDir ?? `${outDir}/.temp`;
 	
 	const renderSize = opts.renderSize ?? [defaultRenderSize, defaultRenderSize];
 	const paletteSize = opts.paletteSize ?? 36;
@@ -435,7 +491,8 @@ function osdBuildRules(partId:string, opts:{
 
 	let inConfigFile : FilePath | undefined;
 	if( opts.presetName != undefined ) {
-		if( (m = /^(.*?)\.scad$/.exec(opts.inScadFile)) != null ) {
+		const m = /^(.*?)\.scad$/.exec(opts.inScadFile);
+		if( m != null ) {
 			inConfigFile = `${m[1]}.json`;
 		}
 	}
@@ -602,6 +659,176 @@ function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	})));
 }
 
+type ResourceRef =
+	{ kind: "content-urn", urn: string } |
+	{ kind: "remote-url", url: string } |
+	{ kind: "local-file", path: FilePath };
+
+/**
+ * Parses an S0039 'resource name' (see the rules linked there at
+ * ../Scratch38-S0039/README.md#resource-names); unlike S0039 we're not
+ * interactive, so '-' and empty string are errors.
+ */
+function decodeResourceName(ref:string) : ResourceRef {
+	if( ref == "" ) throw new Error("Empty resource name");
+	if( ref == "-" ) throw new Error("Resource name '-' (stdin/stdout) is meaningless in a build rule");
+	if( /^[a-zA-Z][a-zA-Z0-9+\-.]*:/.test(ref) ) {
+		// A single letter before the colon, lower- or upper-case, can't be
+		// an RFC scheme; if it's followed by a slash it's a Windows drive:
+		if( /^[A-Za-z]:[\\/]/.test(ref) ) return { kind: "local-file", path: normalizeLocalPath(ref) };
+		if( ref.startsWith("urn:") ) {
+			if( /^urn:bitprint:[A-Za-z2-7]{32}\.[A-Za-z2-7]{39}$/.test(ref) ) {
+				return { kind: "content-urn", urn: ref };
+			}
+			throw new Error(`Only urn:bitprint is fetchable in a build rule; got '${ref}'`);
+		} else if( ref.startsWith("file:") ) {
+			// file:///path drops the empty-authority 'localhost':
+			return { kind: "local-file", path: normalizeLocalPath(ref.substring("file:".length).replace(/^\/\/(localhost)?/,'')) };
+		} else if( ref.startsWith("http:") || ref.startsWith("https:") ) {
+			return { kind: "remote-url", url: ref };
+		} else {
+			throw new Error(`Unrecognized URI scheme in resource name '${ref}' (supported: urn:bitprint, http, https, file)`);
+		}
+	}
+	// Anything else -- even colons in weird places -- is a file path:
+	return { kind: "local-file", path: normalizeLocalPath(ref) };
+}
+
+/** Canonical build-target spelling: './'-prefixed == bare, so one file is one graph node. */
+function normalizeLocalPath(path:string) : FilePath {
+	path = path.replaceAll('\\','/');
+	return path.startsWith("./") ? path.substring(2) : path;
+}
+
+/** Ref mangled into a Windows-safe filename fragment; '-' before the extension is dropped. */
+function resourceRefFilePart(ref:string) : string {
+	return '-' + ref.replaceAll(':', '-').replaceAll('/', '-').replaceAll('\\', '-').replace(/-(?=\.[^.\/\\]+$)/, '');
+}
+
+/**
+ * Similar to osdBuildRules, but sources the geometry from an existing STL
+ * (resource name: URI or path) via a generated one-line STL-importing .scad
+ * in `${outDir}/.temp`; local files are prereqs in place,
+ * so they can themselves be build targets.
+ */
+function fromStlBuildRules(partId:string, stlRef:string, opts:{
+	openScadCmd?: OpenSCADCmd,
+	openScadFeaturesEnabled?: OpenSCADFeatureName[],
+	cameraPosition?: Vec3<number>,
+	cameraPositions?: {[cameraName:string]: Vec3<number>},
+	renderSize?: Vec2<number>,
+	imageRotation?: number,
+	imageSize?: Vec2<number>,
+	paletteSize?: number,
+}={}) : {[targetName:string]: BuildRule} {
+	const outDir = outDirForPartId(partId);
+	const tempDir = `${outDir}/.temp`;
+	const ref = decodeResourceName(stlRef);
+	
+	// The ref in the cached filename means swapping stlRef rebuilds rather
+	// than trusting a stale file; only same-URL content changes slip past.
+	// (URNs' embedded '.' doesn't read as an extension; append one.)
+	const refExt = /\.[A-Za-z0-9]{1,5}$/.test(basename(stlRef)) ? '' : '.stl';
+	const fetchedStlPath = ref.kind == "local-file" ? ref.path : `${tempDir}/${partId}${resourceRefFilePart(stlRef)}${refExt}`;
+	const archiveStlPath = `${outDir}/${partId}.stl`;
+	const generatedScadPath = `${tempDir}/${partId}-${fromStlBuilderVersion}.scad`;
+	
+	// A local ref may already be the archive output; then the rule below
+	// must be dropped, not overridden: any rule there -- even a self-
+	// hardlink -- cycles (archive.stl -> wrapper.scad -> archive.stl),
+	// which the builder deadlocks on.  Remote refs land in .temp, so
+	// they can't self-collide.
+	const refIsOwnOutput = ref.kind == "local-file" && fetchedStlPath == archiveStlPath;
+	
+	const rules : {[targetName:string]: BuildRule} = {};
+	
+	if( ref.kind != "local-file" ) {
+		rules[fetchedStlPath] = {
+			targetType: "file",
+			description: `Fetch ${stlRef}`,
+			prereqs: ["make.ts"],
+			async invoke(ctx:BuildContext) {
+				await mkRoom(ctx.targetName);
+				const url = ref.kind == "content-urn" ?
+					// The trailing filename is decorative; the resolver serves by hash.
+					`${URI_RES_RAW_BASE}/${encodeURIComponent(ref.urn)}/${basename(ctx.targetName)}` :
+					ref.url;
+				const res = await fetch(url);
+				if( !res.ok ) {
+					throw new Error(`Failed to fetch ${stlRef} for ${partId}: ${res.status} ${res.statusText} (${url})`);
+				}
+				// Write to a scratch name, verify, then rename, so a
+				// crash/truncation mid-download can never leave a bad
+				// file at the target for future runs to trust.
+				const tmpPath = `${ctx.targetName}.partial-${Date.now()}`;
+				{
+					using outFile = await Deno.open(tmpPath, {write:true, create:true, truncate:true});
+					// pipeTo closes (and thus flushes) the writable on completion:
+					await res.body!.pipeTo(outFile.writable);
+				}
+				if( ref.kind == "content-urn" ) {
+					// Disagreeing with the URN?  Fail rather than archive lies.
+					const actualUrn = await hashFile(tmpPath, BITPRINT_ALGORITHM);
+					const expectedUrn = BITPRINT_ALGORITHM.getUrn(BITPRINT_ALGORITHM.decodeUrn(ref.urn));
+					if( actualUrn != expectedUrn ) {
+						await unlink(tmpPath);
+						throw new Error(`Fetched STL for ${partId} hashes to ${actualUrn}, expected ${expectedUrn}`);
+					}
+				}
+				await Deno.rename(tmpPath, ctx.targetName);
+			},
+		};
+	}
+	
+	rules[generatedScadPath] = {
+		targetType: "file",
+		description: `Generate ${partId}.scad wrapper importing ${stlRef}`,
+		// For local files, this prereq *is* the STL: if it's built by
+		// another rule, building this wrapper builds it first.
+		prereqs: [fetchedStlPath, "make.ts"],
+		async invoke(ctx:BuildContext) {
+			await mkRoom(ctx.targetName);
+			// Relative to the wrapper (bare filename for siblings); absolute
+			// when no shared base can be proven.
+			const importPath = relativePath(ctx.targetName, fetchedStlPath).replaceAll('\\','/');
+			await Deno.writeTextFile(ctx.targetName,
+				`// Generated by fromStlBuildRules in make.ts; imports ${stlRef}\n`+
+				`import("${importPath}");\n`
+			);
+		},
+	};
+	
+	// osd's rule here would re-render the .scad through OpenSCAD to
+	// reproduce bits we already have, lossily.  Hardlink the source
+	// instead.  (Wrapper .scad remains, for the PNG renders; a
+	// refIsOwnOutput key gets dropped again below.)
+	const stlOverride : {[targetName:string]: BuildRule} = {
+		[archiveStlPath]: {
+			targetType: "file",
+			description: `Hardlink ${stlRef} in place of an OpenSCAD STL export`,
+			prereqs: [fetchedStlPath, "make.ts"],
+			async invoke(ctx:BuildContext) {
+				await mkRoom(ctx.targetName);
+				await run({argv: ["x:Hardlink", ctx.prereqNames[0], ctx.targetName]});
+			}
+		},
+	};
+	
+	const osdRules = osdBuildRules(partId, {
+		...opts,
+		inScadFile: generatedScadPath,
+		tempDir,
+	});
+	// stlOverride must be last: ${archiveStlPath} is the one key it
+	// shares with osdRules, and ours is the rule we want.
+	// We only ever mutate `allRules`, which this statement creates;
+	// osdRules is left untouched, as it isn't ours to modify.
+	const allRules = {...rules, ...osdRules, ...stlOverride};
+	// Don't generate a build rule for the STL if it's the input!
+	if( refIsOwnOutput ) delete allRules[archiveStlPath];
+	return allRules;
+}
+
 /**
  * Generate a list of IDs of the form prefix + decimal-encoded integer
  * for the given prefix and numbers between (inclusive) start and end
@@ -673,6 +900,7 @@ const DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS : {[cameraName:string]: Vec3<
 
 // Something like this.
 const builder = new Builder({
+	mtimeFunction: mtimeWithBuiltMarkers,
 	rules: {
 		...multiOsdBuildRules("2023/board-clip/OuterAngleJig-v2.scad", [
 			"p1162", "p1164", "p1165", "p1210", "p1211",
@@ -851,6 +1079,21 @@ const builder = new Builder({
 		...multiOsdBuildRules("2023/phone-holder/BrickHolder2.scad", ["p1964", "p1965", "p1966"], {
 			cameraPosition: [-15,-20, 20],
 			imageSize: [256,256],
+		}),
+		...fromStlBuildRules("p1981", "urn:bitprint:MGKZVCIBPGFPW5JBYWNECGXU4OVLAGJS.COGGMCKBECTOWJHYC2I3IL6N6NJJ37WAFXS4NXI", {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-15,-20, 20],
+			paletteSize: 128
+		}),
+		...fromStlBuildRules("p1982", "urn:bitprint:RQWMFCONEY7E2N54DBSC5RLH7LCCIGGZ.HLTKRDPPCKWLPXGSR5JJLOZK3C632DQHYR2FEWQ", {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-15,-20, 20],
+			paletteSize: 128
+		}),
+		...fromStlBuildRules("p1983", "urn:bitprint:OM7GXKXPA4SPDPDVMEQDFLENWQGJOMMU.2OX3FWWEHLIRYLHDAUCLGEVD7VXC7NAGJMFNLBA", {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-15,-20, 20],
+			paletteSize: 128
 		}),
 		...multiOsdBuildRules("2023/phone-holder/BrickHolder2.scad", [
 			"p2067","p2076","p2077","p2323","p2331","p2338","p2379",
@@ -1929,3 +2172,6 @@ if( import.meta.main ) {
 	}
 	Deno.exit(await builder.processCommandLine(pass_args));
 }
+
+// Exported for make.io.test.ts (built-marker machinery):
+export { mtimeWithBuiltMarkers, builtMarkerPath, run };
