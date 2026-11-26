@@ -53,23 +53,23 @@ type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for mor
  * faster; purely advisory, for selection).
  * 'complex-list-parameters': arrays of strings / mixed-type lists as
  * -P customizer values.  Plain string parameters work everywhere;
- * complex lists are silently DROPPED (not rejected) by OpenSCAD 2024,
- * rendering defaults with no warning -- which is the whole reason a
- * feature token exists for this.
+ * only 2021.01 accepts complex lists -- 2024+ silently DROPS them
+ * (rendering defaults with no warning), which is the whole reason a
+ * feature token exists for this.  Confirmed by the architect
+ * 2026-11-26.
  */
 type CommandProfile = { features: string[], speedRank: number };
 const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
 	[OPENSCAD202101_CMD]:     { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
-	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
-	[OPENSCAD20261031_CMD]:   { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
-	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold", "complex-list-parameters"], speedRank: 2 },
+	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal"], speedRank: 1 },
+	[OPENSCAD20261031_CMD]:   { features: ["csg-engine:cgal"], speedRank: 1 },
+	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold"], speedRank: 2 },
 };
-const DEFAULT_OSD_FEATURES = ["complex-list-parameters"]; // assumed of every command for now
 
 /**
- * Pick the command for a .scad given its parsed directives:
- * a pin must satisfy the requires list; otherwise the fastest
- * command that does, falling back to the default command.
+ * Pick the command for a .scad given its parsed options:
+ * a pin must satisfy the requires list; otherwise the default
+ * command if it does, else the fastest that does.
  * Unparseable/duplicate 'prefers:' tokens warn (they're wishes);
  * unknown 'requires:' tokens throw (they're contracts).
  */
@@ -92,6 +92,11 @@ function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : 
 		}
 		return d.pin as OpenSCADCmd;
 	}
+	// Preferences are tie-breakers for requirements the default can't
+	// meet, not global overrides: if the default already satisfies
+	// requires, it stays (otherwise 'prefers=speed:fast' anywhere
+	// would quietly migrate every unrequiring file to manifold).
+	if( qualifying(DEFAULT_OPENSCAD_CMD as OpenSCADCmd) ) return DEFAULT_OPENSCAD_CMD as OpenSCADCmd;
 	let best:OpenSCADCmd|undefined;
 	for( const cmd of Object.keys(OPENSCAD_COMMAND_PROFILES) as OpenSCADCmd[] ) {
 		if( !qualifying(cmd) ) continue;
@@ -99,7 +104,6 @@ function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : 
 		const bestRank = best != undefined ? OPENSCAD_COMMAND_PROFILES[best].speedRank : -1;
 		if( rank > bestRank ) best = cmd;
 	}
-	// (speed is a preference, so unsatisfiable is fine: fall back)
 	return best ?? (DEFAULT_OPENSCAD_CMD as OpenSCADCmd);
 }
 
@@ -1035,6 +1039,25 @@ const builder = new Builder({
 					let threw = false;
 					try { selectOpenscadCommand(d,warn); } catch(_e) { threw = true; }
 					if( !threw ) throw new Error("expected contradiction error");
+				});
+				check("complex-list pin contradiction caught (the FrenchCleat hazard)", () => {
+					// Only 2021.01 honors complex-list parameters; a 2024 pin
+					// that requires them must fail at selection time rather
+					// than silently rendering defaults:
+					const d = parseScadOptions(`// tog-scad-options: openscad=x:OpenSCAD20240727Com; requires=complex-list-parameters`).options!;
+					let threw = false;
+					try { selectOpenscadCommand(d,warn); } catch(_e) { threw = true; }
+					if( !threw ) throw new Error("expected contradiction error");
+				});
+				check("complex-list requirement selects 2021", () => {
+					const d = parseScadOptions(`// tog-scad-options: requires=complex-list-parameters`).options!;
+					if( selectOpenscadCommand(d,warn) != OPENSCAD202101_CMD ) throw new Error("wrong pick");
+				});
+				check("preference alone doesn't override the default", () => {
+					// Regression: speedRank must only break ties among
+					// commands the default *fails* to satisfy:
+					const d = parseScadOptions(`// tog-scad-options: prefers=speed:fast`).options!;
+					if( selectOpenscadCommand(d,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
 				});
 				check("unknown required feature -> error", () => {
 					const d = parseScadOptions(`// tog-scad-options: requires=csg-engine:quantum`).options!;
