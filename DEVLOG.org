@@ -339,3 +339,17 @@ to prevent), a vacuous wiring test (deleted; replaced by checks
 for the intersection error and, via profile injection, the
 speed:fast ranking branch, which was otherwise unreachable), and
 an unguarded profile lookup in missingFeatures (?-chained).
+
+** [2026-11-26 Fri] - Live known-features set (cross-session review, round 3) - Master Qwen (Qwen3.8 Flash)
+
+Reviewer Qwen, re-reviewing the cross-session reply (they ran the
+suites themselves), found that ~allFeatures~ was a module-load
+snapshot of the mutable ~OPENSCAD_COMMAND_PROFILES~: known-token
+checks and qualification read different universes.  Benign while
+tests re-rank only, venomous the moment one injects a provider of a
+new token -- and "tests mutate the table" is exactly what this
+branch does.  Fixed: the set is computed inside
+~selectOpenscadCommand~ per call (tiny table, trivial cost).
+New self-check injects such a token and, as due diligence, the
+snapshot was briefly resurrected to confirm the check catches it
+(it printed 'stale snapshot', as it should).
