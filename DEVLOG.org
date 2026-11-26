@@ -199,3 +199,12 @@ than re-running the lexical logic under test.
 ~resolvePathPure~'s drive handling and ~relativePath~'s segment
 model both had off-by-one bugs the tests caught on day one --
 exactly why they're worth having.
+
+** [2026-11-25 Wed] - IO tests live in <basename>.io.test.ts - Master Qwen (Qwen3.8 Flash)
+
+Convention from the architect: tests that touch the filesystem go
+in ~<basename>.io.test.ts~, keeping the plain ~<basename>.test.ts~
+runnable under bare ~deno test~ with no permission flags.  The
+suffix still matches Deno's default discovery glob, so directory
+runs pick up both.  ~pathutil.test.ts~ is now purely lexical; the
+realpath-oracle moved to ~pathutil.io.test.ts~.

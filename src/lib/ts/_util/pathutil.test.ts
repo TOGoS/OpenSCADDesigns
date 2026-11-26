@@ -1,4 +1,5 @@
-// Run with: deno test --allow-read --allow-write (the filesystem oracle needs a temp dir)
+// Pure-lexical tests: no I/O, so `deno test` needs no permission flags.
+// The filesystem-based oracle lives in pathutil.io.test.ts.
 import { assertEquals } from 'https://deno.land/std@0.119.0/testing/asserts.ts';
 import { normalizePath, basename, relativePath } from './pathutil.ts';
 
@@ -100,35 +101,4 @@ Deno.test("relativePath: Windows drives", () => {
 
 Deno.test("relativePath: degenerate same path", () => {
 	assertEquals(relativePath('sub/a.stl', 'sub/a.stl', CWD), 'a.stl');
-});
-
-// Oracle: for every (from,to) pair, materialize both under a real
-// temp tree, then let the OS itself resolve the relative path:
-// realpath(dirname(from) + '/' + rel) must equal realpath(to).
-// (Filesystem-based, deliberately independent of the lexical code
-// under test.  Drive-letter pairs are skipped: this box has no
-// C: drive, and their handling is covered by explicit asserts.)
-const PAIRS : [string,string][] = [
-	['print-archive/p19xx/.temp/w.scad','print-archive/p19xx/.temp/x.stl'],
-	['print-archive/p19xx/.temp/w.scad','sub/known.stl'],
-	['print-archive/p19xx/.temp/w.scad','sub/../other/x.stl'],
-	['a.scad','b.stl'],
-	['a/b/w.scad','deep/c/x.stl'],
-];
-Deno.test("relativePath: filesystem roundtrip oracle", async () => {
-	const root = await Deno.makeTempDir();
-	for( const [from,to] of PAIRS ) {
-		const fromAbs = from.startsWith('/') ? from : `${root}/${from}`;
-		const toAbs = to.startsWith('/') ? to : `${root}/${to}`;
-		const dirOf = (p:string) => p.substring(0, p.lastIndexOf('/')) || '/';
-		await Deno.mkdir(dirOf(fromAbs), {recursive:true});
-		await Deno.mkdir(dirOf(toAbs), {recursive:true});
-		await Deno.writeTextFile(fromAbs, 'w');  // realpath resolves the full path, not just its dir
-		await Deno.writeTextFile(toAbs, 'x');
-		const rel = relativePath(fromAbs, toAbs, CWD);
-		const resolved = await Deno.realPath(`${dirOf(await Deno.realPath(fromAbs))}/${rel}`);
-		const want = await Deno.realPath(toAbs);
-		assertEquals(resolved, want, `fs roundtrip failed for (${from} -> ${to}) via ${rel}`);
-	}
-	await Deno.remove(root, {recursive:true});
 });
