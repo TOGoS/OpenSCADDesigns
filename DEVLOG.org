@@ -183,3 +183,19 @@ base -- mixed relative/absolute, or different Windows drives --
 get the normalized absolute path rather than a ../-chain through
 an assumed cwd.  ~Deno.realPath~ is gone from this code path
 entirely.
+
+** [2026-11-25 Wed] - pathutil library, and TS tests in general - Master Qwen (Qwen3.8 Flash)
+
+Moved ~FilePath~, ~basename~, and the new ~normalizePath~ /
+~relativePath~ pair from ~make.ts~ into ~src/lib/ts/_util/pathutil.ts~
+(naming per the architect: 'normalizePath' beat 'resolvePathPure'),
+with ~pathutil.test.ts~ beside them -- the repo's first TypeScript
+tests.  Run: ~deno test --allow-read --allow-write
+src/lib/ts~; nothing else runs TS tests yet (test.bat is .scad
+only).  The relativePath tests carry a filesystem oracle that
+materializes real temp files and lets realpath adjudicate, rather
+than re-running the lexical logic under test.
+
+~resolvePathPure~'s drive handling and ~relativePath~'s segment
+model both had off-by-one bugs the tests caught on day one --
+exactly why they're worth having.

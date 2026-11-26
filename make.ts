@@ -3,6 +3,7 @@
 import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@0.5.19/Builder.ts';
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
+import { type FilePath, basename, relativePath } from './src/lib/ts/_util/pathutil.ts';
 
 //// Utility functions
 
@@ -55,8 +56,6 @@ const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 // Base URL for fetching files by content hash; see also the
 // `openscad-rendering-ref` URLs written into .tef files below.
 const URI_RES_RAW_BASE = "http://picture-files.nuke24.net/uri-res/raw";
-
-type FilePath = string;
 
 const defaultRenderSize = 3072;
 // Version numbers to change when I break/fix stuff:
@@ -364,65 +363,6 @@ function fileExists(path:FilePath) : Promise<boolean> {
 			return Promise.reject(err);
 		}
 	});
-}
-
-function basename(path:FilePath) {
-	const lastSlashIndex = path.lastIndexOf('/');
-	return lastSlashIndex < 0 ? path : path.substring(lastSlashIndex+1);
-}
-
-/**
- * Makes a path absolute without touching the filesystem (a target of
- * another build rule might not exist yet, so Deno.realPath would fail):
- * folds '\\' to '/', drops '.' segments, resolves '..' lexically, and
- * leaves drive- or root-anchored paths alone.
- */
-function resolvePathPure(path:FilePath) : FilePath {
-	path = path.replaceAll('\\','/');
-	const drive = /^[A-Za-z]:/.exec(path)?.[0] ?? '';
-	const rooted = path.startsWith('/') || drive != '';
-	const out : string[] = [];
-	// (index 0 of a drive path is the 'C:/' segment; skip it, the drive
-	// is re-attached at the end)
-	for( const seg of path.split('/').slice(drive != '' ? 1 : 0) ) {
-		if( seg == '' || seg == '.' ) continue;
-		if( seg == '..' ) {
-			if( out.length > 0 && out[out.length-1] != '..' ) out.pop();
-			else if( !rooted ) out.push('..');
-			continue;
-		}
-		out.push(seg);
-	}
-	const joined = out.join('/');
-	if( drive != '' ) return drive + '/' + joined;
-	if( rooted ) return '/' + joined;
-	return joined == '' ? '.' : joined;
-}
-
-/**
- * Expresses `toPath` relative to the *directory containing* `fromPath`
- * (both may be relative or absolute; relative ones are resolved
- * against the process cwd).  Purely lexical -- never stats -- so it
- * works for build targets that don't exist yet.
- * Paths on different Windows drives have no relative path; that (rare)
- * case falls back to the resolved absolute form.
- */
-function relativePath(fromPath:FilePath, toPath:FilePath) : FilePath {
-	const abs = (p:string) => {
-		const r = resolvePathPure(p);
-		if( r.startsWith('/') || /^[A-Za-z]:/.test(r) ) return r;
-		return resolvePathPure(`${Deno.cwd()}/${r}`);
-	};
-	const fromDir = abs(fromPath).split('/').slice(0,-1).join('/') || '/';
-	const to = abs(toPath);
-	if( /^[A-Za-z]:/.exec(fromDir)?.[0] != /^[A-Za-z]:/.exec(to)?.[0] ) return to;
-	const fromSegs = fromDir.split('/'), toSegs = to.split('/');
-	let common = 0;
-	while( common < fromSegs.length && common < toSegs.length && fromSegs[common] == toSegs[common] ) ++common;
-	const ups = fromSegs.slice(common).filter(s => s != '').length;
-	const downs = toSegs.slice(common);
-	const rel = [...map(Array(ups),() => '..'), ...downs];
-	return rel.length == 0 ? '.' : rel.join('/');
 }
 
 /**
