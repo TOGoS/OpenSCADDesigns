@@ -1,32 +1,21 @@
-// Purely lexical path helpers: nothing here touches the filesystem,
-// so they're usable for build targets that don't exist yet (unlike
-// Deno.realPath).
+// Purely lexical path helpers -- no filesystem access, so they work on
+// targets that don't exist yet (unlike Deno.realPath).
 
 export type FilePath = string;
 
-/**
- * The final component of a '/'-delimited path.  NB: paths are
- * slash-delimited throughout this codebase ('\\' folded early); a
- * trailing slash leaves the basename empty, matching make.ts's
- * original, deliberately-simple behavior.
- */
+/** '/'-delimited; a trailing slash leaves the basename empty. */
 export function basename(path:FilePath) : FilePath {
 	const lastSlashIndex = path.lastIndexOf('/');
 	return lastSlashIndex < 0 ? path : path.substring(lastSlashIndex+1);
 }
 
-/**
- * Makes a path absolute-free of fs access: folds '\\' to '/', drops
- * '.' and empty segments, resolves '..' lexically, and preserves
- * root- or drive-anchored paths (including their leading '/').
- */
+/** Normalizes lexically: '\'->'/'; drops '.'/empty segments; '..' clamps at anchors. */
 export function normalizePath(path:FilePath) : FilePath {
 	path = path.replaceAll('\\','/');
 	const drive = /^[A-Za-z]:/.exec(path)?.[0] ?? '';
 	const rooted = path.startsWith('/') || drive != '';
 	const out : string[] = [];
-	// (index 0 of a drive path is the 'C:/' segment; skip it, the drive
-	// is re-attached at the end)
+	// (skip 'C:' segment: re-attached at the end, else we'd get 'C:/C:/')
 	for( const seg of path.split('/').slice(drive != '' ? 1 : 0) ) {
 		if( seg == '' || seg == '.' ) continue;
 		if( seg == '..' ) {
@@ -43,19 +32,14 @@ export function normalizePath(path:FilePath) : FilePath {
 }
 
 /**
- * Expresses `toPath` relative to the *directory containing* `fromPath`,
- * purely lexically (both are normalized first; mixing relative and
- * absolute inputs treats them as sharing one base, which suits
- * build-graph paths that are all repo-root-relative).
- * Works for targets that don't exist yet -- never stats.
- * Paths on different Windows drives have no relative path; that (rare)
- * case falls back to the normalized `toPath`.
+ * Expresses `toPath` relative to the directory containing `fromPath`.
+ * Inputs with no provable shared base -- mixed relative/absolute, or
+ * different Windows drives -- just get the normalized `toPath`.
  */
 export function relativePath(fromPath:FilePath, toPath:FilePath) : FilePath {
-	// Splits a path into its anchor ('/', 'C:', or '' for relative) and
-	// the segments beneath it:
+	// anchor ('/', 'C:', or '' for relative) + segments beneath:
 	const split = (p:string) : [string,string[]] => {
-		// (no slash in the test: normalizePath may yield bare 'C:')
+		// (no trailing slash: normalizePath may yield bare 'C:')
 		const drive = /^[A-Za-z]:/.exec(p)?.[0];
 		if( drive != undefined ) {
 			return [drive, p.substring(drive.length).split('/').filter(s => s != '')];

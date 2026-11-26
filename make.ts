@@ -53,8 +53,7 @@ const OPENSCAD20261031_COM = Deno.env.get("OPENSCAD_20261031_CLI_EXE") ?? "x:Unc
 const MAGICK_EXE = Deno.env.get("MAGICK_EXE") ?? "C:/Program Files/ImageMagick-7.1.0-Q16-HDRI/magick.exe";
 const ATTRIB_EXE = "attrib"; // For `chmod -w`ing on Windows, `attrib +r`
 
-// Base URL for fetching files by content hash; see also the
-// `openscad-rendering-ref` URLs written into .tef files below.
+// Same resolver that serves the .tef `openscad-rendering-ref` URLs.
 const URI_RES_RAW_BASE = "http://picture-files.nuke24.net/uri-res/raw";
 
 const defaultRenderSize = 3072;
@@ -173,6 +172,8 @@ async function run(cmd:Commande) : Promise<void> {
 		}
 		console.log(`Hardlinking: ${dst} = ${src}`);
 		await Deno.link(src, dst);
+		// Hardlinks are a case where the timestamp on the result doesn't
+		// reflect the time it was put there, so write a 'built marker':
 		await writeBuiltMarker(dst);
 		return;
 	}
@@ -315,7 +316,13 @@ async function unlink(path:FilePath) {
 	}
 }
 
-/** "foo/bar/baz.txt" => "foo/bar/.baz.txt.built" */
+// 'built marker' = mtime-surrogate sidecar file,
+// used in cases when the target's modification time is unreliable.
+
+/**
+ * Given path to some file, returns path to corresponding modification time surrogate file.
+ * "foo/bar/baz.txt" => "foo/bar/.baz.txt.built"
+ */
 function builtMarkerPath(targetPath:FilePath) : FilePath {
 	const lastSlash = targetPath.lastIndexOf('/');
 	return lastSlash < 0
@@ -330,27 +337,38 @@ async function writeBuiltMarker(targetPath:FilePath) : Promise<void> {
 }
 
 /**
- * Builder's global mtime override: where a hardlink left a sidecar,
- * the sidecar's (fresh, uniquely-owned) mtime is the target's
- * effective build time.  A nonexistent target reports undefined so
- * mtimeR's own stat still yields 'not found' -> always rebuild,
- * never a phantom up-to-date-ness if the real file is deleted but
- * its marker survives.  (Hardlinks are the only markers we write,
- * but consulting one costs nothing for any other file.)
+ * Builder mtime override: max(file mtime, sidecar mtime).
+ * A sidecar can only *raise* confidence -- it never masks what the
+ * filesystem already knows (e.g. a hand-edited target whose sidecar
+ * was left behind).  A missing target returns undefined so mtimeR's
+ * own stat yields 'not found' -- never up-to-date, rebuild or error
+ * from there as the graph dictates.
  */
+const warnedOrphanMarkers = new Set<FilePath>();
 async function mtimeWithBuiltMarkers(path:string) : Promise<number|undefined> {
+	let fileMtime : number|undefined = undefined;
+	let fileMissing = false;
 	try {
-		await Deno.stat(path);
+		fileMtime = (await Deno.stat(path)).mtime?.getTime();
 	} catch( e ) {
-		if( (e as Error).name == 'NotFound' ) return undefined;
-		throw e;
+		if( (e as Error).name != 'NotFound' ) throw e;
+		fileMissing = true;
 	}
+	let markerMtime : number|undefined = undefined;
 	try {
-		return (await Deno.stat(builtMarkerPath(path))).mtime?.getTime();
+		markerMtime = (await Deno.stat(builtMarkerPath(path))).mtime?.getTime();
 	} catch( e ) {
-		if( (e as Error).name == 'NotFound' ) return undefined;
-		throw e;
+		if( (e as Error).name != 'NotFound' ) throw e;
 	}
+	if( fileMissing ) {
+		if( markerMtime != undefined && !warnedOrphanMarkers.has(path) ) {
+			warnedOrphanMarkers.add(path);
+			console.warn(`WO: ${path} is missing but its built-marker survives. Where'd the file go?`);
+		}
+		return undefined; // let mtimeR's own stat produce 'not found'
+	}
+	if( fileMtime == undefined || markerMtime == undefined ) return fileMtime;
+	return Math.max(fileMtime, markerMtime);
 }
 
 const readTextFile = Deno.readTextFile;
@@ -641,20 +659,16 @@ function multiOsdBuildRules(inScadFile:FilePath, partIds:string[], opts:{
 	})));
 }
 
-/**
- * Classifies a 'resource name' per the rules in
- * ../Scratch38-S0039/README.md#resource-names:
- * `urn:bitprint:` (fetched via the uri-res resolver), `http:`/`https:`
- * URLs, `file:` URIs, `-` for stdin/stdout, else a file path.
- *
- * Unlike S0039, we're not interactive, so `-` and empty string are
- * errors here.
- */
 type ResourceRef =
 	{ kind: "content-urn", urn: string } |
 	{ kind: "remote-url", url: string } |
 	{ kind: "local-file", path: FilePath };
 
+/**
+ * Parses an S0039 'resource name' (see the rules linked there at
+ * ../Scratch38-S0039/README.md#resource-names); unlike S0039 we're not
+ * interactive, so '-' and empty string are errors.
+ */
 function decodeResourceName(ref:string) : ResourceRef {
 	if( ref == "" ) throw new Error("Empty resource name");
 	if( ref == "-" ) throw new Error("Resource name '-' (stdin/stdout) is meaningless in a build rule");
@@ -676,32 +690,27 @@ function decodeResourceName(ref:string) : ResourceRef {
 			throw new Error(`Unrecognized URI scheme in resource name '${ref}' (supported: urn:bitprint, http, https, file)`);
 		}
 	}
-	// No recognized scheme (and no scheme at all); per S0039's rules,
-	// anything else -- including bare 'foo.stl' and things containing
-	// colons in weird places -- is a file path:
+	// Anything else -- even colons in weird places -- is a file path:
 	return { kind: "local-file", path: normalizeLocalPath(ref) };
 }
 
-/**
- * Canonicalizes local resource paths as build-target names:
- * forward slashes, and './'-prefixed == bare, so './foo.stl' and
- * 'foo.stl' don't become two nodes for one file in the build graph.
- */
+/** Canonical build-target spelling: './'-prefixed == bare, so one file is one graph node. */
 function normalizeLocalPath(path:string) : FilePath {
 	path = path.replaceAll('\\','/');
 	return path.startsWith("./") ? path.substring(2) : path;
 }
 
-/**
- * Resource references mangled for embedding in (Windows-safe) filenames.
- * Slashes fold to dashes; a colon that survives is from a drive path
- * (see decodeResourceName) or a pathological filename, so fold it too.
- * A trailing '-' before the extension (from ':' + ext refs) is dropped.
- */
+/** Ref mangled into a Windows-safe filename fragment; '-' before the extension is dropped. */
 function resourceRefFilePart(ref:string) : string {
 	return '-' + ref.replaceAll(':', '-').replaceAll('/', '-').replaceAll('\\', '-').replace(/-(?=\.[^.\/\\]+$)/, '');
 }
 
+/**
+ * Similar to osdBuildRules, but sources the geometry from an existing STL
+ * (resource name: URI or path) via a generated one-line STL-importing .scad
+ * in `${outDir}/.temp`; local files are prereqs in place,
+ * so they can themselves be build targets.
+ */
 function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	openScadFeaturesEnabled?: OpenSCADFeatureName[],
@@ -712,39 +721,23 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	imageSize?: Vec2<number>,
 	paletteSize?: number,
 }={}) : {[targetName:string]: BuildRule} {
-	// Re-uses osdBuildRules, feeding it a generated .scad which just
-	// import()s the STL named by stlRef (URI or file path).
-	// Local files are used directly, so they can themselves be build targets.
-	// Fetched files land in the same `${outDir}/.temp` as other build rules,
-	// e.g. "print-archive/p19xx/.temp/p1983-urn-bitprint-OM7GXKXPA4SPDPDVMEQDFLENWQGJOMMU.2OX3FWWEHLIRYLHDAUCLGEVD7VXC7NAGJMFNLBA.stl",
-	// as do generated .scad files, e.g. "print-archive/p19xx/.temp/p1983-b1328.scad"
-	// Final .stl/.png/.tef files land in `print-archive` as usual.
 	const outDir = outDirForPartId(partId);
 	const tempDir = `${outDir}/.temp`;
 	const ref = decodeResourceName(stlRef);
 	
-	// For fetched refs, the source goes into the cached filename so
-	// swapping stlRef gives a fresh target rather than a stale file
-	// that gets skipped.  For content URNs the filename is the
-	// strongest possible statement of what the bits should be; for
-	// plain URLs it at least records the source we fetched.  Only a
-	// *content change* at the same URL can slip past unnoticed.
-	// Refs usually carry their own extension; if the basename has no
-	// plausible one (e.g. URNs' embedded '.'), assume .stl.
+	// The ref in the cached filename means swapping stlRef rebuilds rather
+	// than trusting a stale file; only same-URL content changes slip past.
+	// (URNs' embedded '.' doesn't read as an extension; append one.)
 	const refExt = /\.[A-Za-z0-9]{1,5}$/.test(basename(stlRef)) ? '' : '.stl';
 	const fetchedStlPath = ref.kind == "local-file" ? ref.path : `${tempDir}/${partId}${resourceRefFilePart(stlRef)}${refExt}`;
 	const archiveStlPath = `${outDir}/${partId}.stl`;
 	const generatedScadPath = `${tempDir}/${partId}-${fromStlBuilderVersion}.scad`;
 	
-	// A local ref may name the very file the archive path points at
-	// (e.g. stlRef: 'print-archive/p19xx/p1983.stl' for p1983).  There
-	// is nothing to copy and nothing to link -- the bits are already
-	// home -- so osdBuildRules' OpenSCAD-export rule for that path
-	// must be *dropped entirely*, not overridden: keeping any rule
-	// there, or a hardlink pointing at itself, would make the archive
-	// STL depend on the wrapper that depends on the archive STL: a
-	// cycle the builder deadlocks on.  Remote refs always land in
-	// .temp, so they can't self-collide.
+	// A local ref may already be the archive output; then the rule below
+	// must be dropped, not overridden: any rule there -- even a self-
+	// hardlink -- cycles (archive.stl -> wrapper.scad -> archive.stl),
+	// which the builder deadlocks on.  Remote refs land in .temp, so
+	// they can't self-collide.
 	const refIsOwnOutput = ref.kind == "local-file" && fetchedStlPath == archiveStlPath;
 	
 	const rules : {[targetName:string]: BuildRule} = {};
@@ -774,8 +767,7 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 					await res.body!.pipeTo(outFile.writable);
 				}
 				if( ref.kind == "content-urn" ) {
-					// If the fetched copy disagrees with the URN, fail
-					// loudly rather than printing lies.
+					// Disagreeing with the URN?  Fail rather than archive lies.
 					const actualUrn = await hashFile(tmpPath, BITPRINT_ALGORITHM);
 					const expectedUrn = BITPRINT_ALGORITHM.getUrn(BITPRINT_ALGORITHM.decodeUrn(ref.urn));
 					if( actualUrn != expectedUrn ) {
@@ -796,9 +788,8 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 		prereqs: [fetchedStlPath, "make.ts"],
 		async invoke(ctx:BuildContext) {
 			await mkRoom(ctx.targetName);
-			// Express the STL relative to this wrapper's own directory:
-			// bare filename in the fetched case (sibling), ../-chains
-			// for in-place local files.  Absolute stays absolute.
+			// Relative to the wrapper (bare filename for siblings); absolute
+			// when no shared base can be proven.
 			const importPath = relativePath(ctx.targetName, fetchedStlPath).replaceAll('\\','/');
 			await Deno.writeTextFile(ctx.targetName,
 				`// Generated by fromStlBuildRules in make.ts; imports ${stlRef}\n`+
@@ -807,14 +798,10 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 		},
 	};
 	
-	// The rule for `${archiveStlPath}` generated by `osdBuildRules`
-	// exports the STL by rendering the wrapper .scad through OpenSCAD,
-	// which is pointless work, and the round-trip isn't even bit-exact.
-	// Override with our own rule for building $targetName,
-	// which hardlinks the source STL directly into the target position.
-	// (The wrapper .scad is still generated and used for the PNG renders.)
-	// In the refIsOwnOutput case this key is dropped again below; the
-	// override is harmless to define either way.
+	// osd's rule here would re-render the .scad through OpenSCAD to
+	// reproduce bits we already have, lossily.  Hardlink the source
+	// instead.  (Wrapper .scad remains, for the PNG renders; a
+	// refIsOwnOutput key gets dropped again below.)
 	const stlOverride : {[targetName:string]: BuildRule} = {
 		[archiveStlPath]: {
 			targetType: "file",
@@ -2185,3 +2172,6 @@ if( import.meta.main ) {
 	}
 	Deno.exit(await builder.processCommandLine(pass_args));
 }
+
+// Exported for make.io.test.ts (built-marker machinery):
+export { mtimeWithBuiltMarkers, builtMarkerPath, run };

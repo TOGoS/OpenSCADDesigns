@@ -2,12 +2,9 @@
 import { assertEquals } from 'https://deno.land/std@0.119.0/testing/asserts.ts';
 import { relativePath } from './pathutil.ts';
 
-// Oracle: materialize both endpoints under a real temp tree, then let
-// the OS itself resolve the relative path: realpath(dirname(from) +
-// '/' + rel) must equal realpath(to).  Filesystem-based, deliberately
-// independent of the lexical code under test.  Drive-letter pairs are
-// skipped: this box has no C: drive, and their handling is covered by
-// explicit asserts in pathutil.test.ts.
+// Oracle: materialize both endpoints in a temp tree and let realpath --
+// not the lexical code under test -- adjudicate.  Drive-letter pairs
+// live in pathutil.test.ts instead; this box has no C:.
 const PAIRS : [string,string][] = [
 	['print-archive/p19xx/.temp/w.scad','print-archive/p19xx/.temp/x.stl'],
 	['print-archive/p19xx/.temp/w.scad','sub/known.stl'],
