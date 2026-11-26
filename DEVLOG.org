@@ -279,3 +279,24 @@ recipe comment, not parameters. Threads2's manifold comment warns
 *against* the engine for some uses (mixed requirements -- left
 unmarked). The ~make.ts~ FrenchCleat comment now cites the header
 instead of folklore.
+
+** [2026-11-26 Fri] - osdBuildRules verifies recipes against file options - Master Qwen (Qwen3.8 Flash)
+
+Sentinel "pick from the file" selection is impossible, as
+anticipated: the command is baked into every intermediate target
+name (scadVariantSuffix), so it must be decided at rule-generation
+time.  What IS done: each (file, command) pair gets a memoized
+verification -- the file's requires/pin are checked against the
+recipe's choice when rules load (one read per file, not per part),
+reported as ERROR immediately, and enforced (targets fail rather
+than silently rendering defaults) at render/export invoke time.
+Missing files (generated wrapper .scads) are tolerated at
+generation.
+
+FIRST REAL CATCH: the p1916/p2638 recipes pin
+~OPENSCAD2024_MANIFOLD_CMD~ on FrenchCleat.scad, which now declares
+~requires=complex-list-parameters~ (2021.01 only).  Those archived
+renders may have been produced with default string/list params --
+needs eyeballing before either re-pinning the recipe to 2021, or
+marking the presets as genuinely param-varied (the 'no directive
+for mixed needs' convention).

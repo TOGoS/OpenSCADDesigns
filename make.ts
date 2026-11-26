@@ -520,6 +520,11 @@ function osdBuildRules(partId:string, opts:{
 
 	const { openScadCmd, implicitFeatures } =
 		toBaseScadCmdAndImplicitFeatures(opts.openScadCmd ?? DEFAULT_OPENSCAD_CMD);
+
+	// The recipe's chosen command must satisfy the file's declared
+	// needs; nothing is read here -- optionsCheck() runs the check on
+	// first awaited invoke and memoizes the verdict.
+	const optionsCheck = fileOptionsCheck(opts.inScadFile, opts.openScadCmd ?? DEFAULT_OPENSCAD_CMD);
 	
 	let scadVariantSuffix = "";
 	
@@ -602,6 +607,7 @@ function osdBuildRules(partId:string, opts:{
 		renderedPngRules[renderedPngPath] = {
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
+				await optionsCheck();
 				const exists = await fileExists(ctx.targetName);
 				if( exists && !onScadOutputExists(ctx.targetName) ) return;
 				
@@ -632,6 +638,7 @@ function osdBuildRules(partId:string, opts:{
 		[outStlPath]: {
 			prereqs,
 			invoke: async (ctx:BuildContext) => {
+				await optionsCheck();
 				const exists = await fileExists(ctx.targetName);
 				if( exists && !onScadOutputExists(ctx.targetName) ) return;
 				
@@ -701,6 +708,57 @@ function osdBuildRules(partId:string, opts:{
 		},
 		[partId]: brAlias([simplifiedStlPath, ...simplifiedPngPaths, partTefPath]),
 	};
+}
+
+/**
+ * Verify a chosen command against a file's parsed options.  Pins
+ * that disagree with the recipe's explicit command are errors (the
+ * file says 'exactly this'); requires are checked against the
+ * command's profile.  Call with await once per .scad, not per part.
+ */
+async function checkFileOptions(scadFile:FilePath, cmd:OpenSCADCmd) : Promise<void> {
+	const { options, warnings } = parseScadOptions(await readTextFile(scadFile));
+	for( const w of warnings ) console.warn(`WARN: ${scadFile}: ${w}`);
+	if( options == null ) return;
+	if( options.pin != undefined && options.pin != cmd ) {
+		throw new Error(`${scadFile} pins openscad=${options.pin}, but the recipe selects ${cmd}`);
+	}
+	for( const feat of options.requires ) {
+		if( !OPENSCAD_COMMAND_PROFILES[cmd].features.includes(feat) ) {
+			throw new Error(`${scadFile} requires ${feat}, but command ${cmd}'s profile lacks it`);
+		}
+	}
+}
+
+// A lazily-evaluated, memoized verification thunk per (file, command)
+// pair: reading/parsing happens on first *await* (i.e. when a target
+// actually wants to run OpenSCAD), never at rule-generation time, and
+// the whole fanout of parts sharing a .scad reads it at most once.
+// Not a build target -- deliberately invisible to --list-targets.
+// Violations are captured once and re-raised by every later await;
+// nothing ever rejects unhandled (a re-throwing .catch chain crashes
+// the process in Deno -- learned the hard way last commit).
+const fileOptionsChecks = new Map<string,() => Promise<void>>();
+function fileOptionsCheck(scadFile:FilePath, cmd:OpenSCADCmd) : () => Promise<void> {
+	const key = `${scadFile} ${cmd}`;
+	let thunk = fileOptionsChecks.get(key);
+	if( thunk == null ) {
+		let settled : Promise<void>|undefined;
+		thunk = () => {
+			if( settled == undefined ) {
+				settled = checkFileOptions(scadFile,cmd).then(
+					() => {},
+					(e:Error) => {
+						if( e.name == 'NotFound' ) return; // generated wrapper .scads: their producing rule enforces existence
+						return Promise.reject(e);
+					}
+				);
+			}
+			return settled;
+		};
+		fileOptionsChecks.set(key, thunk);
+	}
+	return thunk;
 }
 
 /** Build rules for multiple presets (and otherwise same settings) for one .scad */
@@ -1058,6 +1116,37 @@ const builder = new Builder({
 					// commands the default *fails* to satisfy:
 					const d = parseScadOptions(`// tog-scad-options: prefers=speed:fast`).options!;
 					if( selectOpenscadCommand(d,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
+				});
+				const ok = async(name:string, fn:() => Promise<void>) => {
+					try { await fn(); console.log(`  PASS ${name}`); }
+					catch( e ) { throw new Error(`Self-test '${name}' failed: ${(e as Error).message}`); }
+				};
+				await ok("lazy: shared thunks, nothing read at generation", async () => {
+					const t1 = fileOptionsCheck("2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD);
+					const t2 = fileOptionsCheck("2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD);
+					if( t1 !== t2 ) throw new Error("expected shared thunk");
+					let threw = false;
+					try { await t1(); } catch(_e) { threw = true; }
+					if( !threw ) throw new Error("expected contradiction on first await");
+				});
+				await ok("osdBuildRules rejects a contradictory pin", async () => {
+					// FrenchCleat requires complex-list-parameters (2021-only);
+					// second await must fail identically (memoized rejection):
+					const thunk = fileOptionsCheck("2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD);
+					let threw = false;
+					try { await thunk(); } catch(_e) { threw = true; }
+					if( !threw ) throw new Error("expected contradiction error");
+					let threw2 = false;
+					try { await thunk(); } catch(_e) { threw2 = true; }
+					if( !threw2 ) throw new Error("expected repeat contradiction");
+				});
+				await ok("osdBuildRules accepts a satisfied pin", async () => {
+					// OvalNut0 requires manifold; its recipe already pins it:
+					await fileOptionsCheck("2023/experimental/OvalNut0.scad", OPENSCAD2024_MANIFOLD_CMD)();
+				});
+				await ok("osdBuildRules tolerates a missing synthetic file", async () => {
+					// fromStl wrapper .scads don't exist until built:
+					await fileOptionsCheck("print-archive/p19xx/.temp/does-not-exist-yet.scad", DEFAULT_OPENSCAD_CMD)();
 				});
 				check("unknown required feature -> error", () => {
 					const d = parseScadOptions(`// tog-scad-options: requires=csg-engine:quantum`).options!;
@@ -2354,3 +2443,4 @@ if( import.meta.main ) {
 
 // Exported for make.io.test.ts (built-marker machinery):
 export { mtimeWithBuiltMarkers, builtMarkerPath, run };
+export { fileOptionsChecks, fileOptionsCheck, checkFileOptions, selectOpenscadCommand };
