@@ -11,9 +11,8 @@ Deno.test("basename", () => {
 	assertEquals(basename('a/b/../c.stl'), 'c.stl'); // lexical, never normalizes
 });
 
-// Fixed cwd so relative-path assertions don't depend on where the
-// test happened to be invoked from.
-const CWD = '/proj/cwd';
+// (tests are purely lexical: no cwd, no I/O -- the realpath oracle
+// lives in pathutil.io.test.ts)
 
 Deno.test("normalizePath: dot and empty segments", () => {
 	assertEquals(normalizePath('a/./b/../c.stl'), 'a/c.stl');
@@ -43,62 +42,64 @@ Deno.test("normalizePath: UNC shares the rooted branch", () => {
 
 Deno.test("relativePath: sibling in same directory -> bare filename", () => {
 	assertEquals(
-		relativePath('print-archive/p19xx/.temp/p1.scad', 'print-archive/p19xx/.temp/p1.stl', CWD),
+		relativePath('print-archive/p19xx/.temp/p1.scad', 'print-archive/p19xx/.temp/p1.stl'),
 		'p1.stl'
 	);
-	assertEquals(relativePath('./sub/a.scad', './sub/b.stl', CWD), 'b.stl');
-	assertEquals(relativePath('a.scad', 'b.stl', CWD), 'b.stl');
+	assertEquals(relativePath('./sub/a.scad', './sub/b.stl'), 'b.stl');
+	assertEquals(relativePath('a.scad', 'b.stl'), 'b.stl');
 });
 
 Deno.test("relativePath: ../-chains out of nested dirs", () => {
 	assertEquals(
-		relativePath('print-archive/p19xx/.temp/w.scad', 'sub/known.stl', CWD),
+		relativePath('print-archive/p19xx/.temp/w.scad', 'sub/known.stl'),
 		'../../../sub/known.stl'
 	);
 	assertEquals(
-		relativePath('print-archive/p19xx/.temp/w.scad', 'print-archive/p19xx/.temp/deeper/x.stl', CWD),
+		relativePath('print-archive/p19xx/.temp/w.scad', 'print-archive/p19xx/.temp/deeper/x.stl'),
 		'deeper/x.stl'
 	);
 	// '..' segments in the input are resolved before comparing:
 	assertEquals(
-		relativePath('print-archive/p19xx/.temp/w.scad', 'sub/../other/x.stl', CWD),
+		relativePath('print-archive/p19xx/.temp/w.scad', 'sub/../other/x.stl'),
 		'../../../other/x.stl'
 	);
 });
 
 Deno.test("relativePath: absolute targets, relative bases", () => {
-	// fromDir = /proj/cwd/print-archive/p19xx/.temp : 5 segments deep
+	// relative-from / absolute-to: no shared base, so no relative path;
+	// the normalized absolute target is the honest answer:
 	assertEquals(
-		relativePath('print-archive/p19xx/.temp/w.scad', '/tmp/elsewhere.stl', CWD),
-		'../../../../../tmp/elsewhere.stl'
+		relativePath('print-archive/p19xx/.temp/w.scad', '/tmp/elsewhere.stl'),
+		'/tmp/elsewhere.stl'
 	);
-	// absolute base, relative target resolves against cwd:
+	// mixed anchors (absolute from, relative to), same story:
 	assertEquals(
-		relativePath(`${CWD}/sub/w.scad`, 'sub/x.stl', CWD),
-		'x.stl'
+		relativePath('/proj/cwd/sub/w.scad', 'sub/x.stl'),
+		'sub/x.stl'
 	);
+	// both absolute: fully computable:
 	assertEquals(
-		relativePath('/proj/cwd/print-archive/p19xx/.temp/w.scad', '/tmp/elsewhere.stl', CWD),
+		relativePath('/proj/cwd/print-archive/p19xx/.temp/w.scad', '/tmp/elsewhere.stl'),
 		'../../../../../tmp/elsewhere.stl'
 	);
 });
 
 Deno.test("relativePath: Windows drives", () => {
 	assertEquals(
-		relativePath('C:/work/.temp/w.scad', 'C:/work/sub/x.stl', CWD),
+		relativePath('C:/work/.temp/w.scad', 'C:/work/sub/x.stl'),
 		'../sub/x.stl'
 	);
 	assertEquals(
-		relativePath('C:/work/.temp/w.scad', 'C:/other/x.stl', CWD),
+		relativePath('C:/work/.temp/w.scad', 'C:/other/x.stl'),
 		'../../other/x.stl'
 	);
 	// Different drives: no relative path exists; fall back to absolute.
 	assertEquals(
-		relativePath('/x/w.scad', 'C:/other/x.stl', CWD),
+		relativePath('/x/w.scad', 'C:/other/x.stl'),
 		'C:/other/x.stl'
 	);
 });
 
 Deno.test("relativePath: degenerate same path", () => {
-	assertEquals(relativePath('sub/a.stl', 'sub/a.stl', CWD), 'a.stl');
+	assertEquals(relativePath('sub/a.stl', 'sub/a.stl'), 'a.stl');
 });

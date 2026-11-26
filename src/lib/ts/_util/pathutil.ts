@@ -43,33 +43,31 @@ export function normalizePath(path:FilePath) : FilePath {
 }
 
 /**
- * Expresses `toPath` relative to the *directory containing* `fromPath`
- * (both may be relative or absolute; relative ones are resolved
- * against `cwd`, which defaults to the process cwd).  Purely lexical
- * -- never stats -- so it works for build targets that don't exist yet.
+ * Expresses `toPath` relative to the *directory containing* `fromPath`,
+ * purely lexically (both are normalized first; mixing relative and
+ * absolute inputs treats them as sharing one base, which suits
+ * build-graph paths that are all repo-root-relative).
+ * Works for targets that don't exist yet -- never stats.
  * Paths on different Windows drives have no relative path; that (rare)
- * case falls back to the resolved absolute form.
+ * case falls back to the normalized `toPath`.
  */
-export function relativePath(fromPath:FilePath, toPath:FilePath, cwd:FilePath = Deno.cwd()) : FilePath {
-	const abs = (p:string) => {
-		const r = normalizePath(p);
-		if( r.startsWith('/') || /^[A-Za-z]:/.test(r) ) return r;
-		return normalizePath(`${cwd}/${r}`);
-	};
-	// Splits an absolute path into its anchor ('/' or 'C:/') and the
-	// directory/file segments beneath it:
+export function relativePath(fromPath:FilePath, toPath:FilePath) : FilePath {
+	// Splits a path into its anchor ('/', 'C:', or '' for relative) and
+	// the segments beneath it:
 	const split = (p:string) : [string,string[]] => {
 		// (no slash in the test: normalizePath may yield bare 'C:')
 		const drive = /^[A-Za-z]:/.exec(p)?.[0];
-		return drive != undefined
-			? [drive, p.substring(drive.length).replace(/^\//,'').split('/').filter(s => s != '')]
-			: ['/', p.split('/').filter(s => s != '')];
+		if( drive != undefined ) {
+			return [drive, p.substring(drive.length).split('/').filter(s => s != '')];
+		}
+		const rooted = p.startsWith('/');
+		return [rooted ? '/' : '', p.split('/').filter(s => s != '')];
 	};
-	const fromDir = abs(fromPath).split('/').slice(0,-1).join('/') || '/';
-	const to = abs(toPath);
+	const fromDir = normalizePath(fromPath).split('/').slice(0,-1).join('/');
+	const to = normalizePath(toPath);
 	const [fromAnchor, fromSegs] = split(fromDir);
 	const [toAnchor, toSegs] = split(to);
-	if( fromAnchor.toLowerCase() != toAnchor.toLowerCase() ) return to; // cross-drive: no relative path
+	if( fromAnchor.toLowerCase() != toAnchor.toLowerCase() ) return to; // mixed or cross-drive: no relative path
 	let common = 0;
 	while( common < fromSegs.length && common < toSegs.length && fromSegs[common] == toSegs[common] ) ++common;
 	const ups = fromSegs.length - common;
