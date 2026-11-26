@@ -1117,6 +1117,16 @@ const builder = new Builder({
 			cameraPosition: [-15,-20, 20],
 			imageSize: [256,256],
 		}),
+		...fromStlBuildRules("p1981", "urn:bitprint:MGKZVCIBPGFPW5JBYWNECGXU4OVLAGJS.COGGMCKBECTOWJHYC2I3IL6N6NJJ37WAFXS4NXI", {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-15,-20, 20],
+			paletteSize: 128
+		}),
+		...fromStlBuildRules("p1982", "urn:bitprint:RQWMFCONEY7E2N54DBSC5RLH7LCCIGGZ.HLTKRDPPCKWLPXGSR5JJLOZK3C632DQHYR2FEWQ", {
+			openScadCmd: OPENSCAD202101_CMD,
+			cameraPosition: [-15,-20, 20],
+			paletteSize: 128
+		}),
 		...fromStlBuildRules("p1983", "urn:bitprint:OM7GXKXPA4SPDPDVMEQDFLENWQGJOMMU.2OX3FWWEHLIRYLHDAUCLGEVD7VXC7NAGJMFNLBA", {
 			openScadCmd: OPENSCAD202101_CMD,
 			cameraPosition: [-15,-20, 20],
