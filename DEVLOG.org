@@ -168,3 +168,18 @@ Tbuilder itself is blameless here: the hook is honored for files
 and directories alike (initial 'directory bug' finding was a
 test-harness artifact), and the sidecar idea mirrors its own
 ~touchDir~ trick for directory-mtime granularity.
+
+** [2026-11-25 Wed] - relativePath() for wrapper imports - Master Qwen (Qwen3.8 Flash)
+
+The wrapper .scad's import path was picked by a
+~fetchedStlPath.startsWith(tempDir)~ test -- a string-prefix hack
+on paths (~.temp~ vs a hypothetical ~.tempfoo~; fetched files
+happen to be siblings but that wasn't the point).  Replaced with
+a general ~relativePath(fromFile, toFile)~ (plus lexical
+~normalizePath~: no fs access, so it works for not-yet-built
+targets); fetched siblings collapse to the bare filename, local
+refs get proper ~../~ chains.  Inputs with no provable shared
+base -- mixed relative/absolute, or different Windows drives --
+get the normalized absolute path rather than a ../-chain through
+an assumed cwd.  ~Deno.realPath~ is gone from this code path
+entirely.
