@@ -300,3 +300,28 @@ renders may have been produced with default string/list params --
 needs eyeballing before either re-pinning the recipe to 2021, or
 marking the presets as genuinely param-varied (the 'no directive
 for mixed needs' convention).
+
+** [2026-11-26 Fri] - Nephew-review pass on the options machinery - Master Qwen (Qwen3.8 Flash)
+
+Applied the review round (Qwen-cousin, reviewing the branch):
+- ~missingFeatures~ is now the one qualifies-predicate, shared by
+  selection and verification (errors name the *missing* features);
+  the known-features set is hoisted.
+- ~prefers=speed:fast~ made real: rank consulted only when declared
+  (before, it tie-broke unconditionally -- dead weight).
+- Memo flattened to promise-per-pair (worker renamed
+  ~verifyFileOptions~, factory ~onceFileOptionsChecked~); nothing
+  reads at generation, and the earlier "re-throwing .catch always
+  crashes" note was wrong -- it's safe precisely because creation
+  is lazy, comment corrected.
+- Sweep: grouping map and the ~ran~ counter dropped (jobs list,
+  length-minus-failures); ~parseFileOptions~ folds the read/
+  NotFound/warnings trio.
+- Self-test: one async ~check~ helper, honest names, 13 checks
+  including promise-identity sharing and a synthetic-file wiring
+  probe.
+Declined: folding ~x:SelfTest-Options~ into ~run-build-tests~ --
+it execs ~make.ts~, whose module scope requires
+~OPENSCAD_202101_CLI_EXE~, so it would make build-tests fail on
+unconfigured machines.  Better fix (if desired): default the env
+lookup instead of erroring at load.

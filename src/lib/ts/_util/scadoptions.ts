@@ -7,32 +7,26 @@
  *   //
  *   // ...more comments...
  *
- * Convention: the options line sits just below the file's title
- * comment line, so whoever opens the file sees the constraints
- * before the code -- and deliberately NOT on line 1, where
- * emacs/vim would sniff it as their own syntax.
+ * Convention: the options line sits below the file's title comment
+ * (line 3), so it's seen before the code -- and away from line 1,
+ * which other tools sniff as *their* syntax.
  *
- * Entries are ';'-separated 'key=value' pairs (values may contain
- * '=' and '-' -- splitting is on the first '=' only, so 'x:...'
- * pseudo-commands survive; a hypothetical 'x:FooCom-Manifold' would
- * otherwise collide with comment-marker hyphens in other dialects).
- * Keys:
- * - 'openscad': exact command pin; unknown values are errors.
- * - 'requires': feature tokens the chosen command must provide;
- *   unknown tokens are errors (typos shouldn't silently pass).
+ * Entries are ';'-separated 'key=value' pairs, split on the first
+ * '=' only, so values may contain '=' and ':'.  Keys:
+ * - 'openscad': exact command pin; unknown pins are errors.
+ * - 'requires': features the chosen command must provide; unknown
+ *   tokens are errors (typos shouldn't silently pass).
  * - 'prefers': soft tokens; unknown ones warn, unsatisfiable ones
  *   don't fail (it's a wish, not a contract).
  *
- * All values must be *thunks*: machine-shaped atoms -- kebab-case,
- * optionally colon-namespaced (the 'x:' command idiom's own shape) --
- * so prose never masquerades as metadata.  The token *vocabulary*
- * (which thunks exist, what provides them) is the build system's
- * business; this library only enforces the grammar.
+ * Values must be *thunks*: machine-shaped atoms (see THUNK_RE), so
+ * prose never masquerades as metadata.  Which thunks exist, and what
+ * provides them, is the build system's business; this library only
+ * enforces the grammar.
  *
- * Returns null for files with no options line.  Lines past
- * maxScanLines land in warnings, not in the result -- the point of
- * scanning a prefix is that the options belong near the top, where
- * whoever opens the file will see them.
+ * Returns null for files with no options line; lines past
+ * MAX_SCAN_LINES warn rather than apply -- the metadata belongs near
+ * the top, where whoever opens the file will see it.
  */
 
 export type ScadOptions = {
@@ -44,11 +38,11 @@ export type ScadOptions = {
 const OPTIONS_MARKER = "tog-scad-options:",
 	  KNOWN_KEYS = new Set(["openscad", "requires", "prefers"]),
 	  THUNK_RE = /^[A-Za-z][A-Za-z0-9]*([-._+][A-Za-z0-9]+)*(?::[A-Za-z][A-Za-z0-9]*([-._+][A-Za-z0-9]+)*)?$/,
-	  maxScanLines = 20;
+	  MAX_SCAN_LINES = 20;
 
 function requireThunk(key:string, token:string) {
 	if( !THUNK_RE.test(token) ) {
-		throw new Error(`'${key}' token '${token}' is not a thunk (want machine-shaped: kebab/colon atoms, e.g. 'csg-engine:manifold' or 'x:OpenSCAD20240727Com+Manifold')`);
+		throw new Error(`'${key}' token '${token}' is not a thunk (want machine-shaped kebab/colon atoms; see scadoptions.ts header)`);
 	}
 }
 
@@ -59,8 +53,8 @@ export function parseScadOptions(text:string) : { options : ScadOptions|null, wa
 	for( let i = 0; i < lines.length; ++i ) {
 		const idx = lines[i].indexOf(OPTIONS_MARKER);
 		if( idx < 0 ) continue;
-		if( i >= maxScanLines ) {
-			warnings.push(`options line at ${i+1} ignored (beyond header zone of ${maxScanLines} lines)`);
+		if( i >= MAX_SCAN_LINES ) {
+			warnings.push(`options line at ${i+1} ignored (beyond header zone of ${MAX_SCAN_LINES} lines)`);
 			continue;
 		}
 		if( raw != undefined ) {
