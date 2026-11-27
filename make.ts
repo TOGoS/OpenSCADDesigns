@@ -107,7 +107,7 @@ const missingFeatures = (cmd:OpenSCADCmd, requires:string[]) : string[] =>
 function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
 	if( d == null ) return DEFAULT_OPENSCAD_CMD;
 	// Known-feature set computed live, not a module-load snapshot:
-	// x:SelfTest-Options mutates the profiles table, and a frozen set
+	// run-option-self-tests mutates the profiles table, and a frozen set
 	// would flag brand-new-but-provided tokens as unknown.  (Rebuilt per
 	// call; the table is tiny.)
 	const allFeatures = new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features));
@@ -1135,7 +1135,7 @@ const builder = new Builder({
 				if( failures > 0 ) throw new Error(`${failures} of ${scadPaths.length} test .scad files failed to evaluate`);
 			},
 		},
-		"x:SelfTest-Options": {
+		"run-option-self-tests": {
 			targetType: "phony",
 			description: "Exercise options parsing/selection without running OpenSCAD",
 			async invoke(_ctx:BuildContext) {
@@ -1249,16 +1249,16 @@ const builder = new Builder({
 					try { selectOpenscadCommand(opts("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
 					if( !threw ) throw new Error("expected no-provider error");
 				});
-				console.log(`x:SelfTest-Options: all checks passed (${warns.length} expected warning(s))`);
+				console.log(`run-option-self-tests: all checks passed (${warns.length} expected warning(s))`);
 			},
 		},
 		"run-build-tests": {
 			targetType: "phony",
 			description: "Run the make.ts/pathutil Deno tests",
 			async invoke(_ctx:BuildContext) {
-				// (x:SelfTest-Options runs in-process -- no env/binary needs --
+				// (run-option-self-tests runs in-process -- no env/binary needs --
 				// so it's cheap insurance here rather than only on demand:)
-				await builder.build("x:SelfTest-Options", _ctx);
+				await builder.build("run-option-self-tests", _ctx);
 				await run({argv: [Deno.execPath(), "test", "--allow-read", "--allow-write", "--allow-env", "make.io.test.ts", "src/lib/ts"]});
 			},
 		},

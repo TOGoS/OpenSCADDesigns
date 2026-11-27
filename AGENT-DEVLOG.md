@@ -50,3 +50,10 @@ alphabetical-first qualifier happens to be the old declaration-order
 winner ("x:OpenSCAD2024..." < "x:OpenSCAD2026..."), so every
 assertion survived; that coincidence is itself a reason to pin it
 with the existing two-assertion preference test rather than hope.
+
+## 2026-11-27 -- run-option-self-tests (renamed from x:SelfTest-Options) -- Reviewer Qwen
+
+The `x:` prefix marks pseudo-commands that resolve to an executable
+via run()'s alias chain; a phony test target resolves to nothing,
+and the convention asked for plain English.  Now spelled like its
+siblings: run-openscad-tests, run-build-tests, run-tests.
