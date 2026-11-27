@@ -52,33 +52,14 @@ type OpenSCADCmd =
 type OpenSCADFeatureName = "manifold"|"cgal";
 
 /**
- * Metadata the build system knows about each configured command:
- * 'features' is the vocabulary that option tokens are checked
- * against; 'speedRank' backs the 'speed:fast' preference (higher is
- * faster; purely advisory, for selection).
- * 'complex-list-parameters': arrays of strings / mixed-type lists as
- * -P customizer values.  Plain string parameters work everywhere;
- * only 2021.01 accepts complex lists -- 2024+ silently DROPS them
- * (rendering defaults with no warning), which is the whole reason a
- * feature token exists for this.  Confirmed by the architect
- * 2026-11-26.
- * 'csg-engine:*' describes the engine a command runs *by default*,
- * not the engines its binary could be argued into using -- a
- * requires: contract is only as good as the behavior you actually
- * get.  2026.10.31 defaults to Manifold ('--help' [default] tag;
- * 'manifold' is gone from its '--enable' list, having graduated).
- * Probed 2026-11-27 on OvalNut0 (genus-1 ring): plain 2026 renders
- * manifold/NoError; '--backend CGAL' trips a CGAL SNC assertion
- * and writes a mostly-empty STL with a *happy exit code* --
- * --hardwarnings does not gate that.  Which is the entire point of
- * this vocabulary.  2026 therefore gets pinned +Manifold/+CGAL
- * variants; the unpinned 'x:OpenSCAD20261031Com' claims NO engine
- * (it won't assert what it doesn't pin) -- keep it for reference,
- * prefer the variants.  (2024 plain claims cgal as its observed
- * default -- the backend option predated my noticing it.)
- * Plain-vs-pinned is provably output-neutral on 2026:
- * Bitprint-identical default vs '--backend manifold' renders
- * (2026-11-27; the option value is case-insensitive).
+ * What each command actually provides, by *default behavior* (not
+ * what its binary could be argued into): the vocabulary options are
+ * checked against, plus advisory speed ranks for 'prefers=speed:fast'.
+ * Key facts: only 2021.01 honors complex-list customizer values (2024+
+ * silently drops them); 2026's default engine is Manifold, but an
+ * unpinned 2026 command claims no engine at all -- prefer the explicit
+ * +Manifold/+CGAL variants.  Probe narratives: AGENT-DEVLOG.md,
+ * 2026-11-26/27.
  */
 type CommandProfile = { features: string[], speedRank: number };
 const OPENSCAD_COMMAND_PROFILES : Readonly<{[cmd:string]: CommandProfile}> = {
@@ -91,22 +72,15 @@ const OPENSCAD_COMMAND_PROFILES : Readonly<{[cmd:string]: CommandProfile}> = {
 };
 
 /**
- * Pick the command for a .scad given its parsed options:
- * a pin must satisfy the requires list; otherwise the default if it
- * qualifies; otherwise the alphabetically-first qualifier, or the
- * fastest with 'prefers=speed:fast'.  Qualifiers are *sorted* --
- * table declaration order never affects a pick, so rows can be
- * reordered freely without re-reasoning about selection.
- * 'requires' are contracts: unknown tokens, collectively-empty
- * intersections, and contradicting pins all throw.  'prefers' are
- * wishes: unknown tokens warn, unsatisfiable ones are ignored.
+ * Pick a command satisfying the options: the pin if declared (must
+ * satisfy requires), else the default if it qualifies, else the
+ * alphabetically-first qualifier (fastest with 'prefers=speed:fast');
+ * sorted, so table order never affects picks.  requires = contracts
+ * (throw); prefers = wishes (warn/ignore).
  */
 const missingFeatures = (profile:CommandProfile|undefined, requires:string[]) : string[] =>
 	requires.filter(f => !(profile?.features ?? []).includes(f));
 
-// profiles is a parameter (defaulting to the module table) so the
-// function is total and testable with literals; no caller mutates
-// shared state to exercise a selection edge.
 function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void,
 	profiles:Readonly<{[cmd:string]:CommandProfile}> = OPENSCAD_COMMAND_PROFILES,
 ) : OpenSCADCmd {
@@ -126,19 +100,14 @@ function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void
 		if( missing.length > 0 ) throw new Error(`Pinned command '${d.pin}' lacks required features: ${missing.join(', ')}`);
 		return cmd;
 	}
-	// The default wins whenever it qualifies; preferences break ties
-	// among commands the default *can't* satisfy, so a stray
-	// 'prefers=speed:fast' never silently migrates unrequiring files.
+	// default wins while it qualifies; preferences pick among the rest
 	if( qualifying(DEFAULT_OPENSCAD_CMD) ) return DEFAULT_OPENSCAD_CMD;
-	// Sorted: the pick depends on command NAMES and ranks, never on
-	// how the table literal happens to be keyed or ordered:
 	const qualified = Object.keys(profiles)
 		.filter(cmd => missingFeatures(profiles[cmd], d.requires).length == 0)
 		.sort();
 	if( qualified.length == 0 ) {
-		// Individually-known features with no single provider: picking
-		// any command would silently render defaults -- the exact failure
-		// class contracts exist to prevent:
+		// each known, none jointly satisfiable; any pick would silently
+		// render defaults:
 		throw new Error(`No command satisfies requires: ${d.requires.join(', ')}`);
 	}
 	if( !d.prefers.includes("speed:fast") ) return qualified[0] as OpenSCADCmd;
@@ -309,22 +278,17 @@ async function run(cmd:Commande, opts:{quiet?:boolean}={}) : Promise<void> {
 	}
 }
 		
-// How a requested engine feature is spelled for a given build.
-// Callers pass the BASE command (aliases are mapped first by
-// toBaseScadCmdAndImplicitFeatures) -- the exhaustive switch means
-// a new OpenSCADCmd member can't sneak through without deciding
-// what its engine flags look like.
+// How to spell an engine feature for one base build (aliases resolved
+// upstream; exhaustive switch forces a decision for new commands).
 function featureArgsFor(baseCmd: BaseOpenSCADCmd, f: string) : string[] {
 	switch( baseCmd ) {
 	case OPENSCAD202101_CMD:
 	case OPENSCAD20240727_CMD:
-		// Manifold-era '--enable' vocabulary; 'cgal' was always the
-		// default there, so requesting it needs no flag:
+		// '--enable' dialect; cgal is the implicit default:
 		return f == "cgal" ? [] : ["--enable", f];
 	case OPENSCAD20261031_CMD:
-		// '--enable manifold' has left the '--enable' list entirely (a
-		// warning there would fail --hardwarnings); engines are now
-		// '--backend' values:
+		// engines graduated to '--backend' values ('--enable manifold'
+		// warns, which --hardwarnings would fail on):
 		if( f == "manifold" ) return ["--backend", "Manifold"];
 		if( f == "cgal" ) return ["--backend", "CGAL"];
 		return ["--enable", f];
@@ -519,9 +483,8 @@ async function mkRoom(path:FilePath) {
 }
 
 function toBaseScadCmdAndImplicitFeatures(cmd: OpenSCADCmd) : { openScadCmd: BaseOpenSCADCmd, implicitFeatures: OpenSCADFeatureName[] } {
-	// "+Manifold"/"+CGAL" aliases return the base command plus an implicit
-	// engine feature; featureArgsFor then spells it the way that build
-	// expects ('--enable manifold' on 2021/2024, '--backend ...' on 2026).
+	// "+Manifold"/"+CGAL" aliases = base command + implicit engine
+	// feature, spelled per-build by featureArgsFor.
 	if( cmd === OPENSCAD2024_MANIFOLD_CMD ) {
 		return { openScadCmd: OPENSCAD20240727_CMD, implicitFeatures: ["manifold"] };
 	}
@@ -588,9 +551,7 @@ function osdBuildRules(partId:string, opts:{
 	const recipeCmd = opts.openScadCmd ?? DEFAULT_OPENSCAD_CMD;
 	const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(recipeCmd);
 
-	// The recipe's chosen command must satisfy the file's declared
-	// needs; nothing is read here -- optionsCheck() runs the check on
-	// first awaited invoke and memoizes the verdict.
+	// verify the recipe's command against the file's needs (lazy, invoked below)
 	const optionsCheck = onceFileOptionsChecked(opts.inScadFile, recipeCmd);
 	
 	let scadVariantSuffix = "";
@@ -778,12 +739,8 @@ function osdBuildRules(partId:string, opts:{
 }
 
 /**
- * The only function that reads a .scad for metadata (cache: mutated
- * by design -- one read+parse per file per run).  Placement
- * warnings are logged there, once, since they're a property of the
- * file rather than of any (file, command) pair.  Resolves null for
- * missing files (synthetic wrapper .scads not yet generated; their
- * producing rules enforce existence).
+ * The single metadata reader (cache: mutated by design).  Placement
+ * warnings log once at the read; missing files resolve null.
  */
 const scadOptionsCache = new Map<FilePath,Promise<OpenSCADOptions|null>>();
 function getScadOptionsForFile(scadFile:FilePath) : Promise<OpenSCADOptions|null> {
@@ -807,11 +764,8 @@ function getScadOptionsForFile(scadFile:FilePath) : Promise<OpenSCADOptions|null
 }
 
 /**
- * Pure check, tell-don't-ask: given the file's parsed options and
- * the chosen command's profile (undefined = unknown command), throw
- * on contract violations.  Pins that disagree with the recipe are
- * errors (the file says 'exactly this'); requires the profile can't
- * meet are errors.  Sync -- all I/O lives in getScadOptionsForFile.
+ * Pure/sync contract check: pin-vs-recipe and profile-vs-requires;
+ * null options (no header) pass.  Names are message-only.
  */
 function verifyFileOptions(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandProfile|undefined, options:OpenSCADOptions|null) : void {
 	if( options == null ) return;
@@ -824,11 +778,8 @@ function verifyFileOptions(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandPr
 	}
 }
 
-// Per (file, command) memo of the *verdict*, built on the per-file
-// read cache: parts sharing a file read once, and each distinct
-// (file, cmd) pair verifies once, lazily, when a target first
-// awaits it.  (Laziness keeps rejection hygiene simple: a rejection
-// created at generation would sit unobserved until the first run.)
+// Verdict memo per (file, cmd) pair over the per-file read cache;
+// lazy, so a rejection is never left unobserved at generation.
 const fileOptionsChecks = new Map<string,Promise<void>>(); // cache: mutated by design
 function onceFileOptionsChecked(scadFile:FilePath, cmd:OpenSCADCmd) : () => Promise<void> {
 	const key = `${scadFile} ${cmd}`;
@@ -1047,9 +998,7 @@ async function runScadTests(_ctx:BuildContext) {
 	// has no subdirectories; add recursion here if that changes.)
 	await scan("2023/test");
 	if( scadPaths.length == 0 ) throw new Error("No .scad test files found under 2023/test");
-	// Resolve each file's command from its options line before
-	// running anything, so a bad requires/pin fails the whole
-	// run up-front rather than halfway through.
+	// resolve all commands first: bad options fail the run up-front
 	const jobs : [OpenSCADCmd,FilePath][] = [];
 	for( const scadPath of scadPaths.sort() ) {
 		const options = await getScadOptionsForFile(scadPath);
@@ -1133,19 +1082,23 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		selectOpenscadCommand(opts("prefers=speed:lightspeed"),warn);
 		if( !warns.some(w => w.includes('speed:lightspeed')) ) throw new Error("no warning emitted");
 	});
-	await check("onceFileOptionsChecked: lazy, shared verdict, re-raising", async () => {
-		// The returned function is fresh per call by design; the
-		// *promise* (and thus the single read/verdict) is shared:
-		const pair = ["2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD] as const;
-		if( onceFileOptionsChecked(pair[0], pair[1])() !== onceFileOptionsChecked(pair[0], pair[1])() ) throw new Error("verdict not shared");
-		for( const pass of [1,2] ) { // memoized rejection re-raised per await
-			let threw = false;
-			try { await onceFileOptionsChecked(pair[0], pair[1])(); } catch(_e) { threw = true; }
-			if( !threw ) throw new Error(`expected contradiction on await #${pass}`);
-		}
+	await check("verifyFileOptions: pure contract check", () => {
+		const profile = (fs:string[]) => ({ features: fs, speedRank: 1 });
+		verifyFileOptions("f", "x:A" as OpenSCADCmd, profile(["a"]), { pin:"x:A", requires:["a"], prefers:[] });
+		verifyFileOptions("f", "x:A" as OpenSCADCmd, profile([]), null); // no header passes
+		let threw = 0;
+		try { verifyFileOptions("f", "x:B" as OpenSCADCmd, profile(["a"]), { pin:"x:A", requires:[], prefers:[] }); } catch(_e) { ++threw; }
+		try { verifyFileOptions("f", "x:B" as OpenSCADCmd, profile([]), { requires:["a"], prefers:[] }); } catch(_e) { ++threw; }
+		if( threw != 2 ) throw new Error(`expected pin+requires failures, got ${threw}`);
 	});
-	await check("satisfied file passes verification", async () => {
-		await onceFileOptionsChecked("2023/experimental/OvalNut0.scad", OPENSCAD2024_MANIFOLD_CMD)();
+	await check("onceFileOptionsChecked: wired, memoized, re-raising", async () => {
+		const pair = onceFileOptionsChecked("2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD);
+		if( pair() !== pair() ) throw new Error("verdict not shared");
+		for( const _pass of [1,2] ) { // rejection re-raised per await
+			let threw = false;
+			try { await pair(); } catch(_e) { threw = true; }
+			if( !threw ) throw new Error("expected contradiction");
+		}
 	});
 	await check("getScadOptionsForFile: one shared read per file", async () => {
 		// (cache identity, plus a canary that the annotated evidence
@@ -1155,10 +1108,6 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		if( !(await getScadOptionsForFile(fc))?.requires.includes("complex-list-parameters") ) throw new Error("FrenchCleat canary");
 		if( !(await getScadOptionsForFile("2023/experimental/OvalNut0.scad"))?.requires.includes("csg-engine:manifold") ) throw new Error("OvalNut0 canary");
 		if( await getScadOptionsForFile(`print-archive/p19xx/.temp/missing-${Deno.pid}.scad`) !== null ) throw new Error("missing file should resolve null");
-	});
-	await check("missing synthetic file tolerated", async () => {
-		// fromStl wrapper .scads don't exist until built:
-		await onceFileOptionsChecked(`print-archive/p19xx/.temp/does-not-exist-${Deno.pid}.scad`, DEFAULT_OPENSCAD_CMD)();
 	});
 	await check("backend aliases map to base+per-build flags", () => {
 		// toBaseScadCmdAndImplicitFeatures + featureArgsFor, i.e.

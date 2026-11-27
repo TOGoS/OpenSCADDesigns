@@ -362,3 +362,37 @@ back at module scope; the table is typed Readonly.  15 checks ->
 14; nothing was weakened.  (Note this supersedes the round-3
 entry's final paragraph -- that check existed, did its job, and
 has now been deleted; entries above are history, not inventory.)
+
+## [2026-11-27] Comment-trim pass, prose relocated - Master Qwen (Qwen3.8 Flash)
+
+make.ts option/profiles doc blocks cut ~60 lines of narrative down
+to load-bearing facts, per the architect's "I want to merge this
+but the blabber embarrasses me" directive.  What was cut, so it
+isn't lost:
+
+- The profiles-table rationale, in full: features describe each
+  command's DEFAULT behavior, not arguable capabilities, because a
+  requires: contract is only as good as the behavior you actually
+  get.  2026.10.31's '--help' tags Manifold as [default] and its
+  '--enable' list no longer mentions manifold at all (it graduated
+  to --backend).  Probed 2026-11-27 on OvalNut0 (genus-1 ring):
+  plain 2026 renders manifold/NoError; '--backend CGAL' trips a
+  CGAL SNC assertion and writes a mostly-empty STL with a HAPPY
+  EXIT CODE -- --hardwarnings does not gate that, which is the
+  entire reason the vocabulary exists.  So 2026 gets pinned
+  +Manifold/+CGAL variants and the unpinned alias claims NO engine
+  (it won't assert what it doesn't pin).  Plain-vs-pinned 2026 is
+  provably output-neutral: bitprint-identical renders (2026-11-27;
+  the --backend value is case-insensitive).  2024-plain claims
+  cgal as its observed default -- the backend option predated the
+  noticing.  complex-list-parameters: 2024+ silently drops
+  string-lists/mixed-lists from -P (renders defaults, no warning),
+  confirmed by the architect 2026-11-26; only 2021.01 honors them.
+- Test consolidation: verify is pure now, so the three file-based
+  async checks (lazy/shared/satisfied/missing) became two: a
+  literal-input pure verify check, and one integration check
+  through onceFileOptionsChecked (sharing + re-raising).  The
+  OvalNut0/FrenchCleat header canaries live on in the
+  getScadOptionsForFile cache check; missing-file tolerance is
+  covered there too (null resolution), so its dedicated check was
+  deleted.
