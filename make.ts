@@ -4,7 +4,7 @@ import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
 import { type FilePath, basename, relativePath } from './src/lib/ts/_util/pathutil.ts';
-import { parseOpenScadOptions, type OpenSCADOptions } from './src/lib/ts/_util/scadoptions.ts';
+import { parseScadDirectives, type ScadDirectives } from './src/lib/ts/_util/scaddirectives.ts';
 
 //// Utility functions
 
@@ -53,8 +53,8 @@ type OpenSCADFeatureName = "manifold"|"cgal";
 
 /**
  * What each command actually provides, by *default behavior* (not
- * what its binary could be argued into): the vocabulary options are
- * checked against, plus advisory speed ranks for 'prefers=speed:fast'.
+ * what its binary could be argued into): the vocabulary directives
+ * are checked against, plus advisory speed ranks for 'prefers=speed:fast'.
  * Key facts: only 2021.01 honors complex-list customizer values (2024+
  * silently drops them); 2026's default engine is Manifold, but an
  * unpinned 2026 command claims no engine at all -- prefer the explicit
@@ -72,7 +72,7 @@ const OPENSCAD_COMMAND_PROFILES : Readonly<{[cmd:string]: CommandProfile}> = {
 };
 
 /**
- * Pick a command satisfying the options: the pin if declared (must
+ * Pick a command satisfying the directives: the pin if declared (must
  * satisfy requires), else the default if it qualifies, else the
  * alphabetically-first qualifier (fastest with 'prefers=speed:fast');
  * sorted, so table order never affects picks.  requires = contracts
@@ -81,7 +81,7 @@ const OPENSCAD_COMMAND_PROFILES : Readonly<{[cmd:string]: CommandProfile}> = {
 const missingFeatures = (profile:CommandProfile|undefined, requires:string[]) : string[] =>
 	requires.filter(f => !(profile?.features ?? []).includes(f));
 
-function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void,
+function selectOpenscadCommand(d : ScadDirectives|null, warn:(msg:string)=>void,
 	profiles:Readonly<{[cmd:string]:CommandProfile}> = OPENSCAD_COMMAND_PROFILES,
 ) : OpenSCADCmd {
 	if( d == null ) return DEFAULT_OPENSCAD_CMD;
@@ -532,8 +532,8 @@ function outDirForPartId(partId:string) : FilePath {
  * The single metadata reader (cache: mutated by design).  Placement
  * warnings log once at the read; missing files resolve null.
  */
-const scadFileDirectivesPromiseCache = new Map<FilePath,Promise<OpenSCADOptions|null>>();
-function fetchScadFileDirectives(scadFile:FilePath) : Promise<OpenSCADOptions|null> {
+const scadFileDirectivesPromiseCache = new Map<FilePath,Promise<ScadDirectives|null>>();
+function fetchScadFileDirectives(scadFile:FilePath) : Promise<ScadDirectives|null> {
 	let prom = scadFileDirectivesPromiseCache.get(scadFile);
 	if( prom == null ) {
 		prom = (async () => {
@@ -544,9 +544,9 @@ function fetchScadFileDirectives(scadFile:FilePath) : Promise<OpenSCADOptions|nu
 				if( (e as Error).name != 'NotFound' ) throw e;
 				return null;
 			}
-			const { options, warnings } = parseOpenScadOptions(text);
+			const { directives, warnings } = parseScadDirectives(text);
 			for( const w of warnings ) console.warn(`WARN: ${scadFile}: ${w}`);
-			return options;
+			return directives;
 		})();
 		scadFileDirectivesPromiseCache.set(scadFile, prom);
 	}
@@ -554,15 +554,15 @@ function fetchScadFileDirectives(scadFile:FilePath) : Promise<OpenSCADOptions|nu
 }
 
 /**
- * Verify that the options required by `scadFile` are valid for the given profile.
- * Throws if not.  Required options are passed-in; `scadFile` is only for the error message.
+ * Verify that `scadFile`'s declared directives are valid for the given profile.
+ * Throws if not; `scadFile` is only for the error message.
  */
-function verifyScadFileDirectives(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandProfile|undefined, options:OpenSCADOptions|null) : void {
-	if( options == null ) return;
-	if( options.pin != undefined && options.pin != cmd ) {
-		throw new Error(`${scadFile} pins openscad=${options.pin}, but the recipe selects ${cmd}`);
+function verifyScadFileDirectives(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandProfile|undefined, directives:ScadDirectives|null) : void {
+	if( directives == null ) return;
+	if( directives.pin != undefined && directives.pin != cmd ) {
+		throw new Error(`${scadFile} pins openscad=${directives.pin}, but the recipe selects ${cmd}`);
 	}
-	const missing = missingFeatures(profile, options.requires);
+	const missing = missingFeatures(profile, directives.requires);
 	if( missing.length > 0 ) {
 		throw new Error(`${scadFile} requires ${missing.join(', ')}, but command ${cmd}'s profile lacks them`);
 	}
@@ -574,8 +574,8 @@ function getScadFileDirectivesChecker(scadFile:FilePath, cmd:OpenSCADCmd) : () =
 	return () => {
 		let prom = scadFileDirectivesCheckPromises.get(key);
 		if( prom == null ) {
-			prom = fetchScadFileDirectives(scadFile).then(options =>
-				verifyScadFileDirectives(scadFile, cmd, OPENSCAD_COMMAND_PROFILES[cmd], options));
+			prom = fetchScadFileDirectives(scadFile).then(directives =>
+				verifyScadFileDirectives(scadFile, cmd, OPENSCAD_COMMAND_PROFILES[cmd], directives));
 			scadFileDirectivesCheckPromises.set(key, prom);
 		}
 		return prom;
@@ -996,11 +996,11 @@ async function runScadTests(_ctx:BuildContext) {
 	// has no subdirectories; add recursion here if that changes.)
 	await scan("2023/test");
 	if( scadPaths.length == 0 ) throw new Error("No .scad test files found under 2023/test");
-	// resolve all commands first: bad options fail the run up-front
+	// resolve all commands first: bad directives fail the run up-front
 	const jobs : [OpenSCADCmd,FilePath][] = [];
 	for( const scadPath of scadPaths.sort() ) {
-		const options = await fetchScadFileDirectives(scadPath);
-		jobs.push([selectOpenscadCommand(options, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`)), scadPath]);
+		const directives = await fetchScadFileDirectives(scadPath);
+		jobs.push([selectOpenscadCommand(directives, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`)), scadPath]);
 	}
 	let failures = 0;
 	for( const [cmd, scadPath] of jobs ) {
@@ -1036,11 +1036,11 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		try { await fn(); console.log(`  PASS ${name}`); }
 		catch( e ) { throw new Error(`Self-test '${name}' failed: ${(e as Error).message}`); }
 	};
-	const opts = (line:string) => parseOpenScadOptions(`// tog-scad-directives: ${line}`).options!;
+	const dirs = (line:string) => parseScadDirectives(`// tog-scad-directives: ${line}`).directives!;
 	// (These use the *real* FrenchCleat/OvalNut0 headers deliberately:
 	// they double as canaries that the annotated evidence stays in place.)
 	await check("pin honored", () => {
-		if( selectOpenscadCommand(opts("openscad=x:OpenSCAD20261031Com"),warn) != OPENSCAD20261031_CMD ) throw new Error("wrong pick");
+		if( selectOpenscadCommand(dirs("openscad=x:OpenSCAD20261031Com"),warn) != OPENSCAD20261031_CMD ) throw new Error("wrong pick");
 	});
 	await check("default when unmarked", () => {
 		if( selectOpenscadCommand(null,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
@@ -1049,12 +1049,12 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		// Without the preference the alphabetically-first qualifier
 		// (2024+Manifold) wins; with it, rank-3 2026+Manifold.
 		// (Sort -- not table order -- makes this stable.)
-		if( selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong order-pick");
-		if( selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2026_MANIFOLD_CMD ) throw new Error("wrong rank-pick");
+		if( selectOpenscadCommand(dirs("requires=csg-engine:manifold"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong order-pick");
+		if( selectOpenscadCommand(dirs("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2026_MANIFOLD_CMD ) throw new Error("wrong rank-pick");
 	});
 	await check("pin contradicted by requires -> error", () => {
 		let threw = false;
-		try { selectOpenscadCommand(opts("openscad=x:OpenSCAD202101Com; requires=csg-engine:manifold"),warn); } catch(_e) { threw = true; }
+		try { selectOpenscadCommand(dirs("openscad=x:OpenSCAD202101Com; requires=csg-engine:manifold"),warn); } catch(_e) { threw = true; }
 		if( !threw ) throw new Error("expected contradiction error");
 	});
 	await check("complex-list pin contradiction caught (the FrenchCleat hazard)", () => {
@@ -1062,22 +1062,22 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		// that requires them must fail at selection rather than
 		// silently render defaults:
 		let threw = false;
-		try { selectOpenscadCommand(opts("openscad=x:OpenSCAD20240727Com; requires=complex-list-parameters"),warn); } catch(_e) { threw = true; }
+		try { selectOpenscadCommand(dirs("openscad=x:OpenSCAD20240727Com; requires=complex-list-parameters"),warn); } catch(_e) { threw = true; }
 		if( !threw ) throw new Error("expected contradiction error");
 	});
 	await check("complex-list requirement selects 2021", () => {
-		if( selectOpenscadCommand(opts("requires=complex-list-parameters"),warn) != OPENSCAD202101_CMD ) throw new Error("wrong pick");
+		if( selectOpenscadCommand(dirs("requires=complex-list-parameters"),warn) != OPENSCAD202101_CMD ) throw new Error("wrong pick");
 	});
 	await check("preference alone doesn't override the default", () => {
-		if( selectOpenscadCommand(opts("prefers=speed:fast"),warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
+		if( selectOpenscadCommand(dirs("prefers=speed:fast"),warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
 	});
 	await check("unknown required feature -> error", () => {
 		let threw = false;
-		try { selectOpenscadCommand(opts("requires=csg-engine:quantum"),warn); } catch(_e) { threw = true; }
+		try { selectOpenscadCommand(dirs("requires=csg-engine:quantum"),warn); } catch(_e) { threw = true; }
 		if( !threw ) throw new Error("expected unknown-feature error");
 	});
 	await check("unknown preference -> warned, not fatal", () => {
-		selectOpenscadCommand(opts("prefers=speed:lightspeed"),warn);
+		selectOpenscadCommand(dirs("prefers=speed:lightspeed"),warn);
 		if( !warns.some(w => w.includes('speed:lightspeed')) ) throw new Error("no warning emitted");
 	});
 	await check("verifyScadFileDirectives: pure contract check", () => {
@@ -1125,7 +1125,7 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		// Both known, no single provider; must not fall back to
 		// the default and silently render defaults (review B):
 		let threw = false;
-		try { selectOpenscadCommand(opts("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
+		try { selectOpenscadCommand(dirs("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
 		if( !threw ) throw new Error("expected no-provider error");
 	});
 	console.log(`run-option-self-tests: all checks passed (${warns.length} expected warning(s))`)
@@ -1225,7 +1225,7 @@ const builder = new Builder({
 		},
 		"run-option-self-tests": {
 			targetType: "phony",
-			description: "Exercise options parsing/selection without running OpenSCAD",
+			description: "Exercise directives parsing/selection without running OpenSCAD",
 			invoke: runOptionSelfTests,
 		},
 		"run-build-tests": {

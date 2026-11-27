@@ -413,3 +413,15 @@ labels).  Left as-is pending the architect's taste: file name
 scadoptions.ts, type OpenSCADOptions, parser name
 parseOpenScadOptions, and the {options, warnings} return field --
 all still "options"-named, now referring to the directives record.
+
+## [2026-11-27] Directives naming completed through the library - Master Qwen (Qwen3.8 Flash)
+
+The previous entry's "left as-is" holdouts are now renamed:
+scadoptions.ts -> scaddirectives.ts (+ test file), type
+OpenSCADOptions -> ScadDirectives, parseOpenScadOptions ->
+parseScadDirectives, and the parse result's 'options' field ->
+'directives' (make.ts destructures, fixtures, and error substrings
+followed).  'opts'/'options' survive only where they mean actual
+call arguments (run(), openscadCommand()), which is the whole point
+of the split.  Casing per convention: types UpperCamel, functions
+lowerCamel, helper-files lower.
