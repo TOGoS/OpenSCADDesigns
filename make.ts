@@ -101,23 +101,28 @@ const OPENSCAD_COMMAND_PROFILES : Readonly<{[cmd:string]: CommandProfile}> = {
  * intersections, and contradicting pins all throw.  'prefers' are
  * wishes: unknown tokens warn, unsatisfiable ones are ignored.
  */
-const missingFeatures = (cmd:OpenSCADCmd, requires:string[]) : string[] =>
-	requires.filter(f => !(OPENSCAD_COMMAND_PROFILES[cmd]?.features ?? []).includes(f));
-const allFeatures = new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features));
+const missingFeatures = (profile:CommandProfile|undefined, requires:string[]) : string[] =>
+	requires.filter(f => !(profile?.features ?? []).includes(f));
 
-function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
+// profiles is a parameter (defaulting to the module table) so the
+// function is total and testable with literals; no caller mutates
+// shared state to exercise a selection edge.
+function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void,
+	profiles:Readonly<{[cmd:string]:CommandProfile}> = OPENSCAD_COMMAND_PROFILES,
+) : OpenSCADCmd {
 	if( d == null ) return DEFAULT_OPENSCAD_CMD;
+	const allFeatures = new Set(Object.values(profiles).flatMap(p => p.features));
 	for( const tok of d.requires ) {
 		if( !allFeatures.has(tok) ) throw new Error(`Unknown required feature '${tok}' (known: ${[...allFeatures].join(', ')})`);
 	}
 	for( const tok of d.prefers ) {
 		if( tok != "speed:fast" ) warn(`Ignoring unknown preference '${tok}'`);
 	}
-	const qualifying = (cmd:OpenSCADCmd) => missingFeatures(cmd, d.requires).length == 0;
+	const qualifying = (cmd:OpenSCADCmd) => missingFeatures(profiles[cmd], d.requires).length == 0;
 	if( d.pin != undefined ) {
 		const cmd = d.pin as OpenSCADCmd;
-		if( OPENSCAD_COMMAND_PROFILES[cmd] == undefined ) throw new Error(`Pinned command '${d.pin}' is not a known x: pseudo-command`);
-		const missing = missingFeatures(cmd, d.requires);
+		if( profiles[cmd] == undefined ) throw new Error(`Pinned command '${d.pin}' is not a known x: pseudo-command`);
+		const missing = missingFeatures(profiles[cmd], d.requires);
 		if( missing.length > 0 ) throw new Error(`Pinned command '${d.pin}' lacks required features: ${missing.join(', ')}`);
 		return cmd;
 	}
@@ -127,8 +132,8 @@ function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void
 	if( qualifying(DEFAULT_OPENSCAD_CMD) ) return DEFAULT_OPENSCAD_CMD;
 	// Sorted: the pick depends on command NAMES and ranks, never on
 	// how the table literal happens to be keyed or ordered:
-	const qualified = Object.keys(OPENSCAD_COMMAND_PROFILES)
-		.filter(cmd => missingFeatures(cmd as OpenSCADCmd, d.requires).length == 0)
+	const qualified = Object.keys(profiles)
+		.filter(cmd => missingFeatures(profiles[cmd], d.requires).length == 0)
 		.sort();
 	if( qualified.length == 0 ) {
 		// Individually-known features with no single provider: picking
@@ -137,7 +142,7 @@ function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void
 		throw new Error(`No command satisfies requires: ${d.requires.join(', ')}`);
 	}
 	if( !d.prefers.includes("speed:fast") ) return qualified[0] as OpenSCADCmd;
-	const rankOf = (cmd:string) => OPENSCAD_COMMAND_PROFILES[cmd as OpenSCADCmd].speedRank;
+	const rankOf = (cmd:string) => profiles[cmd as OpenSCADCmd].speedRank;
 	return qualified.reduce((a,b) => rankOf(b) > rankOf(a) ? b : a) as OpenSCADCmd;
 }
 
@@ -773,46 +778,65 @@ function osdBuildRules(partId:string, opts:{
 }
 
 /**
- * Verify a chosen command against a file's parsed options.  Pins
- * that disagree with the recipe's explicit command are errors (the
- * file says 'exactly this'); requires are checked against the
- * command's profile.  Call with await once per .scad, not per part.
+ * The only function that reads a .scad for metadata (cache: mutated
+ * by design -- one read+parse per file per run).  Placement
+ * warnings are logged there, once, since they're a property of the
+ * file rather than of any (file, command) pair.  Resolves null for
+ * missing files (synthetic wrapper .scads not yet generated; their
+ * producing rules enforce existence).
  */
-async function verifyFileOptions(scadFile:FilePath, cmd:OpenSCADCmd) : Promise<void> {
-	const { options, warnings } = await parseFileOptions(scadFile);
-	for( const w of warnings ) console.warn(`WARN: ${scadFile}: ${w}`);
+const scadOptionsCache = new Map<FilePath,Promise<OpenSCADOptions|null>>();
+function getScadOptionsForFile(scadFile:FilePath) : Promise<OpenSCADOptions|null> {
+	let prom = scadOptionsCache.get(scadFile);
+	if( prom == null ) {
+		prom = (async () => {
+			let text : string;
+			try {
+				text = await readTextFile(scadFile);
+			} catch( e ) {
+				if( (e as Error).name != 'NotFound' ) throw e;
+				return null;
+			}
+			const { options, warnings } = parseOpenScadOptions(text);
+			for( const w of warnings ) console.warn(`WARN: ${scadFile}: ${w}`);
+			return options;
+		})();
+		scadOptionsCache.set(scadFile, prom);
+	}
+	return prom;
+}
+
+/**
+ * Pure check, tell-don't-ask: given the file's parsed options and
+ * the chosen command's profile (undefined = unknown command), throw
+ * on contract violations.  Pins that disagree with the recipe are
+ * errors (the file says 'exactly this'); requires the profile can't
+ * meet are errors.  Sync -- all I/O lives in getScadOptionsForFile.
+ */
+function verifyFileOptions(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandProfile|undefined, options:OpenSCADOptions|null) : void {
 	if( options == null ) return;
 	if( options.pin != undefined && options.pin != cmd ) {
 		throw new Error(`${scadFile} pins openscad=${options.pin}, but the recipe selects ${cmd}`);
 	}
-	const missing = missingFeatures(cmd, options.requires);
+	const missing = missingFeatures(profile, options.requires);
 	if( missing.length > 0 ) {
 		throw new Error(`${scadFile} requires ${missing.join(', ')}, but command ${cmd}'s profile lacks them`);
 	}
 }
 
-/** Read + parse a file's options line (no warnings printed; caller's business). */
-async function parseFileOptions(scadFile:FilePath) : Promise<{ options:OpenSCADOptions|null, warnings:string[] }> {
-	try {
-		return parseOpenScadOptions(await readTextFile(scadFile));
-	} catch( e ) {
-		if( (e as Error).name == 'NotFound' ) return { options:null, warnings:[] }; // synthetic/generated .scads
-		throw e;
-	}
-}
-
-// Lazily memoized verification per (file, command) pair: parts
-// sharing a file read/verify it once, on first call (from an invoke
-// about to await it).  Laziness also keeps rejection hygiene simple:
-// a rejection created at generation would sit unobserved until the
-// first target runs.
-const fileOptionsChecks = new Map<string,Promise<void>>();
+// Per (file, command) memo of the *verdict*, built on the per-file
+// read cache: parts sharing a file read once, and each distinct
+// (file, cmd) pair verifies once, lazily, when a target first
+// awaits it.  (Laziness keeps rejection hygiene simple: a rejection
+// created at generation would sit unobserved until the first run.)
+const fileOptionsChecks = new Map<string,Promise<void>>(); // cache: mutated by design
 function onceFileOptionsChecked(scadFile:FilePath, cmd:OpenSCADCmd) : () => Promise<void> {
 	const key = `${scadFile} ${cmd}`;
 	return () => {
 		let prom = fileOptionsChecks.get(key);
 		if( prom == null ) {
-			prom = verifyFileOptions(scadFile,cmd); // NotFound already tolerated in parseFileOptions
+			prom = getScadOptionsForFile(scadFile).then(options =>
+				verifyFileOptions(scadFile, cmd, OPENSCAD_COMMAND_PROFILES[cmd], options));
 			fileOptionsChecks.set(key, prom);
 		}
 		return prom;
@@ -1028,8 +1052,7 @@ async function runScadTests(_ctx:BuildContext) {
 	// run up-front rather than halfway through.
 	const jobs : [OpenSCADCmd,FilePath][] = [];
 	for( const scadPath of scadPaths.sort() ) {
-		const { options, warnings } = await parseFileOptions(scadPath);
-		for( const w of warnings ) console.warn(`WARN: ${scadPath}: ${w}`);
+		const options = await getScadOptionsForFile(scadPath);
 		jobs.push([selectOpenscadCommand(options, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`)), scadPath]);
 	}
 	let failures = 0;
@@ -1123,6 +1146,15 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 	});
 	await check("satisfied file passes verification", async () => {
 		await onceFileOptionsChecked("2023/experimental/OvalNut0.scad", OPENSCAD2024_MANIFOLD_CMD)();
+	});
+	await check("getScadOptionsForFile: one shared read per file", async () => {
+		// (cache identity, plus a canary that the annotated evidence
+		// FrenchCleat/OvalNut0 headers still say what the checks assume):
+		const fc = "2023/french-cleat/FrenchCleat.scad";
+		if( getScadOptionsForFile(fc) !== getScadOptionsForFile(fc) ) throw new Error("reads not shared");
+		if( !(await getScadOptionsForFile(fc))?.requires.includes("complex-list-parameters") ) throw new Error("FrenchCleat canary");
+		if( !(await getScadOptionsForFile("2023/experimental/OvalNut0.scad"))?.requires.includes("csg-engine:manifold") ) throw new Error("OvalNut0 canary");
+		if( await getScadOptionsForFile(`print-archive/p19xx/.temp/missing-${Deno.pid}.scad`) !== null ) throw new Error("missing file should resolve null");
 	});
 	await check("missing synthetic file tolerated", async () => {
 		// fromStl wrapper .scads don't exist until built:
@@ -2528,4 +2560,4 @@ if( import.meta.main ) {
 
 // Exported for make.io.test.ts (built-marker machinery):
 export { mtimeWithBuiltMarkers, builtMarkerPath, run };
-export { selectOpenscadCommand, parseFileOptions, onceFileOptionsChecked };
+export { selectOpenscadCommand, getScadOptionsForFile, verifyFileOptions, onceFileOptionsChecked };
