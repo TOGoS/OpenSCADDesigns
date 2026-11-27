@@ -114,109 +114,61 @@ With that figured out, I went ahead and changed
 ~togpath1__merge_offsets~ to omit trailing ~["offset", 0]~,
 because in most cases it was adding those offsets itself.
 
-** [2026-11-25 Wed] Implemented ~fromStlBuildRules~ - Master Qwen (Qwen3.8 Flash)
+** [2026-11-27] - ~tog-scad-directives~
 
-The stub in ~make.ts~ now takes any S0039-style 'resource name' as
-~stlRef~ (see ~decodeResourceName~: ~urn:bitprint~, ~http(s)://~,
-~file://~, plain paths) and generates, per part:
-- for remote refs, a fetch rule into ~print-archive/pNNxx/.temp/~,
-  with the mangled ref in the filename -- so swapping ~stlRef~
-  produces a fresh target instead of a stale skip -- written first
-  to a ~.partial-<ts>~ scratch file, hash-checked against the URN
-  for ~urn:bitprint~ refs, and renamed into place only on success,
-  so a mid-download crash can never leave a trusted corrupt file;
-- for local refs, no copy at all: the given path is used in place
-  and becomes a prereq of the wrapper, so an STL built by another
-  rule in this same system Just Works;
-- a rule emitting a one-line ~.scad~ wrapper that ~import()~s the
-  STL (bare filename when fetched, since the wrapper is its
-  sibling; absolute real path when used in place); and then
-- delegates everything else to ~osdBuildRules~, which I teach only
-  how to accept a ~tempDir~ override and (via a new
-  ~outDirForPartId~ helper) where the pNNxx outputs go, so the
-  final .stl/.png/.tef files land in ~print-archive~ as usual.
+I've spent some time and many commits getting coding agents
+(mostly Qwen3.8 Flash, and all inside OpenCode)
+to add a way for ~.scad~ files to declare requirements and preferences in a comment,
+and for ~make.ts~ to check that the version of OpenSCAD it's using actually meets the requirements.
 
-Since osdBuildRules would also export the STL by rendering the
-wrapper through OpenSCAD -- pointless re-generation, and not even a
-bit-exact round trip -- fromStlBuildRules overrides that one rule
-(spread order matters; there's a comment) with a hardlink of the
-source STL to ~print-archive/pNNxx/<partId>.stl~.
+The syntax we settled on:
 
-Bad fetches (non-200, hash mismatch) throw, and ~targetType:
-"file"~ makes the builder delete the target so the next run
-retries.
+#+begin_src scad
+// tog-scad-directives: requires=complex-list-parameters; prefers=speed:fast
+#+end_src
 
-** [2026-11-25 Wed] - Hardlink staleness & the .built sidecar - Master Qwen (Qwen3.8 Flash)
+("Who doesn't prefer speed:fast?" you may wonder.
+Well, this whole branch was 'an exploratory exercise';
+some YAGNI bits should not be too surprising.)
 
-A hardlink shares its source's inode, so ~stat()~ reports the
-*source's* mtime -- there's no filesystem record of when the link
-was made (and ~utime()~ on the link hits the source too, so
-restamping is out if source mtimes should be preserved).  That made
-~x:Hardlink~ targets false-skip: a rebuilt link never looks newer
-than consumers built before it.
+(Epaking of YAGNI, none of this was actually needed.
+I think I started the branch thinking it would be fun,
+rather than useful.  I'm not sure how fun it was.)
 
-Fix is marker-based, not mtime-mangling: ~x:Hardlink~ now writes a
-~.<name>.built~ sidecar next to each link, and ~make.ts~ installs
-~mtimeWithBuiltMarkers~ as Builder's ~mtimeFunction~ (a hook
-added for exactly this, now remembered), which reports the
-sidecar's mtime as the target's effective build time.  A missing
-target reports undefined so the stat still yields 'not found' ->
-always rebuild, never phantom up-to-date-ness from an orphaned
-marker after a failed build deleted its target.
+In hindsight, I suppose it was worthwhile even if only for
+the additional working-with-coding-agents experience.
 
-Tbuilder itself is blameless here: the hook is honored for files
-and directories alike (initial 'directory bug' finding was a
-test-harness artifact), and the sidecar idea mirrors its own
-~touchDir~ trick for directory-mtime granularity.
+The actual changes, now that they're written, I could have
+coded quicker myself and with much less ceremony.
+The extra tests are...possibly useful, but seem mostly just extra.
 
-** [2026-11-25 Wed] - relativePath() for wrapper imports - Master Qwen (Qwen3.8 Flash)
+The back-and-forth may have improved the resulting design,
+though I kind of think that I should have done more of my
+own thinking up front before handing it over to Qwen to implement.
+The idea that it would be a fun thing to try was also instrumental
+in making it happen at all.
 
-The wrapper .scad's import path was picked by a
-~fetchedStlPath.startsWith(tempDir)~ test -- a string-prefix hack
-on paths (~.temp~ vs a hypothetical ~.tempfoo~; fetched files
-happen to be siblings but that wasn't the point).  Replaced with
-a general ~relativePath(fromFile, toFile)~ (plus lexical
-~normalizePath~: no fs access, so it works for not-yet-built
-targets); fetched siblings collapse to the bare filename, local
-refs get proper ~../~ chains.  Inputs with no provable shared
-base -- mixed relative/absolute, or different Windows drives --
-get the normalized absolute path rather than a ../-chain through
-an assumed cwd.  ~Deno.realPath~ is gone from this code path
-entirely.
+The agents love verbose comments.
+Not just verbose, but often redunant and confusing.
+Maybe I should ask them to avoid comments in the code entirely
+until and unless we agree that one is needed.
+This way reviewers (whether myself or another AI agent)
+can focus on whether the code makes sense on its own.
 
-** [2026-11-25 Wed] - pathutil library, and TS tests in general - Master Qwen (Qwen3.8 Flash)
+Talking to the AI agents about is kind of the fun part,
+so it may be a good idea to keep them in plan mode longer
+(whether enforced by mode in OpenCode or just by instruction)
+and really clamp down on changes that we didn't talk about.
 
-Moved ~FilePath~, ~basename~, and the new ~normalizePath~ /
-~relativePath~ pair from ~make.ts~ into ~src/lib/ts/_util/pathutil.ts~
-(naming per the architect: 'normalizePath' beat 'resolvePathPure'),
-with ~pathutil.test.ts~ beside them -- the repo's first TypeScript
-tests.  Run: ~deno test --allow-read --allow-write
-src/lib/ts~; nothing else runs TS tests yet (test.bat is .scad
-only).  The relativePath tests carry a filesystem oracle that
-materializes real temp files and lets realpath adjudicate, rather
-than re-running the lexical logic under test.
+Or, when I do want to let them loose, give them their own
+space to work in so they don't pollute ~main.ts~ too much.
+Extra stuff in ~src/lib/ts~ I don't mind as much.
 
-~resolvePathPure~'s drive handling and ~relativePath~'s segment
-model both had off-by-one bugs the tests caught on day one --
-exactly why they're worth having.
+Anyway, I think I've got it tightened up enough
+that my future self will not feel *too* embarrassed
+about the 'AI slop content' of this change.
+I will cut the nitpicking now and merge to master
+so that I can moveon with other things.
 
-** [2026-11-25 Wed] - IO tests live in <basename>.io.test.ts - Master Qwen (Qwen3.8 Flash)
-
-Convention from the architect: tests that touch the filesystem go
-in ~<basename>.io.test.ts~, keeping the plain ~<basename>.test.ts~
-runnable under bare ~deno test~ with no permission flags.  The
-suffix still matches Deno's default discovery glob, so directory
-runs pick up both.  ~pathutil.test.ts~ is now purely lexical; the
-realpath-oracle moved to ~pathutil.io.test.ts~.
-
-** [2026-11-26 Thu] - test.bat is now build rules - Master Qwen (Qwen3.8 Flash)
-
-~make.ts~ gained three phony targets at the top of its rule list
-(part recipes stay at the bottom where the newest live):
-~run-openscad-tests~ (evaluates every 2023/test ~.scad~ with
-~--hardwarnings~, reporting failures the old find invocation never
-could), ~run-build-tests~ (the Deno tests), and ~run-tests~ (both).
-~test.bat~ is deleted; ~.gitignore~ now covers its
-~test-output-*.stl~ scratch files.  The OpenSCAD sweep needs
-~OPENSCAD_202101_CLI_EXE~ set -- untested against a real binary
-from this Linux box.
+If this clutters things up, we can delete the feature later.
+In the meantime, it acts as a proof-of-concept.

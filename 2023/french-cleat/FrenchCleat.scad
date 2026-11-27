@@ -1,5 +1,7 @@
 // FrenchCleat-v1.19
 // 
+// tog-scad-directives: requires=complex-list-parameters
+//
 // v1.1:
 // - Allow selection of style for each edge
 // - Allow extrusion along "X" or "Z" axis; counterbored holes are only cut when "X"
