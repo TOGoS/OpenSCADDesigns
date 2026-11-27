@@ -1011,6 +1011,181 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	return allRules;
 }
 
+// Test-runner bodies for the run-* phony targets.  The boundary:
+// above, functions that do build work; below, furniture that only
+// populates the rules dictionary.  Bodies live here so the dict
+// entries read as {targetType, description, invoke} triples.
+/** The "run-openscad-tests" phony-target body (rules dict stays an index). */
+async function runOpenscadTests(_ctx:BuildContext) {
+	// (Replaces test.bat's find -exec dance, which could never
+	// actually signal failure.)
+	const scadPaths:string[] = [];
+	async function scan(dir:FilePath) {
+		for await( const e of Deno.readDir(dir) ) {
+			if( e.name.endsWith('.scad') ) scadPaths.push(`${dir}/${e.name}`);
+		}
+	}
+	// (test.bat's '-not -path ./2023/lib/*' was moot: 2023/test
+	// has no subdirectories; add recursion here if that changes.)
+	await scan("2023/test");
+	if( scadPaths.length == 0 ) throw new Error("No .scad test files found under 2023/test");
+	// Resolve each file's command from its options line before
+	// running anything, so a bad requires/pin fails the whole
+	// run up-front rather than halfway through.
+	const jobs : [OpenSCADCmd,FilePath][] = [];
+	for( const scadPath of scadPaths.sort() ) {
+		const { options, warnings } = await parseFileOptions(scadPath);
+		for( const w of warnings ) console.warn(`WARN: ${scadPath}: ${w}`);
+		jobs.push([selectOpenscadCommand(options, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`)), scadPath]);
+	}
+	let failures = 0;
+	for( const [cmd, scadPath] of jobs ) {
+		// Resolve +Manifold/+CGAL aliases to base exe + engine
+		// flags (osdBuildRules gets this via its own mapping):
+		const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(cmd);
+		const outFile = `test-output-${basename(scadPath)}.stl`;
+		try {
+			await run({argv: [
+				openScadCmd, "--hardwarnings",
+				...implicitFeatures.flatMap(f => featureArgsFor(openScadCmd, f)),
+				"--render=useless-render-argument", // see openscadCommand
+				"--export-format=binstl",
+				"-o", outFile, scadPath,
+			]}, {quiet:true});
+		} catch( e ) {
+			++failures;
+			console.error(`ERROR EVALUATING ${scadPath} (${cmd}): ${(e as Error).message}`);
+		} finally {
+			await unlink(outFile);
+		}
+	}
+	console.log(`${scadPaths.length - failures} evaluated cleanly, ${failures} failed`);
+	if( failures > 0 ) throw new Error(`${failures} of ${scadPaths.length} test .scad files failed to evaluate`)
+}
+
+/** The "run-option-self-tests" phony-target body (rules dict stays an index). */
+async function runOptionSelfTests(_ctx:BuildContext) {
+	const warns : string[] = [];
+	const warn = (m:string) => { warns.push(m); };
+	// (check takes sync or async fns; errors propagate to fail the target)
+	const check = async(name:string, fn:() => unknown|Promise<unknown>) => {
+		try { await fn(); console.log(`  PASS ${name}`); }
+		catch( e ) { throw new Error(`Self-test '${name}' failed: ${(e as Error).message}`); }
+	};
+	const opts = (line:string) => parseScadOptions(`// tog-scad-options: ${line}`).options!;
+	// (These use the *real* FrenchCleat/OvalNut0 headers deliberately:
+	// they double as canaries that the annotated evidence stays in place.)
+	await check("pin honored", () => {
+		if( selectOpenscadCommand(opts("openscad=x:OpenSCAD20261031Com"),warn) != OPENSCAD20261031_CMD ) throw new Error("wrong pick");
+	});
+	await check("default when unmarked", () => {
+		if( selectOpenscadCommand(null,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
+	});
+	await check("speed:fast + manifold requirement", () => {
+		// Without the preference the alphabetically-first qualifier
+		// (2024+Manifold) wins; with it, rank-3 2026+Manifold.
+		// (Sort -- not table order -- makes this stable.)
+		if( selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong order-pick");
+		if( selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2026_MANIFOLD_CMD ) throw new Error("wrong rank-pick");
+	});
+	await check("pin contradicted by requires -> error", () => {
+		let threw = false;
+		try { selectOpenscadCommand(opts("openscad=x:OpenSCAD202101Com; requires=csg-engine:manifold"),warn); } catch(_e) { threw = true; }
+		if( !threw ) throw new Error("expected contradiction error");
+	});
+	await check("complex-list pin contradiction caught (the FrenchCleat hazard)", () => {
+		// Only 2021.01 honors complex-list parameters; a 2024 pin
+		// that requires them must fail at selection rather than
+		// silently render defaults:
+		let threw = false;
+		try { selectOpenscadCommand(opts("openscad=x:OpenSCAD20240727Com; requires=complex-list-parameters"),warn); } catch(_e) { threw = true; }
+		if( !threw ) throw new Error("expected contradiction error");
+	});
+	await check("complex-list requirement selects 2021", () => {
+		if( selectOpenscadCommand(opts("requires=complex-list-parameters"),warn) != OPENSCAD202101_CMD ) throw new Error("wrong pick");
+	});
+	await check("preference alone doesn't override the default", () => {
+		if( selectOpenscadCommand(opts("prefers=speed:fast"),warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
+	});
+	await check("unknown required feature -> error", () => {
+		let threw = false;
+		try { selectOpenscadCommand(opts("requires=csg-engine:quantum"),warn); } catch(_e) { threw = true; }
+		if( !threw ) throw new Error("expected unknown-feature error");
+	});
+	await check("newly-provided feature is known (live allFeatures)", () => {
+		// Regression (reviewer-found): a module-load snapshot of
+		// known features would reject a token that an injected
+		// profile *does* provide.  The token is provided by the
+		// default too, so with a live set selection succeeds and
+		// 'must not throw' is the real assertion; with the old
+		// snapshot it fails with 'Unknown required feature':
+		const tok = "test-feature-" + Deno.pid;
+		(OPENSCAD_COMMAND_PROFILES as any)["x:FeatureHolder" as OpenSCADCmd] = { features: [tok], speedRank: 0 };
+		const dflt = OPENSCAD_COMMAND_PROFILES[DEFAULT_OPENSCAD_CMD];
+		dflt.features.push(tok);
+		try {
+			selectOpenscadCommand(opts(`requires=${tok}`), warn);
+		} catch( e ) {
+			throw new Error("stale snapshot or wrong pick: " + (e as Error).message);
+		} finally {
+			dflt.features.splice(dflt.features.indexOf(tok), 1);
+			delete (OPENSCAD_COMMAND_PROFILES as any)["x:FeatureHolder" as OpenSCADCmd];
+		}
+	});
+	await check("unknown preference -> warned, not fatal", () => {
+		selectOpenscadCommand(opts("prefers=speed:lightspeed"),warn);
+		if( !warns.some(w => w.includes('speed:lightspeed')) ) throw new Error("no warning emitted");
+	});
+	await check("onceFileOptionsChecked: lazy, shared verdict, re-raising", async () => {
+		// The returned function is fresh per call by design; the
+		// *promise* (and thus the single read/verdict) is shared:
+		const pair = ["2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD] as const;
+		if( onceFileOptionsChecked(pair[0], pair[1])() !== onceFileOptionsChecked(pair[0], pair[1])() ) throw new Error("verdict not shared");
+		for( const pass of [1,2] ) { // memoized rejection re-raised per await
+			let threw = false;
+			try { await onceFileOptionsChecked(pair[0], pair[1])(); } catch(_e) { threw = true; }
+			if( !threw ) throw new Error(`expected contradiction on await #${pass}`);
+		}
+	});
+	await check("satisfied file passes verification", async () => {
+		await onceFileOptionsChecked("2023/experimental/OvalNut0.scad", OPENSCAD2024_MANIFOLD_CMD)();
+	});
+	await check("missing synthetic file tolerated", async () => {
+		// fromStl wrapper .scads don't exist until built:
+		await onceFileOptionsChecked(`print-archive/p19xx/.temp/does-not-exist-${Deno.pid}.scad`, DEFAULT_OPENSCAD_CMD)();
+	});
+	await check("backend aliases map to base+per-build flags", () => {
+		// toBaseScadCmdAndImplicitFeatures + featureArgsFor, i.e.
+		// what actually lands in argv (sweep and recipes share it):
+		const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(OPENSCAD2026_CGAL_CMD);
+		if( openScadCmd != OPENSCAD20261031_CMD || implicitFeatures.join() != "cgal" ) throw new Error("alias mapping");
+		const argvOf = (cmd:BaseOpenSCADCmd, feats:string[]) =>
+			openscadCommand({ openScadCmd: cmd, inScadPath: "t.scad", openScadFeaturesEnabled: feats }).argv.join(' ');
+		if( !argvOf(OPENSCAD20261031_CMD,["manifold"]).includes("--backend Manifold") ) throw new Error("2026 manifold flag");
+		if( !argvOf(OPENSCAD20261031_CMD,["cgal"]).includes("--backend CGAL") ) throw new Error("2026 cgal flag");
+		if( !argvOf(OPENSCAD20240727_CMD,["manifold"]).includes("--enable manifold") ) throw new Error("2024 manifold flag");
+		if( argvOf(OPENSCAD20240727_CMD,["cgal"]).includes("--backend") ) throw new Error("2024 cgal needs no flag");
+		if( argvOf(OPENSCAD20261031_CMD,[]).includes("--backend") ) throw new Error("plain 2026 unpinned");
+		if( argvOf(OPENSCAD20261031_CMD,["manifold"]).includes("--enable") ) throw new Error("2026 '--enable manifold' would warn+fail");
+	});
+	await check("collectively-unsatisfiable requires -> error", () => {
+		// Both known, no single provider; must not fall back to
+		// the default and silently render defaults (review B):
+		let threw = false;
+		try { selectOpenscadCommand(opts("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
+		if( !threw ) throw new Error("expected no-provider error");
+	});
+	console.log(`run-option-self-tests: all checks passed (${warns.length} expected warning(s))`)
+}
+
+/** The "run-build-tests" phony-target body (rules dict stays an index). */
+async function runBuildTests(_ctx:BuildContext) {
+	// (run-option-self-tests runs in-process -- no env/binary needs --
+	// so it's cheap insurance here rather than only on demand:)
+	await builder.build("run-option-self-tests", _ctx);
+	await run({argv: [Deno.execPath(), "test", "--allow-read", "--allow-write", "--allow-env", "make.io.test.ts", "src/lib/ts"]})
+}
+
 /**
  * Generate a list of IDs of the form prefix + decimal-encoded integer
  * for the given prefix and numbers between (inclusive) start and end
@@ -1088,179 +1263,17 @@ const builder = new Builder({
 		"run-openscad-tests": {
 			targetType: "phony",
 			description: "Evaluate every .scad under 2023/test with --hardwarnings",
-			async invoke(_ctx:BuildContext) {
-				// (Replaces test.bat's find -exec dance, which could never
-				// actually signal failure.)
-				const scadPaths:string[] = [];
-				async function scan(dir:FilePath) {
-					for await( const e of Deno.readDir(dir) ) {
-						if( e.name.endsWith('.scad') ) scadPaths.push(`${dir}/${e.name}`);
-					}
-				}
-				// (test.bat's '-not -path ./2023/lib/*' was moot: 2023/test
-				// has no subdirectories; add recursion here if that changes.)
-				await scan("2023/test");
-				if( scadPaths.length == 0 ) throw new Error("No .scad test files found under 2023/test");
-				// Resolve each file's command from its options line before
-				// running anything, so a bad requires/pin fails the whole
-				// run up-front rather than halfway through.
-				const jobs : [OpenSCADCmd,FilePath][] = [];
-				for( const scadPath of scadPaths.sort() ) {
-					const { options, warnings } = await parseFileOptions(scadPath);
-					for( const w of warnings ) console.warn(`WARN: ${scadPath}: ${w}`);
-					jobs.push([selectOpenscadCommand(options, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`)), scadPath]);
-				}
-				let failures = 0;
-				for( const [cmd, scadPath] of jobs ) {
-					// Resolve +Manifold/+CGAL aliases to base exe + engine
-					// flags (osdBuildRules gets this via its own mapping):
-					const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(cmd);
-					const outFile = `test-output-${basename(scadPath)}.stl`;
-					try {
-						await run({argv: [
-							openScadCmd, "--hardwarnings",
-							...implicitFeatures.flatMap(f => featureArgsFor(openScadCmd, f)),
-							"--render=useless-render-argument", // see openscadCommand
-							"--export-format=binstl",
-							"-o", outFile, scadPath,
-						]}, {quiet:true});
-					} catch( e ) {
-						++failures;
-						console.error(`ERROR EVALUATING ${scadPath} (${cmd}): ${(e as Error).message}`);
-					} finally {
-						await unlink(outFile);
-					}
-				}
-				console.log(`${scadPaths.length - failures} evaluated cleanly, ${failures} failed`);
-				if( failures > 0 ) throw new Error(`${failures} of ${scadPaths.length} test .scad files failed to evaluate`);
-			},
+			invoke: runOpenscadTests,
 		},
 		"run-option-self-tests": {
 			targetType: "phony",
 			description: "Exercise options parsing/selection without running OpenSCAD",
-			async invoke(_ctx:BuildContext) {
-				const warns : string[] = [];
-				const warn = (m:string) => { warns.push(m); };
-				// (check takes sync or async fns; errors propagate to fail the target)
-				const check = async(name:string, fn:() => unknown|Promise<unknown>) => {
-					try { await fn(); console.log(`  PASS ${name}`); }
-					catch( e ) { throw new Error(`Self-test '${name}' failed: ${(e as Error).message}`); }
-				};
-				const opts = (line:string) => parseScadOptions(`// tog-scad-options: ${line}`).options!;
-				// (These use the *real* FrenchCleat/OvalNut0 headers deliberately:
-				// they double as canaries that the annotated evidence stays in place.)
-				await check("pin honored", () => {
-					if( selectOpenscadCommand(opts("openscad=x:OpenSCAD20261031Com"),warn) != OPENSCAD20261031_CMD ) throw new Error("wrong pick");
-				});
-				await check("default when unmarked", () => {
-					if( selectOpenscadCommand(null,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
-				});
-				await check("speed:fast + manifold requirement", () => {
-					// Without the preference the alphabetically-first qualifier
-					// (2024+Manifold) wins; with it, rank-3 2026+Manifold.
-					// (Sort -- not table order -- makes this stable.)
-					if( selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong order-pick");
-					if( selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2026_MANIFOLD_CMD ) throw new Error("wrong rank-pick");
-				});
-				await check("pin contradicted by requires -> error", () => {
-					let threw = false;
-					try { selectOpenscadCommand(opts("openscad=x:OpenSCAD202101Com; requires=csg-engine:manifold"),warn); } catch(_e) { threw = true; }
-					if( !threw ) throw new Error("expected contradiction error");
-				});
-				await check("complex-list pin contradiction caught (the FrenchCleat hazard)", () => {
-					// Only 2021.01 honors complex-list parameters; a 2024 pin
-					// that requires them must fail at selection rather than
-					// silently render defaults:
-					let threw = false;
-					try { selectOpenscadCommand(opts("openscad=x:OpenSCAD20240727Com; requires=complex-list-parameters"),warn); } catch(_e) { threw = true; }
-					if( !threw ) throw new Error("expected contradiction error");
-				});
-				await check("complex-list requirement selects 2021", () => {
-					if( selectOpenscadCommand(opts("requires=complex-list-parameters"),warn) != OPENSCAD202101_CMD ) throw new Error("wrong pick");
-				});
-				await check("preference alone doesn't override the default", () => {
-					if( selectOpenscadCommand(opts("prefers=speed:fast"),warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
-				});
-				await check("unknown required feature -> error", () => {
-					let threw = false;
-					try { selectOpenscadCommand(opts("requires=csg-engine:quantum"),warn); } catch(_e) { threw = true; }
-					if( !threw ) throw new Error("expected unknown-feature error");
-				});
-				await check("newly-provided feature is known (live allFeatures)", () => {
-					// Regression (reviewer-found): a module-load snapshot of
-					// known features would reject a token that an injected
-					// profile *does* provide.  The token is provided by the
-					// default too, so with a live set selection succeeds and
-					// 'must not throw' is the real assertion; with the old
-					// snapshot it fails with 'Unknown required feature':
-					const tok = "test-feature-" + Deno.pid;
-					(OPENSCAD_COMMAND_PROFILES as any)["x:FeatureHolder" as OpenSCADCmd] = { features: [tok], speedRank: 0 };
-					const dflt = OPENSCAD_COMMAND_PROFILES[DEFAULT_OPENSCAD_CMD];
-					dflt.features.push(tok);
-					try {
-						selectOpenscadCommand(opts(`requires=${tok}`), warn);
-					} catch( e ) {
-						throw new Error("stale snapshot or wrong pick: " + (e as Error).message);
-					} finally {
-						dflt.features.splice(dflt.features.indexOf(tok), 1);
-						delete (OPENSCAD_COMMAND_PROFILES as any)["x:FeatureHolder" as OpenSCADCmd];
-					}
-				});
-				await check("unknown preference -> warned, not fatal", () => {
-					selectOpenscadCommand(opts("prefers=speed:lightspeed"),warn);
-					if( !warns.some(w => w.includes('speed:lightspeed')) ) throw new Error("no warning emitted");
-				});
-				await check("onceFileOptionsChecked: lazy, shared verdict, re-raising", async () => {
-					// The returned function is fresh per call by design; the
-					// *promise* (and thus the single read/verdict) is shared:
-					const pair = ["2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD] as const;
-					if( onceFileOptionsChecked(pair[0], pair[1])() !== onceFileOptionsChecked(pair[0], pair[1])() ) throw new Error("verdict not shared");
-					for( const pass of [1,2] ) { // memoized rejection re-raised per await
-						let threw = false;
-						try { await onceFileOptionsChecked(pair[0], pair[1])(); } catch(_e) { threw = true; }
-						if( !threw ) throw new Error(`expected contradiction on await #${pass}`);
-					}
-				});
-				await check("satisfied file passes verification", async () => {
-					await onceFileOptionsChecked("2023/experimental/OvalNut0.scad", OPENSCAD2024_MANIFOLD_CMD)();
-				});
-				await check("missing synthetic file tolerated", async () => {
-					// fromStl wrapper .scads don't exist until built:
-					await onceFileOptionsChecked(`print-archive/p19xx/.temp/does-not-exist-${Deno.pid}.scad`, DEFAULT_OPENSCAD_CMD)();
-				});
-				await check("backend aliases map to base+per-build flags", () => {
-					// toBaseScadCmdAndImplicitFeatures + featureArgsFor, i.e.
-					// what actually lands in argv (sweep and recipes share it):
-					const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(OPENSCAD2026_CGAL_CMD);
-					if( openScadCmd != OPENSCAD20261031_CMD || implicitFeatures.join() != "cgal" ) throw new Error("alias mapping");
-					const argvOf = (cmd:BaseOpenSCADCmd, feats:string[]) =>
-						openscadCommand({ openScadCmd: cmd, inScadPath: "t.scad", openScadFeaturesEnabled: feats }).argv.join(' ');
-					if( !argvOf(OPENSCAD20261031_CMD,["manifold"]).includes("--backend Manifold") ) throw new Error("2026 manifold flag");
-					if( !argvOf(OPENSCAD20261031_CMD,["cgal"]).includes("--backend CGAL") ) throw new Error("2026 cgal flag");
-					if( !argvOf(OPENSCAD20240727_CMD,["manifold"]).includes("--enable manifold") ) throw new Error("2024 manifold flag");
-					if( argvOf(OPENSCAD20240727_CMD,["cgal"]).includes("--backend") ) throw new Error("2024 cgal needs no flag");
-					if( argvOf(OPENSCAD20261031_CMD,[]).includes("--backend") ) throw new Error("plain 2026 unpinned");
-					if( argvOf(OPENSCAD20261031_CMD,["manifold"]).includes("--enable") ) throw new Error("2026 '--enable manifold' would warn+fail");
-				});
-				await check("collectively-unsatisfiable requires -> error", () => {
-					// Both known, no single provider; must not fall back to
-					// the default and silently render defaults (review B):
-					let threw = false;
-					try { selectOpenscadCommand(opts("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
-					if( !threw ) throw new Error("expected no-provider error");
-				});
-				console.log(`run-option-self-tests: all checks passed (${warns.length} expected warning(s))`);
-			},
+			invoke: runOptionSelfTests,
 		},
 		"run-build-tests": {
 			targetType: "phony",
 			description: "Run the make.ts/pathutil Deno tests",
-			async invoke(_ctx:BuildContext) {
-				// (run-option-self-tests runs in-process -- no env/binary needs --
-				// so it's cheap insurance here rather than only on demand:)
-				await builder.build("run-option-self-tests", _ctx);
-				await run({argv: [Deno.execPath(), "test", "--allow-read", "--allow-write", "--allow-env", "make.io.test.ts", "src/lib/ts"]});
-			},
+			invoke: runBuildTests,
 		},
 		"run-tests": brAlias(["run-openscad-tests", "run-build-tests"]),
 		...multiOsdBuildRules("2023/board-clip/OuterAngleJig-v2.scad", [

@@ -57,3 +57,18 @@ The `x:` prefix marks pseudo-commands that resolve to an executable
 via run()'s alias chain; a phony test target resolves to nothing,
 and the convention asked for plain English.  Now spelled like its
 siblings: run-openscad-tests, run-build-tests, run-tests.
+
+## 2026-11-27 -- run-* bodies hoisted out of the builder dict -- Reviewer Qwen
+
+The three test-runner invoke bodies now live as plain async
+functions (runOpenscadTests / runOptionSelfTests / runBuildTests)
+at the boundary the architect picked: after fromStlBuildRules,
+before partIdRange -- the line where "functions that do build
+work" end and "furniture that populates the rules dict" begins.
+Rules read as {targetType, description, invoke} triples; the
+self-test body alone was 115 lines inside what should be an index.
+(Implementation note: the hoist script's slice miscounted a
+Python-escaped regex string, parking a stray ';' in each entry
+tail -- caught by eyeballing the diff, not by deno, which happily
+reached... actually deno WOULD have caught it; the cleanup landed
+before the check.  Lesson: run the check anyway.)
