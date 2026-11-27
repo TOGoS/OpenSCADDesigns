@@ -528,6 +528,60 @@ function outDirForPartId(partId:string) : FilePath {
 	return m != null ? `print-archive/p${m[1]}xx` : `print-archive/misc`;
 }
 
+/**
+ * The single metadata reader (cache: mutated by design).  Placement
+ * warnings log once at the read; missing files resolve null.
+ */
+const scadFileRequirementsPromiseCache = new Map<FilePath,Promise<OpenSCADOptions|null>>();
+function fetchScadFileRequirements(scadFile:FilePath) : Promise<OpenSCADOptions|null> {
+	let prom = scadFileRequirementsPromiseCache.get(scadFile);
+	if( prom == null ) {
+		prom = (async () => {
+			let text : string;
+			try {
+				text = await readTextFile(scadFile);
+			} catch( e ) {
+				if( (e as Error).name != 'NotFound' ) throw e;
+				return null;
+			}
+			const { options, warnings } = parseOpenScadOptions(text);
+			for( const w of warnings ) console.warn(`WARN: ${scadFile}: ${w}`);
+			return options;
+		})();
+		scadFileRequirementsPromiseCache.set(scadFile, prom);
+	}
+	return prom;
+}
+
+/**
+ * Verify that the options required by `scadFile` are valid for the given profile.
+ * Throws if not.  Required options are passed-in; `scadFile` is only for the error message.
+ */
+function verifyScadFileOptions(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandProfile|undefined, options:OpenSCADOptions|null) : void {
+	if( options == null ) return;
+	if( options.pin != undefined && options.pin != cmd ) {
+		throw new Error(`${scadFile} pins openscad=${options.pin}, but the recipe selects ${cmd}`);
+	}
+	const missing = missingFeatures(profile, options.requires);
+	if( missing.length > 0 ) {
+		throw new Error(`${scadFile} requires ${missing.join(', ')}, but command ${cmd}'s profile lacks them`);
+	}
+}
+
+const scadFileRequirementsCheckPromises = new Map<string,Promise<void>>(); // cache: mutated by design
+function getScadFileRequirementsChecker(scadFile:FilePath, cmd:OpenSCADCmd) : () => Promise<void> {
+	const key = `${scadFile} ${cmd}`;
+	return () => {
+		let prom = scadFileRequirementsCheckPromises.get(key);
+		if( prom == null ) {
+			prom = fetchScadFileRequirements(scadFile).then(options =>
+				verifyScadFileOptions(scadFile, cmd, OPENSCAD_COMMAND_PROFILES[cmd], options));
+			scadFileRequirementsCheckPromises.set(key, prom);
+		}
+		return prom;
+	};
+}
+
 function osdBuildRules(partId:string, opts:{
 	openScadCmd?: OpenSCADCmd,
 	openScadFeaturesEnabled?: OpenSCADFeatureName[],
@@ -552,7 +606,7 @@ function osdBuildRules(partId:string, opts:{
 	const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(recipeCmd);
 
 	// verify the recipe's command against the file's needs (lazy, invoked below)
-	const optionsCheck = onceFileOptionsChecked(opts.inScadFile, recipeCmd);
+	const optionsCheck = getScadFileRequirementsChecker(opts.inScadFile, recipeCmd);
 	
 	let scadVariantSuffix = "";
 	
@@ -735,62 +789,6 @@ function osdBuildRules(partId:string, opts:{
 			}
 		},
 		[partId]: brAlias([simplifiedStlPath, ...simplifiedPngPaths, partTefPath]),
-	};
-}
-
-/**
- * The single metadata reader (cache: mutated by design).  Placement
- * warnings log once at the read; missing files resolve null.
- */
-const scadOptionsCache = new Map<FilePath,Promise<OpenSCADOptions|null>>();
-function getScadOptionsForFile(scadFile:FilePath) : Promise<OpenSCADOptions|null> {
-	let prom = scadOptionsCache.get(scadFile);
-	if( prom == null ) {
-		prom = (async () => {
-			let text : string;
-			try {
-				text = await readTextFile(scadFile);
-			} catch( e ) {
-				if( (e as Error).name != 'NotFound' ) throw e;
-				return null;
-			}
-			const { options, warnings } = parseOpenScadOptions(text);
-			for( const w of warnings ) console.warn(`WARN: ${scadFile}: ${w}`);
-			return options;
-		})();
-		scadOptionsCache.set(scadFile, prom);
-	}
-	return prom;
-}
-
-/**
- * Pure/sync contract check: pin-vs-recipe and profile-vs-requires;
- * null options (no header) pass.  Names are message-only.
- */
-function verifyFileOptions(scadFile:FilePath, cmd:OpenSCADCmd, profile:CommandProfile|undefined, options:OpenSCADOptions|null) : void {
-	if( options == null ) return;
-	if( options.pin != undefined && options.pin != cmd ) {
-		throw new Error(`${scadFile} pins openscad=${options.pin}, but the recipe selects ${cmd}`);
-	}
-	const missing = missingFeatures(profile, options.requires);
-	if( missing.length > 0 ) {
-		throw new Error(`${scadFile} requires ${missing.join(', ')}, but command ${cmd}'s profile lacks them`);
-	}
-}
-
-// Verdict memo per (file, cmd) pair over the per-file read cache;
-// lazy, so a rejection is never left unobserved at generation.
-const fileOptionsChecks = new Map<string,Promise<void>>(); // cache: mutated by design
-function onceFileOptionsChecked(scadFile:FilePath, cmd:OpenSCADCmd) : () => Promise<void> {
-	const key = `${scadFile} ${cmd}`;
-	return () => {
-		let prom = fileOptionsChecks.get(key);
-		if( prom == null ) {
-			prom = getScadOptionsForFile(scadFile).then(options =>
-				verifyFileOptions(scadFile, cmd, OPENSCAD_COMMAND_PROFILES[cmd], options));
-			fileOptionsChecks.set(key, prom);
-		}
-		return prom;
 	};
 }
 
@@ -1001,7 +999,7 @@ async function runScadTests(_ctx:BuildContext) {
 	// resolve all commands first: bad options fail the run up-front
 	const jobs : [OpenSCADCmd,FilePath][] = [];
 	for( const scadPath of scadPaths.sort() ) {
-		const options = await getScadOptionsForFile(scadPath);
+		const options = await fetchScadFileRequirements(scadPath);
 		jobs.push([selectOpenscadCommand(options, (msg) => console.warn(`WARN: ${scadPath}: ${msg}`)), scadPath]);
 	}
 	let failures = 0;
@@ -1082,17 +1080,17 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		selectOpenscadCommand(opts("prefers=speed:lightspeed"),warn);
 		if( !warns.some(w => w.includes('speed:lightspeed')) ) throw new Error("no warning emitted");
 	});
-	await check("verifyFileOptions: pure contract check", () => {
+	await check("verifyScadFileOptions: pure contract check", () => {
 		const profile = (fs:string[]) => ({ features: fs, speedRank: 1 });
-		verifyFileOptions("f", "x:A" as OpenSCADCmd, profile(["a"]), { pin:"x:A", requires:["a"], prefers:[] });
-		verifyFileOptions("f", "x:A" as OpenSCADCmd, profile([]), null); // no header passes
+		verifyScadFileOptions("f", "x:A" as OpenSCADCmd, profile(["a"]), { pin:"x:A", requires:["a"], prefers:[] });
+		verifyScadFileOptions("f", "x:A" as OpenSCADCmd, profile([]), null); // no header passes
 		let threw = 0;
-		try { verifyFileOptions("f", "x:B" as OpenSCADCmd, profile(["a"]), { pin:"x:A", requires:[], prefers:[] }); } catch(_e) { ++threw; }
-		try { verifyFileOptions("f", "x:B" as OpenSCADCmd, profile([]), { requires:["a"], prefers:[] }); } catch(_e) { ++threw; }
+		try { verifyScadFileOptions("f", "x:B" as OpenSCADCmd, profile(["a"]), { pin:"x:A", requires:[], prefers:[] }); } catch(_e) { ++threw; }
+		try { verifyScadFileOptions("f", "x:B" as OpenSCADCmd, profile([]), { requires:["a"], prefers:[] }); } catch(_e) { ++threw; }
 		if( threw != 2 ) throw new Error(`expected pin+requires failures, got ${threw}`);
 	});
-	await check("onceFileOptionsChecked: wired, memoized, re-raising", async () => {
-		const pair = onceFileOptionsChecked("2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD);
+	await check("getScadFileRequirementsChecker: wired, memoized, re-raising", async () => {
+		const pair = getScadFileRequirementsChecker("2023/french-cleat/FrenchCleat.scad", OPENSCAD2024_MANIFOLD_CMD);
 		if( pair() !== pair() ) throw new Error("verdict not shared");
 		for( const _pass of [1,2] ) { // rejection re-raised per await
 			let threw = false;
@@ -1100,14 +1098,14 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 			if( !threw ) throw new Error("expected contradiction");
 		}
 	});
-	await check("getScadOptionsForFile: one shared read per file", async () => {
+	await check("fetchScadFileRequirements: one shared read per file", async () => {
 		// (cache identity, plus a canary that the annotated evidence
 		// FrenchCleat/OvalNut0 headers still say what the checks assume):
 		const fc = "2023/french-cleat/FrenchCleat.scad";
-		if( getScadOptionsForFile(fc) !== getScadOptionsForFile(fc) ) throw new Error("reads not shared");
-		if( !(await getScadOptionsForFile(fc))?.requires.includes("complex-list-parameters") ) throw new Error("FrenchCleat canary");
-		if( !(await getScadOptionsForFile("2023/experimental/OvalNut0.scad"))?.requires.includes("csg-engine:manifold") ) throw new Error("OvalNut0 canary");
-		if( await getScadOptionsForFile(`print-archive/p19xx/.temp/missing-${Deno.pid}.scad`) !== null ) throw new Error("missing file should resolve null");
+		if( fetchScadFileRequirements(fc) !== fetchScadFileRequirements(fc) ) throw new Error("reads not shared");
+		if( !(await fetchScadFileRequirements(fc))?.requires.includes("complex-list-parameters") ) throw new Error("FrenchCleat canary");
+		if( !(await fetchScadFileRequirements("2023/experimental/OvalNut0.scad"))?.requires.includes("csg-engine:manifold") ) throw new Error("OvalNut0 canary");
+		if( await fetchScadFileRequirements(`print-archive/p19xx/.temp/missing-${Deno.pid}.scad`) !== null ) throw new Error("missing file should resolve null");
 	});
 	await check("backend aliases map to base+per-build flags", () => {
 		// toBaseScadCmdAndImplicitFeatures + featureArgsFor, i.e.
@@ -2509,4 +2507,4 @@ if( import.meta.main ) {
 
 // Exported for make.io.test.ts (built-marker machinery):
 export { mtimeWithBuiltMarkers, builtMarkerPath, run };
-export { selectOpenscadCommand, getScadOptionsForFile, verifyFileOptions, onceFileOptionsChecked };
+export { selectOpenscadCommand, fetchScadFileRequirements, verifyScadFileOptions, getScadFileRequirementsChecker };
