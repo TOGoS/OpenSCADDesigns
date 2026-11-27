@@ -93,8 +93,10 @@ const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
 /**
  * Pick the command for a .scad given its parsed options:
  * a pin must satisfy the requires list; otherwise the default if it
- * qualifies; otherwise the first qualifier in declaration order (or
- * the fastest, with 'prefers=speed:fast').
+ * qualifies; otherwise the alphabetically-first qualifier, or the
+ * fastest with 'prefers=speed:fast'.  Qualifiers are *sorted* --
+ * table declaration order never affects a pick, so rows can be
+ * reordered freely without re-reasoning about selection.
  * 'requires' are contracts: unknown tokens, collectively-empty
  * intersections, and contradicting pins all throw.  'prefers' are
  * wishes: unknown tokens warn, unsatisfiable ones are ignored.
@@ -127,8 +129,11 @@ function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : 
 	// among commands the default *can't* satisfy, so a stray
 	// 'prefers=speed:fast' never silently migrates unrequiring files.
 	if( qualifying(DEFAULT_OPENSCAD_CMD) ) return DEFAULT_OPENSCAD_CMD;
+	// Sorted: the pick depends on command NAMES and ranks, never on
+	// how the table literal happens to be keyed or ordered:
 	const qualified = Object.keys(OPENSCAD_COMMAND_PROFILES)
-		.filter(cmd => missingFeatures(cmd as OpenSCADCmd, d.requires).length == 0);
+		.filter(cmd => missingFeatures(cmd as OpenSCADCmd, d.requires).length == 0)
+		.sort();
 	if( qualified.length == 0 ) {
 		// Individually-known features with no single provider: picking
 		// any command would silently render defaults -- the exact failure
@@ -1151,8 +1156,9 @@ const builder = new Builder({
 					if( selectOpenscadCommand(null,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
 				});
 				await check("speed:fast + manifold requirement", () => {
-					// Without the preference the earlier-declared qualifier
-					// (2024+Manifold) wins; with it, rank 3 2026+Manifold:
+					// Without the preference the alphabetically-first qualifier
+					// (2024+Manifold) wins; with it, rank-3 2026+Manifold.
+					// (Sort -- not table order -- makes this stable.)
 					if( selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong order-pick");
 					if( selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2026_MANIFOLD_CMD ) throw new Error("wrong rank-pick");
 				});
