@@ -113,3 +113,62 @@ point when offset is zero fixes things.
 With that figured out, I went ahead and changed
 ~togpath1__merge_offsets~ to omit trailing ~["offset", 0]~,
 because in most cases it was adding those offsets itself.
+
+** [2026-11-27] - ~tog-scad-directives~
+
+I've spent some time and many commits getting coding agents
+(mostly Qwen3.8 Flash, and all inside OpenCode)
+to add a way for ~.scad~ files to declare requirements and preferences in a comment,
+and for ~make.ts~ to check that the version of OpenSCAD it's using actually meets the requirements.
+
+The syntax we settled on:
+
+#+begin_src scad
+// tog-scad-directives: requires=complex-list-parameters; prefers=speed:fast
+#+end_src
+
+("Who doesn't prefer speed:fast?" you may wonder.
+Well, this whole branch was 'an exploratory exercise';
+some YAGNI bits should not be too surprising.)
+
+(Epaking of YAGNI, none of this was actually needed.
+I think I started the branch thinking it would be fun,
+rather than useful.  I'm not sure how fun it was.)
+
+In hindsight, I suppose it was worthwhile even if only for
+the additional working-with-coding-agents experience.
+
+The actual changes, now that they're written, I could have
+coded quicker myself and with much less ceremony.
+The extra tests are...possibly useful, but seem mostly just extra.
+
+The back-and-forth may have improved the resulting design,
+though I kind of think that I should have done more of my
+own thinking up front before handing it over to Qwen to implement.
+The idea that it would be a fun thing to try was also instrumental
+in making it happen at all.
+
+The agents love verbose comments.
+Not just verbose, but often redunant and confusing.
+Maybe I should ask them to avoid comments in the code entirely
+until and unless we agree that one is needed.
+This way reviewers (whether myself or another AI agent)
+can focus on whether the code makes sense on its own.
+
+Talking to the AI agents about is kind of the fun part,
+so it may be a good idea to keep them in plan mode longer
+(whether enforced by mode in OpenCode or just by instruction)
+and really clamp down on changes that we didn't talk about.
+
+Or, when I do want to let them loose, give them their own
+space to work in so they don't pollute ~main.ts~ too much.
+Extra stuff in ~src/lib/ts~ I don't mind as much.
+
+Anyway, I think I've got it tightened up enough
+that my future self will not feel *too* embarrassed
+about the 'AI slop content' of this change.
+I will cut the nitpicking now and merge to master
+so that I can moveon with other things.
+
+If this clutters things up, we can delete the feature later.
+In the meantime, it acts as a proof-of-concept.
