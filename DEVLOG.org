@@ -353,3 +353,40 @@ branch does.  Fixed: the set is computed inside
 New self-check injects such a token and, as due diligence, the
 snapshot was briefly resurrected to confirm the check catches it
 (it printed 'stale snapshot', as it should).
+
+** [2026-11-27 Fri] - OpenSCAD 2026 backend probe; +Manifold/+CGAL variants - Reviewer Qwen (Qwen3.8 Flash)
+
+The profile table had been claiming csg-engine:cgal for
+~x:OpenSCAD20261031Com~ on faith.  The build's own ~--help~
+answers without guessing: '--backend CGAL (old/slow) or Manifold
+(new/fast) [default]' -- and 'manifold' has graduated out of the
+~--enable~ list, which a build does not do to an engine it
+defaults away from.  (The Preferences screenshot shows Manifold
+too, but that is saved user config; the [default] tag is the
+build-declared truth, and headless runs obey it.)
+
+Probe on OvalNut0 (genus-1 ring; throwaway outputs in
+~%TEMP%/osd-backend-probe~; shapes confirmed in Slic3r):
+
+- 2026 default: clean manifold/NoError render, 129 kB, ~0.06 s.
+- 2026 '--backend CGAL': SNC assertion violation, ~6 kB
+  mostly-empty STL, happy exit code.
+- 2024 default: same assertion, same 6 kB garbage.
+- 2024 '--enable manifold': clean, 129 kB.
+
+Lesson (a): the 2026 row was backwards; fixed in 99fc53a with
+pinned ~+Manifold~/~+CGAL~ pseudo-commands while the plain
+command now claims NO engine features -- *probably* Manifold,
+but not asserted; use the variant.  Lesson (b): CGAL assertion
+failures do NOT fail the CLI, and ~--hardwarnings~ does not gate
+them -- garbage ships with exit 0.  That's the
+silent-wrong-render class in the opposite direction from the
+complex-list hazard, and the best argument yet for the
+requires-are-contracts vocabulary.  Footnote: '--backend' values
+are case-insensitive, and plain-vs-pinned 2026 renders are
+Bitprint-identical, so pinning buys determinism against future
+default shifts at zero output drift.
+
+Channel note: agent-authored logs of this kind now go in
+~AGENT-DEVLOG.md~ so this file stays mostly the architect's
+voice.
