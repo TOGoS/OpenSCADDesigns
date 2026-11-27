@@ -4,7 +4,7 @@ import Builder, { BuildContext, BuildRule } from 'https://deno.land/x/tdbuilder@
 import { HashAlgorithm, BITPRINT_ALGORITHM } from './src/lib/ts/_util/hash.ts';
 import { toUint8Array } from './src/lib/ts/_util/bufutil.ts';
 import { type FilePath, basename, relativePath } from './src/lib/ts/_util/pathutil.ts';
-import { parseScadOptions, type ScadOptions } from './src/lib/ts/_util/scadoptions.ts';
+import { parseOpenScadOptions, type OpenSCADOptions } from './src/lib/ts/_util/scadoptions.ts';
 
 //// Utility functions
 
@@ -105,7 +105,7 @@ const missingFeatures = (cmd:OpenSCADCmd, requires:string[]) : string[] =>
 	requires.filter(f => !(OPENSCAD_COMMAND_PROFILES[cmd]?.features ?? []).includes(f));
 const allFeatures = new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features));
 
-function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
+function selectOpenscadCommand(d : OpenSCADOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
 	if( d == null ) return DEFAULT_OPENSCAD_CMD;
 	for( const tok of d.requires ) {
 		if( !allFeatures.has(tok) ) throw new Error(`Unknown required feature '${tok}' (known: ${[...allFeatures].join(', ')})`);
@@ -792,9 +792,9 @@ async function verifyFileOptions(scadFile:FilePath, cmd:OpenSCADCmd) : Promise<v
 }
 
 /** Read + parse a file's options line (no warnings printed; caller's business). */
-async function parseFileOptions(scadFile:FilePath) : Promise<{ options:ScadOptions|null, warnings:string[] }> {
+async function parseFileOptions(scadFile:FilePath) : Promise<{ options:OpenSCADOptions|null, warnings:string[] }> {
 	try {
-		return parseScadOptions(await readTextFile(scadFile));
+		return parseOpenScadOptions(await readTextFile(scadFile));
 	} catch( e ) {
 		if( (e as Error).name == 'NotFound' ) return { options:null, warnings:[] }; // synthetic/generated .scads
 		throw e;
@@ -1066,7 +1066,7 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		try { await fn(); console.log(`  PASS ${name}`); }
 		catch( e ) { throw new Error(`Self-test '${name}' failed: ${(e as Error).message}`); }
 	};
-	const opts = (line:string) => parseScadOptions(`// tog-scad-options: ${line}`).options!;
+	const opts = (line:string) => parseOpenScadOptions(`// tog-scad-options: ${line}`).options!;
 	// (These use the *real* FrenchCleat/OvalNut0 headers deliberately:
 	// they double as canaries that the annotated evidence stays in place.)
 	await check("pin honored", () => {

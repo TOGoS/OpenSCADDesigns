@@ -29,7 +29,7 @@
  * the top, where whoever opens the file will see it.
  */
 
-export type ScadOptions = {
+export type OpenSCADOptions = {
 	pin?: string,
 	requires: string[],
 	prefers: string[],
@@ -46,7 +46,7 @@ function requireThunk(key:string, token:string) {
 	}
 }
 
-export function parseScadOptions(text:string) : { options : ScadOptions|null, warnings:string[] } {
+export function parseOpenScadOptions(text:string) : { options : OpenSCADOptions|null, warnings:string[] } {
 	const warnings : string[] = [];
 	let raw : string|undefined, foundLine = 0;
 	const lines = text.split(/\r?\n/);
@@ -69,7 +69,7 @@ export function parseScadOptions(text:string) : { options : ScadOptions|null, wa
 	// elsewhere is a smell, not a crime.
 	if( foundLine != 3 ) warnings.push(`options line at ${foundLine}; convention is line 3 (below the title comment)`);
 
-	const res : ScadOptions = { requires:[], prefers:[] };
+	const res : OpenSCADOptions = { requires:[], prefers:[] };
 	for( const entryRaw of raw.split(';') ) {
 		const entry = entryRaw.trim();
 		if( entry == '' ) continue;
