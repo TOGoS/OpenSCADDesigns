@@ -33,6 +33,9 @@ const OPENSCAD202101_CMD = "x:OpenSCAD202101Com" as const;
 const OPENSCAD20240727_CMD = "x:OpenSCAD20240727Com" as const;
 const OPENSCAD20261031_CMD = "x:OpenSCAD20261031Com" as const;
 const OPENSCAD2024_MANIFOLD_CMD = "x:OpenSCAD20240727Com+Manifold" as const;
+// 2026 gets both backend variants (the pinning 2024 only half-had):
+const OPENSCAD2026_MANIFOLD_CMD = "x:OpenSCAD20261031Com+Manifold" as const;
+const OPENSCAD2026_CGAL_CMD = "x:OpenSCAD20261031Com+CGAL" as const;
 const DEFAULT_OPENSCAD_CMD = OPENSCAD202101_CMD;
 
 type BaseOpenSCADCmd =
@@ -42,9 +45,11 @@ type BaseOpenSCADCmd =
 
 type OpenSCADCmd =
 	BaseOpenSCADCmd |
-	typeof OPENSCAD2024_MANIFOLD_CMD;
+	typeof OPENSCAD2024_MANIFOLD_CMD |
+	typeof OPENSCAD2026_MANIFOLD_CMD |
+	typeof OPENSCAD2026_CGAL_CMD;
 
-type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for more
+type OpenSCADFeatureName = "manifold"|"cgal";
 
 /**
  * Metadata the build system knows about each configured command:
@@ -57,13 +62,32 @@ type OpenSCADFeatureName = "manifold"; // etc. see `openscad.com --help` for mor
  * (rendering defaults with no warning), which is the whole reason a
  * feature token exists for this.  Confirmed by the architect
  * 2026-11-26.
+ * 'csg-engine:*' describes the engine a command runs *by default*,
+ * not the engines its binary could be argued into using -- a
+ * requires: contract is only as good as the behavior you actually
+ * get.  2026.10.31 defaults to Manifold ('--help' [default] tag;
+ * 'manifold' is gone from its '--enable' list, having graduated).
+ * Probed 2026-11-27 on OvalNut0 (genus-1 ring): plain 2026 renders
+ * manifold/NoError; '--backend CGAL' trips a CGAL SNC assertion
+ * and writes a mostly-empty STL with a *happy exit code* --
+ * --hardwarnings does not gate that.  Which is the entire point of
+ * this vocabulary.  2026 therefore gets pinned +Manifold/+CGAL
+ * variants; the unpinned 'x:OpenSCAD20261031Com' claims NO engine
+ * (it won't assert what it doesn't pin) -- keep it for reference,
+ * prefer the variants.  (2024 plain claims cgal as its observed
+ * default -- the backend option predated my noticing it.)
+ * Plain-vs-pinned is provably output-neutral on 2026:
+ * Bitprint-identical default vs '--backend manifold' renders
+ * (2026-11-27; the option value is case-insensitive).
  */
 type CommandProfile = { features: string[], speedRank: number };
 const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
 	[OPENSCAD202101_CMD]:     { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
 	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal"], speedRank: 1 },
-	[OPENSCAD20261031_CMD]:   { features: ["csg-engine:cgal"], speedRank: 1 },
 	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold"], speedRank: 2 },
+	[OPENSCAD2026_MANIFOLD_CMD]: { features: ["csg-engine:manifold"], speedRank: 3 }, // probe: 0.06s vs CGAL's 2.2s on OvalNut0
+	[OPENSCAD2026_CGAL_CMD]:  { features: ["csg-engine:cgal"], speedRank: 1 },
+	[OPENSCAD20261031_CMD]:   { features: [], speedRank: 3 }, // *probably* Manifold, but not asserted -- use the explicit +Manifold variant
 };
 
 /**
@@ -259,8 +283,8 @@ async function run(cmd:Commande, opts:{quiet?:boolean}={}) : Promise<void> {
 	
 	const realExe =
 		cmd.argv[0] == OPENSCAD202101_CMD ? OPENSCAD202101_COM :
-		cmd.argv[0] == OPENSCAD20240727_CMD ? OPENSCAD20240727_COM :
-		cmd.argv[0] == OPENSCAD20261031_CMD ? OPENSCAD20261031_COM :
+		cmd.argv[0] == OPENSCAD20240727_CMD || cmd.argv[0] == OPENSCAD2024_MANIFOLD_CMD ? OPENSCAD20240727_COM :
+		cmd.argv[0] == OPENSCAD20261031_CMD || cmd.argv[0] == OPENSCAD2026_MANIFOLD_CMD || cmd.argv[0] == OPENSCAD2026_CGAL_CMD ? OPENSCAD20261031_COM :
 		cmd.argv[0] == "x:Magick" ? MAGICK_EXE :
 		cmd.argv[0];
 		
@@ -279,8 +303,30 @@ async function run(cmd:Commande, opts:{quiet?:boolean}={}) : Promise<void> {
 	}
 }
 		
+// How a requested engine feature is spelled for a given build.
+// Callers pass the BASE command (aliases are mapped first by
+// toBaseScadCmdAndImplicitFeatures) -- the exhaustive switch means
+// a new OpenSCADCmd member can't sneak through without deciding
+// what its engine flags look like.
+function featureArgsFor(baseCmd: BaseOpenSCADCmd, f: string) : string[] {
+	switch( baseCmd ) {
+	case OPENSCAD202101_CMD:
+	case OPENSCAD20240727_CMD:
+		// Manifold-era '--enable' vocabulary; 'cgal' was always the
+		// default there, so requesting it needs no flag:
+		return f == "cgal" ? [] : ["--enable", f];
+	case OPENSCAD20261031_CMD:
+		// '--enable manifold' has left the '--enable' list entirely (a
+		// warning there would fail --hardwarnings); engines are now
+		// '--backend' values:
+		if( f == "manifold" ) return ["--backend", "Manifold"];
+		if( f == "cgal" ) return ["--backend", "CGAL"];
+		return ["--enable", f];
+	}
+}
+
 function openscadCommand(opts : {
-	openScadCmd : OpenSCADCmd,
+	openScadCmd : BaseOpenSCADCmd,
 	inScadPath : FilePath,
 	inConfigPath? : FilePath,
 	openScadFeaturesEnabled : string[],
@@ -317,7 +363,7 @@ function openscadCommand(opts : {
 		'--colorscheme=Tomorrow Night',
 	] : [];
 	
-	const featureOpts = opts.openScadFeaturesEnabled.flatMap(f => ["--enable",f]);
+	const featureOpts = opts.openScadFeaturesEnabled.flatMap(f => featureArgsFor(opts.openScadCmd, f));
 	
 	return {argv: [
 		"x:MaxConcurrency:OpenSCAD:2",
@@ -467,11 +513,17 @@ async function mkRoom(path:FilePath) {
 }
 
 function toBaseScadCmdAndImplicitFeatures(cmd: OpenSCADCmd) : { openScadCmd: BaseOpenSCADCmd, implicitFeatures: OpenSCADFeatureName[] } {
-	// Support a combined "OpenSCAD + Manifold" alias by returning the base
-	// OpenSCAD command plus an implicit "manifold" feature, otherwise return
-	// the command unchanged with no implicit features.
+	// "+Manifold"/"+CGAL" aliases return the base command plus an implicit
+	// engine feature; featureArgsFor then spells it the way that build
+	// expects ('--enable manifold' on 2021/2024, '--backend ...' on 2026).
 	if( cmd === OPENSCAD2024_MANIFOLD_CMD ) {
 		return { openScadCmd: OPENSCAD20240727_CMD, implicitFeatures: ["manifold"] };
+	}
+	if( cmd === OPENSCAD2026_MANIFOLD_CMD ) {
+		return { openScadCmd: OPENSCAD20261031_CMD, implicitFeatures: ["manifold"] };
+	}
+	if( cmd === OPENSCAD2026_CGAL_CMD ) {
+		return { openScadCmd: OPENSCAD20261031_CMD, implicitFeatures: ["cgal"] };
 	}
 	return { openScadCmd: cmd, implicitFeatures: [] };
 }
@@ -1055,10 +1107,14 @@ const builder = new Builder({
 				}
 				let failures = 0;
 				for( const [cmd, scadPath] of jobs ) {
+					// Resolve +Manifold/+CGAL aliases to base exe + engine
+					// flags (osdBuildRules gets this via its own mapping):
+					const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(cmd);
 					const outFile = `test-output-${basename(scadPath)}.stl`;
 					try {
 						await run({argv: [
-							cmd, "--hardwarnings",
+							openScadCmd, "--hardwarnings",
+							...implicitFeatures.flatMap(f => featureArgsFor(openScadCmd, f)),
 							"--render=useless-render-argument", // see openscadCommand
 							"--export-format=binstl",
 							"-o", outFile, scadPath,
@@ -1095,7 +1151,10 @@ const builder = new Builder({
 					if( selectOpenscadCommand(null,warn) != DEFAULT_OPENSCAD_CMD ) throw new Error("wrong pick");
 				});
 				await check("speed:fast + manifold requirement", () => {
-					if( selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong pick");
+					// Without the preference the earlier-declared qualifier
+					// (2024+Manifold) wins; with it, rank 3 2026+Manifold:
+					if( selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn) != OPENSCAD2024_MANIFOLD_CMD ) throw new Error("wrong order-pick");
+					if( selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn) != OPENSCAD2026_MANIFOLD_CMD ) throw new Error("wrong rank-pick");
 				});
 				await check("pin contradicted by requires -> error", () => {
 					let threw = false;
@@ -1163,33 +1222,26 @@ const builder = new Builder({
 					// fromStl wrapper .scads don't exist until built:
 					await onceFileOptionsChecked(`print-archive/p19xx/.temp/does-not-exist-${Deno.pid}.scad`, DEFAULT_OPENSCAD_CMD)();
 				});
+				await check("backend aliases map to base+per-build flags", () => {
+					// toBaseScadCmdAndImplicitFeatures + featureArgsFor, i.e.
+					// what actually lands in argv (sweep and recipes share it):
+					const { openScadCmd, implicitFeatures } = toBaseScadCmdAndImplicitFeatures(OPENSCAD2026_CGAL_CMD);
+					if( openScadCmd != OPENSCAD20261031_CMD || implicitFeatures.join() != "cgal" ) throw new Error("alias mapping");
+					const argvOf = (cmd:BaseOpenSCADCmd, feats:string[]) =>
+						openscadCommand({ openScadCmd: cmd, inScadPath: "t.scad", openScadFeaturesEnabled: feats }).argv.join(' ');
+					if( !argvOf(OPENSCAD20261031_CMD,["manifold"]).includes("--backend Manifold") ) throw new Error("2026 manifold flag");
+					if( !argvOf(OPENSCAD20261031_CMD,["cgal"]).includes("--backend CGAL") ) throw new Error("2026 cgal flag");
+					if( !argvOf(OPENSCAD20240727_CMD,["manifold"]).includes("--enable manifold") ) throw new Error("2024 manifold flag");
+					if( argvOf(OPENSCAD20240727_CMD,["cgal"]).includes("--backend") ) throw new Error("2024 cgal needs no flag");
+					if( argvOf(OPENSCAD20261031_CMD,[]).includes("--backend") ) throw new Error("plain 2026 unpinned");
+					if( argvOf(OPENSCAD20261031_CMD,["manifold"]).includes("--enable") ) throw new Error("2026 '--enable manifold' would warn+fail");
+				});
 				await check("collectively-unsatisfiable requires -> error", () => {
 					// Both known, no single provider; must not fall back to
 					// the default and silently render defaults (review B):
 					let threw = false;
 					try { selectOpenscadCommand(opts("requires=csg-engine:manifold, complex-list-parameters"),warn); } catch(_e) { threw = true; }
 					if( !threw ) throw new Error("expected no-provider error");
-				});
-				await check("speed:fast ranking decides among qualifiers", () => {
-					// Today exactly one command provides manifold, so the
-					// ranking branch is otherwise unreachable.  Rebuild the
-					// profiles with 'x:OldManifold' declared first and ranked
-					// lowest: declaration order and rank then disagree, and
-					// only the preference may pick rank.  (Iteration order
-					// follows insertion order, hence the rebuild, not assign.)
-					const saved = structuredClone(OPENSCAD_COMMAND_PROFILES);
-					Object.keys(OPENSCAD_COMMAND_PROFILES).forEach(k => delete OPENSCAD_COMMAND_PROFILES[k]);
-					OPENSCAD_COMMAND_PROFILES["x:OldManifold" as OpenSCADCmd] = { features: ["csg-engine:manifold"], speedRank: 1 };
-					Object.assign(OPENSCAD_COMMAND_PROFILES, saved);
-					try {
-						const byOrder = selectOpenscadCommand(opts("requires=csg-engine:manifold"),warn);
-						const byRank = selectOpenscadCommand(opts("requires=csg-engine:manifold; prefers=speed:fast"),warn);
-						if( byOrder != ("x:OldManifold" as OpenSCADCmd) ) throw new Error(`declaration order ignored: ${byOrder}`);
-						if( byRank != OPENSCAD2024_MANIFOLD_CMD ) throw new Error(`rank ignored: ${byRank}`);
-					} finally {
-						Object.keys(OPENSCAD_COMMAND_PROFILES).forEach(k => delete OPENSCAD_COMMAND_PROFILES[k]);
-						Object.assign(OPENSCAD_COMMAND_PROFILES, saved);
-					}
 				});
 				console.log(`x:SelfTest-Options: all checks passed (${warns.length} expected warning(s))`);
 			},
