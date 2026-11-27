@@ -81,7 +81,7 @@ type OpenSCADFeatureName = "manifold"|"cgal";
  * (2026-11-27; the option value is case-insensitive).
  */
 type CommandProfile = { features: string[], speedRank: number };
-const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
+const OPENSCAD_COMMAND_PROFILES : Readonly<{[cmd:string]: CommandProfile}> = {
 	[OPENSCAD202101_CMD]:     { features: ["csg-engine:cgal", "complex-list-parameters"], speedRank: 1 },
 	[OPENSCAD20240727_CMD]:   { features: ["csg-engine:cgal"], speedRank: 1 },
 	[OPENSCAD2024_MANIFOLD_CMD]: { features: ["csg-engine:cgal", "csg-engine:manifold"], speedRank: 2 },
@@ -103,14 +103,10 @@ const OPENSCAD_COMMAND_PROFILES : {[cmd:string]: CommandProfile} = {
  */
 const missingFeatures = (cmd:OpenSCADCmd, requires:string[]) : string[] =>
 	requires.filter(f => !(OPENSCAD_COMMAND_PROFILES[cmd]?.features ?? []).includes(f));
+const allFeatures = new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features));
 
 function selectOpenscadCommand(d : ScadOptions|null, warn:(msg:string)=>void) : OpenSCADCmd {
 	if( d == null ) return DEFAULT_OPENSCAD_CMD;
-	// Known-feature set computed live, not a module-load snapshot:
-	// run-option-self-tests mutates the profiles table, and a frozen set
-	// would flag brand-new-but-provided tokens as unknown.  (Rebuilt per
-	// call; the table is tiny.)
-	const allFeatures = new Set(Object.values(OPENSCAD_COMMAND_PROFILES).flatMap(p => p.features));
 	for( const tok of d.requires ) {
 		if( !allFeatures.has(tok) ) throw new Error(`Unknown required feature '${tok}' (known: ${[...allFeatures].join(', ')})`);
 	}
@@ -1109,26 +1105,6 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 		let threw = false;
 		try { selectOpenscadCommand(opts("requires=csg-engine:quantum"),warn); } catch(_e) { threw = true; }
 		if( !threw ) throw new Error("expected unknown-feature error");
-	});
-	await check("newly-provided feature is known (live allFeatures)", () => {
-		// Regression (reviewer-found): a module-load snapshot of
-		// known features would reject a token that an injected
-		// profile *does* provide.  The token is provided by the
-		// default too, so with a live set selection succeeds and
-		// 'must not throw' is the real assertion; with the old
-		// snapshot it fails with 'Unknown required feature':
-		const tok = "test-feature-" + Deno.pid;
-		(OPENSCAD_COMMAND_PROFILES as any)["x:FeatureHolder" as OpenSCADCmd] = { features: [tok], speedRank: 0 };
-		const dflt = OPENSCAD_COMMAND_PROFILES[DEFAULT_OPENSCAD_CMD];
-		dflt.features.push(tok);
-		try {
-			selectOpenscadCommand(opts(`requires=${tok}`), warn);
-		} catch( e ) {
-			throw new Error("stale snapshot or wrong pick: " + (e as Error).message);
-		} finally {
-			dflt.features.splice(dflt.features.indexOf(tok), 1);
-			delete (OPENSCAD_COMMAND_PROFILES as any)["x:FeatureHolder" as OpenSCADCmd];
-		}
 	});
 	await check("unknown preference -> warned, not fatal", () => {
 		selectOpenscadCommand(opts("prefers=speed:lightspeed"),warn);

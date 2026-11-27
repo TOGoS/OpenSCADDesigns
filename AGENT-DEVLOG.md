@@ -72,3 +72,17 @@ Python-escaped regex string, parking a stray ';' in each entry
 tail -- caught by eyeballing the diff, not by deno, which happily
 reached... actually deno WOULD have caught it; the cleanup landed
 before the check.  Lesson: run the check anyway.)
+
+## 2026-11-27 -- profiles table declared immutable; round-3 residue retired -- Reviewer Qwen
+
+The "newly-provided feature is known" self-check was the only
+mutator of OPENSCAD_COMMAND_PROFILES -- a test that bent global
+state to prove production code could tolerate being bent, and the
+round-3 fix (live per-call known-features computation) existed
+solely because of it.  Once the assumption "nobody modifies that
+table" is made official, the whole chain is unnecessary: check,
+mutation, and its explanatory comment are gone; allFeatures is
+back at module scope; the table is typed Readonly.  15 checks ->
+14; nothing was weakened.  (Note this supersedes the round-3
+entry's final paragraph -- that check existed, did its job, and
+has now been deleted; entries above are history, not inventory.)
