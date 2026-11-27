@@ -1,7 +1,7 @@
 import { assertEquals, assertThrows, assertStringIncludes } from 'https://deno.land/std@0.119.0/testing/asserts.ts';
 import { parseOpenScadOptions } from './scadoptions.ts';
 
-const DOC = "// Foo.scad v2\n//\n// tog-scad-options: ";
+const DOC = "// Foo.scad v2\n//\n// tog-scad-directives: ";
 
 Deno.test("scadoptions: no options line yields null", () => {
 	const r = parseOpenScadOptions("// just a comment\n\ncube(10);\n");
@@ -35,7 +35,7 @@ Deno.test("scadoptions: unknown keys error; malformed entries error", () => {
 
 Deno.test("scadoptions: off-convention placement warns but works", () => {
 	// line 7 instead of 3:
-	const r = parseOpenScadOptions("line1\nline2\nline3\nline4\nline5\nline6\n// tog-scad-options: requires=complex-list-parameters\n");
+	const r = parseOpenScadOptions("line1\nline2\nline3\nline4\nline5\nline6\n// tog-scad-directives: requires=complex-list-parameters\n");
 	assertEquals(r.options?.requires, ["complex-list-parameters"]);
 	assertEquals(r.warnings.length, 1);
 	assertStringIncludes(r.warnings[0], 'line 3');

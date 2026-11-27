@@ -1,6 +1,6 @@
 // FrenchCleat-v1.19
 // 
-// tog-scad-options: requires=complex-list-parameters
+// tog-scad-directives: requires=complex-list-parameters
 //
 // v1.1:
 // - Allow selection of style for each edge

@@ -3,7 +3,7 @@
  *
  *   // FrenchCleat.scad 2021-06
  *   //
- *   // tog-scad-options: openscad=x:OpenSCAD20240727Com+Manifold; requires=csg-engine:manifold; prefers=speed:fast
+ *   // tog-scad-directives: openscad=x:OpenSCAD20240727Com+Manifold; requires=csg-engine:manifold; prefers=speed:fast
  *   //
  *   // ...more comments...
  *
@@ -24,7 +24,7 @@
  * provides them, is the build system's business; this library only
  * enforces the grammar.
  *
- * Returns null for files with no options line; lines past
+ * Returns null for files with no directives line; lines past
  * MAX_SCAN_LINES warn rather than apply -- the metadata belongs near
  * the top, where whoever opens the file will see it.
  */
@@ -35,7 +35,7 @@ export type OpenSCADOptions = {
 	prefers: string[],
 };
 
-const OPTIONS_MARKER = "tog-scad-options:",
+const DIRECTIVES_MARKER = "tog-scad-directives:",
 	  KNOWN_KEYS = new Set(["openscad", "requires", "prefers"]),
 	  THUNK_RE = /^[A-Za-z][A-Za-z0-9]*([-._+][A-Za-z0-9]+)*(?::[A-Za-z][A-Za-z0-9]*([-._+][A-Za-z0-9]+)*)?$/,
 	  MAX_SCAN_LINES = 20;
@@ -51,23 +51,23 @@ export function parseOpenScadOptions(text:string) : { options : OpenSCADOptions|
 	let raw : string|undefined, foundLine = 0;
 	const lines = text.split(/\r?\n/);
 	for( let i = 0; i < lines.length; ++i ) {
-		const idx = lines[i].indexOf(OPTIONS_MARKER);
+		const idx = lines[i].indexOf(DIRECTIVES_MARKER);
 		if( idx < 0 ) continue;
 		if( i >= MAX_SCAN_LINES ) {
-			warnings.push(`options line at ${i+1} ignored (beyond header zone of ${MAX_SCAN_LINES} lines)`);
+			warnings.push(`directives line at ${i+1} ignored (beyond header zone of ${MAX_SCAN_LINES} lines)`);
 			continue;
 		}
 		if( raw != undefined ) {
 			warnings.push(`multiple options lines; line ${foundLine} wins, line ${i+1} ignored`);
 			continue;
 		}
-		raw = lines[i].substring(idx + OPTIONS_MARKER.length); foundLine = i+1;
+		raw = lines[i].substring(idx + DIRECTIVES_MARKER.length); foundLine = i+1;
 	}
 	if( raw == undefined ) return { options:null, warnings };
 
 	// Conventional spot is line 3 (below '// title' and '//'); being
 	// elsewhere is a smell, not a crime.
-	if( foundLine != 3 ) warnings.push(`options line at ${foundLine}; convention is line 3 (below the title comment)`);
+	if( foundLine != 3 ) warnings.push(`directives line at ${foundLine}; convention is line 3 (below the title comment)`);
 
 	const res : OpenSCADOptions = { requires:[], prefers:[] };
 	for( const entryRaw of raw.split(';') ) {

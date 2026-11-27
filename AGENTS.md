@@ -37,8 +37,8 @@ By design, the build script fails fast if a command it needs is undefined.
   comment/structure-only edits, since a bump invalidates the render chain.
   The `--skip-scad-reruns` / `--allow-scad-reruns` flags govern re-rendering
   of OpenSCAD outputs that already exist to avoid unintended churn.
-- **`.scad` options headers**:
-  `// tog-scad-options: openscad=x:...; requires=...; prefers=...`,
+- **`.scad` directives headers**:
+  `// tog-scad-directives: openscad=x:...; requires=...; prefers=...`,
   often on line 3, below the title comment, if there is one.
   `requires` are contracts (the build rejects commands that cannot satisfy them);
   omit the header entirely when needs vary per parameter set.

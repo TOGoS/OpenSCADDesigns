@@ -1,6 +1,6 @@
 // OvalNut0.1
 // 
-// tog-scad-options: requires=csg-engine:manifold
+// tog-scad-directives: requires=csg-engine:manifold
 //
 // An oval-shaped nut that might be slipped through a hole
 // only to be turned and affixed behind that hole,

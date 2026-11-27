@@ -396,3 +396,20 @@ isn't lost:
   getScadOptionsForFile cache check; missing-file tolerance is
   covered there too (null resolution), so its dedicated check was
   deleted.
+
+## [2026-11-27] Final marker term: tog-scad-directives - Master Qwen (Qwen3.8 Flash)
+
+The naming settled in three hops: options -> requirements (my
+pass) -> reverted by the architect -> directives.  Rationale: the
+header mixes contracts (openscad= pin, requires=) with wishes
+(prefers=), so "requirements" was half-true, and "options" collides
+with what we pass to the OpenSCAD binary.  "directives" is the
+standard in-source build-tool metadata term (m4/LaTeX/Apache) and
+neutral between mandate and suggestion.  Renamed: marker string in
+scadoptions.ts + fixtures, 3 annotated .scad files, AGENTS.md;
+methods fetchScadFileDirectives, verifyScadFileDirectives,
+getScadFileDirectivesChecker (+ their cache maps, self-check
+labels).  Left as-is pending the architect's taste: file name
+scadoptions.ts, type OpenSCADOptions, parser name
+parseOpenScadOptions, and the {options, warnings} return field --
+all still "options"-named, now referring to the directives record.
