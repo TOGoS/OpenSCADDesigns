@@ -1011,11 +1011,9 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 	return allRules;
 }
 
-// Test-runner bodies for the run-* phony targets.  The boundary:
-// above, functions that do build work; below, furniture that only
-// populates the rules dictionary.  Bodies live here so the dict
-// entries read as {targetType, description, invoke} triples.
-/** The "run-openscad-tests" phony-target body (rules dict stays an index). */
+//// Test-runner bodies for the run-* phony targets
+
+/** The "run-openscad-tests" phony-target body */
 async function runOpenscadTests(_ctx:BuildContext) {
 	// (Replaces test.bat's find -exec dance, which could never
 	// actually signal failure.)
@@ -1063,7 +1061,7 @@ async function runOpenscadTests(_ctx:BuildContext) {
 	if( failures > 0 ) throw new Error(`${failures} of ${scadPaths.length} test .scad files failed to evaluate`)
 }
 
-/** The "run-option-self-tests" phony-target body (rules dict stays an index). */
+/** The "run-option-self-tests" phony-target body */
 async function runOptionSelfTests(_ctx:BuildContext) {
 	const warns : string[] = [];
 	const warn = (m:string) => { warns.push(m); };
@@ -1178,7 +1176,7 @@ async function runOptionSelfTests(_ctx:BuildContext) {
 	console.log(`run-option-self-tests: all checks passed (${warns.length} expected warning(s))`)
 }
 
-/** The "run-build-tests" phony-target body (rules dict stays an index). */
+/** The "run-build-tests" phony-target body */
 async function runBuildTests(_ctx:BuildContext) {
 	// (run-option-self-tests runs in-process -- no env/binary needs --
 	// so it's cheap insurance here rather than only on demand:)
@@ -1196,6 +1194,8 @@ function partIdRange(pfx:string, start:number, end:number) : string[] {
 	for( let i = start; i <= end; i++ ) partIds.push(pfx+i);
 	return partIds;
 }
+
+//// Other target dictionary generation helpers
 
 const p186xPartIds = partIdRange("p",1861,1869);
 const p186xBuildRules = flattenObj(map(
@@ -1248,6 +1248,8 @@ const p192xBuildRules = flattenObj(map(
 	},
 ));
 
+//// Some conventional camera positions
+
 // For 'classic' Threads2 renderings
 const DEFAULT_THREADS2_CAMERA_POSITION : Vec3<number> = [-60,-120, 140];
 const DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS : {[cameraName:string]: Vec3<number>} = {
@@ -1255,7 +1257,8 @@ const DEFAULT_THREADS2_TOP_BOTTOM_CAMERA_POSITIONS : {[cameraName:string]: Vec3<
 	bottom: [-60,-120,-140],
 };
 
-// Something like this.
+//// The Builder
+
 const builder = new Builder({
 	mtimeFunction: mtimeWithBuiltMarkers,
 	rules: {
