@@ -1010,7 +1010,7 @@ function fromStlBuildRules(partId:string, stlRef:string, opts:{
 //// Test-runner bodies for the run-* phony targets
 
 /** The "run-openscad-tests" phony-target body */
-async function runOpenscadTests(_ctx:BuildContext) {
+async function runScadTests(_ctx:BuildContext) {
 	// (Replaces test.bat's find -exec dance, which could never
 	// actually signal failure.)
 	const scadPaths:string[] = [];
@@ -1242,7 +1242,7 @@ const builder = new Builder({
 		"run-openscad-tests": {
 			targetType: "phony",
 			description: "Evaluate every .scad under 2023/test with --hardwarnings",
-			invoke: runOpenscadTests,
+			invoke: runScadTests,
 		},
 		"run-option-self-tests": {
 			targetType: "phony",
