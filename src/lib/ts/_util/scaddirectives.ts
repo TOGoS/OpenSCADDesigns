@@ -7,9 +7,9 @@
  *   //
  *   // ...more comments...
  *
- * Convention: the directives line sits below the file's title comment
- * (line 3), so it's seen before the code -- and away from line 1,
- * which other tools sniff as *their* syntax.
+ * Convention: the directives line sits below the file's title comment,
+ * so usually around line 3.  But it just needs to be in the first
+ * kilobyte or so so that the entire file doesn't need to be scanned for it.
  *
  * Entries are ';'-separated 'key=value' pairs, split on the first
  * '=' only, so values may contain '=' and ':'.  Keys:
@@ -64,11 +64,7 @@ export function parseScadDirectives(text:string) : { directives : ScadDirectives
 		raw = lines[i].substring(idx + DIRECTIVES_MARKER.length); foundLine = i+1;
 	}
 	if( raw == undefined ) return { directives:null, warnings };
-
-	// Conventional spot is line 3 (below '// title' and '//'); being
-	// elsewhere is a smell, not a crime.
-	if( foundLine != 3 ) warnings.push(`directives line at ${foundLine}; convention is line 3 (below the title comment)`);
-
+	
 	const res : ScadDirectives = { requires:[], prefers:[] };
 	for( const entryRaw of raw.split(';') ) {
 		const entry = entryRaw.trim();

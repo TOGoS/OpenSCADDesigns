@@ -33,14 +33,6 @@ Deno.test("scaddirectives: unknown keys error; malformed entries error", () => {
 	assertThrows(() => parseScadDirectives(DOC + "just-a-token").directives, Error, 'Malformed');
 });
 
-Deno.test("scaddirectives: off-convention placement warns but works", () => {
-	// line 7 instead of 3:
-	const r = parseScadDirectives("line1\nline2\nline3\nline4\nline5\nline6\n// tog-scad-directives: requires=complex-list-parameters\n");
-	assertEquals(r.directives?.requires, ["complex-list-parameters"]);
-	assertEquals(r.warnings.length, 1);
-	assertStringIncludes(r.warnings[0], 'line 3');
-});
-
 Deno.test("scaddirectives: outside the header zone warns and does not apply", () => {
 	const lines = Array.from({length:25}, (_,i) => `// line ${i}`);
 	lines[24] = DOC + "requires=complex-list-parameters";
